@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check } from 'lucide-react';
+import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
@@ -53,6 +54,8 @@ const MovieLedMakerTool = () => {
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
   const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing } = useGeminiVideoQueue();
   const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
+  const isMobile = useIsMobile();
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
@@ -532,60 +535,21 @@ const MovieLedMakerTool = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full overflow-hidden">
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 flex-1 min-h-0">
+      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full ${isMobile ? 'overflow-y-auto pb-40' : 'overflow-hidden'}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 ${isMobile ? 'content-start' : 'flex-1 min-h-0'}`}>
           
           {/* Left Panel - Controls */}
-          <div className="lg:col-span-2 min-h-0 overflow-hidden">
-            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 overflow-y-auto h-full max-h-full"
-              style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' }}
+          <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
+            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+              style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
             >
               {/* Title */}
               <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <button onClick={goBack} className="text-purple-300 hover:text-white transition-colors">
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-                  <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                    <Video className="h-5 w-5 text-fuchsia-400" />
-                    MovieLed Maker
-                  </h1>
-                </div>
-                <p className="text-xs text-gray-400">IA que gera movies para telão de LED com um clique.</p>
-              </div>
-
-              {/* Engine Selector */}
-              <div>
-                <span className="text-sm font-medium text-white mb-2 block">Motor</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1" data-tutorial-movieled="engine">
-                  {ENGINES.map(engine => (
-                    <button
-                      key={engine.id}
-                      onClick={() => setSelectedEngine(engine.id)}
-                      disabled={isProcessing}
-                      className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
-                        selectedEngine === engine.id
-                          ? 'bg-white/10 text-white'
-                          : 'text-gray-400 hover:text-white'
-                      }`}
-                    >
-                      {engine.name}
-                    </button>
-                  ))}
-                </div>
-                <div className="mt-2 flex flex-wrap gap-2">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
-                    {currentEngine.duration} • {currentEngine.resolution}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
-                    <Clock className="h-2.5 w-2.5" />
-                    {currentEngine.time}
-                  </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
-                    <Coins className="h-2.5 w-2.5" />
-                    {currentEngine.cost}
-                  </span>
-                </div>
+                <h1 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Video className="h-5 w-5 text-fuchsia-400" />
+                  MovieLed Maker
+                </h1>
+                <p className="text-xs text-gray-400 mt-1">IA que gera movies para telão de LED com um clique.</p>
               </div>
 
               {/* Reference Image */}
@@ -596,9 +560,9 @@ const MovieLedMakerTool = () => {
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
                   <div className="relative rounded-xl overflow-hidden border border-white/10 bg-black/30" data-tutorial-movieled="reference">
-                      <img
-                        src={getEffectiveImageUrl() || ''}
-                        alt="Telão de referência"
+                    <img
+                      src={getEffectiveImageUrl() || ''}
+                      alt="Telão de referência"
                       className="w-full h-[120px] lg:h-[140px] object-contain"
                     />
                     <div className="absolute bottom-0 inset-x-0 flex gap-1.5 p-1.5 bg-gradient-to-t from-black/70 to-transparent">
@@ -664,69 +628,104 @@ const MovieLedMakerTool = () => {
                 <p className="text-[10px] text-gray-500 mt-1">{inputText.length}/50 caracteres</p>
               </div>
 
-              {/* Generate Button */}
-              {status !== 'completed' && status !== 'error' && !isProcessing && (
-                <Button
-                  data-tutorial-movieled="generate"
-                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
-                  onClick={handleGenerate}
-                  disabled={isSubmitting || !canGenerate}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Iniciando...
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Gerar Movie
-                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                        <Coins className="w-3.5 h-3.5" />
-                        {currentEngine.cost}
+              {/* DESKTOP ONLY: Engine + Generate + Actions */}
+              {!isMobile && (
+                <>
+                  {/* Engine Selector */}
+                  <div>
+                    <span className="text-sm font-medium text-white mb-2 block">Motor</span>
+                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1" data-tutorial-movieled="engine">
+                      {ENGINES.map(engine => (
+                        <button
+                          key={engine.id}
+                          onClick={() => setSelectedEngine(engine.id)}
+                          disabled={isProcessing}
+                          className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
+                            selectedEngine === engine.id
+                              ? 'bg-white/10 text-white'
+                              : 'text-gray-400 hover:text-white'
+                          }`}
+                        >
+                          {engine.name}
+                        </button>
+                      ))}
+                    </div>
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
+                        {currentEngine.duration} • {currentEngine.resolution}
                       </span>
-                    </>
-                  )}
-                </Button>
-              )}
-
-              {/* Completed Actions */}
-              {status === 'completed' && (
-                <div className="space-y-2">
-                  <Button
-                    className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
-                    onClick={handleDownload}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Baixar Movie
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
-                    onClick={handleNewGeneration}
-                  >
-                    <RotateCcw className="w-4 h-4 mr-2" />
-                    Gerar Novo
-                  </Button>
-                </div>
-              )}
-
-              {/* Error State */}
-              {status === 'error' && errorMessage && (
-                <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
-                  <div className="flex items-start gap-2">
-                    <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
-                    <p className="text-xs text-red-300">{errorMessage}</p>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" />
+                        {currentEngine.time}
+                      </span>
+                    </div>
                   </div>
-                  <Button
-                    variant="outline"
-                    className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
-                    onClick={handleNewGeneration}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 mr-1" />
-                    Tentar Novamente
-                  </Button>
-                </div>
+
+                  {/* Generate Button - DESKTOP */}
+                  {status !== 'completed' && status !== 'error' && !isProcessing && (
+                    <Button
+                      data-tutorial-movieled="generate"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                      onClick={handleGenerate}
+                      disabled={isSubmitting || !canGenerate}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Iniciando...
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-4 h-4 mr-2" />
+                          Gerar Movie
+                          <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                            <Coins className="w-3.5 h-3.5" />
+                            {currentEngine.cost}
+                          </span>
+                        </>
+                      )}
+                    </Button>
+                  )}
+
+                  {/* Completed Actions - DESKTOP */}
+                  {status === 'completed' && (
+                    <div className="space-y-2">
+                      <Button
+                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                        onClick={handleDownload}
+                      >
+                        <Download className="w-4 h-4 mr-2" />
+                        Baixar Movie
+                      </Button>
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                        onClick={handleNewGeneration}
+                      >
+                        <RotateCcw className="w-4 h-4 mr-2" />
+                        Gerar Novo
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* Error State - DESKTOP */}
+                  {status === 'error' && errorMessage && (
+                    <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-xs text-red-300">{errorMessage}</p>
+                      </div>
+                      <Button
+                        variant="outline"
+                        className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                        onClick={handleNewGeneration}
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                        Tentar Novamente
+                      </Button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -763,7 +762,6 @@ const MovieLedMakerTool = () => {
                     </Button>
                   </div>
                 ) : status === 'completed' && resultUrl ? (
-                  /* Result Video */
                   <div className="w-full h-full flex items-center justify-center">
                     <video
                       src={resultUrl}
@@ -774,7 +772,6 @@ const MovieLedMakerTool = () => {
                     />
                   </div>
                 ) : (status === 'uploading' || status === 'processing') && !isQueued ? (
-                  /* Processing */
                   <div className="flex flex-col items-center justify-center gap-4">
                     <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
                     <div className="text-center">
@@ -787,7 +784,6 @@ const MovieLedMakerTool = () => {
                     </div>
                   </div>
                 ) : selectedLibraryItem ? (
-                  /* Preview selected library item video */
                   <div className="w-full h-full flex items-center justify-center">
                     <video
                       src={selectedLibraryItem.image_url}
@@ -800,12 +796,10 @@ const MovieLedMakerTool = () => {
                     />
                   </div>
                 ) : uploadedImage ? (
-                  /* Preview uploaded image */
                   <div className="w-full h-full flex items-center justify-center">
                     <img src={uploadedImage} alt="Preview" className="max-w-full max-h-full object-contain rounded-lg" />
                   </div>
                 ) : (
-                  /* Empty State */
                   <div className="flex flex-col items-center gap-4 text-center">
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/20 flex items-center justify-center">
                       <Video className="w-10 h-10 text-fuchsia-400" />
@@ -824,7 +818,142 @@ const MovieLedMakerTool = () => {
         </div>
       </div>
 
-      {/* Library Modal - Same pattern as PhotoLibraryModal in Arcano Cloner */}
+      {/* MOBILE FIXED BOTTOM BAR */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+          
+          {/* Expandable Configurações panel */}
+          {showMobileConfig && !isProcessing && status !== 'completed' && status !== 'error' && (
+            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-white/10 max-h-[50vh] overflow-y-auto">
+              {/* Engine Selector */}
+              <div>
+                <span className="text-xs font-medium text-gray-400 mb-1.5 block">Motor</span>
+                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-white/10 rounded-lg p-1">
+                  {ENGINES.map(engine => (
+                    <button
+                      key={engine.id}
+                      onClick={() => setSelectedEngine(engine.id)}
+                      disabled={isProcessing}
+                      className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
+                        selectedEngine === engine.id ? 'bg-white/10 text-white' : 'text-gray-400'
+                      }`}
+                    >
+                      {engine.name}
+                    </button>
+                  ))}
+                </div>
+                <div className="mt-1.5 flex flex-wrap gap-1.5">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8">
+                    {currentEngine.duration} • {currentEngine.resolution}
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/8 flex items-center gap-1">
+                    <Clock className="h-2.5 w-2.5" />
+                    {currentEngine.time}
+                  </span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Main bottom bar content */}
+          <div className="px-4 py-3 space-y-2.5">
+            {/* Idle state */}
+            {!isProcessing && status !== 'completed' && status !== 'error' && (
+              <>
+                <Button
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                  onClick={handleGenerate}
+                  disabled={isSubmitting || !canGenerate}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Iniciando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Gerar Movie
+                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                        <Coins className="w-3.5 h-3.5" />
+                        {currentEngine.cost}
+                      </span>
+                    </>
+                  )}
+                </Button>
+                <button
+                  onClick={() => setShowMobileConfig(!showMobileConfig)}
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Configurações
+                  {showMobileConfig ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                </button>
+              </>
+            )}
+
+            {/* Processing state */}
+            {isProcessing && (
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <p className="text-xs text-white truncate">
+                    {isQueued ? `Fila #${queuePosition}` : 'Gerando movie...'}
+                  </p>
+                </div>
+                {isQueued && (
+                  <Button
+                    variant="outline"
+                    className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                    onClick={cancelQueue}
+                  >
+                    Sair
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Completed state */}
+            {status === 'completed' && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                  onClick={handleDownload}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar Movie
+                </Button>
+                <Button
+                  variant="outline"
+                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  onClick={handleNewGeneration}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Error state */}
+            {status === 'error' && errorMessage && (
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-red-300 truncate">{errorMessage}</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  onClick={handleNewGeneration}
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                  Tentar
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Library Modal */}
       <MovieLedLibraryModal
         isOpen={showLibrary}
         onClose={() => setShowLibrary(false)}

@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2 } from 'lucide-react';
+import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -52,6 +53,8 @@ const ArcanoClonerTool: React.FC = () => {
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Arcano Cloner', 80);
+  const isMobile = useIsMobile();
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
   
   // Contexto global de jobs
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
@@ -821,223 +824,232 @@ const ArcanoClonerTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
-
-      {/* Warning banner during processing */}
-      {isProcessing && (
-        <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-          <span className="text-xs text-amber-200">
-            Não feche esta página durante o processamento
-          </span>
-        </div>
-      )}
-
-      <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-2 overflow-y-auto lg:overflow-hidden flex flex-col">
-        {/* Tool intro - full width centered */}
-        <div className="text-center py-3">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">Arcano Cloner</h1>
-          <p className="text-sm text-purple-300 mt-1 max-w-lg mx-auto">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
-        </div>
-
-        {/* Main Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
+      <div className={`flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col h-full ${isMobile ? 'overflow-y-auto pb-40' : 'overflow-hidden'}`}>
+        <div className={`grid grid-cols-1 lg:grid-cols-7 gap-4 lg:gap-5 ${isMobile ? 'content-start' : 'flex-1 min-h-0'}`}>
           
-          {/* Left Side - Inputs (2/7 on desktop) */}
-          <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
-
-            {refineMode ? (
-              <RefinePanel
-                prompt={refinePrompt}
-                onPromptChange={setRefinePrompt}
-                referencePreview={refineReferencePreview}
-                onReferenceChange={(file, preview) => {
-                  setRefineReferenceFile(file);
-                  setRefineReferencePreview(preview);
-                }}
-                onSubmit={handleRefine}
-                onCancel={() => {
-                  setRefineMode(false);
-                  setRefinePrompt('');
-                  setRefineReferenceFile(null);
-                  setRefineReferencePreview(null);
-                }}
-                isRefining={isRefining}
-              />
-            ) : (
-              <>
-                {/* User Image - Character/Photo Switch */}
-                <PersonInputSwitch
-                  image={userImage}
-                  onImageChange={handleUserImageChange}
-                  userId={user?.id}
-                  disabled={isProcessing}
-                />
-
-                {/* Reference Image - New Component */}
-                <ReferenceImageCard
-                  image={referenceImage}
-                  onClearImage={handleClearReference}
-                  onOpenLibrary={() => setShowPhotoLibrary(true)}
-                  disabled={isProcessing}
-                />
-
-                {/* Aspect Ratio Selector */}
-                <AspectRatioSelector
-                  value={aspectRatio}
-                  onChange={setAspectRatio}
-                  disabled={isProcessing}
-                />
-
-                {/* Creativity Slider */}
-                <CreativitySlider
-                  value={creativity}
-                  onChange={setCreativity}
-                  disabled={isProcessing}
-                />
-
-                {/* Custom Prompt Toggle */}
-                <CustomPromptToggle
-                  enabled={customPromptEnabled}
-                  onEnabledChange={setCustomPromptEnabled}
-                  prompt={customPrompt}
-                  onPromptChange={setCustomPrompt}
-                  disabled={isProcessing}
-                />
-
-                {/* Action Button */}
-                <Button
-                  size="sm"
-                  className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
-                  disabled={!canProcess || isProcessing || isSubmitting}
-                  onClick={handleProcess}
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                      Iniciando...
-                    </>
-                  ) : status === 'uploading' ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                      Enviando...
-                    </>
-                  ) : status === 'waiting' ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                      Fila #{queuePosition}
-                    </>
-                  ) : status === 'processing' ? (
-                    <>
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                      {Math.round(progress)}%
-                    </>
-                  ) : (
-                    <>
-                      <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-                      Gerar Imagem
-                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
-                        <Coins className="w-3.5 h-3.5" />
-                        {creditCost}
-                      </span>
-                    </>
-                  )}
-                </Button>
-
-                {/* Cancel button when in queue */}
-                {status === 'waiting' && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
-                    onClick={handleCancelQueue}
-                  >
-                    <XCircle className="w-3.5 h-3.5 mr-1.5" />
-                    Sair da Fila
-                  </Button>
-                )}
-
-                {/* Reconcile button - appears after 60s of processing */}
-                {isProcessing && showReconcileButton && jobId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full text-xs border-amber-500/30 text-amber-300 hover:bg-amber-500/10"
-                    disabled={isReconciling}
-                    onClick={async () => {
-                      setIsReconciling(true);
-                      try {
-                        const { data, error } = await supabase.functions.invoke(
-                          'runninghub-arcano-cloner/reconcile',
-                          { body: { jobId } }
-                        );
-                        if (error) throw error;
-                        if (data?.reconciled && data?.status === 'completed') {
-                          toast.success('Status atualizado! Imagem pronta.');
-                        } else if (data?.reconciled && data?.status === 'failed') {
-                          toast.error('O processamento falhou na RunningHub.');
-                        } else if (data?.alreadyFinalized) {
-                          toast.info('Job já finalizado, aguarde a atualização.');
-                        } else {
-                          toast.info('Ainda processando. Tente novamente em alguns segundos.');
-                        }
-                      } catch (err) {
-                        console.error('[ArcanoCloner] Reconcile error:', err);
-                        toast.error('Erro ao atualizar status');
-                      } finally {
-                        setIsReconciling(false);
-                      }
-                    }}
-                  >
-                    {isReconciling ? (
-                      <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />
-                    ) : (
-                      <RefreshCw className="w-3.5 h-3.5 mr-1.5" />
-                    )}
-                    Atualizar status
-                  </Button>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Right Side - Result Viewer (5/7 on desktop) */}
-          <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
-              {/* Header */}
-              <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
-                <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-fuchsia-400" />
-                  Resultado
-                </h3>
-                
-                {outputImage && (
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => transformRef.current?.zoomOut(0.5)}
-                    >
-                      <ZoomOut className="w-3.5 h-3.5" />
-                    </Button>
-                    <span className="text-[10px] text-purple-300 w-8 text-center">
-                      {Math.round(zoomLevel * 100)}%
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
-                      onClick={() => transformRef.current?.zoomIn(0.5)}
-                    >
-                      <ZoomIn className="w-3.5 h-3.5" />
-                    </Button>
-                  </div>
-                )}
+          {/* Left Side - Controls Panel */}
+          <div className={`lg:col-span-2 ${isMobile ? 'overflow-visible' : 'min-h-0 overflow-hidden'}`}>
+            <div className={`bg-[#1a1a2e] border border-white/10 rounded-2xl p-5 flex flex-col gap-5 ${isMobile ? '' : 'overflow-y-auto h-full max-h-full'}`}
+              style={!isMobile ? { scrollbarWidth: 'thin', scrollbarColor: 'rgba(255,255,255,0.15) transparent' } : undefined}
+            >
+              {/* Title */}
+              <div>
+                <h1 className="text-xl font-bold text-white">Arcano Cloner</h1>
+                <p className="text-xs text-gray-400 mt-1">Transforme sua foto usando qualquer imagem como referência. A IA clona o estilo, pose e cenário na sua pessoa.</p>
               </div>
 
-              {/* Result Area */}
-              <div className="relative flex-1 min-h-0 flex items-center justify-center">
+              {/* Inputs: always visible on both mobile and desktop */}
+              {refineMode ? (
+                <RefinePanel
+                  prompt={refinePrompt}
+                  onPromptChange={setRefinePrompt}
+                  referencePreview={refineReferencePreview}
+                  onReferenceChange={(file, preview) => {
+                    setRefineReferenceFile(file);
+                    setRefineReferencePreview(preview);
+                  }}
+                  onSubmit={handleRefine}
+                  onCancel={() => {
+                    setRefineMode(false);
+                    setRefinePrompt('');
+                    setRefineReferenceFile(null);
+                    setRefineReferencePreview(null);
+                  }}
+                  isRefining={isRefining}
+                />
+              ) : (
+                <>
+                  {/* User Image */}
+                  <PersonInputSwitch
+                    image={userImage}
+                    onImageChange={handleUserImageChange}
+                    userId={user?.id}
+                    disabled={isProcessing}
+                  />
+
+                  {/* Reference Image */}
+                  <ReferenceImageCard
+                    image={referenceImage}
+                    onClearImage={handleClearReference}
+                    onOpenLibrary={() => setShowPhotoLibrary(true)}
+                    disabled={isProcessing}
+                  />
+
+                  {/* DESKTOP ONLY: Controls + Action Button */}
+                  {!isMobile && (
+                    <>
+                      <AspectRatioSelector
+                        value={aspectRatio}
+                        onChange={setAspectRatio}
+                        disabled={isProcessing}
+                      />
+                      <CreativitySlider
+                        value={creativity}
+                        onChange={setCreativity}
+                        disabled={isProcessing}
+                      />
+                      <CustomPromptToggle
+                        enabled={customPromptEnabled}
+                        onEnabledChange={setCustomPromptEnabled}
+                        prompt={customPrompt}
+                        onPromptChange={setCustomPrompt}
+                        disabled={isProcessing}
+                      />
+
+                      {/* Generate Button - DESKTOP */}
+                      {!isProcessing && status !== 'completed' && (
+                        <Button
+                          className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                          disabled={!canProcess || isSubmitting}
+                          onClick={handleProcess}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              Iniciando...
+                            </>
+                          ) : (
+                            <>
+                              <Sparkles className="w-4 h-4 mr-2" />
+                              Gerar Imagem
+                              <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                                <Coins className="w-3.5 h-3.5" />
+                                {creditCost}
+                              </span>
+                            </>
+                          )}
+                        </Button>
+                      )}
+
+                      {/* Cancel button when in queue - DESKTOP */}
+                      {status === 'waiting' && (
+                        <Button
+                          variant="outline"
+                          className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                          onClick={handleCancelQueue}
+                        >
+                          <XCircle className="w-4 h-4 mr-2" />
+                          Sair da Fila
+                        </Button>
+                      )}
+
+                      {/* Reconcile button - DESKTOP */}
+                      {isProcessing && showReconcileButton && jobId && (
+                        <Button
+                          variant="outline"
+                          className="w-full py-3 text-sm border-amber-500/30 text-amber-300 hover:bg-amber-500/10 rounded-xl"
+                          disabled={isReconciling}
+                          onClick={async () => {
+                            setIsReconciling(true);
+                            try {
+                              const { data, error } = await supabase.functions.invoke(
+                                'runninghub-arcano-cloner/reconcile',
+                                { body: { jobId } }
+                              );
+                              if (error) throw error;
+                              if (data?.reconciled && data?.status === 'completed') {
+                                toast.success('Status atualizado! Imagem pronta.');
+                              } else if (data?.reconciled && data?.status === 'failed') {
+                                toast.error('O processamento falhou na RunningHub.');
+                              } else if (data?.alreadyFinalized) {
+                                toast.info('Job já finalizado, aguarde a atualização.');
+                              } else {
+                                toast.info('Ainda processando. Tente novamente em alguns segundos.');
+                              }
+                            } catch (err) {
+                              console.error('[ArcanoCloner] Reconcile error:', err);
+                              toast.error('Erro ao atualizar status');
+                            } finally {
+                              setIsReconciling(false);
+                            }
+                          }}
+                        >
+                          {isReconciling ? (
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          ) : (
+                            <RefreshCw className="w-4 h-4 mr-2" />
+                          )}
+                          Atualizar status
+                        </Button>
+                      )}
+
+                      {/* Completed Actions - DESKTOP */}
+                      {status === 'completed' && outputImage && (
+                        <div className="space-y-2">
+                          <Button
+                            className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                            onClick={handleDownload}
+                          >
+                            <Download className="w-4 h-4 mr-2" />
+                            Baixar HD
+                          </Button>
+                          <Button
+                            className="w-full py-3 text-sm font-semibold bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 rounded-xl"
+                            onClick={() => setRefineMode(true)}
+                            disabled={isRefining}
+                          >
+                            <Wand2 className="w-4 h-4 mr-2" />
+                            Refinar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            className="w-full py-3 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                            onClick={handleNewImage}
+                          >
+                            <RotateCcw className="w-4 h-4 mr-2" />
+                            Nova Imagem
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Error State - DESKTOP */}
+                      {status === 'error' && (
+                        <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3">
+                          <div className="flex items-start gap-2">
+                            <AlertTriangle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
+                            <p className="text-xs text-red-300">Erro no processamento</p>
+                          </div>
+                          <Button
+                            variant="outline"
+                            className="w-full mt-2 py-2 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg"
+                            onClick={handleReset}
+                          >
+                            <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                            Tentar Novamente
+                          </Button>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+
+              {/* Debug Panel */}
+              <JobDebugPanel
+                jobId={jobId}
+                tableName="arcano_cloner_jobs"
+                currentStep={currentStep}
+                failedAtStep={failedAtStep}
+                errorMessage={debugErrorMessage}
+                position={queuePosition}
+                status={status}
+              />
+            </div>
+          </div>
+
+          {/* Right Side - Result Viewer */}
+          <div className="lg:col-span-5 min-h-0 overflow-hidden">
+            <div className="bg-[#1a1a2e] border border-white/10 rounded-2xl overflow-hidden flex flex-col min-h-[400px] h-full">
+              {/* Warning Banner */}
+              {isProcessing && (
+                <div className="bg-amber-500/20 border-b border-amber-500/50 px-3 py-2 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                  <p className="text-xs text-amber-200">Não feche esta página durante o processamento</p>
+                </div>
+              )}
+
+              {/* Content Area */}
+              <div className="flex-1 flex items-center justify-center p-4 min-h-0">
                 {outputImage ? (
                   <TransformWrapper
                     ref={transformRef}
@@ -1048,32 +1060,36 @@ const ArcanoClonerTool: React.FC = () => {
                     wheel={{ step: 0.4 }}
                     onTransformed={(_, state) => setZoomLevel(state.scale)}
                   >
-                    <TransformComponent
-                      wrapperStyle={{
-                        width: '100%',
-                        height: '100%',
-                      }}
-                      contentStyle={{
-                        width: '100%',
-                        height: '100%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <ResilientImage
-                        src={outputImage}
-                        alt="Resultado"
-                        className="w-full h-full object-contain"
-                        maxRetries={4}
-                        compressOnFailure={true}
-                        locale="pt"
-                        objectFit="contain"
-                      />
-                    </TransformComponent>
+                    {({ zoomIn, zoomOut }) => (
+                      <div className="relative w-full h-full">
+                        <div className="hidden sm:flex absolute top-4 left-1/2 -translate-x-1/2 z-30 items-center gap-1 bg-black/80 rounded-full px-2 py-1">
+                          <button onClick={() => zoomOut(0.5)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
+                            <ZoomOut className="w-4 h-4 text-white" />
+                          </button>
+                          <span className="text-xs font-mono min-w-[3rem] text-center text-white">{Math.round(zoomLevel * 100)}%</span>
+                          <button onClick={() => zoomIn(0.5)} className="p-1.5 hover:bg-white/20 rounded-full transition-colors">
+                            <ZoomIn className="w-4 h-4 text-white" />
+                          </button>
+                        </div>
+                        <TransformComponent
+                          wrapperStyle={{ width: '100%', height: '100%' }}
+                          contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                        >
+                          <ResilientImage
+                            src={outputImage}
+                            alt="Resultado"
+                            className="w-full h-full object-contain"
+                            maxRetries={4}
+                            compressOnFailure={true}
+                            locale="pt"
+                            objectFit="contain"
+                          />
+                        </TransformComponent>
+                      </div>
+                    )}
                   </TransformWrapper>
                 ) : isRefining ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <div className="flex flex-col items-center justify-center gap-3">
                     <div className="relative">
                       <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/30 border-t-fuchsia-500 animate-spin" />
                       <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
@@ -1081,64 +1097,41 @@ const ArcanoClonerTool: React.FC = () => {
                     <p className="text-sm text-white font-medium">Refinando imagem...</p>
                   </div>
                 ) : isProcessing ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/30 border-t-fuchsia-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
-                    </div>
+                  <div className="flex flex-col items-center justify-center gap-4">
+                    <Loader2 className="w-12 h-12 text-purple-400 animate-spin" />
                     <div className="text-center">
-                      <p className="text-sm text-white font-medium flex items-center gap-2">
-                        <span>{currentQueueMessage.emoji}</span>
-                        <span>{currentQueueMessage.text}</span>
+                      <p className="text-lg font-medium text-white">
+                        {currentQueueMessage.emoji} {currentQueueMessage.text}
                       </p>
                       {status === 'waiting' && queuePosition > 0 && (
-                        <p className="text-xs text-purple-300 mt-1">
-                          Posição na fila: #{queuePosition}
-                        </p>
+                        <p className="text-sm text-purple-300/70 mt-1">Posição na fila: #{queuePosition}</p>
                       )}
                       {status === 'processing' && (
-                        <p className="text-xs text-purple-300 mt-0.5">
-                          {Math.round(progress)}% concluído
-                        </p>
+                        <p className="text-sm text-purple-300/70 mt-1">{Math.round(progress)}% concluído</p>
                       )}
                     </div>
-                    {/* Progress bar */}
-                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
                   </div>
                 ) : status === 'error' ? (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+                  <div className="flex flex-col items-center gap-3">
                     <div className="w-16 h-16 rounded-xl bg-red-500/10 border-2 border-dashed border-red-500/30 flex items-center justify-center">
                       <XCircle className="w-8 h-8 text-red-500/60" />
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-red-300">
-                        Erro no processamento
-                      </p>
-                      <Button
-                        variant="link"
-                        size="sm"
-                        className="text-xs text-purple-400"
-                        onClick={handleReset}
-                      >
-                        Tentar novamente
-                      </Button>
-                    </div>
+                    <p className="text-sm text-red-300">Erro no processamento</p>
                   </div>
                 ) : (
-                  <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-fuchsia-500/10 border-2 border-dashed border-fuchsia-500/30 flex items-center justify-center">
-                      <ImageIcon className="w-8 h-8 text-fuchsia-500/40" />
+                  <div className="flex flex-col items-center gap-4 text-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/20 flex items-center justify-center">
+                      <ImageIcon className="w-10 h-10 text-fuchsia-400" />
                     </div>
-                    <div className="text-center">
-                      <p className="text-sm text-purple-300">
-                        O resultado aparecerá aqui
-                      </p>
-                      <p className="text-xs text-purple-400 mt-0.5">
+                    <div>
+                      <h2 className="text-lg font-bold text-white">Arcano Cloner</h2>
+                      <p className="text-sm text-gray-400 mt-1 max-w-sm">
                         Envie as imagens e clique em "Gerar Imagem"
                       </p>
                     </div>
@@ -1146,49 +1139,149 @@ const ArcanoClonerTool: React.FC = () => {
                 )}
               </div>
 
-              {/* Action Buttons */}
-              {outputImage && status === 'completed' && (
-                <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90"
-                    onClick={handleNewImage}
-                  >
-                    <RotateCcw className="w-3.5 h-3.5 mr-1.5" />
-                    Nova
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex-1 h-8 text-xs bg-fuchsia-600/80 border-fuchsia-400/50 text-white hover:bg-fuchsia-500/90"
-                    onClick={() => setRefineMode(true)}
-                    disabled={isRefining}
-                  >
-                    <Wand2 className="w-3.5 h-3.5 mr-1.5" />
-                    Refinar
-                  </Button>
-                  <Button
-                    size="sm"
-                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
-                    onClick={handleDownload}
-                  >
-                    <Download className="w-3.5 h-3.5 mr-1.5" />
-                    Baixar HD
-                  </Button>
-                </div>
-              )}
-
               {/* Refinement Timeline */}
               <RefinementTimeline
                 versions={refinementHistory}
                 selectedIndex={selectedHistoryIndex}
                 onSelect={handleSelectVersion}
               />
-            </Card>
+            </div>
           </div>
         </div>
       </div>
+
+      {/* MOBILE FIXED BOTTOM BAR */}
+      {isMobile && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 bg-[#1a1a2e]/95 backdrop-blur-md border-t border-white/10 safe-area-pb">
+          
+          {/* Expandable Configurações panel */}
+          {showMobileConfig && !isProcessing && status !== 'completed' && status !== 'error' && !refineMode && (
+            <div className="px-4 pt-3 pb-2 space-y-3 border-b border-white/10 max-h-[50vh] overflow-y-auto">
+              <AspectRatioSelector
+                value={aspectRatio}
+                onChange={setAspectRatio}
+                disabled={isProcessing}
+              />
+              <CreativitySlider
+                value={creativity}
+                onChange={setCreativity}
+                disabled={isProcessing}
+              />
+              <CustomPromptToggle
+                enabled={customPromptEnabled}
+                onEnabledChange={setCustomPromptEnabled}
+                prompt={customPrompt}
+                onPromptChange={setCustomPrompt}
+                disabled={isProcessing}
+              />
+            </div>
+          )}
+
+          {/* Main bottom bar content */}
+          <div className="px-4 py-3 space-y-2.5">
+            {/* Idle state */}
+            {!isProcessing && status !== 'completed' && status !== 'error' && !refineMode && (
+              <>
+                <Button
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                  disabled={!canProcess || isSubmitting}
+                  onClick={handleProcess}
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Iniciando...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Gerar Imagem
+                      <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                        <Coins className="w-3.5 h-3.5" />
+                        {creditCost}
+                      </span>
+                    </>
+                  )}
+                </Button>
+                <button
+                  onClick={() => setShowMobileConfig(!showMobileConfig)}
+                  className="w-full flex items-center justify-center gap-2 py-2 text-xs text-gray-400 hover:text-white transition-colors"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  Configurações
+                  {showMobileConfig ? <ChevronDown className="w-3.5 h-3.5" /> : <ChevronUp className="w-3.5 h-3.5" />}
+                </button>
+              </>
+            )}
+
+            {/* Processing state */}
+            {isProcessing && (
+              <div className="flex gap-2">
+                <div className="flex-1 flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 text-purple-400 animate-spin flex-shrink-0" />
+                  <p className="text-xs text-white truncate">
+                    {status === 'waiting' ? `Fila #${queuePosition}` : `${Math.round(progress)}%`}
+                  </p>
+                </div>
+                {status === 'waiting' && (
+                  <Button
+                    variant="outline"
+                    className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                    onClick={handleCancelQueue}
+                  >
+                    Sair
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Completed state */}
+            {status === 'completed' && outputImage && (
+              <div className="flex gap-2">
+                <Button
+                  className="flex-1 py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                  onClick={handleDownload}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Baixar HD
+                </Button>
+                <Button
+                  variant="outline"
+                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  onClick={() => setRefineMode(true)}
+                  disabled={isRefining}
+                >
+                  <Wand2 className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  className="py-4 px-4 text-sm border-white/10 text-gray-300 hover:bg-white/5 rounded-xl"
+                  onClick={handleNewImage}
+                >
+                  <RotateCcw className="w-4 h-4" />
+                </Button>
+              </div>
+            )}
+
+            {/* Error state */}
+            {status === 'error' && (
+              <div className="flex gap-2 items-center">
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-red-300 truncate">Erro no processamento</p>
+                </div>
+                <Button
+                  variant="outline"
+                  className="py-3 px-4 text-xs border-white/10 text-gray-300 hover:bg-white/5 rounded-lg flex-shrink-0"
+                  onClick={handleReset}
+                >
+                  <RotateCcw className="w-3.5 h-3.5 mr-1" />
+                  Tentar
+                </Button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Photo Library Modal */}
       <PhotoLibraryModal
@@ -1228,10 +1321,8 @@ const ArcanoClonerTool: React.FC = () => {
       {/* Notification prompt toast */}
       <NotificationPromptToast toolName="cloner" />
 
-
       {/* Landing Trial Expired Modal */}
       <LandingTrialExpiredModal userId={user?.id} balance={credits} />
-    </div>
     </AppLayout>
   );
 };
