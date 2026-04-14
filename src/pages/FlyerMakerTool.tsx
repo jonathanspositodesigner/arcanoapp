@@ -648,7 +648,7 @@ const FlyerMakerTool: React.FC = () => {
 
                     {/* Artist Photos */}
                     <div className="border border-white/10 rounded-xl p-4 bg-black/30">
-                      <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (1-5)</span>
+                      <span className="text-sm font-medium text-white mb-2 block">Fotos dos Artistas (Max 5)</span>
                       <div className="grid grid-cols-3 gap-2">
                         {[0, 1, 2, 3, 4].map((idx) => {
                           const photo = artistPhotos[idx];
