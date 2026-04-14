@@ -5,16 +5,16 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, UserCheck, Loader2, ArrowLeftRight, Home } from "lucide-react";
+import { Copy, Download, ChevronLeft, ChevronRight, Star, Lock, LogIn, Menu, Flame, User, LogOut, Users, Settings, Shield, Package, ChevronDown, Gift, GraduationCap, X, RefreshCw, Sparkles, LayoutGrid, BookOpen, Cpu, MessageCircle, Send, Play, AlertTriangle, RotateCcw, Smartphone, Eye, Crown, ShoppingCart, Bell, Loader2, Home } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
-import logoHorizontal from "@/assets/logo_horizontal.png";
+import AppLayout from "@/components/layout/AppLayout";
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+
 import BannerCarousel from "@/components/BannerCarousel";
 import { toPackSlug } from "@/lib/utils";
 import { useImagePreloader } from "@/hooks/useImagePreloader";
@@ -400,129 +400,119 @@ const BibliotecaArtes = () => {
           </Badge>}
       </div>;
   };
-  const SidebarContent = () => <div className="flex flex-col h-full py-4">
-      <div className="px-4 mb-6 flex justify-center">
-        <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/67562963-438f-4677-8000-81acb1886f7c.png" className="h-10 cursor-pointer hover:opacity-80 transition-opacity" />
-      </div>
-      
-      <nav className="flex-1 px-2 space-y-1">
-        {!isAppInstalled && <div className="mb-6">
-            <button onClick={() => {
-          navigate('/install-app');
-          setSidebarOpen(false);
-        }} className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left bg-gradient-to-r from-yellow-500 to-amber-600 text-white hover:from-yellow-600 hover:to-amber-700 shadow-md">
-              <Smartphone className="h-5 w-5" />
-              <span className="font-medium">{t('sidebar.installApp')}</span>
-            </button>
-          </div>}
+  const sidebarNavClass = (section: SidebarSection) =>
+    `w-full flex items-center text-left text-[13px] font-medium py-2.5 px-3 rounded-lg transition-colors ${
+      activeSection === section
+        ? 'bg-primary/10 text-primary font-semibold'
+        : 'text-muted-foreground hover:text-foreground hover:bg-accent'
+    }`;
 
-        <button onClick={() => {
-        changeSection('tutorial');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'tutorial' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <BookOpen className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.tutorials')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('tutorial').length}
-          </Badge>
+  const InternalSidebar = () => (
+    <aside className={`
+      fixed lg:static inset-y-0 left-0 z-40
+      w-64 lg:h-full lg:min-h-0 lg:self-stretch min-h-screen bg-sidebar-background border-r border-border p-4 flex flex-col
+      transform transition-transform duration-300 ease-in-out
+      lg:pt-4
+      ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+    `}>
+      <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
+        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Navegação</p>
+
+        {!isAppInstalled && (
+          <button onClick={() => { navigate('/install-app'); setSidebarOpen(false); }}
+            className="w-full flex items-center text-left text-[13px] font-bold text-foreground py-2.5 px-3 rounded-lg bg-primary/10 border border-primary/20 hover:bg-primary/15 transition-all mb-2">
+            <Smartphone className="h-4 w-4 mr-2.5 text-primary flex-shrink-0" />
+            {t('sidebar.installApp')}
+          </button>
+        )}
+
+        <button onClick={() => { changeSection('tutorial'); setSidebarOpen(false); }} className={sidebarNavClass('tutorial')}>
+          <BookOpen className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.tutorials')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('tutorial').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('packs');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'packs' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Package className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.packs')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('pack').length}
-          </Badge>
+        <button onClick={() => { changeSection('packs'); setSidebarOpen(false); }} className={sidebarNavClass('packs')}>
+          <Package className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.packs')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('pack').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('updates');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'updates' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <RefreshCw className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.updates')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('updates').length}
-          </Badge>
+        <button onClick={() => { changeSection('updates'); setSidebarOpen(false); }} className={sidebarNavClass('updates')}>
+          <RefreshCw className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.updates')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('updates').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('bonus');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'bonus' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Gift className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.bonus')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('bonus').length}
-          </Badge>
+        <button onClick={() => { changeSection('bonus'); setSidebarOpen(false); }} className={sidebarNavClass('bonus')}>
+          <Gift className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.bonus')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('bonus').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('cursos');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'cursos' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <GraduationCap className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.courses')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('curso').length}
-          </Badge>
+        <button onClick={() => { changeSection('cursos'); setSidebarOpen(false); }} className={sidebarNavClass('cursos')}>
+          <GraduationCap className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.courses')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('curso').length}</span>
         </button>
 
-        <button onClick={() => {
-        changeSection('free-sample');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'free-sample' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <Sparkles className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.freeSamples')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {getPacksByType('free-sample').length}
-          </Badge>
+        <button onClick={() => { changeSection('free-sample'); setSidebarOpen(false); }} className={sidebarNavClass('free-sample')}>
+          <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.freeSamples')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{getPacksByType('free-sample').length}</span>
         </button>
 
-
-        <button onClick={() => {
-        changeSection('all-artes');
-        setSidebarOpen(false);
-      }} className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-left ${activeSection === 'all-artes' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}>
-          <LayoutGrid className="h-5 w-5" />
-          <span className="font-medium">{t('sidebar.viewAllArts')}</span>
-          <Badge variant="secondary" className="ml-auto text-xs">
-            {allArtes.length}
-          </Badge>
+        <button onClick={() => { changeSection('all-artes'); setSidebarOpen(false); }} className={sidebarNavClass('all-artes')}>
+          <LayoutGrid className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.viewAllArts')}
+          <span className="ml-auto text-[10px] text-muted-foreground">{allArtes.length}</span>
         </button>
-      </nav>
 
-      {/* WhatsApp Group Buttons */}
-      <div className="px-4 pt-4 border-t border-border space-y-3">
-        {userPacks.length > 0 ? <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">{t('messages.joinExclusiveGroup')}</p>
-            <Button onClick={() => window.open("https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
-              <MessageCircle className="h-4 w-4 mr-2" />
+        {/* Divider */}
+        <div className="my-3 border-t border-border" />
+
+        {/* WhatsApp Group */}
+        {userPacks.length > 0 ? (
+          <a href="https://chat.whatsapp.com/JOUGeS21VHq92hJWyxpOJC" target="_blank" rel="noopener noreferrer" className="block">
+            <button className="w-full flex items-center text-left text-[13px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2.5 px-3 rounded-lg hover:bg-emerald-500/15 transition-colors">
+              <MessageCircle className="h-4 w-4 mr-2.5 flex-shrink-0" />
               {t('messages.exclusiveGroup')}
-            </Button>
-          </div> : <div className="space-y-2">
-            <p className="text-xs text-muted-foreground text-center">{t('messages.joinFreeGroups')}</p>
-            <Button onClick={() => window.open("https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw", "_blank")} size="sm" className="w-full bg-[#25D366] hover:bg-[#20bd5a] text-white">
-              <MessageCircle className="h-4 w-4 mr-2" />
-              {t('messages.freeWhatsApp')}
-            </Button>
-            <Button onClick={() => window.open("https://t.me/+8NKj2KNvLPswZTIx", "_blank")} size="sm" className="w-full bg-[#0088cc] hover:bg-[#0077b5] text-white">
-              <Send className="h-4 w-4 mr-2" />
-              {t('messages.telegramAlerts')}
-            </Button>
-          </div>}
+            </button>
+          </a>
+        ) : (
+          <>
+            <a href="https://chat.whatsapp.com/DJz6BbLDbbK9MBX8YiTsbw" target="_blank" rel="noopener noreferrer" className="block">
+              <button className="w-full flex items-center text-left text-[13px] font-medium text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 py-2.5 px-3 rounded-lg hover:bg-emerald-500/15 transition-colors">
+                <MessageCircle className="h-4 w-4 mr-2.5 flex-shrink-0" />
+                {t('messages.freeWhatsApp')}
+              </button>
+            </a>
+            <a href="https://t.me/+8NKj2KNvLPswZTIx" target="_blank" rel="noopener noreferrer" className="block">
+              <button className="w-full flex items-center text-left text-[13px] font-medium text-blue-600 dark:text-blue-400 py-2.5 px-3 rounded-lg hover:bg-blue-500/15 transition-colors">
+                <Send className="h-4 w-4 mr-2.5 flex-shrink-0" />
+                {t('messages.telegramAlerts')}
+              </button>
+            </a>
+          </>
+        )}
+
+        <button onClick={() => navigate("/parceiro-login-artes")} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-2.5 px-3 rounded-lg hover:bg-accent transition-colors">
+          <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          {t('sidebar.collaboratorArea')}
+        </button>
       </div>
 
-      <div className="px-4 pt-4 border-t border-border mt-auto space-y-2">
-        <Button onClick={() => navigate("/parceiro-login-artes")} variant="ghost" size="sm" className="w-full justify-start text-muted-foreground hover:text-foreground">
-          <Users className="h-4 w-4 mr-2" />
-          {t('sidebar.collaboratorArea')}
-        </Button>
-      </div>
-    </div>;
+      {/* Logout */}
+      {user && (
+        <div className="pt-3 border-t border-border mt-3">
+          <button onClick={logout} className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-3 rounded-lg hover:bg-red-500/10 transition-colors">
+            <LogOut className="h-3.5 w-3.5 mr-2" />
+            Sair
+          </button>
+        </div>
+      )}
+    </aside>
+  );
   const getSectionTitle = () => {
     switch (activeSection) {
       case 'packs':
@@ -566,177 +556,27 @@ const BibliotecaArtes = () => {
       // Will show artes directly, not packs
     }
   };
-  return <>
-      {/* Promo Natal Banner - Fixed at top */}
+  return (
+    <AppLayout>
+      {/* Promo Natal Banner */}
       <PromoNatalBanner />
-      
-      <div className={`min-h-screen bg-background flex ${isPromoActive ? 'pt-11' : ''}`}>
-      {/* Desktop Sidebar */}
-      <aside className={`hidden lg:flex lg:w-64 lg:flex-col lg:fixed bg-card border-r border-border ${isPromoActive ? 'top-11 bottom-0' : 'inset-y-0'}`}>
-        <SidebarContent />
-      </aside>
 
-      {/* Mobile Sidebar */}
-      <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
-        <SheetContent side="left" className="w-64 p-0">
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
+      <div className="flex min-h-0">
+        {/* Overlay for mobile sidebar */}
+        {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
 
-      {/* Main Content Area */}
-      <div className="flex-1 lg:pl-64">
-        {/* Top Bar - Desktop */}
-        <header className={`hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
-          {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
-          {/* <Button 
-            onClick={() => navigate("/biblioteca-artes-hub")} 
-            variant="outline" 
-            size="sm"
-            className="text-amber-600 border-amber-500/50 hover:bg-amber-500/10"
-           >
-            <ArrowLeftRight className="h-4 w-4 mr-2" />
-            Trocar Biblioteca
-           </Button> */}
-          <div className="flex items-center gap-3">
-            <Button onClick={() => navigate("/")} variant="ghost" size="sm">
-              <Home className="h-4 w-4 mr-2" />
-              Home
-            </Button>
-            {!user && <>
-                <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white animate-pulse" size="sm">
-                  <UserCheck className="h-4 w-4 mr-2" />
-                  {t('firstAccess.alreadyClient')}
-                </Button>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} variant="ghost" size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  {t('buttons.login')}
-                </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}>
-                  <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                  {isPromoActive ? t('buttons.buyWith50Off') : t('buttons.buyPack')}
-                </Button>
-              </>}
-            {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                    {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
-                  </Badge>}
-                {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
-                    <Gift className="h-3 w-3 mr-1" />
-                    {t('sidebar.bonus')}
-                  </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  {t('buttons.myProfile')}
-                </Button>
-                <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {t('buttons.logout')}
-                </Button>
-              </>}
-          </div>
-        </header>
-
-        {/* Top Bar - Tablet */}
-        <header className={`hidden md:flex lg:hidden bg-primary px-4 py-3 items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-            <button onClick={() => navigate("/")} className="text-foreground hover:text-foreground p-1">
-              <Home className="h-5 w-5" />
-            </button>
-            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-9" />
-            {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
-            {/* <Button 
-              onClick={() => navigate("/biblioteca-artes-hub")} 
-              variant="ghost" 
-              size="sm"
-              className="text-amber-300 hover:bg-amber-500/20"
-             >
-              <ArrowLeftRight className="h-4 w-4" />
-             </Button> */}
-          </div>
-          <div className="flex items-center gap-2">
-            {!user && <>
-                <Button onClick={() => navigate('/login-artes?redirect=/biblioteca-artes')} size="sm" className="bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white text-sm animate-pulse">
-                  <UserCheck className="h-4 w-4 mr-2" />
-                  {t('firstAccess.alreadyClient')}
-                </Button>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 text-sm">
-                  <LogIn className="h-4 w-4 mr-1" />
-                  {t('buttons.login')}
-                </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-sm animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-sm"}>
-                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
-                </Button>
-              </>}
-            {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-sm">
-                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                    {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-                  </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
-                  <Settings className="h-4 w-4" />
-                </Button>
-                <Button onClick={logout} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </>}
-          </div>
-        </header>
-
-        {/* Top Bar - Mobile */}
-        <header className={`md:hidden bg-primary px-4 py-3 flex items-center justify-between shadow-lg sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" className="text-foreground hover:bg-white/20 p-1.5" onClick={() => setSidebarOpen(true)}>
-              <Menu className="h-5 w-5" />
-            </Button>
-            <button onClick={() => navigate("/")} className="text-foreground hover:text-foreground p-1">
-              <Home className="h-5 w-5" />
-            </button>
-            <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
-            {/* Botão "Trocar Biblioteca" temporariamente oculto - reativar junto com /biblioteca-artes-hub */}
-            {/* <Button 
-              onClick={() => navigate("/biblioteca-artes-hub")} 
-              variant="ghost" 
-              size="sm"
-              className="text-amber-300 hover:bg-amber-500/20 p-1.5"
-             >
-              <ArrowLeftRight className="h-4 w-4" />
-             </Button> */}
-          </div>
-          <div className="flex items-center gap-2">
-            {!user && <>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 text-xs">
-                  <LogIn className="h-4 w-4 mr-1" />
-                  {t('buttons.login')}
-                </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"}>
-                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
-                </Button>
-              </>}
-            {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
-                    <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                    {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-                  </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
-                  <Settings className="h-4 w-4" />
-                </Button>
-                <Button onClick={logout} size="sm" variant="ghost" className="text-foreground hover:bg-white/20 p-1.5">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </>}
-          </div>
-        </header>
-
+        {/* Internal Section Sidebar */}
+        <InternalSidebar />
 
         {/* Main Content */}
-        <div className="p-4 lg:p-6">
+        <div className="flex-1 min-w-0 p-4 lg:p-6">
           <div className="max-w-7xl mx-auto">
+            {/* Mobile sidebar toggle */}
+            <Button variant="outline" size="sm" className="lg:hidden mb-4" onClick={() => setSidebarOpen(prev => !prev)}>
+              <Menu className="h-4 w-4 mr-2" />
+              Seções
+            </Button>
+
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
                 {selectedPack ? selectedPack : `Biblioteca de Artes - ${getSectionTitle()}`}
@@ -1572,8 +1412,7 @@ const BibliotecaArtes = () => {
           })()}
         </DialogContent>
       </Dialog>
-
-    </div>
-  </>;
+    </AppLayout>
+  );
 };
 export default BibliotecaArtes;
