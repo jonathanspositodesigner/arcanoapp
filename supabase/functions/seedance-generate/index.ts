@@ -65,20 +65,17 @@ serve(async (req) => {
 
     supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Validate JWT via getClaims (avoids session_not_found errors from getUser)
-    const supabaseAuth = createClient(supabaseUrl, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    // Validate user via getUser with service role
     const token = authHeader.replace("Bearer ", "");
-    const { data: claimsData, error: claimsError } = await supabaseAuth.auth.getClaims(token);
-    if (claimsError || !claimsData?.claims?.sub) {
-      console.error("[seedance-generate] Auth failed:", claimsError?.message || "no sub claim");
+    const { data: { user }, error: userError } = await supabase.auth.getUser(token);
+    if (userError || !user) {
+      console.error("[seedance-generate] Auth failed:", userError?.message || "no user");
       return new Response(JSON.stringify({ success: false, error: "Invalid token" }), {
         status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    userId = claimsData.claims.sub as string;
-    const userEmail = claimsData.claims.email || "";
+    userId = user.id;
+    const userEmail = user.email || "";
 
     const body = await req.json();
     const {

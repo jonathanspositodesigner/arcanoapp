@@ -213,25 +213,17 @@ async function authenticateRequest(req: Request): Promise<{ userId: string } | R
   }
 
   const token = authHeader.replace('Bearer ', '');
-  const anonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
-  const userClient = createClient(SUPABASE_URL, anonKey, {
-    global: { headers: { Authorization: authHeader } },
-  });
+  const serviceClient = createClient(SUPABASE_URL, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!);
   
-  const { data: claimsData, error: claimsError } = await userClient.auth.getClaims(token);
-  if (claimsError || !claimsData?.claims) {
-    console.error('[MovieLedMaker] getClaims failed:', claimsError);
+  const { data: { user }, error: userError } = await serviceClient.auth.getUser(token);
+  if (userError || !user) {
+    console.error('[MovieLedMaker] getUser failed:', userError);
     return new Response(JSON.stringify({ error: 'Unauthorized', code: 'UNAUTHORIZED' }), {
       status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
   
-  const verifiedUserId = claimsData.claims.sub as string;
-  if (!verifiedUserId) {
-    return new Response(JSON.stringify({ error: 'Invalid token', code: 'UNAUTHORIZED' }), {
-      status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
-  }
+  const verifiedUserId = user.id;
 
   return { userId: verifiedUserId };
 }
