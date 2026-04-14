@@ -245,7 +245,7 @@ const PlanosArcanoCloner = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-border rounded-3xl p-8 text-center">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-purple-500/10 to-purple-500/10 border border-border rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-foreground font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
@@ -490,7 +490,7 @@ const PlanosArcanoCloner = () => {
             <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-border/50 shadow-lg shadow-primary/5">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-foreground px-4 py-1 text-sm font-bold rounded-full">
+                <Badge className="bg-gradient-to-r from-purple-500 to-purple-500 text-white px-4 py-1 text-sm font-bold rounded-full">
                   OFERTA ESPECIAL
                 </Badge>
               </div>
@@ -511,14 +511,14 @@ const PlanosArcanoCloner = () => {
 
               <Button
                 onClick={handlePurchase}
-                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground font-bold rounded-full shadow-xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-600 hover:to-purple-600 text-white font-bold rounded-full shadow-xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
               >
                 COMPRAR AGORA
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
 
               <div className="flex flex-col items-center mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-foreground bg-gradient-to-r from-slate-600 to-slate-500">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-purple-600 to-purple-500">
                   <Sparkles className="w-4 h-4" />
                   ~70 fotos incluídas
                 </span>

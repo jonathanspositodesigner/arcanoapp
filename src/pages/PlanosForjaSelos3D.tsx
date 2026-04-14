@@ -115,7 +115,7 @@ const PlanosForjaSelos3D = () => {
           <AnimatedSection animation="scale" as="div">
             <Card className="bg-card/80 border-green-500/50">
               <CardContent className="p-6 text-center">
-                <Badge className="bg-green-500 text-foreground text-lg px-4 py-2 mb-4">
+                <Badge className="bg-green-500 text-white text-lg px-4 py-2 mb-4">
                   <Check className="h-5 w-5 mr-2" />
                   {t("forja3D.alreadyHaveAccess")}
                 </Badge>
@@ -134,12 +134,12 @@ const PlanosForjaSelos3D = () => {
         ) : (
           <AnimatedSection animation="scale" delay={200} as="div">
             <Card className="relative bg-card/80 border-2 border-slate-500/50 ring-2 ring-slate-500/20">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground px-4 py-1 rounded-full text-sm font-medium">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                 {t("forja3D.lifetimeAccess")}
               </div>
 
               {isPremium && (
-                <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1">
+                <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs px-2 py-1 rounded-full flex items-center gap-1">
                   <Crown className="h-3 w-3" />
                   {t("forja3D.memberDiscount")}
                 </div>
@@ -147,7 +147,7 @@ const PlanosForjaSelos3D = () => {
 
               <CardHeader className="text-center pt-8">
                 <div className="flex justify-center mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-pink-500/20 flex items-center justify-center border border-border">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-border">
                     <Box className="h-10 w-10 text-muted-foreground" />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ const PlanosForjaSelos3D = () => {
 
                 <Button
                   onClick={handlePurchase}
-                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-foreground shadow-lg shadow-primary/10 hover-lift"
+                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white shadow-lg shadow-primary/10 hover-lift"
                 >
                   {t("forja3D.buyNow")}
                 </Button>

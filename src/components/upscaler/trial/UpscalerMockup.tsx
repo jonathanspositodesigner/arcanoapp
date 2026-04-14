@@ -120,7 +120,7 @@ export default function UpscalerMockup({
     <div className="w-full max-w-2xl mx-auto rounded-2xl border border-border bg-accent backdrop-blur-sm overflow-hidden">
       {/* Header */}
       <div className="px-6 py-4 border-b border-border flex items-center gap-3">
-        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
           <Wand2 className="w-4 h-4 text-foreground" />
         </div>
         <span className="text-foreground font-semibold text-lg">Upscaler Arcano</span>
@@ -360,7 +360,7 @@ export default function UpscalerMockup({
                       <div className="absolute top-3 left-3 bg-black/80 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
                         Antes
                       </div>
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full">
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-purple-500 to-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full">
                         Depois
                       </div>
                     </div>
@@ -408,7 +408,7 @@ export default function UpscalerMockup({
             {/* Progress bar */}
             <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-500"
+                className="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-500"
                 style={{ width: `${progress}%` }}
               />
             </div>
@@ -426,7 +426,7 @@ export default function UpscalerMockup({
               isActive ? "hover:border-border/50 hover:bg-accent cursor-pointer" : "cursor-default"
             }`}
           >
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 flex items-center justify-center">
               <Upload className="w-8 h-8 text-muted-foreground" />
             </div>
             <div className="text-center">
@@ -452,7 +452,7 @@ export default function UpscalerMockup({
       {/* Generate button */}
       <div className="px-6 pb-6">
         <Button
-          className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base rounded-xl border-0"
+          className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-base rounded-xl border-0"
           disabled={!isActive || isProcessing || (!uploadedFile && !resultUrl)}
           onClick={onGenerate}
         >

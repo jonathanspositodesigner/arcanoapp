@@ -523,7 +523,7 @@ const ToolVersionLessons = () => {
                   <div>
                     <Button
                       onClick={() => window.open(toolLink, '_blank')}
-                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground shadow-lg shadow-orange-500/30"
+                      className="w-full h-12 text-base font-semibold transition-all duration-500 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30"
                     >
                       <Unlock className="h-5 w-5 mr-2" />
                       {t('toolLessons.accessTool')}
@@ -601,7 +601,7 @@ const ToolVersionLessons = () => {
                   onClick={() => toggleWatchedStatus(selectedLesson + 1)}
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
-                      ? 'bg-green-600 hover:bg-green-700 text-primary-foreground' 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
                       : 'bg-accent border border-border text-muted-foreground hover:bg-green-600/20 hover:text-green-400 hover:border-green-500'
                   }`}
                 >
@@ -650,7 +650,7 @@ const ToolVersionLessons = () => {
                   {/* Lesson number or checkmark */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                     watchedLessons.includes(index + 1)
-                      ? 'bg-green-500 text-primary-foreground'
+                      ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-accent text-accent-foreground' 
                         : 'bg-accent text-muted-foreground'

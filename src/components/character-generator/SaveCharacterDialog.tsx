@@ -129,7 +129,7 @@ const SaveCharacterDialog: React.FC<SaveCharacterDialogProps> = ({
           <Button
             onClick={handleSave}
             disabled={!name.trim() || isSaving}
-            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
+            className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
           >
             {isSaving ? (
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

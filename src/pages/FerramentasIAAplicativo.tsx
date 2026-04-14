@@ -299,7 +299,7 @@ const FerramentasIAAplicativo = () => {
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
           {(tool.slug === "arcano-cloner" || isNew) && (
-            <div className="absolute top-2 right-2 z-10 bg-green-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
+            <div className="absolute top-2 right-2 z-10 bg-green-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse">
               <Sparkles className="w-3 h-3" />
               NOVO
             </div>
@@ -316,7 +316,7 @@ const FerramentasIAAplicativo = () => {
             <div className={`w-full h-full flex items-center justify-center ${
               isComingSoon 
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
-                : "bg-gradient-to-br from-slate-500 to-slate-500"
+                : "bg-gradient-to-br from-purple-500 to-purple-500"
             }`}>
               {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
                 <Users className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
@@ -350,7 +350,7 @@ const FerramentasIAAplicativo = () => {
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
                     hasAccess
                       ? "bg-green-500 hover:bg-green-600" 
-                      : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
+                      : "bg-gradient-to-r from-purple-500 to-purple-400 hover:opacity-90"
                   } text-primary-foreground`}
                   onClick={(e) => {
                     e.stopPropagation();

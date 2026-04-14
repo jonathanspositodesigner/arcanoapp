@@ -275,9 +275,9 @@ const UpscalerArcanoVersionSelect = () => {
 
                   <Button 
                     className={`w-full ${hasVersionAccess 
-                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground group-hover:scale-[1.02] transition-transform' 
+                      ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white group-hover:scale-[1.02] transition-transform' 
                       : isV3
-                        ? 'bg-gradient-to-r from-slate-600 to-slate-400 hover:opacity-90 text-foreground group-hover:scale-[1.02] transition-transform'
+                        ? 'bg-gradient-to-r from-purple-600 to-purple-400 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
                         : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
                     disabled={!hasVersionAccess && !isV3}

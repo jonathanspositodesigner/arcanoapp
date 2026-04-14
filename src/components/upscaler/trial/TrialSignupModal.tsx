@@ -123,7 +123,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
               onClick={handleSendCode}
               disabled={loading}
             >
@@ -160,7 +160,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
               onClick={handleVerify}
               disabled={loading || code.length !== 6}
             >

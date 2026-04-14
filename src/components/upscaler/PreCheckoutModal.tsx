@@ -81,8 +81,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-accent0/10';
   const accentText = isOrange ? 'text-[#EF672C]' : 'text-muted-foreground';
   const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-muted-foreground';
-  const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-slate-500 to-slate-500';
-  const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-slate-600 hover:to-slate-600';
+  const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-purple-500 to-purple-500';
+  const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-purple-600 hover:to-purple-600';
   const btnShadow = isOrange ? 'shadow-[#EF672C]/25' : 'shadow-primary/10';
   const modalBg = isOrange ? 'from-[#1a0a0a] to-[#150a05]' : 'from-[#1a0f25] to-[#150a1a]';
   const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-primary/5';
@@ -758,7 +758,7 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
                     setOneClickResult(null);
                     onClose();
                   }}
-                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-foreground transition-colors"
+                  className="w-full py-3 font-bold rounded-full bg-green-500 hover:bg-green-600 text-white transition-colors"
                 >
                   Entendi
                 </button>

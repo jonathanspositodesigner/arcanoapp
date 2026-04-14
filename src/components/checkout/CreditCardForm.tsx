@@ -353,7 +353,7 @@ const CreditCardForm = ({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-primary-foreground font-semibold py-5"
+                className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold py-5"
               >
                 Confirmar Pagamento
               </Button>

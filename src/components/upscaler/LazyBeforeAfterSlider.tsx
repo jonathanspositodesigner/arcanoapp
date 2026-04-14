@@ -23,7 +23,7 @@ export const LazyBeforeAfterSlider = ({
   afterImage,
   label,
   badge,
-  badgeColor = "from-slate-500 to-pink-500",
+  badgeColor = "from-purple-500 to-pink-500",
   locale = 'pt',
   onZoomClick,
   aspectRatio,
@@ -121,7 +121,7 @@ export const LazyBeforeAfterSlider = ({
   return (
     <div ref={containerRef} className="relative group">
       {/* Glow effect on hover */}
-      <div className="absolute inset-0 bg-gradient-to-r from-slate-500/20 to-slate-400/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-r from-purple-500/20 to-purple-400/20 rounded-3xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
       
       <div className="relative bg-accent border border-border rounded-3xl p-4 hover:border-border transition-all duration-300 hover:transform hover:scale-[1.02]">
         {badge && (

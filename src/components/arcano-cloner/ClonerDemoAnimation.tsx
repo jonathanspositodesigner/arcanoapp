@@ -146,7 +146,7 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className={cn(
               'relative w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all duration-500',
               step === i
-                ? 'bg-gradient-to-br from-slate-500 to-slate-500 text-foreground shadow-lg shadow-primary/10 scale-110'
+                ? 'bg-gradient-to-br from-purple-500 to-purple-500 text-white shadow-lg shadow-primary/10 scale-110'
                 : step > i
                 ? 'bg-accent text-muted-foreground border border-border'
                 : 'bg-accent text-accent-foreground/30 border border-border'
@@ -237,7 +237,7 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="flex-1 flex items-center justify-center bg-muted/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Head circle */}
-                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500/50 to-slate-400/40 border border-border flex items-center justify-center">
+                             <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500/50 to-purple-400/40 border border-border flex items-center justify-center">
                                <svg viewBox="0 0 24 24" className="w-6 h-6 fill-gray-400">
                                  <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                                </svg>
@@ -298,7 +298,7 @@ const ClonerDemoAnimation: React.FC = () => {
                          <div className="flex-1 flex items-center justify-center bg-muted/30">
                            <div className="relative flex flex-col items-center gap-1.5">
                              {/* Landscape/photo icon skeleton */}
-                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-slate-500/40 to-slate-400/30 border border-border flex items-center justify-center overflow-hidden">
+                             <div className="w-12 h-9 rounded-lg bg-gradient-to-br from-purple-500/40 to-purple-400/30 border border-border flex items-center justify-center overflow-hidden">
                                {/* Simulated sky/ground */}
                                <div className="w-full h-1/2 bg-muted/30" />
                                <div className="absolute bottom-0 w-full h-1/2 bg-muted/30" />
@@ -346,7 +346,7 @@ const ClonerDemoAnimation: React.FC = () => {
                        className={cn(
                          'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
                          selectedRatio === opt.value
-                           ? 'bg-gradient-to-r from-slate-600 to-slate-500 border-border text-foreground scale-105'
+                           ? 'bg-gradient-to-r from-purple-600 to-purple-500 border-border text-white scale-105'
                            : 'bg-accent border-border text-muted-foreground'
                        )}
                      >
@@ -370,7 +370,7 @@ const ClonerDemoAnimation: React.FC = () => {
                   <span className="text-[9px] text-muted-foreground font-bold">50%</span>
                 </div>
                 <div className="h-1.5 bg-accent rounded-full overflow-hidden">
-                  <div className="h-full w-1/2 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full" />
+                  <div className="h-full w-1/2 bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" />
                 </div>
               </div>
 
@@ -379,7 +379,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 ref={genBtnRef}
                 className={cn(
                   'w-full py-3 rounded-xl font-bold text-sm text-foreground transition-all duration-200',
-                  'bg-gradient-to-r from-slate-600 to-slate-500 shadow-lg shadow-primary/10',
+                  'bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-primary/10',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
               >
@@ -400,7 +400,7 @@ const ClonerDemoAnimation: React.FC = () => {
                 </div>
                 <div className="h-1.5 bg-accent rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-slate-500 to-slate-400 rounded-full transition-all duration-100 ease-linear"
+                    className="h-full bg-gradient-to-r from-purple-500 to-purple-400 rounded-full transition-all duration-100 ease-linear"
                     style={{ width: `${loadingProgress}%` }}
                   />
                 </div>
@@ -448,7 +448,7 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full bg-accent blur-3xl pointer-events-none" />
 
             {/* Top badge */}
-            <div className="mb-5 bg-accent0 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-slate-500/30 animate-bounce">
+            <div className="mb-5 bg-accent0 rounded-full px-3 py-1.5 flex items-center gap-1.5 shadow-lg shadow-primary/30 animate-bounce">
               <Sparkles className="w-3.5 h-3.5 text-foreground" />
               <span className="text-xs text-foreground font-bold">Pronto! ✓</span>
             </div>
@@ -456,7 +456,7 @@ const ClonerDemoAnimation: React.FC = () => {
             {/* Large avatar */}
             <div className="relative mb-5">
               <div className="absolute -inset-4 rounded-full bg-accent blur-xl animate-pulse" />
-              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-slate-400 to-slate-500/70 border-2 border-border flex items-center justify-center shadow-2xl shadow-slate-500/30">
+              <div className="relative w-28 h-28 rounded-full bg-gradient-to-br from-purple-400 to-purple-500/70 border-2 border-border flex items-center justify-center shadow-2xl shadow-primary/30">
                 <svg viewBox="0 0 24 24" className="w-16 h-16 fill-gray-200">
                   <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
                 </svg>
@@ -485,7 +485,7 @@ const ClonerDemoAnimation: React.FC = () => {
             </div>
 
             {/* Download button */}
-            <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary/10">
+            <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary/10">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
               <span className="text-sm text-foreground font-bold">Baixar Imagem</span>
             </div>
@@ -523,4 +523,3 @@ const ClonerDemoAnimation: React.FC = () => {
 };
 
 export default ClonerDemoAnimation;
-

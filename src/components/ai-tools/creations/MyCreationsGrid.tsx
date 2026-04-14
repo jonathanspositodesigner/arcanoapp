@@ -80,7 +80,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
   if (!isLoading && creations.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mb-4">
+        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-purple-500/20 to-purple-400/20 flex items-center justify-center mb-4">
           <Sparkles className="w-10 h-10 text-muted-foreground" />
         </div>
         <h3 className="text-lg font-medium text-foreground mb-2">
@@ -91,7 +91,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
         </p>
         <Button
           onClick={() => navigate('/ferramentas-ia-aplicativo')}
-          className="bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-foreground"
+          className="bg-gradient-to-r from-purple-600 to-purple-500 hover:opacity-90 text-white"
         >
           <Sparkles className="w-4 h-4 mr-2" />
           Ir para as Ferramentas de IA

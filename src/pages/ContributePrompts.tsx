@@ -381,7 +381,7 @@ const ContributePrompts = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-foreground"
+              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
             >
               {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>

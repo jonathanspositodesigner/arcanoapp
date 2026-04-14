@@ -31,7 +31,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
       after: isMobile ? "/images/upscaler-foto-depois-mobile.webp" : upscalerFotoDepois,
       label: t('tools:upscaler.beforeAfter.photoImproved4K'),
       badge: t('tools:upscaler.beforeAfter.badges.photo'),
-      badgeColor: "from-slate-500 to-pink-500",
+      badgeColor: "from-purple-500 to-pink-500",
       aspectRatio: "2/3"
     },
     {
@@ -39,7 +39,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
       after: isMobile ? "/images/upscaler-selo-depois-mobile.webp" : upscalerSeloDepois,
       label: t('tools:upscaler.beforeAfter.seal3DHD'),
       badge: t('tools:upscaler.beforeAfter.badges.seals3D'),
-      badgeColor: "from-slate-500 to-slate-500",
+      badgeColor: "from-purple-500 to-purple-500",
       aspectRatio: "2/3"
     },
     {

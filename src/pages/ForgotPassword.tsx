@@ -101,7 +101,7 @@ const ForgotPassword = () => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground"
+            className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white"
           >
             {isLoading ? t('sending') : t('sendRecoveryLink')}
           </Button>

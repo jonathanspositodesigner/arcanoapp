@@ -153,7 +153,7 @@ export const ZoomableBeforeAfter = ({ beforeImage, afterImage, onFullscreenClick
 
       {/* Labels */}
       <div className="absolute top-3 left-3 z-10 bg-black/80 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">Antes</div>
-      <div className="absolute bottom-3 right-3 z-10 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">Depois</div>
+      <div className="absolute bottom-3 right-3 z-10 bg-gradient-to-r from-purple-500 to-purple-500 text-white text-xs font-semibold px-3 py-1.5 rounded-full pointer-events-none">Depois</div>
     </div>
   );
 };

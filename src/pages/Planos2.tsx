@@ -437,7 +437,7 @@ const Planos2 = () => {
               </TabsTrigger>
               <TabsTrigger value="anual" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
-                <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
+                <span className="bg-gradient-to-r from-purple-600 to-pink-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
                 </span>
               </TabsTrigger>
@@ -468,7 +468,7 @@ const Planos2 = () => {
                 </Badge>
               )}
               {hasCountdown && !isUnlimitedBadge && (
-                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-foreground px-3 py-0.5">
+                <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-white px-3 py-0.5">
                   MELHOR CUSTO/BENEFÍCIO
                 </Badge>
               )}
@@ -478,7 +478,7 @@ const Planos2 = () => {
                 </Badge>
               )}
               {(plan.promo || plan.popular) && !isBestSeller && !hasCountdown && !isUnlimitedBadge && (
-                <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-green-500 text-foreground"}`}>
+                <Badge className={`absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
               )}
@@ -546,7 +546,7 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-purple-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
                     >
                       {buttonText}
                     </Button>
@@ -569,7 +569,7 @@ const Planos2 = () => {
                     <div className={`flex items-center justify-center gap-1.5 rounded-full px-3 py-1 whitespace-nowrap ${
                       plan.name === "Pro" ? "bg-yellow-900/30 border border-yellow-600/40" :
                       plan.name === "Ultimate" ? "bg-lime-900/30 border border-lime-500/40" :
-                      "bg-accent border border-slate-500/40"
+                      "bg-accent border border-purple-500/40"
                     }`}>
                       <Tag className={`w-3 h-3 flex-shrink-0 ${
                         plan.name === "Pro" ? "text-yellow-400" :
@@ -590,7 +590,7 @@ const Planos2 = () => {
 
               {/* Badge de Créditos - fixed height */}
               <div className="flex flex-col items-center mb-4 h-[44px]">
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium text-white bg-gradient-to-r from-purple-600 to-purple-500">
                   <Sparkles className="w-2.5 h-2.5" />
                   {(plan as any).credits}/mês
                   {String((plan as any).credits).toLowerCase().includes('ilimitado') && (
@@ -684,7 +684,7 @@ const Planos2 = () => {
       {/* Credit Plans Section */}
       <section className="mt-20 pb-20 px-4">
         <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 mb-4">
             <Coins className="w-7 h-7 text-foreground" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
@@ -697,8 +697,8 @@ const Planos2 = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
           {[
-            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", slug: "creditos-1500", icon: Coins, color: "from-slate-500 to-slate-400" },
-            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", slug: "creditos-4200", popular: true, icon: Zap, color: "from-slate-500 to-pink-500" },
+            { credits: "+1.500", description: "~25 imagens", price: "19,90", originalPrice: "39,90", savings: "", slug: "creditos-1500", icon: Coins, color: "from-purple-500 to-purple-400" },
+            { credits: "+4.200", description: "~70 imagens", price: "29,90", originalPrice: "49,90", savings: "46", slug: "creditos-4200", popular: true, icon: Zap, color: "from-purple-500 to-pink-500" },
             { credits: "+14.000", description: "~233 imagens", price: "79,90", originalPrice: "149,90", savings: "57", slug: "creditos-14000", bestValue: true, icon: Star, color: "from-yellow-500 to-orange-500" },
           ].map((plan) => {
             const Icon = plan.icon;
@@ -710,12 +710,12 @@ const Planos2 = () => {
                 } ${plan.popular ? 'ring-2 ring-white/20 border-border' : ''}`}
               >
                 {plan.bestValue && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 px-3 py-1 text-xs">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
                     ⭐ MELHOR VALOR
                   </Badge>
                 )}
                 {plan.popular && !plan.bestValue && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground border-0 px-3 py-1 text-xs">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
                     🔥 POPULAR
                   </Badge>
                 )}

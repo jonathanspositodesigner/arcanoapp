@@ -164,7 +164,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   return (
   <>
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-slate-500/40 text-foreground max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-background border border-purple-500/40 text-foreground max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className="text-base sm:text-lg font-semibold text-foreground flex items-center gap-2">
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
@@ -186,7 +186,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
           <Button
             onClick={handleUploadClick}
             disabled={isUploading}
-            className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-sm font-medium py-2.5 h-auto flex-shrink-0"
+            className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white text-sm font-medium py-2.5 h-auto flex-shrink-0"
           >
             {isUploading ? (
               <>
@@ -218,7 +218,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             className={cn(
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'masculino'
-                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-foreground border-0"
+                ? "bg-gradient-to-r from-purple-500 to-purple-700 text-white border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -232,7 +232,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             className={cn(
               "flex-1 h-8 sm:h-9 text-xs sm:text-sm",
               filter === 'feminino'
-                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-foreground border-0"
+                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -249,7 +249,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
             placeholder="Buscar por palavra-chave..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-slate-400"
+            className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
           />
         </div>
 
@@ -286,7 +286,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
 
                     {/* Title on hover - hidden on mobile */}
                     <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-[10px] text-foreground font-medium text-center line-clamp-2">
+                      <p className="text-[10px] text-white font-medium text-center line-clamp-2">
                         {photo.title}
                       </p>
                     </div>

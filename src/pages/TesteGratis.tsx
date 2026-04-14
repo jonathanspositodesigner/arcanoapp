@@ -215,7 +215,7 @@ const TesteGratis = () => {
         {(pageState === 'email') && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-primary/10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4 shadow-lg shadow-primary/10">
                 <Gift className="w-8 h-8 text-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Teste Grátis</h2>
@@ -237,7 +237,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-primary/10"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-base shadow-lg shadow-primary/10"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Verificando...</>
@@ -253,7 +253,7 @@ const TesteGratis = () => {
         {pageState === 'login' && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-primary/10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4 shadow-lg shadow-primary/10">
                 <Lock className="w-8 h-8 text-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Faça Login</h2>
@@ -292,7 +292,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-primary/10"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-base shadow-lg shadow-primary/10"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Entrando...</>
@@ -311,7 +311,7 @@ const TesteGratis = () => {
         {pageState === 'signup' && (
           <>
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-primary/10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4 shadow-lg shadow-primary/10">
                 <User className="w-8 h-8 text-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">Crie sua Conta</h2>
@@ -365,7 +365,7 @@ const TesteGratis = () => {
               <Button
                 type="submit"
                 disabled={loading}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-primary/10"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-base shadow-lg shadow-primary/10"
               >
                 {loading ? (
                   <><Loader2 className="w-5 h-5 mr-2 animate-spin" />Criando conta...</>
@@ -390,7 +390,7 @@ const TesteGratis = () => {
             <p className="text-red-400 text-sm mb-6">Você já resgatou uma promoção anteriormente.</p>
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
-              className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
+              className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
             >
               Ir para as Ferramentas de IA
               <ArrowRight className="w-5 h-5 ml-2" />
@@ -423,7 +423,7 @@ const TesteGratis = () => {
         {/* EMAIL SENT STATE */}
         {pageState === 'email_sent' && (
           <div className="text-center py-4">
-            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-700 mb-4 shadow-lg shadow-blue-500/30">
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 mb-4 shadow-lg shadow-blue-500/30">
               <Mail className="w-10 h-10 text-foreground" />
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">Verifique seu Email</h2>
