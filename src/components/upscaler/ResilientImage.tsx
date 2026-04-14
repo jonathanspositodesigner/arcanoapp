@@ -259,7 +259,7 @@ export const ResilientImage = ({
       
       {/* Loading skeleton while image loads */}
       {!isLoaded && !isCompressing && (
-        <div className="absolute inset-0 bg-gray-800/50 animate-pulse rounded-lg" />
+        <div className="absolute inset-0 bg-muted/50 animate-pulse rounded-lg" />
       )}
       
       <img

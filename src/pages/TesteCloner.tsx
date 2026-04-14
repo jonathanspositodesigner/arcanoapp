@@ -62,7 +62,7 @@ const TesteCloner = () => {
         <HeroCarouselBackground />
 
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-muted/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         <div className="absolute inset-0 z-[10] flex items-center justify-center pointer-events-none">

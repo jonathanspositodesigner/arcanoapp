@@ -438,7 +438,7 @@ const RemoverFundoTool: React.FC = () => {
 
                 {outputImage && status === 'completed' && (
                   <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-secondary/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
                     <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
                   </div>
                 )}

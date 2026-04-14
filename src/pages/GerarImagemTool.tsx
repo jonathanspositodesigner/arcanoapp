@@ -575,7 +575,7 @@ const GerarImagemTool = () => {
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm border-2 border-dashed border-border pointer-events-none">
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm border-2 border-dashed border-border pointer-events-none">
               <ImagePlus className="h-12 w-12 text-muted-foreground mb-2" />
               <p className="text-muted-foreground font-semibold text-sm">Solte para adicionar referência</p>
             </div>

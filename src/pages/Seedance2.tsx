@@ -582,7 +582,7 @@ export default function Seedance2() {
                   {libraryItems.some(li => li.id === previewGen.id) && (
                     <button
                       onClick={() => handleUseLibraryItem(previewGen)}
-                      className="rounded-full bg-slate-600/80 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent0 transition-colors"
+                      className="rounded-full bg-secondary/80 px-4 py-2 text-sm font-medium text-foreground hover:bg-accent0 transition-colors"
                     >
                       Usar modelo
                     </button>
@@ -989,7 +989,7 @@ export default function Seedance2() {
               </button>
               <button
                 onClick={confirmFilePicker}
-                className="flex-1 rounded-xl bg-slate-600/80 py-2 text-xs font-medium text-foreground hover:bg-accent0 transition-colors"
+                className="flex-1 rounded-xl bg-secondary/80 py-2 text-xs font-medium text-foreground hover:bg-accent0 transition-colors"
               >
                 Entendi
               </button>
@@ -1068,7 +1068,7 @@ function VideoCard({ gen, onPreview, onDownload, onUse }: { gen: Generation; onP
           {onUse && (
             <button
               onClick={(e) => { e.stopPropagation(); onUse(gen); }}
-              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-slate-600/80 px-2 py-1 text-[10px] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-accent0"
+              className="absolute bottom-2 left-2 right-2 z-10 rounded-lg bg-secondary/80 px-2 py-1 text-[10px] font-medium text-foreground opacity-0 group-hover:opacity-100 transition-all hover:bg-accent0"
             >
               Usar modelo
             </button>
