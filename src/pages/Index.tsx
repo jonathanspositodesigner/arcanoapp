@@ -360,7 +360,7 @@ const Index = () => {
             ) : (
               <button 
                 onClick={() => navigate("/install-app")} 
-                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 text-foreground text-[10px] sm:text-xs font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-sm"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-yellow-500 to-amber-600 text-white text-[10px] sm:text-xs font-medium hover:from-yellow-600 hover:to-amber-700 transition-all shadow-sm"
               >
                 <Smartphone className="h-3 w-3" />
                 <span className="hidden sm:inline">{t('installApp')}</span>
