@@ -440,7 +440,7 @@ const BibliotecaPrompts = () => {
         <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
         {t('badges.tutorial')}
       </Badge>}
-      {item.isCommunity && <Badge variant="secondary" className="bg-purple-900/50 text-purple-200 text-[10px] sm:text-xs">
+      {item.isCommunity && <Badge variant="secondary" className="bg-white/5 text-purple-200 text-[10px] sm:text-xs">
         {t('badges.community')}
       </Badge>}
     </div>;
@@ -449,9 +449,9 @@ const BibliotecaPrompts = () => {
   return (
     <AppLayout>
       {/* Main Content */}
-      <div className="p-4 sm:p-6 lg:p-8 bg-[#0D0221] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
+      <div className="p-4 sm:p-6 lg:p-8 bg-[#111113] pb-24 lg:pb-8 overflow-x-hidden max-w-full">
         {/* Mobile Install App Button */}
-        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-purple-900/50 border-purple-400/50 text-white hover:bg-purple-500/30 font-semibold mb-4 lg:hidden">
+        <Button onClick={() => navigate("/install-app")} variant="outline" className="w-full bg-white/5 border-purple-400/50 text-white hover:bg-slate-500/30 font-semibold mb-4 lg:hidden">
           <Smartphone className="h-4 w-4 mr-2" />
           {t('sidebar.installApp')}
         </Button>
@@ -466,11 +466,11 @@ const BibliotecaPrompts = () => {
 
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
-            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
+            <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-slate-500/20 border-purple-400/50 text-purple-200"}`}>
               <Star className="h-3.5 w-3.5 mr-1.5" />
               {t('library.exclusiveFiles')}
             </Button>
-            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-purple-600 hover:bg-purple-700 text-white" : "bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200"}`}>
+            <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-slate-500/20 border-purple-400/50 text-purple-200"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
               {t('library.community')}
             </Button>
@@ -480,7 +480,7 @@ const BibliotecaPrompts = () => {
           <div className="flex items-center gap-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs bg-purple-900/40 hover:bg-purple-500/20 border-purple-400/50 text-purple-200">
+                <Button variant="outline" size="sm" className="text-xs bg-white/5 hover:bg-slate-500/20 border-purple-400/50 text-purple-200">
                   {getCategoryDisplayName(selectedCategory)}
                   <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
                 </Button>
@@ -492,8 +492,8 @@ const BibliotecaPrompts = () => {
                     onClick={() => handleCategorySelect(cat)}
                     className={`text-xs cursor-pointer ${
                       selectedCategory === cat
-                        ? "bg-purple-600 text-white"
-                        : "text-purple-200 hover:bg-purple-500/20"
+                        ? "bg-slate-600 text-white"
+                        : "text-purple-200 hover:bg-slate-500/20"
                     }`}
                   >
                     {getCategoryDisplayName(cat)}
@@ -528,7 +528,7 @@ const BibliotecaPrompts = () => {
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
+              className="pl-10 h-9 text-sm bg-slate-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
             />
           </div>
         </div>
@@ -588,7 +588,7 @@ const BibliotecaPrompts = () => {
                   <h3 className="font-bold text-[9px] sm:text-sm text-white line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
                   <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                     {item.isPremium ? (
-                      <Badge className="bg-purple-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                      <Badge className="bg-slate-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
                         <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" fill="currentColor" />
                         Pro
                       </Badge>
@@ -603,7 +603,7 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
                       size="sm"
-                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-purple-600 hover:bg-purple-700 text-white min-w-0"
+                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-slate-600 hover:bg-slate-700 text-white min-w-0"
                     >
                       <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Copiar</span>
@@ -693,11 +693,11 @@ const BibliotecaPrompts = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex justify-center items-center gap-4 mt-8">
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} className="bg-white/5 border-purple-400/50 text-purple-100 hover:bg-slate-500/20 hover:text-white disabled:opacity-50">
               <ChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-purple-200">{currentPage} / {totalPages}</span>
-            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white disabled:opacity-50">
+            <Button variant="outline" onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="bg-white/5 border-purple-400/50 text-purple-100 hover:bg-slate-500/20 hover:text-white disabled:opacity-50">
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -720,7 +720,7 @@ const BibliotecaPrompts = () => {
                 ) : (
                   <SecureImage src={premiumModalItem.imageUrl} alt={premiumModalItem.title} isPremium={false} className="w-full h-48 object-cover opacity-50" />
                 )}
-                <div className="p-3 bg-[#0D0221]">
+                <div className="p-3 bg-[#111113]">
                   <p className="font-semibold text-white">{premiumModalItem.title}</p>
                 </div>
               </div>
@@ -742,7 +742,7 @@ const BibliotecaPrompts = () => {
                   <h2 className="text-2xl font-bold text-white">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
                 </div>
-                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+                <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-purple-300 hover:text-white hover:bg-slate-500/20">
                   <X className="h-5 w-5" />
                 </Button>
               </div>
@@ -764,11 +764,11 @@ const BibliotecaPrompts = () => {
                 </div>
               )}
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white">
+                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-slate-600 hover:bg-slate-700 text-white">
                   <Copy className="h-4 w-4 mr-2" />
                   {t('modal.copyPrompt')}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-purple-900/40 border-purple-400/50 text-purple-100 hover:bg-purple-500/20 hover:text-white">
+                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-white/5 border-purple-400/50 text-purple-100 hover:bg-slate-500/20 hover:text-white">
                   <Download className="h-4 w-4 mr-2" />
                   {t('modal.download')}
                 </Button>
@@ -817,13 +817,13 @@ const BibliotecaPrompts = () => {
               </div>
               <div>
                 <h3 className="font-semibold mb-2 text-purple-200">{t('modal.prompt')}</h3>
-                <div className="bg-[#0D0221] border border-purple-500/30 rounded-lg p-4 relative">
+                <div className="bg-[#111113] border border-purple-500/30 rounded-lg p-4 relative">
                   {revealedPrompts.has(String(selectedPrompt.id)) ? (
                     <p className="text-purple-100 whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
                       <p className="text-purple-100 whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
-                      <div className="absolute inset-0 flex items-center justify-center bg-[#0D0221]/60 rounded-lg">
+                      <div className="absolute inset-0 flex items-center justify-center bg-[#111113]/60 rounded-lg">
                         <div className="text-center">
                           <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
                           <p className="text-purple-300 text-sm">{t('modal.clickToCopy')}</p>

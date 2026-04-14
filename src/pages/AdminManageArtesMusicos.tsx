@@ -420,7 +420,7 @@ const AdminManageArtesMusicos = () => {
                   </div>
                   <div className="absolute top-2 right-2 flex gap-1">
                     {arte.is_ai_generated && (
-                      <Badge className="bg-purple-500 text-white border-0">
+                      <Badge className="bg-slate-500 text-white border-0">
                         <Sparkles className="h-3 w-3 mr-1" />IA
                       </Badge>
                     )}
@@ -559,7 +559,7 @@ const AdminManageArtesMusicos = () => {
                       type="file" 
                       accept="image/*" 
                       onChange={handleNewAiReferenceChange}
-                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-purple-500 file:text-white hover:file:bg-purple-400 mt-1" 
+                      className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-slate-500 file:text-white hover:file:bg-slate-400 mt-1" 
                     />
                     <p className="text-xs text-muted-foreground mt-1">
                       Imagem para o usuário baixar e usar junto com o prompt

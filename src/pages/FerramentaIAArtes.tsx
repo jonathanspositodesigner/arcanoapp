@@ -113,7 +113,7 @@ const FerramentaIAArtes = () => {
 
   if (loading || premiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="text-purple-300">{t('tools.loading')}</div>
       </div>
     );
@@ -122,14 +122,14 @@ const FerramentaIAArtes = () => {
   // If user doesn't have access, show access denied
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-[#0D0221]">
+      <div className="min-h-screen bg-[#111113]">
         <header className="bg-[#1A0A2E] border-b border-purple-500/20 p-4">
           <div className="container mx-auto flex items-center gap-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="text-purple-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -169,7 +169,7 @@ const FerramentaIAArtes = () => {
   const description = t('tools.aiToolDescription');
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
+    <div className="min-h-screen bg-[#111113]">
       {/* Header */}
       <header className="bg-[#1A0A2E] border-b border-purple-500/20 p-4">
         <div className="container mx-auto flex items-center gap-4">
@@ -177,7 +177,7 @@ const FerramentaIAArtes = () => {
             variant="ghost"
             size="icon"
             onClick={locale === 'es' ? () => navigate(toolsHomePath) : goBack}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="text-purple-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

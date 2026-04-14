@@ -588,7 +588,7 @@ const GerarVideoTool = () => {
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -677,7 +677,7 @@ const GerarVideoTool = () => {
                   <p className="text-red-400/60 text-xs mt-2">Seus créditos foram estornados automaticamente.</p>
                 </div>
               )}
-              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+              <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-slate-500/20 rounded-full px-5">
                 Tentar novamente
               </Button>
             </div>
@@ -702,7 +702,7 @@ const GerarVideoTool = () => {
                 <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
                   <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
-                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-purple-500/20 rounded-full px-5">
+                <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-purple-500/50 text-purple-200 hover:bg-slate-500/20 rounded-full px-5">
                   <Video className="h-4 w-4 mr-2" /> Gerar Novo
                 </Button>
               </div>
@@ -730,7 +730,7 @@ const GerarVideoTool = () => {
                         <button
                           onClick={() => startFrameRef.current?.click()}
                           disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
                         >
                           <Upload className="h-4 w-4 text-purple-400" />
                           <span className="text-[10px] text-purple-300">Enviar imagem</span>
@@ -764,7 +764,7 @@ const GerarVideoTool = () => {
                             <button
                               onClick={() => endFrameRef.current?.click()}
                               disabled={isGenerating}
-                              className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-purple-900/20 flex flex-col items-center justify-center gap-1 transition-colors"
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-purple-400/60 bg-purple-900/10 hover:bg-white/5 flex flex-col items-center justify-center gap-1 transition-colors"
                             >
                               <Upload className="h-4 w-4 text-purple-400" />
                               <span className="text-[10px] text-purple-300">Enviar imagem</span>
@@ -785,7 +785,7 @@ const GerarVideoTool = () => {
                       onChange={(e) => setPrompt(e.target.value)}
                       placeholder={generationMode === 'with_frames' ? "Descreva a transição entre os frames..." : "Descreva o vídeo que você quer gerar..."}
                       rows={1}
-                      className="w-full bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
+                      className="w-full bg-white/5 border border-purple-500/25 rounded-xl px-3 py-2 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors"
                       style={{ minHeight: '36px', maxHeight: '80px' }}
                       disabled={isGenerating}
                       onInput={(e) => {
@@ -824,8 +824,8 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'prompt_only' 
-                          ? 'bg-purple-600/60 text-white' 
-                          : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                          ? 'bg-slate-600/60 text-white' 
+                          : 'bg-white/5 text-purple-400 hover:text-purple-200'
                       }`}
                     >
                       <Type className="h-3 w-3" />
@@ -836,8 +836,8 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2.5 py-1 text-[10px] font-medium transition-colors ${
                         generationMode === 'with_frames' 
-                          ? 'bg-purple-600/60 text-white' 
-                          : 'bg-purple-900/20 text-purple-400 hover:text-purple-200'
+                          ? 'bg-slate-600/60 text-white' 
+                          : 'bg-white/5 text-purple-400 hover:text-purple-200'
                       }`}
                     >
                       <ImagePlus className="h-3 w-3" />
@@ -847,7 +847,7 @@ const GerarVideoTool = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-slate-800/50 transition-colors">
                         <span className="font-medium">{currentModel.name}</span>
                         <ChevronDown className="h-3 w-3 text-purple-400" />
                       </button>
@@ -879,7 +879,7 @@ const GerarVideoTool = () => {
                   {(isVeoModel || isGeminiLite) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-purple-900/40 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-purple-800/50 transition-colors">
+                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-white/5 border border-purple-500/25 text-[10px] text-purple-200 hover:bg-slate-800/50 transition-colors">
                           <span className="font-medium">{ASPECT_RATIO_LABELS[aspectRatio] || aspectRatio}</span>
                           <ChevronDown className="h-3 w-3 text-purple-400" />
                         </button>
@@ -905,7 +905,7 @@ const GerarVideoTool = () => {
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
                           ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-fuchsia-200'
-                          : 'bg-purple-900/40 border-purple-500/25 text-purple-400 hover:text-purple-200 hover:bg-purple-800/50'
+                          : 'bg-white/5 border-purple-500/25 text-purple-400 hover:text-purple-200 hover:bg-slate-800/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
                     >

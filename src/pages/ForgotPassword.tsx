@@ -38,7 +38,7 @@ const ForgotPassword = () => {
 
   if (emailSent) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
         <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20 text-center">
           <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-4">
@@ -50,7 +50,7 @@ const ForgotPassword = () => {
           <Button
             onClick={() => navigate("/login")}
             variant="outline"
-            className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+            className="w-full border-purple-500/30 text-purple-300 hover:bg-slate-500/20 hover:text-white"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />
             {t('emailSent.backToLogin')}
@@ -61,12 +61,12 @@ const ForgotPassword = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
         <Button
           variant="ghost"
           onClick={() => navigate("/login")}
-          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -93,7 +93,7 @@ const ForgotPassword = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="seu-email@exemplo.com"
-              className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+              className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               required
             />
           </div>

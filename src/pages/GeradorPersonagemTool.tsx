@@ -626,7 +626,7 @@ const GeradorPersonagemTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#111113] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
@@ -647,7 +647,7 @@ const GeradorPersonagemTool: React.FC = () => {
           {/* Left Side - Inputs */}
           <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
             {/* Instructions */}
-            <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 mb-1">
+            <div className="bg-white/5 border border-purple-500/20 rounded-lg p-3 mb-1">
               <p className="text-xs text-purple-100 font-medium mb-0.5">📸 Envie 4 fotos do mesmo rosto</p>
               <p className="text-[10px] text-purple-300/80 leading-relaxed">Para gerar um avatar com alta fidelidade.</p>
             </div>
@@ -759,18 +759,18 @@ const GeradorPersonagemTool: React.FC = () => {
 
           {/* Right Side - Result Viewer */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+            <Card className="relative overflow-hidden bg-white/5 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-fuchsia-400" />Resultado
                 </h3>
                 {viewedImage && (
                   <div className="flex items-center gap-1">
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}>
                       <ZoomOut className="w-3.5 h-3.5" />
                     </Button>
                     <span className="text-[10px] text-purple-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                    <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}>
                       <ZoomIn className="w-3.5 h-3.5" />
                     </Button>
                   </div>
@@ -798,7 +798,7 @@ const GeradorPersonagemTool: React.FC = () => {
                       {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-purple-300 mt-1">Posição na fila: #{queuePosition}</p>}
                       {status === 'processing' && <p className="text-xs text-purple-300 mt-0.5">{Math.round(progress)}% concluído</p>}
                     </div>
-                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
@@ -839,7 +839,7 @@ const GeradorPersonagemTool: React.FC = () => {
               {/* Action Buttons */}
               {viewedImage && status === 'completed' && (
                 <div className="border-t border-purple-500/20 px-3 py-2 flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90" onClick={handleReset}>
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-purple-400/50 text-white hover:bg-slate-500/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
                   <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>

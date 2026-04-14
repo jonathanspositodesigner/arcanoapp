@@ -686,7 +686,7 @@ const VesteAITool: React.FC = () => {
                       )}
                     </div>
                     {status === 'processing' && (
-                      <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                      <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
                         <div 
                           className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
                           style={{ width: `${progress}%` }}

@@ -339,7 +339,7 @@ const ToolVersionLessons = () => {
 
   if (loading || premiumLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
@@ -347,7 +347,7 @@ const ToolVersionLessons = () => {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0D0221]">
+      <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
           <p className="text-purple-300">{t('versionSelect.loginRequired')}</p>
@@ -374,7 +374,7 @@ const ToolVersionLessons = () => {
 
   if (!hasAccess) {
     return (
-      <div className="min-h-screen bg-[#0D0221]">
+      <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
           <p className="text-purple-300">{t('versionSelect.noAccess')}</p>
@@ -394,7 +394,7 @@ const ToolVersionLessons = () => {
 
   if (!version) {
     return (
-      <div className="min-h-screen bg-[#0D0221]">
+      <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
           <p className="text-purple-300">{t('toolLessons.versionNotFoundDesc')}</p>
@@ -413,15 +413,15 @@ const ToolVersionLessons = () => {
   const Wrapper = ({ children }: { children: ReactNode }) => {
     if (isStandalone) {
       return (
-        <div className="min-h-screen bg-[#0D0221] flex flex-col">
+        <div className="min-h-screen bg-[#111113] flex flex-col">
           {/* Header standalone */}
-          <header className="sticky top-0 z-50 bg-[#0D0221]/90 backdrop-blur-md border-b border-purple-500/20">
+          <header className="sticky top-0 z-50 bg-[#111113]/90 backdrop-blur-md border-b border-purple-500/20">
             <div className="container mx-auto px-4 max-w-6xl flex items-center justify-between h-14">
                 <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/')}
-                className="text-white hover:text-white hover:bg-purple-500/20 gap-2"
+                className="text-white hover:text-white hover:bg-slate-500/20 gap-2"
               >
                 <ArrowLeft className="h-4 w-4" />
                 <span className="hidden sm:inline">Voltar para Home</span>
@@ -432,7 +432,7 @@ const ToolVersionLessons = () => {
               <Button
                 size="sm"
                 onClick={() => navigate(user ? '/minha-conta' : '/auth')}
-                className="bg-purple-600 hover:bg-purple-700 text-white border-0"
+                className="bg-slate-600 hover:bg-slate-700 text-white border-0"
               >
                 {user ? 'Minha Conta' : 'Login'}
               </Button>
@@ -471,7 +471,7 @@ const ToolVersionLessons = () => {
             </div>
             
             {/* Progress Bar */}
-            <div className="h-3 bg-purple-900/30 rounded-full overflow-hidden">
+            <div className="h-3 bg-white/5 rounded-full overflow-hidden">
               <div 
                 className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
                            transition-all duration-700 ease-out rounded-full"
@@ -623,7 +623,7 @@ const ToolVersionLessons = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="gap-2 bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-purple-500/30 hover:text-white hover:border-purple-400"
+                        className="gap-2 bg-purple-900/60 border border-purple-400/50 text-purple-200 hover:bg-slate-500/30 hover:text-white hover:border-purple-400"
                       >
                         <ExternalLink className="w-4 h-4" />
                         {button.text}
@@ -641,8 +641,8 @@ const ToolVersionLessons = () => {
             {lessons.map((lesson, index) => (
               <Card
                 key={index}
-                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-purple-500/20 hover:bg-purple-500/10 ${
-                  selectedLesson === index ? 'border-purple-400 bg-purple-500/10' : ''
+                className={`p-3 cursor-pointer transition-all bg-[#1A0A2E]/50 border-purple-500/20 hover:bg-slate-500/10 ${
+                  selectedLesson === index ? 'border-purple-400 bg-slate-500/10' : ''
                 }`}
                 onClick={() => handleLessonClick(index)}
               >
@@ -652,8 +652,8 @@ const ToolVersionLessons = () => {
                     watchedLessons.includes(index + 1)
                       ? 'bg-green-500 text-white'
                       : selectedLesson === index 
-                        ? 'bg-purple-600 text-white' 
-                        : 'bg-purple-900/40 text-purple-400'
+                        ? 'bg-slate-600 text-white' 
+                        : 'bg-white/5 text-purple-400'
                   }`}>
                     {watchedLessons.includes(index + 1) ? (
                       <Check className="h-4 w-4" />
@@ -685,8 +685,8 @@ const ToolVersionLessons = () => {
             {toolSlug === 'upscaller-arcano' && lessons.length >= 1 && (
               <div 
                 onClick={() => handleLessonClick(lessons.length - 1)}
-                className="mt-4 px-3 py-1.5 bg-purple-500/20 border border-purple-400/30 
-                           rounded-full cursor-pointer hover:bg-purple-500/30 transition-all 
+                className="mt-4 px-3 py-1.5 bg-slate-500/20 border border-purple-400/30 
+                           rounded-full cursor-pointer hover:bg-slate-500/30 transition-all 
                            inline-flex items-center gap-2 text-xs text-purple-300"
               >
                 <AlertTriangle className="h-3 w-3" />
@@ -732,7 +732,7 @@ const ToolVersionLessons = () => {
           <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
             <AlertDialogCancel 
               onClick={handleContinueWatching}
-              className="flex-1 bg-purple-600 hover:bg-purple-700 text-white border-0 order-1 sm:order-1"
+              className="flex-1 bg-slate-600 hover:bg-slate-700 text-white border-0 order-1 sm:order-1"
             >
               {t('toolLessons.continueWatching')}
             </AlertDialogCancel>

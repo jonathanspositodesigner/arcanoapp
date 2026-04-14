@@ -202,7 +202,7 @@ const ProfileSettings = () => {
 
   if (premiumLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500"></div>
       </div>
     );
@@ -215,7 +215,7 @@ const ProfileSettings = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-4 text-purple-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}
@@ -233,7 +233,7 @@ const ProfileSettings = () => {
             {/* Avatar */}
             <div className="flex items-center gap-4">
               <div className="relative">
-                <div className="w-20 h-20 rounded-full bg-purple-900/50 flex items-center justify-center overflow-hidden">
+                <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center overflow-hidden">
                   {avatarPreview || avatarUrl ? (
                     <img 
                       src={avatarPreview || avatarUrl} 
@@ -244,7 +244,7 @@ const ProfileSettings = () => {
                     <User className="h-10 w-10 text-purple-400" />
                   )}
                 </div>
-                <label className="absolute -bottom-1 -right-1 bg-purple-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-purple-700">
+                <label className="absolute -bottom-1 -right-1 bg-slate-600 text-white rounded-full p-1.5 cursor-pointer hover:bg-slate-700">
                   <Camera className="h-4 w-4" />
                   <input
                     type="file"
@@ -271,7 +271,7 @@ const ProfileSettings = () => {
                 type="email"
                 value={user?.email || ""}
                 disabled
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-purple-400"
               />
             </div>
 
@@ -283,7 +283,7 @@ const ProfileSettings = () => {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={t('signupModal.namePlaceholder')}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
@@ -295,7 +295,7 @@ const ProfileSettings = () => {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="(00) 00000-0000"
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
@@ -307,7 +307,7 @@ const ProfileSettings = () => {
                 value={cpf}
                 onChange={(e) => setCpf(e.target.value)}
                 placeholder="000.000.000-00"
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
@@ -323,7 +323,7 @@ const ProfileSettings = () => {
                     value={addressLine}
                     onChange={(e) => setAddressLine(e.target.value)}
                     placeholder="Rua, número, complemento"
-                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                    className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                   />
                 </div>
 
@@ -336,7 +336,7 @@ const ProfileSettings = () => {
                       value={addressZip}
                       onChange={(e) => setAddressZip(e.target.value)}
                       placeholder="00000-000"
-                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                      className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                     />
                   </div>
                   <div>
@@ -347,7 +347,7 @@ const ProfileSettings = () => {
                       value={addressCity}
                       onChange={(e) => setAddressCity(e.target.value)}
                       placeholder="Sua cidade"
-                      className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                      className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                     />
                   </div>
                 </div>
@@ -361,7 +361,7 @@ const ProfileSettings = () => {
                     onChange={(e) => setAddressState(e.target.value)}
                     placeholder="SP"
                     maxLength={2}
-                    className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400 w-24"
+                    className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400 w-24"
                   />
                 </div>
               </div>
@@ -374,7 +374,7 @@ const ProfileSettings = () => {
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 placeholder={t('profile.aboutYouPlaceholder')}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                 rows={3}
               />
             </div>
@@ -382,7 +382,7 @@ const ProfileSettings = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+              className="w-full bg-slate-600 hover:bg-slate-700 text-white"
             >
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? t('saving') : t('profile.saveChanges')}
@@ -415,7 +415,7 @@ const ProfileSettings = () => {
                   onChange={(e) => setCurrentPassword(e.target.value)}
                   placeholder="••••••••"
                   required
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                 />
                 <button
                   type="button"
@@ -438,7 +438,7 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                 />
                 <button
                   type="button"
@@ -461,7 +461,7 @@ const ProfileSettings = () => {
                   placeholder="••••••••"
                   required
                   minLength={6}
-                  className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                  className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
                 />
                 <button
                   type="button"
@@ -477,7 +477,7 @@ const ProfileSettings = () => {
               type="submit"
               disabled={isPasswordLoading}
               variant="outline"
-              className="w-full border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white"
+              className="w-full border-purple-500/30 text-purple-300 hover:bg-slate-500/20 hover:text-white"
             >
               {isPasswordLoading ? t('changing') : t('changePassword')}
             </Button>

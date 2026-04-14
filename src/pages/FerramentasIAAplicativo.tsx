@@ -268,7 +268,7 @@ const FerramentasIAAplicativo = () => {
 
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
       </div>
     );

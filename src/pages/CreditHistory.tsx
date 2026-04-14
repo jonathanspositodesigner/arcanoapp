@@ -68,7 +68,7 @@ const CreditHistory = () => {
 
   if (userLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <Loader2 className="h-8 w-8 animate-spin text-purple-500" />
       </div>
     );
@@ -81,7 +81,7 @@ const CreditHistory = () => {
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-4 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-4 text-purple-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           Voltar
@@ -110,7 +110,7 @@ const CreditHistory = () => {
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="h-8 w-8 flex items-center justify-center rounded hover:bg-purple-500/10"
+                className="h-8 w-8 flex items-center justify-center rounded hover:bg-slate-500/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-5 h-5 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
@@ -136,7 +136,7 @@ const CreditHistory = () => {
               {transactions.map((tx, index) => (
                 <div 
                   key={index} 
-                  className="flex items-center justify-between py-3 px-4 rounded-lg bg-purple-900/20 hover:bg-purple-900/30 transition-colors"
+                  className="flex items-center justify-between py-3 px-4 rounded-lg bg-white/5 hover:bg-white/5 transition-colors"
                 >
                   <div className="flex items-center gap-3">
                     {tx.amount < 0 ? (

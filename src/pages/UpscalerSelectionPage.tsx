@@ -19,7 +19,7 @@ const UpscalerSelectionPage = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
@@ -47,7 +47,7 @@ const UpscalerSelectionPage = () => {
           {/* Image Upscaler Card */}
           <button
             onClick={handleSelectImage}
-            className="group relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] p-4 sm:p-8 text-left transition-all duration-300 hover:border-purple-400/60 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-purple-400/60 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.02]"
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -76,11 +76,11 @@ const UpscalerSelectionPage = () => {
 
               {/* Features */}
               <div className="flex flex-wrap gap-2 mb-3 sm:mb-6">
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-purple-500/20 text-purple-200 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-500/20 text-purple-200 text-xs sm:text-sm">
                   <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   Até 4x resolução
                 </span>
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-purple-500/20 text-purple-200 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-slate-500/20 text-purple-200 text-xs sm:text-sm">
                   60-80 créditos
                 </span>
               </div>
@@ -99,7 +99,7 @@ const UpscalerSelectionPage = () => {
           {/* Video Upscaler Card */}
           <button
             onClick={handleSelectVideo}
-            className="group relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-[#1A0A2E] to-[#0D0221] p-4 sm:p-8 text-left transition-all duration-300 hover:border-fuchsia-400/60 hover:shadow-xl hover:shadow-fuchsia-500/20 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-purple-500/30 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-fuchsia-400/60 hover:shadow-xl hover:shadow-fuchsia-500/20 hover:scale-[1.02]"
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />

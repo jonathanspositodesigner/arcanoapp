@@ -221,12 +221,12 @@ const ContributePrompts = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
+    <div className="min-h-screen bg-[#111113]">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         <Button
           variant="ghost"
           onClick={goBack}
-          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('contribute.back')}
@@ -251,7 +251,7 @@ const ContributePrompts = () => {
                 onChange={(e) => setContributorName(e.target.value.slice(0, 20))}
                 placeholder={t('contribute.yourNamePlaceholder')}
                 maxLength={20}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
               <p className="text-xs text-purple-400 mt-1">
                 {contributorName.length}/20
@@ -265,19 +265,19 @@ const ContributePrompts = () => {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t('contribute.fileTitlePlaceholder')}
-                className="mt-2 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
             <div>
               <Label htmlFor="category" className="text-purple-200">{t('contribute.category')}</Label>
               <Select value={category} onValueChange={setCategory}>
-                <SelectTrigger className="mt-2 bg-[#0D0221] border-purple-500/30 text-white">
+                <SelectTrigger className="mt-2 bg-[#111113] border-purple-500/30 text-white">
                   <SelectValue placeholder={t('contribute.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#1A0A2E] border-purple-500/30">
                   {categories.map(cat => (
-                    <SelectItem key={cat.id} value={cat.name} className="text-purple-200 hover:bg-purple-500/20">{cat.name}</SelectItem>
+                    <SelectItem key={cat.id} value={cat.name} className="text-purple-200 hover:bg-slate-500/20">{cat.name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -288,7 +288,7 @@ const ContributePrompts = () => {
               <div className="mt-2 flex items-center gap-3">
                 <label
                   htmlFor="txtFile"
-                  className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#0D0221]"
+                  className="flex items-center gap-2 px-4 py-2 border border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#111113]"
                 >
                   <FileText className="h-5 w-5 text-purple-400" />
                   <span className="text-sm text-purple-300">
@@ -311,7 +311,7 @@ const ContributePrompts = () => {
                       setTxtFileName("");
                       setPrompt("");
                     }}
-                    className="text-purple-400 hover:text-white hover:bg-purple-500/20"
+                    className="text-purple-400 hover:text-white hover:bg-slate-500/20"
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -329,7 +329,7 @@ const ContributePrompts = () => {
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder={t('contribute.promptPlaceholder')}
-                className="mt-2 min-h-32 bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="mt-2 min-h-32 bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
             </div>
 
@@ -340,7 +340,7 @@ const ContributePrompts = () => {
                   htmlFor="media"
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
-                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#0D0221]"
+                  className="flex flex-col items-center justify-center w-full h-32 sm:h-48 border-2 border-dashed border-purple-500/30 rounded-lg cursor-pointer hover:border-purple-400 transition-colors bg-[#111113]"
                 >
                   {mediaPreview ? (
                     isVideo ? (

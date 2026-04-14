@@ -328,7 +328,7 @@ const RemoverFundoTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#111113] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
         {isProcessing && (
           <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
@@ -346,7 +346,7 @@ const RemoverFundoTool: React.FC = () => {
           <div className="grid grid-cols-1 lg:grid-cols-7 gap-2 lg:gap-3 flex-1 lg:min-h-0">
             {/* Left Side - Input */}
             <div className="lg:col-span-2 flex flex-col gap-2 pb-2 lg:pb-0 lg:overflow-y-auto">
-              <Card className="bg-purple-900/20 border-purple-500/30 p-3">
+              <Card className="bg-white/5 border-purple-500/30 p-3">
                 <h3 className="text-xs font-semibold text-white mb-2 flex items-center gap-1.5">
                   <ImageIcon className="w-3.5 h-3.5 text-purple-400" /> Sua Imagem
                 </h3>
@@ -394,14 +394,14 @@ const RemoverFundoTool: React.FC = () => {
 
             {/* Right Side - Result */}
             <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-              <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+              <Card className="relative overflow-hidden bg-white/5 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
                 <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
                   <h3 className="text-xs font-semibold text-white flex items-center gap-1.5"><ImageIcon className="w-3.5 h-3.5 text-purple-400" />Resultado</h3>
                   {outputImage && (
                     <div className="flex items-center gap-1">
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomOut(0.5)}><ZoomOut className="w-3.5 h-3.5" /></Button>
                       <span className="text-[10px] text-purple-300 w-8 text-center">{Math.round(zoomLevel * 100)}%</span>
-                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-purple-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-6 w-6 text-purple-300 hover:text-white hover:bg-slate-500/20" onClick={() => transformRef.current?.zoomIn(0.5)}><ZoomIn className="w-3.5 h-3.5" /></Button>
                     </div>
                   )}
                 </div>
@@ -421,7 +421,7 @@ const RemoverFundoTool: React.FC = () => {
                         {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-purple-300 mt-1">Posição na fila: #{queuePosition}</p>}
                         {status === 'processing' && <p className="text-xs text-purple-300 mt-0.5">{Math.round(progress)}% concluído</p>}
                       </div>
-                      <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
+                      <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
                     </div>
                   ) : status === 'error' ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
@@ -430,7 +430,7 @@ const RemoverFundoTool: React.FC = () => {
                     </div>
                   ) : (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="w-16 h-16 rounded-xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center"><ImageIcon className="w-8 h-8 text-purple-500/40" /></div>
+                      <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center"><ImageIcon className="w-8 h-8 text-purple-500/40" /></div>
                       <div className="text-center"><p className="text-sm text-purple-300">O resultado aparecerá aqui</p><p className="text-xs text-purple-400 mt-0.5">Envie uma imagem e clique em "Remover Fundo"</p></div>
                     </div>
                   )}
@@ -438,7 +438,7 @@ const RemoverFundoTool: React.FC = () => {
 
                 {outputImage && status === 'completed' && (
                   <div className="absolute bottom-3 left-3 right-3 flex gap-2">
-                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-purple-600/80 border-purple-400/50 text-white hover:bg-purple-500/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
+                    <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-purple-400/50 text-white hover:bg-slate-500/90" onClick={handleReset}><RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova Imagem</Button>
                     <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white" onClick={handleDownload}><Download className="w-3.5 h-3.5 mr-1.5" />Baixar PNG</Button>
                   </div>
                 )}

@@ -461,7 +461,7 @@ const AdminManageArtes = () => {
               variant={mediaTypeFilter === 'video' ? 'default' : 'outline'} 
               size="sm" 
               onClick={() => setMediaTypeFilter('video')}
-              className={mediaTypeFilter === 'video' ? 'bg-purple-500 hover:bg-purple-600' : ''}
+              className={mediaTypeFilter === 'video' ? 'bg-slate-500 hover:bg-slate-600' : ''}
             >
               🎬 Vídeos
             </Button>

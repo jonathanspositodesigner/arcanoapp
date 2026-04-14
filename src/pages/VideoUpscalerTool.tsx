@@ -435,7 +435,7 @@ const VideoUpscalerTool: React.FC = () => {
 
   return (
     <AppLayout fullScreen>
-      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#0D0221] via-[#1A0A2E] to-[#16082A] flex flex-col">
+      <div className="h-full lg:overflow-hidden overflow-y-auto bg-gradient-to-br from-[#111113] via-[#1A0A2E] to-[#16082A] flex flex-col">
 
       {/* Warning banner during processing */}
       {isProcessing && (
@@ -469,7 +469,7 @@ const VideoUpscalerTool: React.FC = () => {
             />
 
             {/* Specifications Info */}
-            <Card className="bg-purple-900/20 border-purple-500/30 p-3">
+            <Card className="bg-white/5 border-purple-500/30 p-3">
               <h4 className="text-xs font-semibold text-white mb-2">Especificações</h4>
               <ul className="text-[10px] text-purple-300 space-y-1">
                 <li>• Resolução máxima: 1280px</li>
@@ -543,7 +543,7 @@ const VideoUpscalerTool: React.FC = () => {
 
           {/* Right Side - Result Viewer (5/7 on desktop ~72%) */}
           <div className="lg:col-span-5 flex flex-col min-h-[280px] lg:min-h-0">
-            <Card className="relative overflow-hidden bg-purple-900/20 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
+            <Card className="relative overflow-hidden bg-white/5 border-purple-500/30 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               {/* Header */}
               <div className="px-3 py-2 border-b border-purple-500/20 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
@@ -586,7 +586,7 @@ const VideoUpscalerTool: React.FC = () => {
                       )}
                     </div>
                     {/* Progress bar */}
-                    <div className="w-36 h-1.5 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
                         style={{ width: `${progress}%` }}
@@ -614,7 +614,7 @@ const VideoUpscalerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-purple-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-purple-500/30 flex items-center justify-center">
                       <Video className="w-8 h-8 text-purple-500/40" />
                     </div>
                     <div className="text-center">
@@ -635,7 +635,7 @@ const VideoUpscalerTool: React.FC = () => {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20"
+                    className="flex-1 h-8 text-xs bg-slate-500/10 border-purple-500/30 text-purple-200 hover:bg-slate-500/20"
                     onClick={handleReset}
                   >
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />

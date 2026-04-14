@@ -13,7 +13,7 @@ const Promptverso = () => {
   const [showBAAModal, setShowBAAModal] = useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#0D0221] to-[#1A0A2E] px-4 py-6">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[#111113] to-[#1A0A2E] px-4 py-6">
       <div className="text-center space-y-6 sm:space-y-8 w-full max-w-2xl">
         <div className="space-y-3 sm:space-y-4">
           <div className="flex justify-center">
@@ -33,12 +33,12 @@ const Promptverso = () => {
             {t('promptverso.accessPrompts')}
           </Button>
 
-          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500 text-purple-300 hover:bg-purple-500/20 hover:text-white w-full sm:w-auto">
+          <Button onClick={() => navigate("/contribuir")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500 text-purple-300 hover:bg-slate-500/20 hover:text-white w-full sm:w-auto">
             <Users className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.contributeWithCommunity')}
           </Button>
 
-          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500/50 hover:border-purple-400 text-purple-300 hover:bg-purple-500/10 w-full sm:w-auto">
+          <Button onClick={() => navigate("/install-app")} size="lg" variant="outline" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 border-purple-500/50 hover:border-purple-400 text-purple-300 hover:bg-slate-500/10 w-full sm:w-auto">
             <Download className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.installApp')}
           </Button>
@@ -46,7 +46,7 @@ const Promptverso = () => {
 
         {/* Seção separada - Biblioteca de Artes Arcanas */}
         <div className="mt-10 sm:mt-14 pt-6 sm:pt-8 border-t border-purple-500/20">
-          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#1A0A2E] border-purple-500 text-purple-300 border-2 hover:text-white hover:bg-purple-500/20">
+          <Button onClick={() => setShowBAAModal(true)} size="lg" className="transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 hover:scale-105 w-full sm:w-auto bg-[#1A0A2E] border-purple-500 text-purple-300 border-2 hover:text-white hover:bg-slate-500/20">
             <img alt="" className="mr-2 h-6 sm:h-7 w-auto object-contain" src="/lovable-uploads/53db2877-63c8-4fb8-bbf3-4aa471ca6154.png" />
             {t('promptverso.accessArtesLibrary')}
           </Button>
@@ -76,11 +76,11 @@ const Promptverso = () => {
             </DialogTitle>
           </DialogHeader>
           <div className="flex flex-col gap-3 mt-4">
-            <Button onClick={() => window.open("https://blibliotecadeartesarcanas.greenn.club/", "_blank")} className="bg-purple-600 hover:bg-purple-700 py-6 text-white">
+            <Button onClick={() => window.open("https://blibliotecadeartesarcanas.greenn.club/", "_blank")} className="bg-slate-600 hover:bg-slate-700 py-6 text-white">
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.alreadyMember')}
             </Button>
-            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-purple-500/20 hover:text-white py-6">
+            <Button onClick={() => window.open("https://voxvisual.com.br/linksbio/", "_blank")} variant="outline" className="border-purple-500/30 text-purple-300 hover:bg-slate-500/20 hover:text-white py-6">
               <ExternalLink className="mr-2 h-5 w-5" />
               {t('promptverso.modal.knowPacks')}
             </Button>

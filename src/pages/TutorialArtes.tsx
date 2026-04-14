@@ -91,7 +91,7 @@ const TutorialArtes = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
@@ -102,7 +102,7 @@ const TutorialArtes = () => {
   const description = t('tutorial.learnWithTutorials');
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
+    <div className="min-h-screen bg-[#111113]">
       {/* Header */}
       <header className="bg-[#1A0A2E] border-b border-purple-500/20 p-4">
         <div className="container mx-auto flex items-center gap-4">
@@ -110,7 +110,7 @@ const TutorialArtes = () => {
             variant="ghost"
             size="icon"
             onClick={() => navigate("/biblioteca-artes")}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="text-purple-300 hover:text-white hover:bg-slate-500/20"
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>

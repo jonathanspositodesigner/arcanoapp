@@ -536,7 +536,7 @@ const GerarImagemTool = () => {
             <p className="text-purple-300 text-sm">
               A geração de imagens está disponível a partir do plano <strong className="text-fuchsia-400">Pro</strong>.
             </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium transition-colors">
+            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-slate-500 text-white text-sm font-medium transition-colors">
               Voltar
             </button>
           </div>
@@ -610,7 +610,7 @@ const GerarImagemTool = () => {
                 <p className="text-sm">Gerando imagem...</p>
               )}
               {/* Progress bar */}
-              <div className="w-48 h-1.5 rounded-full bg-purple-900/50 overflow-hidden">
+              <div className="w-48 h-1.5 rounded-full bg-white/5 overflow-hidden">
                 <div className="h-full rounded-full bg-fuchsia-500 transition-all duration-700" style={{ width: `${progress}%` }} />
               </div>
               {/* Cancel & reconcile */}
@@ -671,7 +671,7 @@ const GerarImagemTool = () => {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isProcessing || referenceImages.length >= 5}
-                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-purple-900/30 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
+                className="relative flex-shrink-0 w-9 h-9 rounded-full border border-purple-500/30 bg-white/5 flex items-center justify-center text-purple-300 hover:text-white hover:border-purple-400/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
@@ -688,7 +688,7 @@ const GerarImagemTool = () => {
                 onChange={(e) => setPrompt(e.target.value)}
                 placeholder="Descreva a imagem que você quer gerar..."
                 rows={2}
-                className="flex-1 bg-purple-900/20 border border-purple-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
+                className="flex-1 bg-white/5 border border-purple-500/25 rounded-xl px-3 py-2.5 text-sm text-white placeholder:text-purple-500/50 resize-none focus:outline-none focus:border-purple-400/50 transition-colors [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
                 style={{ minHeight: '56px', maxHeight: '100px', overflow: 'auto' }}
                 disabled={isProcessing}
                 onInput={(e) => {
@@ -707,7 +707,7 @@ const GerarImagemTool = () => {
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setEngineDropdownOpen(!engineDropdownOpen)}
-                  className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
+                  className="flex items-center gap-1.5 bg-white/5 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
                 >
                   <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : '🍌 Nano Banana'}</span>
                   <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-purple-500" />
@@ -723,7 +723,7 @@ const GerarImagemTool = () => {
                         type="button"
                         onClick={() => { setEngine(opt.value); setEngineDropdownOpen(false); }}
                         className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                          engine === opt.value ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-purple-500/15 hover:text-white'
+                          engine === opt.value ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-slate-500/15 hover:text-white'
                         }`}
                       >
                         {opt.label}
@@ -739,7 +739,7 @@ const GerarImagemTool = () => {
                   type="button"
                   disabled={isProcessing}
                   onClick={() => setAspectDropdownOpen(!aspectDropdownOpen)}
-                  className="flex items-center gap-1.5 bg-purple-900/40 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
+                  className="flex items-center gap-1.5 bg-white/5 border border-purple-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-purple-300 font-medium cursor-pointer hover:border-purple-400/50 disabled:opacity-40 transition-colors relative"
                 >
                   {(() => {
                     const current = ASPECT_RATIOS.find(a => a.ratio === aspectRatio) || ASPECT_RATIOS[0];
@@ -764,7 +764,7 @@ const GerarImagemTool = () => {
                           type="button"
                           onClick={() => { setAspectRatio(ratio); setAspectDropdownOpen(false); }}
                           className={`flex items-center gap-2 w-full px-2.5 py-1.5 text-[11px] font-medium transition-colors ${
-                            isSelected ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-purple-500/15 hover:text-white'
+                            isSelected ? 'text-fuchsia-300 bg-fuchsia-500/15' : 'text-purple-300 hover:bg-slate-500/15 hover:text-white'
                           }`}
                         >
                           <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} className="flex-shrink-0">
@@ -788,7 +788,7 @@ const GerarImagemTool = () => {
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>
-                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/25 text-xs text-purple-200 hover:bg-purple-800/50 transition-colors">
+                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-white/5 border border-purple-500/25 text-xs text-purple-200 hover:bg-slate-800/50 transition-colors">
                     <Sparkles className="h-3 w-3" />
                     <span className="font-medium">Nova</span>
                   </button>

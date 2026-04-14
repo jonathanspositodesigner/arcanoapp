@@ -48,7 +48,7 @@ const ICON_MAP = {
 const COLOR_MAP = {
   yellow: 'bg-yellow-500/30 text-yellow-300',
   blue: 'bg-blue-500/30 text-blue-300',
-  purple: 'bg-purple-500/30 text-purple-300',
+  purple: 'bg-slate-500/30 text-purple-300',
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
    gray: 'bg-gray-500/30 text-gray-300',
@@ -140,7 +140,7 @@ const UpscalerArcanoVersionSelect = () => {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-500"></div>
       </div>
     );
@@ -149,7 +149,7 @@ const UpscalerArcanoVersionSelect = () => {
   // Não redireciona silenciosamente (isso parecia que "não saiu da página")
   if (!user) {
     return (
-      <div className="min-h-screen bg-[#0D0221]">
+      <div className="min-h-screen bg-[#111113]">
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
           <p className="text-purple-300">{t('versionSelect.loginRequired')}</p>
@@ -240,7 +240,7 @@ const UpscalerArcanoVersionSelect = () => {
                  {/* Status Badge - top right */}
                  <div className="absolute top-4 right-4 flex flex-col gap-2">
                    {!hasVersionAccess && isV3 ? (
-                     <div className="flex items-center gap-1.5 bg-purple-500/20 backdrop-blur-sm text-purple-300 px-3 py-1 rounded-full text-xs font-medium">
+                     <div className="flex items-center gap-1.5 bg-slate-500/20 backdrop-blur-sm text-purple-300 px-3 py-1 rounded-full text-xs font-medium">
                        <Sparkles className="h-3 w-3" />
                        Novidades
                      </div>

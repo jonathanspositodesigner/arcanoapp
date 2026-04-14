@@ -308,11 +308,11 @@ const PlanosArtesMembro = () => {
                 >
                   {pack.slug === 'pack-arcano-vol-4' && (
                     <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                      <Badge className="bg-purple-500 text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
+                      <Badge className="bg-slate-500 text-white text-[10px] px-1.5 py-0.5">Novo</Badge>
                       <Badge className="bg-amber-500/90 text-white text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
                     </div>
                   )}
-                  <Badge className="absolute top-2 right-2 bg-purple-500/20 text-purple-400 text-xs">
+                  <Badge className="absolute top-2 right-2 bg-slate-500/20 text-purple-400 text-xs">
                     -20%
                   </Badge>
                   <CardContent className="p-4">
@@ -339,7 +339,7 @@ const PlanosArtesMembro = () => {
             <div className="max-w-lg mx-auto">
               <Card className="relative bg-[#1a1a2e]/80 border-[#2d4a5e]/30">
                 {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-purple-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-slate-500 text-white px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
                     {t('bestValue')}
                   </div>
                 )}
@@ -361,7 +361,7 @@ const PlanosArtesMembro = () => {
                   <div className="mt-4">
                     <div className="flex items-center justify-center gap-2 mb-1">
                       <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
-                      <Badge className="bg-purple-500/20 text-purple-400 text-xs">-20%</Badge>
+                      <Badge className="bg-slate-500/20 text-purple-400 text-xs">-20%</Badge>
                     </div>
                     <span className="text-3xl font-bold text-purple-400">
                       {formatPrice(calculatePrice(selectedAccessType))}
@@ -381,7 +381,7 @@ const PlanosArtesMembro = () => {
                           key={option.type}
                           className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
                             selectedAccessType === option.type
-                              ? 'border-purple-500 bg-purple-500/10'
+                              ? 'border-purple-500 bg-slate-500/10'
                               : 'border-[#2d4a5e]/30 hover:border-[#2d4a5e]/60'
                           }`}
                         >

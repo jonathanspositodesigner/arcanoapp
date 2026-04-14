@@ -51,7 +51,7 @@ const UserLogin = () => {
   }, [navigate, redirectTo]);
 
   return (
-    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
       {/* Signup Modal */}
       <Dialog open={auth.state.step === 'signup'} onOpenChange={(open) => !open && auth.goToLogin()}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-0">
@@ -85,7 +85,7 @@ const UserLogin = () => {
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
-          className="mb-6 text-purple-300 hover:text-white hover:bg-purple-500/20"
+          className="mb-6 text-purple-300 hover:text-white hover:bg-slate-500/20"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />
           {t('back')}

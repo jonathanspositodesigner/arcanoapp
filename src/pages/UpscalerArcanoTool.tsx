@@ -1290,7 +1290,7 @@ const UpscalerArcanoTool: React.FC = () => {
                             <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-black/90 border border-white/30 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.before')}
                             </div>
-                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-purple-600/90 border border-purple-400/50 text-white text-xs font-bold z-20 pointer-events-none">
+                            <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-slate-600/90 border border-purple-400/50 text-white text-xs font-bold z-20 pointer-events-none">
                               {t('upscalerTool.labels.after')}
                             </div>
                           </div>
@@ -1322,7 +1322,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       </p>
                     </div>
                     {/* Progress bar */}
-                    <div className="w-48 h-2 bg-purple-900/50 rounded-full overflow-hidden">
+                    <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
                       <div 
                         className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}

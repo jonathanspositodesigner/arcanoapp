@@ -196,7 +196,7 @@ const PlanosCreditos = () => {
                   <Badge 
                     key={tool.name}
                     variant="outline" 
-                    className="bg-purple-900/30 border-purple-500/30 text-purple-300 py-1.5 px-3 gap-1.5"
+                    className="bg-white/5 border-purple-500/30 text-purple-300 py-1.5 px-3 gap-1.5"
                   >
                     <Icon className="w-3.5 h-3.5" />
                     {tool.name}

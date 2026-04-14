@@ -704,7 +704,7 @@ const PlanosUpscalerCreditos = () => {
                     </div>
                     <Button 
                       onClick={() => window.open(appendUtmToUrl("https://payfast.greenn.com.br/rnq543f/offer/0RpIQa"), "_blank")}
-                      className="w-full mb-5 text-lg h-14 bg-purple-900/50 hover:bg-purple-900/70 text-purple-200"
+                      className="w-full mb-5 text-lg h-14 bg-white/5 hover:bg-purple-900/70 text-purple-200"
                     >
                       Comprar
                     </Button>

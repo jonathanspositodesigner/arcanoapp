@@ -94,7 +94,7 @@ const FerramentasIAES = () => {
 
   if (loading || isPremiumLoading || isPromptsLoading) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
       </div>
     );
@@ -167,9 +167,9 @@ const FerramentasIAES = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0D0221]">
+    <div className="min-h-screen bg-[#111113]">
       {/* Header - Simplificado sem botões de navegação */}
-      <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
+      <header className="sticky top-0 z-50 bg-[#111113]/95 backdrop-blur-lg border-b border-purple-500/20">
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
           <div className="flex items-center gap-2 sm:gap-3">
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
@@ -198,7 +198,7 @@ const FerramentasIAES = () => {
               <Button
                 onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
                 variant="outline"
-                className="flex-1 border-purple-500/30 text-purple-300 hover:bg-purple-500/20"
+                className="flex-1 border-purple-500/30 text-purple-300 hover:bg-slate-500/20"
                 size="sm"
               >
                 <LogIn className="w-4 h-4 mr-2" />

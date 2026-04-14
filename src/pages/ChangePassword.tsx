@@ -140,14 +140,14 @@ const ChangePassword = () => {
 
   if (isCheckingSession) {
     return (
-      <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
         <Loader2 className="h-8 w-8 text-purple-400 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-[#0D0221] flex items-center justify-center p-4">
+    <div className="min-h-screen bg-[#111113] flex items-center justify-center p-4">
       <Card className="w-full max-w-md p-8 bg-[#1A0A2E] border-purple-500/20">
         <div className="mb-8 text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -160,7 +160,7 @@ const ChangePassword = () => {
           {isFirstAccessWithoutSession ? (
             <>
               <p className="text-purple-300 mb-3">Cadastre sua senha agora para liberar seu acesso.</p>
-              <p className="text-white font-medium bg-purple-500/20 py-2 px-4 rounded-lg inline-block mb-2">
+              <p className="text-white font-medium bg-slate-500/20 py-2 px-4 rounded-lg inline-block mb-2">
                 {emailParam}
               </p>
             </>
@@ -183,7 +183,7 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
               <button
                 type="button"
@@ -208,7 +208,7 @@ const ChangePassword = () => {
                 placeholder="••••••••"
                 required
                 minLength={6}
-                className="bg-[#0D0221] border-purple-500/30 text-white placeholder:text-purple-400"
+                className="bg-[#111113] border-purple-500/30 text-white placeholder:text-purple-400"
               />
               <button
                 type="button"
