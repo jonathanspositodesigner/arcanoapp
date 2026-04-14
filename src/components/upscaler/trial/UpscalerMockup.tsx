@@ -121,7 +121,7 @@ export default function UpscalerMockup({
       {/* Header */}
       <div className="px-6 py-4 border-b border-border flex items-center gap-3">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
-          <Wand2 className="w-4 h-4 text-foreground" />
+          <Wand2 className="w-4 h-4 text-white" />
         </div>
         <span className="text-foreground font-semibold text-lg">Upscaler Arcano</span>
         <div className="ml-auto flex gap-2">

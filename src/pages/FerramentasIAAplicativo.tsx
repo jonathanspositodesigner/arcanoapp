@@ -316,7 +316,7 @@ const FerramentasIAAplicativo = () => {
             <div className={`w-full h-full flex items-center justify-center ${
               isComingSoon 
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
-                : "bg-gradient-to-br from-purple-500 to-purple-500"
+                : "bg-gradient-to-br from-purple-500 to-purple-600"
             }`}>
               {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
                 <Users className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />

@@ -79,7 +79,7 @@ export const BeforeAfterGalleryES = ({ onZoomClick, isMobile = false }: BeforeAf
   return (
     <section className="px-3 md:px-4 py-16 md:py-20 relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-slate-500/5 via-slate-500/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-500/5 via-purple-500/5 to-transparent pointer-events-none" />
       
       <div className="max-w-6xl mx-auto relative">
         <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-3 md:mb-4 tracking-wide">

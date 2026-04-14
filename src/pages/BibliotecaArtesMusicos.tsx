@@ -160,7 +160,7 @@ const BibliotecaArtesMusicos = () => {
         {isSupported && !isSubscribed && (
           <Button
             variant="ghost"
-            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-slate-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
+            className="w-full justify-start gap-3 text-muted-foreground hover:text-white hover:bg-gradient-to-r hover:from-purple-500/20 hover:to-pink-500/20 border border-transparent hover:border-border"
             onClick={() => { handleActivateNotifications(); onClose?.(); }}
           >
             <Bell className="w-5 h-5 text-muted-foreground" />
@@ -307,7 +307,7 @@ const BibliotecaArtesMusicos = () => {
                   {t('musicos.sidebar.installApp')}
                 </Button>
               ) : isSupported && !isSubscribed ? (
-                <Button onClick={subscribe} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-primary/10 animate-pulse">
+                <Button onClick={subscribe} className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white px-6 py-3 text-base font-semibold shadow-lg shadow-primary/10 animate-pulse">
                   <Bell className="w-5 h-5 mr-2" />
                   {t('musicos.sidebar.activateNotifications')}
                 </Button>
@@ -339,7 +339,7 @@ const BibliotecaArtesMusicos = () => {
                     className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-white hover:border-border bg-transparent"}`}
                   >
                     <span>{cat.name}</span>
-                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                   </Button>
                 );
               })}
@@ -386,7 +386,7 @@ const BibliotecaArtesMusicos = () => {
                     <div className="p-3">
                       <div className="mb-2 flex items-center gap-1.5">
                         <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded">{categories.find(c => c.slug === arte.category)?.name || arte.category}</span>
-                        {isLed && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                        {isLed && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                       </div>
                       <h3 className="text-foreground font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">{arte.title}</h3>
                       <Button
@@ -429,7 +429,7 @@ const BibliotecaArtesMusicos = () => {
                   <div className="p-3 bg-accent rounded-lg border border-border">
                     <p className="text-xs text-muted-foreground mb-1">{t('musicos.modal.promptUsed')}</p>
                     <p className="text-sm text-foreground mb-3">{selectedArte.ai_prompt}</p>
-                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
+                    <Button className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white" size="sm" disabled={!canDownload && dailyLimit !== Infinity} onClick={async () => { const success = await recordDownload(selectedArte.id); if (success) { navigator.clipboard.writeText(selectedArte.ai_prompt!); toast.success(t('musicos.toast.promptCopied')); } }}>
                       <Copy className="w-4 h-4 mr-2" />{t('musicos.modal.copyPrompt')}
                     </Button>
                   </div>

@@ -337,7 +337,7 @@ export default function ClonerTrialSection() {
                 {phase === "locked" ? (
                   <>
                     <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
-                      <Sparkles className="w-10 h-10 text-foreground" />
+                      <Sparkles className="w-10 h-10 text-white" />
                     </div>
                     <Button
                       size="lg"

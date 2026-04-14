@@ -685,7 +685,7 @@ const Planos2 = () => {
       <section className="mt-20 pb-20 px-4">
         <div className="text-center mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 mb-4">
-            <Coins className="w-7 h-7 text-foreground" />
+            <Coins className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
             Compre um pacote de créditos avulsos
@@ -721,7 +721,7 @@ const Planos2 = () => {
                 )}
 
                 <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${plan.color} flex items-center justify-center mb-3 mt-2`}>
-                  <Icon className="w-6 h-6 text-foreground" />
+                  <Icon className="w-6 h-6 text-white" />
                 </div>
 
                 <div className="mb-1">
@@ -755,7 +755,7 @@ const Planos2 = () => {
 
                   <Button
                     onClick={() => handleCreditPurchase(plan.slug)}
-                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-foreground font-semibold py-5`}
+                    className={`w-full bg-gradient-to-r ${plan.color} hover:opacity-90 text-white font-semibold py-5`}
                   >
                     Comprar Agora
                   </Button>
