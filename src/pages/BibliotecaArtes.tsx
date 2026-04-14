@@ -468,6 +468,41 @@ const BibliotecaArtes = () => {
           <span className="ml-auto text-[10px] text-muted-foreground">{allArtes.length}</span>
         </button>
 
+        {/* Divider + Ferramentas IA */}
+        <div className="my-3 border-t border-border" />
+        <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Ferramentas IA</p>
+
+        <button onClick={() => { navigate('/upscaler-arcano-tool'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <Wand2 className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          Upscaler Arcano
+        </button>
+
+        <button onClick={() => { navigate('/arcano-cloner-tool'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <Palette className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          Arcano Cloner
+        </button>
+
+        <button onClick={() => { navigate('/seedance2'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <Film className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          Seedance 2.0
+          <span className="ml-auto text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-1.5 py-0.5 rounded-full leading-none">Novo</span>
+        </button>
+
+        <button onClick={() => { navigate('/pose-changer-tool'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <ImagePlus className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          Pose Changer
+        </button>
+
+        <button onClick={() => { navigate('/veste-ai-tool'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <Shirt className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          Veste AI
+        </button>
+
+        <button onClick={() => { navigate('/movieled-maker'); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground hover:bg-accent py-2.5 px-3 rounded-lg transition-colors">
+          <MonitorPlay className="h-4 w-4 mr-2.5 flex-shrink-0" />
+          MovieLed Maker
+        </button>
+
         {/* Divider */}
         <div className="my-3 border-t border-border" />
 
