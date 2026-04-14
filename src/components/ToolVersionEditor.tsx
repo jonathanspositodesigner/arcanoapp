@@ -626,7 +626,7 @@ const ToolVersionEditor = ({
                         disabled={!currentVersion.sales.enabled_6_meses}
                       />
                       {currentVersion.sales.price_6_meses && (
-                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(String(currentVersion.sales.price_6_meses))}</p>
+                        <p className="text-xs text-green-400 mt-1">{formatPriceInput(String(currentVersion.sales.price_6_meses))}</p>
                       )}
                     </div>
                     <div>
@@ -747,7 +747,7 @@ const ToolVersionEditor = ({
 
               {/* Renovação */}
               <div className="border rounded-lg p-4 space-y-4 border-green-500/30 bg-green-500/5">
-                <Badge className="bg-green-500/20 text-green-600">🔄 30% OFF - Renovação</Badge>
+                <Badge className="bg-green-500/20 text-green-400">🔄 30% OFF - Renovação</Badge>
                 <div className="space-y-3">
                   {currentVersion.sales.enabled_6_meses && (
                     <div>

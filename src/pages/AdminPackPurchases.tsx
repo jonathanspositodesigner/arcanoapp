@@ -637,7 +637,7 @@ const AdminPackPurchases = () => {
                     <p className="text-[8px] sm:text-xs text-muted-foreground">algum</p>
                   </div>
                   <div>
-                    <p className="text-base sm:text-xl font-bold text-red-600">{stats.expired_all}</p>
+                    <p className="text-base sm:text-xl font-bold text-red-400">{stats.expired_all}</p>
                     <p className="text-[8px] sm:text-xs text-muted-foreground">todos</p>
                   </div>
                 </div>
@@ -761,7 +761,7 @@ const AdminPackPurchases = () => {
                   <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-amber-700">Redefinir senha do cliente</p>
+                        <p className="text-sm font-medium text-amber-400">Redefinir senha do cliente</p>
                         <p className="text-xs text-muted-foreground">
                           A senha será redefinida para o email e exigirá mudança no próximo login.
                         </p>
@@ -771,7 +771,7 @@ const AdminPackPurchases = () => {
                         variant="outline" 
                         size="sm"
                         onClick={handleResetFirstPassword}
-                        className="text-amber-700 border-amber-500/50 hover:bg-amber-500/20"
+                        className="text-amber-400 border-amber-500/50 hover:bg-amber-500/20"
                       >
                         <KeyRound className="h-3 w-3 mr-1" />
                         Redefinir Primeira Senha
@@ -870,7 +870,7 @@ const AdminPackPurchases = () => {
                             <div className="space-y-2">
                               {access.product_name && (
                                 <div className="text-xs text-muted-foreground bg-blue-500/10 border border-blue-500/20 rounded-lg px-2 py-1">
-                                  <span className="font-medium text-blue-600">Produto:</span> {access.product_name}
+                                  <span className="font-medium text-blue-400">Produto:</span> {access.product_name}
                                 </div>
                               )}
                               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 rounded-lg p-2">
@@ -890,10 +890,10 @@ const AdminPackPurchases = () => {
                                         variant="outline" 
                                         className={`text-xs ${
                                           new Date(access.expires_at) < new Date() 
-                                            ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                                            ? 'bg-red-500/10 text-red-400 border-red-500/30'
                                             : new Date(access.expires_at) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                                             ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                                            : 'bg-green-500/10 text-green-600 border-green-500/30'
+                                            : 'bg-green-500/10 text-green-400 border-green-500/30'
                                         }`}
                                       >
                                         {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
@@ -909,7 +909,7 @@ const AdminPackPurchases = () => {
                                 <div className="flex items-center justify-between p-2 bg-red-500/10 border border-red-500/30 rounded-lg">
                                   <div className="flex items-center gap-2">
                                     <Badge className="bg-red-500 text-white text-xs">ACESSO EXPIRADO</Badge>
-                                    <span className="text-xs text-red-600">
+                                    <span className="text-xs text-red-400">
                                       Expirou em {format(new Date(access.expires_at), "dd/MM/yyyy", { locale: ptBR })}
                                     </span>
                                   </div>
@@ -932,7 +932,7 @@ const AdminPackPurchases = () => {
                         <Button 
                           type="button" variant="ghost" size="icon"
                           onClick={() => removePackAccess(index)}
-                          className="text-red-500 hover:text-red-600"
+                          className="text-red-500 hover:text-red-400"
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -993,7 +993,7 @@ const AdminPackPurchases = () => {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEditDialog(client)} title="Editar">
                           <Edit className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-600" onClick={() => handleDeleteClient({
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-red-500 hover:text-red-400" onClick={() => handleDeleteClient({
                           user_id: client.user_id,
                           user_email: client.user_email,
                           user_name: client.user_name,
@@ -1042,10 +1042,10 @@ const AdminPackPurchases = () => {
                           variant="outline" 
                           className={`text-xs ${
                             new Date(client.earliest_expiration) < new Date() 
-                              ? 'bg-red-500/10 text-red-600 border-red-500/30'
+                              ? 'bg-red-500/10 text-red-400 border-red-500/30'
                               : new Date(client.earliest_expiration) < new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
                               ? 'bg-amber-500/10 text-amber-600 border-amber-500/30'
-                              : 'bg-green-500/10 text-green-600 border-green-500/30'
+                              : 'bg-green-500/10 text-green-400 border-green-500/30'
                           }`}
                         >
                           {format(new Date(client.earliest_expiration), "dd/MM/yy", { locale: ptBR })}
@@ -1173,7 +1173,7 @@ const AdminPackPurchases = () => {
                             <TableCell>
                               <div className="flex flex-wrap gap-1">
                                 {expiredPacks.map(p => (
-                                  <Badge key={p.id} variant="outline" className="text-[10px] bg-red-500/10 text-red-600 border-red-500/30">
+                                  <Badge key={p.id} variant="outline" className="text-[10px] bg-red-500/10 text-red-400 border-red-500/30">
                                     {getPackName(p.pack_slug)} - {p.expires_at ? format(new Date(p.expires_at), "dd/MM/yy", { locale: ptBR }) : ''}
                                   </Badge>
                                 ))}

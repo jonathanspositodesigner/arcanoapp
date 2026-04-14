@@ -483,7 +483,7 @@ const AdminPremiumMusicos = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleWhatsApp(user.profile!.phone!)}
-                            className="text-green-500 hover:text-green-600"
+                            className="text-green-500 hover:text-green-400"
                           >
                             <MessageCircle className="h-4 w-4" />
                           </Button>

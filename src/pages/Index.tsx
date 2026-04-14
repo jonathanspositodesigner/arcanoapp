@@ -353,7 +353,7 @@ const Index = () => {
           
           <div className="flex items-center gap-1.5 sm:gap-2">
             {isAppInstalled ? (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/30 text-green-600">
+              <div className="flex items-center gap-1 px-2 py-1 rounded-md bg-green-500/10 border border-green-500/30 text-green-400">
                 <Check className="h-3 w-3" />
                 <span className="text-[10px] font-medium hidden sm:inline">{t('appInstalled')}</span>
               </div>

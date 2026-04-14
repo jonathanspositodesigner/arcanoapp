@@ -379,9 +379,9 @@ const AdminCreditsTab = () => {
       if (tx.transaction_type === 'refund') {
         return <Badge variant="outline" className="border-orange-500 text-orange-600 text-[10px]">Estorno</Badge>;
       }
-      return <Badge variant="outline" className="border-green-500 text-green-600 text-[10px]">Entrada</Badge>;
+      return <Badge variant="outline" className="border-green-500 text-green-400 text-[10px]">Entrada</Badge>;
     }
-    return <Badge variant="outline" className="border-red-500 text-red-600 text-[10px]">Consumo</Badge>;
+    return <Badge variant="outline" className="border-red-500 text-red-400 text-[10px]">Consumo</Badge>;
   };
 
   const getCreditTypeBadge = (creditType: string) => {
@@ -391,7 +391,7 @@ const AdminCreditsTab = () => {
       case 'lifetime':
         return <Badge variant="secondary" className="text-[9px] px-1 bg-white/10 text-gray-400">Vitalício</Badge>;
       case 'mixed':
-        return <Badge variant="secondary" className="text-[9px] px-1 bg-amber-100 text-amber-700">Misto</Badge>;
+        return <Badge variant="secondary" className="text-[9px] px-1 bg-amber-500/20 text-amber-400">Misto</Badge>;
       default:
         return null;
     }
@@ -527,7 +527,7 @@ const AdminCreditsTab = () => {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="text-blue-600 font-medium">
+                        <span className="text-blue-400 font-medium">
                           {formatNumber(user.monthly_balance)}
                         </span>
                       </TableCell>
@@ -537,7 +537,7 @@ const AdminCreditsTab = () => {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="text-green-600 font-bold">
+                        <span className="text-green-400 font-bold">
                           {formatNumber(user.total_balance)}
                         </span>
                       </TableCell>
@@ -633,7 +633,7 @@ const AdminCreditsTab = () => {
                 </div>
                 <div className="text-center px-3">
                   <p className="text-xs text-muted-foreground">Saldo Atual</p>
-                  <p className="text-lg font-bold text-green-600">{formatNumber(historyUser.total_balance)}</p>
+                  <p className="text-lg font-bold text-green-400">{formatNumber(historyUser.total_balance)}</p>
                 </div>
               </div>
             )}
@@ -656,16 +656,16 @@ const AdminCreditsTab = () => {
                     className={`flex items-center gap-3 p-3 rounded-lg border ${
                       tx.amount > 0 
                         ? 'bg-green-50/50 dark:bg-green-900/10 border-green-200/50 dark:border-green-800/30' 
-                        : 'bg-red-50/50 dark:bg-red-900/10 border-red-200/50 dark:border-red-800/30'
+                        : 'bg-red-50/50 dark:bg-red-900/10 border-red-500/30/50 dark:border-red-800/30'
                     }`}
                   >
                     {/* Icon */}
                     <div className={`shrink-0 p-1.5 rounded-full ${
-                      tx.amount > 0 ? 'bg-green-100 dark:bg-green-900/30' : 'bg-red-100 dark:bg-red-900/30'
+                      tx.amount > 0 ? 'bg-green-500/20 dark:bg-green-900/30' : 'bg-red-500/20 dark:bg-red-900/30'
                     }`}>
                       {tx.amount > 0 
-                        ? <ArrowUpCircle className="h-4 w-4 text-green-600" />
-                        : <ArrowDownCircle className="h-4 w-4 text-red-600" />
+                        ? <ArrowUpCircle className="h-4 w-4 text-green-400" />
+                        : <ArrowDownCircle className="h-4 w-4 text-red-400" />
                       }
                     </div>
 
@@ -681,7 +681,7 @@ const AdminCreditsTab = () => {
 
                     {/* Amount & Balance */}
                     <div className="text-right shrink-0">
-                      <p className={`text-sm font-bold ${tx.amount > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <p className={`text-sm font-bold ${tx.amount > 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {tx.amount > 0 ? '+' : ''}{formatNumber(tx.amount)}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
@@ -737,7 +737,7 @@ const AdminCreditsTab = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-3 border rounded-lg text-center">
                   <p className="text-sm text-muted-foreground">Mensais</p>
-                  <p className="text-xl font-bold text-blue-600">
+                  <p className="text-xl font-bold text-blue-400">
                     {formatNumber(selectedUser.monthly_balance)}
                   </p>
                 </div>
@@ -775,7 +775,7 @@ const AdminCreditsTab = () => {
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outline"
-                  className="border-blue-500 text-blue-600 hover:bg-blue-50"
+                  className="border-blue-500 text-blue-400 hover:bg-blue-50"
                   onClick={() => handleCreditAction('add_monthly')}
                   disabled={isSubmitting || creditAmount <= 0}
                 >
@@ -784,7 +784,7 @@ const AdminCreditsTab = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-red-500 text-red-600 hover:bg-red-50"
+                  className="border-red-500 text-red-400 hover:bg-red-500/10"
                   onClick={() => handleCreditAction('remove_monthly')}
                   disabled={isSubmitting || creditAmount <= 0}
                 >
@@ -872,7 +872,7 @@ const AdminCreditsTab = () => {
             {addUserModalState === 'found' && foundUser && (
               <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
                 <div className="flex items-center gap-3">
-                  <User className="h-8 w-8 text-green-600" />
+                  <User className="h-8 w-8 text-green-400" />
                   <div>
                     <p className="font-medium text-green-800 dark:text-green-200">
                       Usuário encontrado!

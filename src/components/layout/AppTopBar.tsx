@@ -113,7 +113,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
 
         <DropdownMenuItem
           onClick={onLogout}
-          className="cursor-pointer text-red-400 hover:bg-red-500/20 focus:bg-red-500/20 focus:text-red-400"
+          className="cursor-pointer text-red-400 hover:bg-red-500/100/20 focus:bg-red-500/20 focus:text-red-400"
         >
           <LogOut className="w-4 h-4 mr-2" />
           Sair

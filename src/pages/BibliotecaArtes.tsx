@@ -392,7 +392,7 @@ const BibliotecaArtes = () => {
         {item.isPremium ? <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 text-[10px] sm:text-xs">
             <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
             {t('badges.premium')}
-          </Badge> : <Badge variant="outline" className="border-green-500 text-green-600 text-[10px] sm:text-xs">
+          </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
             {t('badges.free')}
           </Badge>}
         {item.pack && <Badge className="bg-primary/80 text-white border-0 text-[10px] sm:text-xs">

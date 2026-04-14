@@ -209,7 +209,7 @@ const SavedConfigsSection: React.FC<Props> = ({ mode, settings, selectedCharacte
                   </div>
                   <button
                     onClick={e => { e.stopPropagation(); handleDelete(config.id); }}
-                    className="p-1 rounded hover:bg-red-500/20 transition-colors opacity-0 group-hover:opacity-100"
+                    className="p-1 rounded hover:bg-red-500/100/20 transition-colors opacity-0 group-hover:opacity-100"
                   >
                     {deletingId === config.id
                       ? <Loader2 className="w-3 h-3 animate-spin text-gray-500" />

@@ -1118,7 +1118,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={cancelQueue}
-                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/100/20"
                     >
                       Sair da fila
                     </Button>

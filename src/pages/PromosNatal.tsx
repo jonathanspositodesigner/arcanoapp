@@ -347,7 +347,7 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-red-500/20 rounded-lg mb-3 flex items-center justify-center">
                             <Gift className="h-8 w-8 text-red-500" />
                           </div>
                         )}
@@ -380,7 +380,7 @@ const PromosNatal = () => {
                             className="w-full aspect-square object-cover rounded-lg mb-3 group-hover:scale-105 transition-transform"
                           />
                         ) : (
-                          <div className="w-full aspect-square bg-red-100 rounded-lg mb-3 flex items-center justify-center">
+                          <div className="w-full aspect-square bg-red-500/20 rounded-lg mb-3 flex items-center justify-center">
                             <Star className="h-8 w-8 text-red-500" />
                           </div>
                         )}
@@ -409,7 +409,7 @@ const PromosNatal = () => {
                 <img
                   src={selectedPack.cover_url}
                   alt={selectedPack.name}
-                  className="w-32 h-32 object-cover rounded-lg border-2 border-red-200 shadow-md"
+                  className="w-32 h-32 object-cover rounded-lg border-2 border-red-500/30 shadow-md"
                 />
               </div>
             )}
@@ -421,7 +421,7 @@ const PromosNatal = () => {
                   <Card
                     key={option.type}
                     className={`relative bg-white/5 border border-red-500/20 shadow-md ${
-                      option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-300" : ""
+                      option.highlighted ? "ring-2 ring-red-500 scale-105 shadow-xl border-red-500/30" : ""
                     }`}
                   >
                     {option.highlighted && (
@@ -430,14 +430,14 @@ const PromosNatal = () => {
                       </div>
                     )}
                     {option.hasBonus && (
-                      <div className="absolute top-3 right-3 bg-amber-100 text-amber-700 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-200">
+                      <div className="absolute top-3 right-3 bg-amber-500/20 text-amber-400 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-1 border border-amber-500/30">
                         <Gift className="h-3 w-3" />
                         {t('plusBonus')}
                       </div>
                     )}
                     <CardHeader className="text-center pt-8">
-                      <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-3 border border-red-200">
-                        <IconComponent className="h-6 w-6 text-red-600" />
+                      <div className="mx-auto w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mb-3 border border-red-500/30">
+                        <IconComponent className="h-6 w-6 text-red-400" />
                       </div>
                       <CardTitle className="text-lg text-gray-100 font-bold">{option.label}</CardTitle>
                       <div className="mt-4">
@@ -449,7 +449,7 @@ const PromosNatal = () => {
                             -{isRenewal ? '30' : discountPercent}%
                           </Badge>
                         </div>
-                        <span className="text-3xl font-bold text-green-600">
+                        <span className="text-3xl font-bold text-green-400">
                           {formatPrice(calculatePrice(option.type))}
                         </span>
                       </div>
@@ -458,7 +458,7 @@ const PromosNatal = () => {
                       <ul className="space-y-2">
                         {option.features.map((feature, i) => (
                           <li key={i} className="flex items-start gap-2 text-gray-400 text-sm">
-                            <Check className="h-4 w-4 text-green-600 mt-0.5 shrink-0" />
+                            <Check className="h-4 w-4 text-green-400 mt-0.5 shrink-0" />
                             {feature}
                           </li>
                         ))}

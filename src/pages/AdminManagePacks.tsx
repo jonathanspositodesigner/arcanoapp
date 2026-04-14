@@ -1813,7 +1813,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_6_meses)}</p>
+                        <p className="text-xs text-green-400 mt-1">{formatPriceInput(salesFormData.price_6_meses)}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
@@ -1830,7 +1830,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_6_meses_usd, 'USD')}</p>
+                        <p className="text-xs text-blue-400 mt-1">{formatPriceInput(salesFormData.price_6_meses_usd, 'USD')}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
@@ -1902,7 +1902,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_1_ano)}</p>
+                        <p className="text-xs text-green-400 mt-1">{formatPriceInput(salesFormData.price_1_ano)}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
@@ -1919,7 +1919,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_1_ano_usd, 'USD')}</p>
+                        <p className="text-xs text-blue-400 mt-1">{formatPriceInput(salesFormData.price_1_ano_usd, 'USD')}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
@@ -1991,7 +1991,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-green-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-green-600 mt-1">{formatPriceInput(salesFormData.price_vitalicio)}</p>
+                        <p className="text-xs text-green-400 mt-1">{formatPriceInput(salesFormData.price_vitalicio)}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Valor USD (centavos)</Label>
@@ -2008,7 +2008,7 @@ const AdminManagePacks = () => {
                             <Check className="w-4 h-4 text-blue-500 absolute right-2 top-1/2 -translate-y-1/2" />
                           )}
                         </div>
-                        <p className="text-xs text-blue-600 mt-1">{formatPriceInput(salesFormData.price_vitalicio_usd, 'USD')}</p>
+                        <p className="text-xs text-blue-400 mt-1">{formatPriceInput(salesFormData.price_vitalicio_usd, 'USD')}</p>
                       </div>
                       <div className="relative">
                         <Label className="text-xs text-muted-foreground">Link Checkout BR</Label>
@@ -2051,7 +2051,7 @@ const AdminManagePacks = () => {
                 {/* RENOVAÇÃO COM DESCONTO (30% OFF) */}
                 <div className="border rounded-lg p-4 space-y-4 border-green-500/30 bg-green-500/5">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-green-500/20 text-green-600">🔄 30% OFF</Badge>
+                    <Badge className="bg-green-500/20 text-green-400">🔄 30% OFF</Badge>
                     <Label className="font-semibold">Renovação com Desconto</Label>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">
@@ -2134,7 +2134,7 @@ const AdminManagePacks = () => {
                 {/* LATAM - RENOVAÇÃO (30% OFF) */}
                 <div className="border rounded-lg p-4 space-y-4 border-blue-500/30 bg-blue-500/5">
                   <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-blue-500/20 text-blue-600">🌎 LATAM 30% OFF</Badge>
+                    <Badge className="bg-blue-500/20 text-blue-400">🌎 LATAM 30% OFF</Badge>
                     <Label className="font-semibold">Renovação LATAM</Label>
                   </div>
                   <p className="text-xs text-muted-foreground mb-3">

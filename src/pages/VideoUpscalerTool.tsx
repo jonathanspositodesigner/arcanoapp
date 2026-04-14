@@ -522,7 +522,7 @@ const VideoUpscalerTool: React.FC = () => {
               <Button
                 variant="outline"
                 size="sm"
-                className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/10"
+                className="w-full text-xs border-red-500/30 text-red-300 hover:bg-red-500/100/10"
                 onClick={handleCancelQueue}
               >
                 <XCircle className="w-3.5 h-3.5 mr-1.5" />

@@ -552,7 +552,7 @@ const WelcomeEmailsMonitor = () => {
                           )}
                           {purchase.email_status === 'failed' && (
                             <>
-                              <Badge className="bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/30">
+                              <Badge className="bg-red-500/20 text-red-500 border-red-500/30 hover:bg-red-500/100/30">
                                 FALHA
                               </Badge>
                               {purchase.failure_reason && (

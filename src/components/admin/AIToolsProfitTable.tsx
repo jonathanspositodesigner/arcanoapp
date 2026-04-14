@@ -331,15 +331,15 @@ const AIToolsProfitTable = () => {
             </div>
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">💰 Receita/Crédito</p>
-              <p className="font-semibold text-green-600">{formatBRL(config.revenuePerCredit)}</p>
+              <p className="font-semibold text-green-400">{formatBRL(config.revenuePerCredit)}</p>
             </div>
             <div className="bg-muted/50 rounded-lg p-3">
               <p className="text-xs text-muted-foreground mb-1">🪙 Custo/RH Coin</p>
               <p className="font-semibold text-orange-600">{formatBRL(config.costPerRhCoin)}</p>
             </div>
             <div className="bg-green-500/10 border border-green-500/30 rounded-lg p-3">
-              <p className="text-xs text-green-600 mb-1">📊 Lucro Total Histórico</p>
-              <p className="font-bold text-green-600">{formatBRL(totals.totalProfit)}</p>
+              <p className="text-xs text-green-400 mb-1">📊 Lucro Total Histórico</p>
+              <p className="font-bold text-green-400">{formatBRL(totals.totalProfit)}</p>
               <p className="text-[10px] text-muted-foreground">{totals.totalJobs} jobs processados</p>
             </div>
           </div>
@@ -440,32 +440,32 @@ const AIToolsProfitTable = () => {
                       <TableCell className="text-right font-mono">
                         {row.apiCost > 0 ? formatBRL(row.apiCost) : "-"}
                       </TableCell>
-                      <TableCell className="text-right font-mono text-green-600">
+                      <TableCell className="text-right font-mono text-green-400">
                         {formatBRL(row.revenue)}
                       </TableCell>
                       <TableCell className="text-right font-mono text-orange-600">
                         {formatBRL(row.totalCost)}
                       </TableCell>
-                      <TableCell className={`text-right font-mono font-bold ${row.profit > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <TableCell className={`text-right font-mono font-bold ${row.profit > 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {formatBRL(row.profit)}
                       </TableCell>
                       {/* Accumulated Totals */}
-                      <TableCell className="text-right font-mono text-green-600 bg-green-500/5">
+                      <TableCell className="text-right font-mono text-green-400 bg-green-500/5">
                         {row.totalJobs > 0 ? formatBRL(row.totalRevenue) : "-"}
                       </TableCell>
                       <TableCell className="text-right font-mono text-orange-600 bg-orange-500/5">
                         {row.totalJobs > 0 ? formatBRL(row.totalCostAccum) : "-"}
                       </TableCell>
-                      <TableCell className={`text-right font-mono font-bold bg-green-500/5 ${row.totalProfitAccum > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <TableCell className={`text-right font-mono font-bold bg-green-500/5 ${row.totalProfitAccum > 0 ? 'text-green-400' : 'text-red-400'}`}>
                         {row.totalJobs > 0 ? formatBRL(row.totalProfitAccum) : "-"}
                       </TableCell>
                       <TableCell className="text-center">
                         <Badge 
                           variant="outline" 
                           className={
-                            row.margin >= 85 ? "bg-green-500/20 text-green-600 border-green-500/30" :
+                            row.margin >= 85 ? "bg-green-500/20 text-green-400 border-green-500/30" :
                             row.margin >= 70 ? "bg-yellow-500/20 text-yellow-600 border-yellow-500/30" :
-                            "bg-red-500/20 text-red-600 border-red-500/30"
+                            "bg-red-500/20 text-red-400 border-red-500/30"
                           }
                         >
                           {formatPercent(row.margin)}
@@ -500,7 +500,7 @@ const AIToolsProfitTable = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Receita Total</p>
-                  <p className="font-bold text-green-600">{formatBRL(totals.totalRevenue)}</p>
+                  <p className="font-bold text-green-400">{formatBRL(totals.totalRevenue)}</p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Custo Total</p>
@@ -508,7 +508,7 @@ const AIToolsProfitTable = () => {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Lucro Total</p>
-                  <p className="font-bold text-green-600">{formatBRL(totals.totalProfit)}</p>
+                  <p className="font-bold text-green-400">{formatBRL(totals.totalProfit)}</p>
                 </div>
               </div>
             </div>
@@ -692,7 +692,7 @@ const AIToolsProfitTable = () => {
               </div>
             )}
             <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-              <p className="text-xs text-amber-700">
+              <p className="text-xs text-amber-400">
                 ⚠️ Alterações valem apenas para novos jobs. Jobs anteriores não serão recalculados.
               </p>
             </div>

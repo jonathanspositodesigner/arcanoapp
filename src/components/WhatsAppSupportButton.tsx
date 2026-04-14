@@ -24,7 +24,7 @@ const WhatsAppSupportButton = ({
       <Button
         onClick={handleClick}
         variant="outline"
-        className="gap-2 border-green-500 text-green-600 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950"
+        className="gap-2 border-green-500 text-green-400 hover:bg-green-50 hover:text-green-700 dark:hover:bg-green-950"
       >
         <MessageCircle className="h-4 w-4" />
         {t('support.button')}

@@ -314,7 +314,7 @@ const VideoUploadCard: React.FC<VideoUploadCardProps> = ({
               <button
                 onClick={handleRemove}
                 disabled={disabled}
-                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500 flex items-center justify-center transition-colors"
+                className="absolute top-1 right-1 w-5 h-5 rounded-full bg-red-500/80 hover:bg-red-500/100 flex items-center justify-center transition-colors"
               >
                 <X className="w-3 h-3 text-white" />
               </button>

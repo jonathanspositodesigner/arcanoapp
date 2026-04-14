@@ -618,14 +618,14 @@ const InAppBrowserMockup = ({ step }: { step: number }) => (
           {step === 2 && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center animate-fade-in">
               <div className="bg-white dark:bg-gray-800 rounded-2xl p-6 mx-4 text-center shadow-xl">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Check className="h-8 w-8 text-green-600" />
+                <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="h-8 w-8 text-green-400" />
                 </div>
                 <h3 className="font-bold text-lg mb-2">Abrindo no navegador...</h3>
                 <p className="text-sm text-gray-500 mb-4">O site abrirá no Safari ou Chrome.<br/>Siga o tutorial normal para instalar.</p>
                 <div className="flex gap-2 justify-center">
-                  <span className="px-3 py-1 bg-blue-100 text-blue-600 rounded-full text-xs font-medium">Safari</span>
-                  <span className="px-3 py-1 bg-green-100 text-green-600 rounded-full text-xs font-medium">Chrome</span>
+                  <span className="px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-medium">Safari</span>
+                  <span className="px-3 py-1 bg-green-500/20 text-green-400 rounded-full text-xs font-medium">Chrome</span>
                 </div>
               </div>
             </div>
@@ -1008,7 +1008,7 @@ const InstallTutorialInteractive = () => {
 
       {/* In-App Browser Warning */}
       {config.isInAppBrowser && (
-        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg flex items-start gap-2 mb-4">
+        <div className="p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-500/30 dark:border-amber-700 rounded-lg flex items-start gap-2 mb-4">
           <AlertTriangle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-amber-800 dark:text-amber-200">{t('installTutorial.inAppWarning.title')}</p>
@@ -1020,7 +1020,7 @@ const InstallTutorialInteractive = () => {
       )}
 
       {/* Detected Browser Info with Edit Button */}
-      <div className={`flex items-center justify-center gap-2 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-100 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
+      <div className={`flex items-center justify-center gap-2 text-sm text-muted-foreground rounded-lg py-2 px-3 ${config.isInAppBrowser ? 'bg-amber-500/20 dark:bg-amber-900/30' : 'bg-muted/50'}`}>
         <Info className="h-4 w-4 flex-shrink-0" />
         <span>{t('installTutorial.detected')}: <strong className="text-foreground">{config.label}</strong></span>
         <Button

@@ -172,7 +172,7 @@ const AdminMarketing = () => {
                   <CheckCircle className="h-5 w-5 mx-auto mb-2 text-green-500" />
                   <p className="text-3xl font-bold text-green-500">{pushCampaignStats.totalDelivered.toLocaleString()}</p>
                   <p className="text-xs text-muted-foreground mt-1">Entregues</p>
-                  <p className="text-xs font-medium text-green-600">{pushCampaignStats.deliveryRate.toFixed(1)}%</p>
+                  <p className="text-xs font-medium text-green-400">{pushCampaignStats.deliveryRate.toFixed(1)}%</p>
                 </div>
                 
                 <div className="bg-red-500/10 rounded-lg p-4 text-center">

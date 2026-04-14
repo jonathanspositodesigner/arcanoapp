@@ -652,7 +652,7 @@ const AdminUploadArtes = () => {
                     file:text-sm file:font-semibold
                     file:bg-primary file:text-primary-foreground
                     hover:file:bg-primary/80" />
-                {currentMedia.downloadFile && <p className="text-sm text-green-600 mt-2">
+                {currentMedia.downloadFile && <p className="text-sm text-green-400 mt-2">
                     ✓ {currentMedia.downloadFile.name}
                   </p>}
               </div>

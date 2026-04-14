@@ -653,7 +653,7 @@ const GerarImagemTool = () => {
                     <img src={img.preview} alt="" className="w-full h-full object-cover rounded-lg border border-white/10" />
                     <button
                       onClick={() => removeReferenceImage(idx)}
-                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
+                      className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-600 hover:bg-red-500/100 rounded-full flex items-center justify-center shadow-lg transition-colors z-10"
                     >
                       <X className="h-3 w-3 text-white" />
                     </button>

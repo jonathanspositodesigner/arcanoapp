@@ -165,7 +165,7 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20"
+              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/100/20"
               title="Excluir"
             >
               <Trash2 className="w-3 h-3" />

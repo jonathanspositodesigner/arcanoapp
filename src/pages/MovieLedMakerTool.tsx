@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-white/10 backdrop-blur-sm text-gray-200 hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -756,7 +756,7 @@ const MovieLedMakerTool = () => {
                     <Button
                       variant="ghost" size="sm"
                       onClick={cancelQueue}
-                      className="text-red-300 hover:text-red-100 hover:bg-red-500/20"
+                      className="text-red-300 hover:text-red-100 hover:bg-red-500/100/20"
                     >
                       Sair da fila
                     </Button>

@@ -624,7 +624,7 @@ const AbandonedCheckoutsContent = () => {
                           size="icon"
                           variant="ghost"
                           onClick={() => openWhatsApp(checkout)}
-                          className="h-8 w-8 text-green-500 hover:text-green-600 hover:bg-green-500/10"
+                          className="h-8 w-8 text-green-500 hover:text-green-400 hover:bg-green-500/10"
                           title="Enviar WhatsApp"
                         >
                           <MessageCircle className="h-4 w-4" />
@@ -634,7 +634,7 @@ const AbandonedCheckoutsContent = () => {
                           size="icon"
                           variant="ghost"
                           onClick={() => openEmailModal(checkout)}
-                          className="h-8 w-8 text-blue-500 hover:text-blue-600 hover:bg-blue-500/10"
+                          className="h-8 w-8 text-blue-500 hover:text-blue-400 hover:bg-blue-500/10"
                           title="Enviar Email"
                         >
                           <Mail className="h-4 w-4" />

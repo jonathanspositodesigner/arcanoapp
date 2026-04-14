@@ -251,7 +251,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           <div className="pt-3 border-t border-white/10 mt-3">
             <button
               onClick={handleLogout}
-              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/10 transition-colors"
+              className="w-full flex items-center text-left text-[12px] font-medium text-red-400 hover:text-red-300 py-2 px-2.5 rounded-lg hover:bg-red-500/100/10 transition-colors"
             >
               <LogOut className="h-3.5 w-3.5 mr-1.5" />
               Sair

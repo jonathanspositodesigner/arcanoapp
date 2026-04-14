@@ -53,7 +53,7 @@ const variantStyles = {
     input: '',
     alert: 'bg-amber-500/10 border-amber-500/30',
     alertIcon: 'text-amber-500',
-    alertText: 'text-amber-700',
+    alertText: 'text-amber-400',
     button: 'bg-primary hover:bg-primary/90 text-primary-foreground',
     backButton: 'text-muted-foreground hover:text-foreground',
     progressBg: 'bg-primary/20',

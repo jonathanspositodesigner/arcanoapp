@@ -441,7 +441,7 @@ const VideoTrimModal: React.FC<VideoTrimModalProps> = ({
               <Button
                 onClick={handleCancel}
                 variant="outline"
-                className="border-red-500/50 text-red-400 hover:bg-red-500/20"
+                className="border-red-500/50 text-red-400 hover:bg-red-500/100/20"
               >
                 <X className="w-4 h-4 mr-2" />
                 Cancelar

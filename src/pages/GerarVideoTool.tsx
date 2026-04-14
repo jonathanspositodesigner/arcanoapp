@@ -721,7 +721,7 @@ const GerarVideoTool = () => {
                           <img src={startFrame.preview} alt={isVeoModel ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
-                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                            className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                           >
                             <X className="h-3 w-3 text-white" />
                           </button>
@@ -755,7 +755,7 @@ const GerarVideoTool = () => {
                               <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
                               <button 
                                 onClick={() => setEndFrame(null)} 
-                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500 rounded-full p-0.5 transition-colors"
+                                className="absolute top-1 right-1 bg-red-600 hover:bg-red-500/100 rounded-full p-0.5 transition-colors"
                               >
                                 <X className="h-3 w-3 text-white" />
                               </button>
