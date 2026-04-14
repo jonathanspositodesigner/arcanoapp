@@ -48,7 +48,7 @@ const ICON_MAP = {
 const COLOR_MAP = {
   yellow: 'bg-yellow-500/30 text-yellow-300',
   blue: 'bg-blue-500/30 text-blue-300',
-  purple: 'bg-slate-500/30 text-gray-300',
+  ,
   green: 'bg-green-500/30 text-green-300',
   orange: 'bg-orange-500/30 text-orange-300',
    gray: 'bg-gray-500/30 text-gray-300',
@@ -66,7 +66,7 @@ const FALLBACK_VERSIONS: ToolVersion[] = [
      badges: [
        { text: 'NOVO', icon: 'sparkles', color: 'yellow' },
        { text: 'MAIS RÁPIDO', icon: 'zap', color: 'blue' },
-       { text: 'MAIOR FIDELIDADE', icon: 'target', color: 'purple' }
+       { text: 'MAIOR FIDELIDADE', icon: 'target', color: 'blue' }
      ]
   },
   {
@@ -263,7 +263,7 @@ const UpscalerArcanoVersionSelect = () => {
 
                 {/* Version Badge - top left */}
                 <div className="absolute top-4 left-4">
-                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-purple-900`}>
+                  <div className={`px-4 py-1.5 rounded-full text-sm font-black shadow-lg bg-white text-slate-900`}>
                     {getVersionName(version)}
                   </div>
                 </div>
