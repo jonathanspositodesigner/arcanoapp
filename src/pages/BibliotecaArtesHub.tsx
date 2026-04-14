@@ -29,7 +29,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-amber-500 to-yellow-600 shadow-lg shadow-amber-500/30 group-hover:shadow-amber-400/50 transition-all">
-            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
+            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           
           {/* Title */}
@@ -55,7 +55,7 @@ const BibliotecaArtesHub = () => {
           
           {/* Icon */}
           <div className="relative z-10 w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-purple-500 shadow-lg shadow-primary/10 group-hover:shadow-primary/20 transition-all">
-            <Music className="w-10 h-10 sm:w-12 sm:h-12 text-foreground" />
+            <Music className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
           
           {/* Title */}

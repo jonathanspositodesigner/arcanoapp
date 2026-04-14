@@ -339,7 +339,7 @@ const BibliotecaArtesMusicos = () => {
                     className={`h-auto min-h-[44px] px-4 py-2.5 text-sm whitespace-normal text-center leading-tight flex-col sm:flex-row gap-1 ${selectedCategory === cat.slug ? "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white border-0" : "border-border text-muted-foreground hover:bg-accent hover:text-white hover:border-border bg-transparent"}`}
                   >
                     <span>{cat.name}</span>
-                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                    {isLedCategory && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                   </Button>
                 );
               })}
@@ -386,7 +386,7 @@ const BibliotecaArtesMusicos = () => {
                     <div className="p-3">
                       <div className="mb-2 flex items-center gap-1.5">
                         <span className="text-xs bg-accent text-muted-foreground px-2 py-1 rounded">{categories.find(c => c.slug === arte.category)?.name || arte.category}</span>
-                        {isLed && <span className="text-[10px] bg-amber-500 text-foreground px-1.5 py-0.5 rounded font-medium">Pro+</span>}
+                        {isLed && <span className="text-[10px] bg-amber-500 text-white px-1.5 py-0.5 rounded font-medium">Pro+</span>}
                       </div>
                       <h3 className="text-foreground font-medium text-sm line-clamp-2 mb-3 min-h-[2.5rem]">{arte.title}</h3>
                       <Button

@@ -32,7 +32,7 @@ const UpscalerSelectionPage = () => {
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-12">
           <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-3 sm:mb-6 shadow-lg shadow-primary/10">
-            <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-foreground" />
+            <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-white" />
           </div>
           <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-foreground mb-2 sm:mb-4">
             Upscaler Arcano V3
@@ -107,7 +107,7 @@ const UpscalerSelectionPage = () => {
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
               <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 shadow-lg shadow-primary/5 group-hover:shadow-primary/10 transition-shadow">
-                <Video className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
+                <Video className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
 

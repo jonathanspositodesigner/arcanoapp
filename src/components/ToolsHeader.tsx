@@ -94,7 +94,7 @@ const ToolsHeader = ({
           {showLogo ? (
             <div className="flex items-center gap-2 sm:gap-3">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
+                <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               {title && (
                 <h1 className="text-base sm:text-xl font-bold text-foreground hidden sm:block">

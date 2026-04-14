@@ -955,7 +955,7 @@ const BibliotecaArtes = () => {
                 return <Card key={tutorial.id} className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-primary transition-all group" onClick={() => navigate(`/tutorial-artes/${tutorial.slug}`)}>
                       <div className="aspect-[3/4] relative overflow-hidden">
                         {tutorial.cover_url ? <img src={tutorial.cover_url} alt={tutorial.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" /> : <div className="w-full h-full bg-gradient-to-br from-emerald-500/60 to-emerald-600 flex items-center justify-center">
-                            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
+                            <BookOpen className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
                           </div>}
                         
                         {/* Free for everyone Tag */}

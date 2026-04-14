@@ -181,7 +181,7 @@ const PlanosForjaSelos3D = () => {
 
                 <Button
                   onClick={handlePurchase}
-                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white shadow-lg shadow-primary/10 hover-lift"
+                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-primary/10 hover-lift"
                 >
                   {t("forja3D.buyNow")}
                 </Button>

@@ -942,7 +942,7 @@ const PlanosUpscalerArcano = () => {
           <LazySection rootMargin="1200px">
           {/* Fullscreen scroll-driven gallery - all devices */}
           <div>
-            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r dark:from-slate-500 dark:to-slate-500 from-purple-700 to-purple-500 uppercase tracking-tight">
+            <h2 className="text-center text-3xl md:text-5xl font-black py-12 bg-clip-text text-transparent bg-gradient-to-r dark:from-purple-400 dark:to-purple-400 from-purple-700 to-purple-500 uppercase tracking-tight">
               Melhorado com o Upscaler Arcano
             </h2>
             <Suspense fallback={<div className="h-screen bg-accent animate-pulse" />}>

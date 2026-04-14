@@ -214,7 +214,7 @@ const FerramentasIA = () => {
             />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-              <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
+              <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white" />
             </div>
           )}
           

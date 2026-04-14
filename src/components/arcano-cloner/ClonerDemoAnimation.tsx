@@ -378,7 +378,7 @@ const ClonerDemoAnimation: React.FC = () => {
               <button
                 ref={genBtnRef}
                 className={cn(
-                  'w-full py-3 rounded-xl font-bold text-sm text-foreground transition-all duration-200',
+                  'w-full py-3 rounded-xl font-bold text-sm text-white transition-all duration-200',
                   'bg-gradient-to-r from-purple-600 to-purple-500 shadow-lg shadow-primary/10',
                   step === 3 && buttonClicked ? 'scale-95 brightness-110' : 'scale-100',
                 )}
@@ -487,7 +487,7 @@ const ClonerDemoAnimation: React.FC = () => {
             {/* Download button */}
             <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-xl px-6 py-3 flex items-center gap-2 shadow-lg shadow-primary/10">
               <svg viewBox="0 0 24 24" className="w-4 h-4 fill-white"><path d="M5 20h14v-2H5v2zm7-18L5.33 9h3.84v4h5.66V9h3.84L12 2z"/></svg>
-              <span className="text-sm text-foreground font-bold">Baixar Imagem</span>
+              <span className="text-sm text-white font-bold">Baixar Imagem</span>
             </div>
 
             {/* Footer text */}
