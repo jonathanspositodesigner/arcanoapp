@@ -45,6 +45,8 @@ const VesteAITool: React.FC = () => {
   
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Veste AI', 60);
+  const isMobile = useIsMobile();
+  const [showMobileConfig, setShowMobileConfig] = useState(false);
   
   // Contexto global de jobs - para notificação sonora e trava de navegação
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
