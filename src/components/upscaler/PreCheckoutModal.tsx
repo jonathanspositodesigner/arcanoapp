@@ -76,17 +76,17 @@ const ERROR_MESSAGES: Record<string, string> = {
 
 const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'upscaller-arcano-vitalicio', modalTitle, colorScheme = 'fuchsia' }: PreCheckoutModalProps) => {
   const isOrange = colorScheme === 'orange';
-  const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-fuchsia-500';
-  const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-fuchsia-500/30';
-  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-fuchsia-500/10';
-  const accentText = isOrange ? 'text-[#EF672C]' : 'text-fuchsia-400';
-  const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-fuchsia-300';
+  const accentBorder = isOrange ? 'border-[#EF672C]' : 'border-white/15';
+  const accentBorderLight = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
+  const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-slate-500/10';
+  const accentText = isOrange ? 'text-[#EF672C]' : 'text-gray-400';
+  const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-gray-300';
   const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-slate-500 to-slate-500';
   const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-slate-600 hover:to-slate-600';
   const btnShadow = isOrange ? 'shadow-[#EF672C]/25' : 'shadow-fuchsia-500/25';
   const modalBg = isOrange ? 'from-[#1a0a0a] to-[#150a05]' : 'from-[#1a0f25] to-[#150a1a]';
-  const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-fuchsia-500/10';
-  const focusBorder = isOrange ? 'focus:border-[#EF672C]/50 focus:ring-[#EF672C]/20' : 'focus:border-fuchsia-500/50 focus:ring-fuchsia-500/20';
+  const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-white/5';
+  const focusBorder = isOrange ? 'focus:border-[#EF672C]/50 focus:ring-[#EF672C]/20' : 'focus:border-white/15/50 focus:ring-fuchsia-500/20';
   const titleText = modalTitle || 'Finalizar Compra';
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

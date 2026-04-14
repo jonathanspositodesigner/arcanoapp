@@ -132,7 +132,7 @@ const YouTubeFacade = ({ videoId }: { videoId: string }) => {
   }, []);
 
   return (
-    <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-fuchsia-500/10 bg-black">
+    <div className="w-full max-w-3xl md:max-w-4xl lg:max-w-5xl mx-auto mb-10 rounded-2xl overflow-hidden border border-white/10 shadow-2xl shadow-white/5 bg-black">
       <div className="relative w-full aspect-video">
         {showIframe ? (
           <iframe
@@ -264,7 +264,7 @@ const TestimonialsGallery = () => {
         {DEPO_IMAGES.map((src, i) => (
           <div
             key={i}
-            className={`rounded-2xl overflow-hidden border-2 border-white/10 hover:border-fuchsia-500/40 transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-fuchsia-500/10 ${isDesktop ? 'cursor-pointer' : ''}`}
+            className={`rounded-2xl overflow-hidden border-2 border-white/10 hover:border-white/10 transition-all duration-300 hover:scale-[1.03] shadow-lg shadow-black/30 hover:shadow-white/5 ${isDesktop ? 'cursor-pointer' : ''}`}
             onClick={() => openLightbox(i)}
           >
             <img
@@ -317,7 +317,7 @@ const TestimonialsGallery = () => {
               <button
                 key={i}
                 onClick={(e) => { e.stopPropagation(); setLightboxIndex(i); }}
-                className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-fuchsia-400 w-6' : 'bg-white/30 hover:bg-white/50'}`}
+                className={`w-2 h-2 rounded-full transition-all ${i === lightboxIndex ? 'bg-slate-400 w-6' : 'bg-white/30 hover:bg-white/50'}`}
               />
             ))}
           </div>
@@ -414,7 +414,7 @@ const UpgradeUpscalerV3 = () => {
                 { icon: Shield, text: "Acesso V2 mantido" },
               ].map((item, i) => (
                 <div key={i} className="flex items-center gap-1.5 text-white/60 text-xs px-3 py-1">
-                  <item.icon className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <item.icon className="h-3.5 w-3.5 text-gray-400" />
                   <span>{item.text}</span>
                 </div>
               ))}
@@ -449,7 +449,7 @@ const UpgradeUpscalerV3 = () => {
 
           <StaggeredAnimation className="grid grid-cols-1 md:grid-cols-2 gap-6 md:items-stretch" staggerDelay={150}>
             {/* MODO TURBO */}
-            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-fuchsia-500/40 transition-all duration-300 hover:transform hover:scale-[1.01] flex flex-col">
+            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-white/10 transition-all duration-300 hover:transform hover:scale-[1.01] flex flex-col">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center">
                   <Zap className="h-6 w-6 text-amber-400" />
@@ -462,7 +462,7 @@ const UpgradeUpscalerV3 = () => {
                 </div>
               </div>
 
-              <p className="text-fuchsia-400 font-semibold text-sm mb-4">Resultado em menos de 60 segundos.</p>
+              <p className="text-gray-400 font-semibold text-sm mb-4">Resultado em menos de 60 segundos.</p>
 
               <p className="text-white/50 text-sm leading-relaxed mb-2">
                 Você lembra da última vez que um cliente estava esperando do outro lado enquanto você processava a imagem?
@@ -484,7 +484,7 @@ const UpgradeUpscalerV3 = () => {
             </div>
 
             {/* UPSCALE EM LOTE */}
-            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-fuchsia-500/40 transition-all duration-300 hover:transform hover:scale-[1.01] flex flex-col">
+            <div className="text-left bg-gradient-to-br from-white/[0.08] to-white/[0.03] border border-white/10 rounded-3xl p-7 md:p-8 hover:border-white/10 transition-all duration-300 hover:transform hover:scale-[1.01] flex flex-col">
               <div className="flex items-center gap-3 mb-5">
                 <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center">
                   <Layers className="h-6 w-6 text-amber-400" />
@@ -497,7 +497,7 @@ const UpgradeUpscalerV3 = () => {
                 </div>
               </div>
 
-              <p className="text-fuchsia-400 font-semibold text-sm mb-4">Até 10 imagens processadas de uma vez.</p>
+              <p className="text-gray-400 font-semibold text-sm mb-4">Até 10 imagens processadas de uma vez.</p>
 
               <p className="text-white/50 text-sm leading-relaxed mb-2">
                 Chega de arrastar imagem por imagem. Selecione até 10 fotos, clique uma vez, e deixe a IA trabalhar enquanto você faz outra coisa.
@@ -528,7 +528,7 @@ const UpgradeUpscalerV3 = () => {
             <div className="max-w-3xl mx-auto text-center">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-                  V2 vs V3 — <span className="text-fuchsia-400">O que muda pra você</span>
+                  V2 vs V3 — <span className="text-gray-400">O que muda pra você</span>
                 </h2>
                 <p className="text-white/50 text-sm md:text-base mb-10">Tudo que você já tem, mais duas funcionalidades poderosas.</p>
               </AnimatedSection>
@@ -636,7 +636,7 @@ const UpgradeUpscalerV3 = () => {
                 </div>
 
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-                  O que estão dizendo do <span className="text-fuchsia-400">V3</span>
+                  O que estão dizendo do <span className="text-gray-400">V3</span>
                 </h2>
                 <p className="text-white/50 text-sm mb-10">Os primeiros a testar o V3 já estão falando.</p>
               </AnimatedSection>
@@ -662,7 +662,7 @@ const UpgradeUpscalerV3 = () => {
           </FadeIn>
 
           <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white mb-3 tracking-wide">
-            Faça o <span className="text-fuchsia-400">upgrade</span> agora
+            Faça o <span className="text-gray-400">upgrade</span> agora
           </h2>
           <p className="text-white/50 text-sm mb-10">
             Acesso imediato ao Modo Turbo + Upscale em Lote.
@@ -672,9 +672,9 @@ const UpgradeUpscalerV3 = () => {
           <CountdownTimer />
 
           <AnimatedElement delay={200}>
-            <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.03] border-2 border-fuchsia-500/40 rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
+            <div className="bg-gradient-to-br from-white/[0.08] to-white/[0.03] border-2 border-white/10 rounded-3xl p-8 md:p-10 text-center relative overflow-hidden">
               {/* Glow effect */}
-              <div className="absolute -top-20 -right-20 w-40 h-40 bg-fuchsia-500/10 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -top-20 -right-20 w-40 h-40 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
               <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-slate-500/10 rounded-full blur-3xl pointer-events-none" />
 
               <div className="relative z-10">
@@ -736,7 +736,7 @@ const UpgradeUpscalerV3 = () => {
             <div className="max-w-3xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-10 tracking-wide">
-                  Perguntas <span className="text-fuchsia-400">frequentes</span>
+                  Perguntas <span className="text-gray-400">frequentes</span>
                 </h2>
               </AnimatedSection>
 
@@ -750,11 +750,11 @@ const UpgradeUpscalerV3 = () => {
                 ].map((item, i) => (
                   <details
                     key={i}
-                    className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-fuchsia-500/30 transition-all duration-300"
+                    className="group bg-white/5 border border-white/10 rounded-2xl overflow-hidden hover:border-white/10 transition-all duration-300"
                   >
                     <summary className="font-semibold text-sm md:text-base text-white/90 list-none flex items-center justify-between cursor-pointer p-5 md:p-6">
                       {item.q}
-                      <ChevronDown className="h-4 w-4 text-fuchsia-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
+                      <ChevronDown className="h-4 w-4 text-gray-400 shrink-0 ml-3 transition-transform duration-300 group-open:rotate-180" />
                     </summary>
                     <div className="px-5 md:px-6 pb-5 md:pb-6 -mt-1">
                       <p className="text-sm leading-relaxed text-white/50">{item.a}</p>

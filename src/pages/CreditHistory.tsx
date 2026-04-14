@@ -113,7 +113,7 @@ const CreditHistory = () => {
                 className="h-8 w-8 flex items-center justify-center rounded hover:bg-slate-500/10"
                 title="Comprar créditos"
               >
-                <PlusCircle className="w-5 h-5 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
+                <PlusCircle className="w-5 h-5 text-gray-400" style={{ filter: 'drop-shadow(0 0 4px rgba(148, 163, 184, 0.5))' }} />
               </button>
             </div>
           </div>

@@ -17,7 +17,7 @@ const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string;
   homem: [
     { id: 'h1', label: 'Em Pé Casual', color: 'from-blue-600 to-blue-800' },
     { id: 'h2', label: 'Braços Cruzados', color: 'from-indigo-600 to-indigo-800' },
-    { id: 'h3', label: 'Sentado', color: 'from-violet-600 to-violet-800' },
+    { id: 'h3', label: 'Sentado', color: 'from-slate-600 to-violet-800' },
     { id: 'h4', label: 'Caminhando', color: 'from-slate-600 to-slate-700' },
     { id: 'h5', label: 'Apontando', color: 'from-blue-700 to-indigo-900' },
     { id: 'h6', label: 'Mãos no Bolso', color: 'from-slate-600 to-slate-800' },
@@ -30,7 +30,7 @@ const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string;
     { id: 'm3', label: 'Sentada', color: 'from-slate-600 to-fuchsia-800' },
     { id: 'm4', label: 'Pose Fashion', color: 'from-slate-600 to-slate-700' },
     { id: 'm5', label: 'Caminhando', color: 'from-pink-700 to-rose-900' },
-    { id: 'm6', label: 'Braços Cruzados', color: 'from-violet-600 to-violet-800' },
+    { id: 'm6', label: 'Braços Cruzados', color: 'from-slate-600 to-violet-800' },
     { id: 'm7', label: 'Pose Casual', color: 'from-magenta-600 to-magenta-800' },
     { id: 'm8', label: 'Pose Profissional', color: 'from-red-600 to-red-800' },
   ],

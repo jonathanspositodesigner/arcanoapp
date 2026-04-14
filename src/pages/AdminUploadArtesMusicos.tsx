@@ -400,7 +400,7 @@ const AdminUploadArtesMusicos = () => {
           <div 
             onDragOver={handleDragOver} 
             onDrop={handleDrop} 
-            className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-violet-500 transition-colors cursor-pointer"
+            className="border-2 border-dashed border-border rounded-lg p-12 text-center hover:border-white/10 transition-colors cursor-pointer"
           >
             <input 
               id="media" 
@@ -650,9 +650,9 @@ const AdminUploadArtesMusicos = () => {
 
               {/* AI Generated Toggle */}
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-violet-500/10 border border-violet-500/20 rounded-lg">
+                <div className="flex items-center justify-between p-4 bg-violet-500/10 border border-white/10/20 rounded-lg">
                   <div className="flex items-center gap-3">
-                    <Sparkles className="h-5 w-5 text-violet-500" />
+                    <Sparkles className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="font-medium">Feito com IA</p>
                       <p className="text-sm text-muted-foreground">Gerado por inteligência artificial</p>

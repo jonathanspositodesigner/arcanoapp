@@ -61,7 +61,7 @@ const cards = [
   { key: "adSpend", label: "Gastos com Anúncios", icon: Wallet, gradient: "from-orange-500/20 to-orange-500/5", iconBg: "bg-orange-500/20", iconColor: "text-orange-400", valueColor: "text-orange-400" },
   { key: "platformFees", label: "Taxas de Plataformas", icon: Receipt, gradient: "from-rose-500/20 to-rose-500/5", iconBg: "bg-rose-500/20", iconColor: "text-rose-400", valueColor: "text-rose-400" },
   { key: "roi", label: "ROI", icon: TrendingUp, gradient: "from-blue-500/20 to-blue-500/5", iconBg: "bg-blue-500/20", iconColor: "text-blue-400", valueColor: "text-blue-400" },
-  { key: "profit", label: "Lucro", icon: BarChart3, gradient: "from-violet-500/20 to-violet-500/5", iconBg: "bg-violet-500/20", iconColor: "text-violet-400", valueColor: "text-violet-400" },
+  { key: "profit", label: "Lucro", icon: BarChart3, gradient: "from-violet-500/20 to-slate-400/5", iconBg: "bg-violet-500/20", iconColor: "text-gray-400", valueColor: "text-gray-400" },
 ];
 
 export default function SalesDashboardKPIs({ revenue, adSpend, platformFees, isLoading, approved }: Props) {

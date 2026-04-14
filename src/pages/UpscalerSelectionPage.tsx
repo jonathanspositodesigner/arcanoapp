@@ -99,14 +99,14 @@ const UpscalerSelectionPage = () => {
           {/* Video Upscaler Card */}
           <button
             onClick={handleSelectVideo}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-fuchsia-400/60 hover:shadow-xl hover:shadow-fuchsia-500/20 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-white-400/60 hover:shadow-xl hover:shadow-white/5 hover:scale-[1.02]"
           >
             {/* Glow effect */}
             <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-fuchsia-500/20 group-hover:shadow-fuchsia-500/40 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-white/5 group-hover:shadow-slate-500/20 transition-shadow">
                 <Video className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
@@ -128,17 +128,17 @@ const UpscalerSelectionPage = () => {
 
               {/* Features */}
               <div className="flex flex-wrap gap-2 mb-3 sm:mb-6">
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-200 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/10 text-fuchsia-200 text-xs sm:text-sm">
                   <Zap className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
                   Max 10 segundos
                 </span>
-                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-fuchsia-500/20 text-fuchsia-200 text-xs sm:text-sm">
+                <span className="inline-flex items-center gap-1 sm:gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-full bg-white/10 text-fuchsia-200 text-xs sm:text-sm">
                   100 créditos
                 </span>
               </div>
 
               {/* CTA */}
-              <div className="flex items-center gap-2 text-fuchsia-400 group-hover:text-fuchsia-300 font-medium transition-colors text-sm sm:text-base">
+              <div className="flex items-center gap-2 text-gray-400 group-hover:text-gray-300 font-medium transition-colors text-sm sm:text-base">
                 <span>Selecionar</span>
                 <ArrowLeft className="w-4 h-4 rotate-180 group-hover:translate-x-1 transition-transform" />
               </div>

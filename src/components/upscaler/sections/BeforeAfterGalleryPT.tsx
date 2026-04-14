@@ -42,7 +42,7 @@ export const BeforeAfterGalleryPT = ({ onZoomClick, isMobile = false }: BeforeAf
       after: render3dDepois,
       label: "Render 3D em alta definição",
       badge: "Render 3D",
-      badgeColor: "from-slate-500 to-violet-600",
+      badgeColor: "from-slate-500 to-slate-500",
       aspectRatio: cardAspectRatio
     },
     {

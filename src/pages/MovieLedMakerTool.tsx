@@ -546,7 +546,7 @@ const MovieLedMakerTool = () => {
               {/* Title */}
               <div>
                 <h1 className="text-xl font-bold text-white flex items-center gap-2">
-                  <Video className="h-5 w-5 text-fuchsia-400" />
+                  <Video className="h-5 w-5 text-gray-400" />
                   MovieLed Maker
                 </h1>
                 <p className="text-xs text-gray-400 mt-1">IA que gera movies para telão de LED com um clique.</p>
@@ -555,7 +555,7 @@ const MovieLedMakerTool = () => {
               {/* Reference Image */}
               <div>
                 <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
-                  <ImageIcon className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <ImageIcon className="h-3.5 w-3.5 text-gray-400" />
                   Telão de Referência
                 </span>
                 {(selectedLibraryItem || uploadedImage) ? (
@@ -590,8 +590,8 @@ const MovieLedMakerTool = () => {
                     data-tutorial-movieled="reference"
                     className="w-full h-[100px] lg:h-[120px] rounded-xl border border-dashed border-white/15 bg-white/[0.03] hover:bg-white/[0.06] hover:border-white/25 transition-all flex flex-col items-center justify-center gap-2 group"
                   >
-                    <div className="w-9 h-9 rounded-lg bg-fuchsia-500/10 border border-fuchsia-500/20 flex items-center justify-center group-hover:bg-fuchsia-500/20 transition-colors">
-                      <Plus className="w-4 h-4 text-fuchsia-400" />
+                    <div className="w-9 h-9 rounded-lg bg-slate-500/10 border border-white/15/20 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                      <Plus className="w-4 h-4 text-gray-400" />
                     </div>
                     <div className="text-center">
                       <p className="text-[11px] text-gray-300 font-medium">Escolher Telão</p>
@@ -604,7 +604,7 @@ const MovieLedMakerTool = () => {
               {/* Text Input */}
               <div>
                 <span className="text-sm font-medium text-white mb-2 block flex items-center gap-1.5">
-                  <Type className="h-3.5 w-3.5 text-fuchsia-400" />
+                  <Type className="h-3.5 w-3.5 text-gray-400" />
                   Nome no Telão
                 </span>
                 <div className="flex gap-2" data-tutorial-movieled="text-input">
@@ -801,8 +801,8 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
-                      <Video className="w-10 h-10 text-fuchsia-400" />
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/15/20 flex items-center justify-center">
+                      <Video className="w-10 h-10 text-gray-400" />
                     </div>
                     <div>
                       <h2 className="text-lg font-bold text-white">MovieLed Maker</h2>

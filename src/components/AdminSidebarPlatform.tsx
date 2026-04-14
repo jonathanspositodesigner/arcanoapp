@@ -22,7 +22,7 @@ const platformConfig = {
     title: "Artes - Músicos",
     subtitle: "Biblioteca de Artes Arcanas",
     icon: Music,
-    color: "text-violet-500",
+    color: "text-slate-400",
     basePath: "/admin-artes-musicos"
   },
   "prompts": {

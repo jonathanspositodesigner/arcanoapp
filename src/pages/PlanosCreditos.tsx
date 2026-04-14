@@ -161,7 +161,7 @@ const PlanosCreditos = () => {
             Ferramentas de IA Integradas
           </h2>
           <p className="text-gray-300 max-w-lg mx-auto mb-8">
-            Tudo em forma de aplicativo — <span className="text-fuchsia-400 font-medium">mais fácil e prático!</span>
+            Tudo em forma de aplicativo — <span className="text-gray-400 font-medium">mais fácil e prático!</span>
           </p>
 
           {/* Available Tools Grid */}
@@ -222,7 +222,7 @@ const PlanosCreditos = () => {
             <p className="text-gray-300 max-w-md sm:max-w-none mx-auto mb-2">
               Créditos <span className="text-green-400 font-semibold">vitalícios</span> que nunca expiram — use quando quiser!
             </p>
-            <p className="text-fuchsia-400 font-medium text-sm mb-4">
+            <p className="text-gray-400 font-medium text-sm mb-4">
               🎉 Promoção na primeira recarga de créditos!
             </p>
 
@@ -245,7 +245,7 @@ const PlanosCreditos = () => {
                   key={plan.credits}
                   className={`relative p-6 bg-[#111113] border-white/10 flex flex-col items-center text-center transition-all duration-300 hover:scale-[1.02] hover:border-white/15/40 ${
                     plan.bestValue ? 'ring-2 ring-yellow-500/50 border-yellow-500/30' : ''
-                  } ${plan.popular ? 'ring-2 ring-fuchsia-500/50 border-fuchsia-500/30' : ''}`}
+                  } ${plan.popular ? 'ring-2 ring-white/20 border-white/10' : ''}`}
                 >
                   {/* Badges */}
                   {plan.bestValue && (
@@ -279,7 +279,7 @@ const PlanosCreditos = () => {
 
                   {/* Savings Badge */}
                   {plan.savings && (
-                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
+                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-white/10 text-gray-300 text-xs mb-2 gap-1">
                       <Tag className="w-3 h-3" />
                       Economize {plan.savings}%
                     </Badge>

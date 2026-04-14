@@ -581,7 +581,7 @@ const GerarVideoTool = () => {
             <div className="text-6xl">🔒</div>
             <h1 className="text-xl font-bold text-white">Recurso não disponível no seu plano</h1>
             <p className="text-gray-300 text-sm">
-              A geração de vídeos está disponível a partir do plano <strong className="text-fuchsia-400">Pro</strong>.
+              A geração de vídeos está disponível a partir do plano <strong className="text-gray-400">Pro</strong>.
             </p>
             <p className="text-gray-400 text-xs">
               Faça upgrade do seu plano para desbloquear esta ferramenta.
@@ -610,7 +610,7 @@ const GerarVideoTool = () => {
               </button>
               <div>
                 <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                  <Video className="h-5 w-5 text-fuchsia-400" />
+                  <Video className="h-5 w-5 text-gray-400" />
                   Gerar Vídeo
                 </h1>
                 <p className="text-[10px] text-gray-400">{currentModel.name} • {currentModel.description}</p>
@@ -639,16 +639,16 @@ const GerarVideoTool = () => {
             <div className="flex flex-col items-center gap-4 text-gray-300">
               <div className="w-20 h-20 rounded-full border-2 border-white/10 flex items-center justify-center">
                 {isQueued ? (
-                  <Clock className="h-8 w-8 text-fuchsia-400 animate-pulse" />
+                  <Clock className="h-8 w-8 text-gray-400 animate-pulse" />
                 ) : (
-                  <Loader2 className="h-8 w-8 animate-spin text-fuchsia-400" />
+                  <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
                 )}
               </div>
               <div className="text-center">
                 {isQueued ? (
                   <>
                     <p className="text-sm text-white font-medium">Você está na fila</p>
-                    <p className="text-lg text-fuchsia-400 font-bold mt-1">Posição {queuePosition}</p>
+                    <p className="text-lg text-gray-400 font-bold mt-1">Posição {queuePosition}</p>
                     <p className="text-xs text-gray-400 mt-2">Sua geração será processada em breve</p>
                     <p className="text-[10px] text-slate-400 mt-1">Fila global compartilhada</p>
                   </>
@@ -857,7 +857,7 @@ const GerarVideoTool = () => {
                         <DropdownMenuItem
                           key={model.id}
                           onClick={() => setSelectedModel(model.id)}
-                          className={`text-xs ${selectedModel === model.id ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-gray-300'}`}
+                          className={`text-xs ${selectedModel === model.id ? 'text-gray-300 bg-slate-500/10' : 'text-gray-300'}`}
                         >
                           <div className="flex flex-col">
                             <span className="font-medium">{model.name}</span>
@@ -889,7 +889,7 @@ const GerarVideoTool = () => {
                           <DropdownMenuItem
                             key={ratio}
                             onClick={() => setAspectRatio(ratio)}
-                            className={`text-xs ${aspectRatio === ratio ? 'text-fuchsia-300 bg-fuchsia-500/10' : 'text-gray-300'}`}
+                            className={`text-xs ${aspectRatio === ratio ? 'text-gray-300 bg-slate-500/10' : 'text-gray-300'}`}
                           >
                             {ASPECT_RATIO_LABELS[ratio]} ({ratio})
                           </DropdownMenuItem>
@@ -904,7 +904,7 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
-                          ? 'bg-fuchsia-600/30 border-fuchsia-500/50 text-fuchsia-200'
+                          ? 'bg-slate-600/30 border-white/15/50 text-fuchsia-200'
                           : 'bg-white/5 border-slate-500/25 text-gray-400 hover:text-gray-300 hover:bg-slate-800/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}

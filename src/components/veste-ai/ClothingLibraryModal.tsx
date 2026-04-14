@@ -20,7 +20,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'm-a1', label: 'Look Palco', color: 'from-slate-600 to-slate-700' },
       { id: 'm-a2', label: 'Estilo Rockstar', color: 'from-red-600 to-red-800' },
       { id: 'm-a3', label: 'Visual Artístico', color: 'from-slate-600 to-fuchsia-800' },
-      { id: 'm-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
+      { id: 'm-a4', label: 'Outfit Show', color: 'from-slate-600 to-violet-800' },
     ],
     politico: [
       { id: 'm-p1', label: 'Terno Político', color: 'from-blue-700 to-blue-900' },
@@ -58,7 +58,7 @@ const PLACEHOLDER_CLOTHING: Record<GenderFilter, Record<CategoryFilter, Array<{ 
       { id: 'f-a1', label: 'Look Diva', color: 'from-slate-600 to-slate-700' },
       { id: 'f-a2', label: 'Visual Popstar', color: 'from-pink-600 to-pink-800' },
       { id: 'f-a3', label: 'Estilo Cantora', color: 'from-slate-600 to-fuchsia-800' },
-      { id: 'f-a4', label: 'Outfit Show', color: 'from-violet-600 to-violet-800' },
+      { id: 'f-a4', label: 'Outfit Show', color: 'from-slate-600 to-violet-800' },
     ],
     politico: [
       { id: 'f-p1', label: 'Tailleur Político', color: 'from-blue-700 to-blue-900' },

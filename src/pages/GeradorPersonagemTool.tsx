@@ -653,7 +653,7 @@ const GeradorPersonagemTool: React.FC = () => {
             </div>
             <button
               type="button"
-              className="text-[10px] text-fuchsia-400 hover:text-fuchsia-300 underline font-medium mb-1 self-start"
+              className="text-[10px] text-gray-400 hover:text-gray-300 underline font-medium mb-1 self-start"
               onClick={() => setShowExamplesModal(true)}
             >
               Ver exemplo de fotos →
@@ -744,16 +744,16 @@ const GeradorPersonagemTool: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/arcano-cloner-tool')}
-              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-slate-600/20 to-slate-500/20 border border-fuchsia-500/30 rounded-lg p-3 hover:from-slate-600/30 hover:to-slate-500/30 transition-all group"
+              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-slate-600/20 to-slate-500/20 border border-white/10 rounded-lg p-3 hover:from-slate-600/30 hover:to-slate-500/30 transition-all group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
-                <Sparkles className="w-4 h-4 text-fuchsia-400 flex-shrink-0" />
+                <Sparkles className="w-4 h-4 text-gray-400 flex-shrink-0" />
                 <div className="text-left min-w-0">
                   <p className="text-xs font-semibold text-white">Arcano Cloner</p>
                   <p className="text-[10px] text-gray-400 leading-tight">Use seu avatar para gerar imagens</p>
                 </div>
               </div>
-              <ArrowRight className="w-4 h-4 text-fuchsia-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
+              <ArrowRight className="w-4 h-4 text-gray-400 flex-shrink-0 group-hover:translate-x-0.5 transition-transform" />
             </button>
           </div>
 
@@ -762,7 +762,7 @@ const GeradorPersonagemTool: React.FC = () => {
             <Card className="relative overflow-hidden bg-white/5 border-white/10 flex-1 flex flex-col min-h-[250px] lg:min-h-0">
               <div className="px-3 py-2 border-b border-white/10 flex items-center justify-between flex-shrink-0">
                 <h3 className="text-xs font-semibold text-white flex items-center gap-1.5">
-                  <ImageIcon className="w-3.5 h-3.5 text-fuchsia-400" />Resultado
+                  <ImageIcon className="w-3.5 h-3.5 text-gray-400" />Resultado
                 </h3>
                 {viewedImage && (
                   <div className="flex items-center gap-1">
@@ -787,8 +787,8 @@ const GeradorPersonagemTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-fuchsia-500/30 border-t-fuchsia-500 animate-spin" />
-                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-fuchsia-400" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-fuchsia-500 animate-spin" />
+                      <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <div className="text-center">
                       <p className="text-sm text-white font-medium flex items-center gap-2">
@@ -814,7 +814,7 @@ const GeradorPersonagemTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                    <div className="w-16 h-16 rounded-xl bg-fuchsia-500/10 border-2 border-dashed border-fuchsia-500/30 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-xl bg-slate-500/10 border-2 border-dashed border-white/10 flex items-center justify-center">
                       <ImageIcon className="w-8 h-8 text-fuchsia-500/40" />
                     </div>
                     <div className="text-center">

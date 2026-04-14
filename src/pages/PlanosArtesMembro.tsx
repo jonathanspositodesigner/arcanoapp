@@ -265,7 +265,7 @@ const PlanosArtesMembro = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="bg-gradient-to-r from-slate-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
+          <Badge className="bg-gradient-to-r from-slate-500 to-slate-400 text-white text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
             {t('memberDiscountLabel')}
           </Badge>
@@ -408,7 +408,7 @@ const PlanosArtesMembro = () => {
                         ))}
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-slate-500 to-violet-500 hover:from-slate-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-slate-500/20"
+                        className="w-full bg-gradient-to-r from-slate-500 to-slate-400 hover:from-slate-600 hover:to-slate-500 text-white font-bold shadow-lg shadow-slate-500/20"
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >

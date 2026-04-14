@@ -100,7 +100,7 @@ const ArtesMusicosMarketing = () => {
         <p className="text-muted-foreground mb-4">Ferramentas de divulgação e campanhas</p>
 
         {isReordering && (
-          <div className="mb-4 p-3 bg-violet-500/10 border border-violet-500/20 rounded-lg text-center">
+          <div className="mb-4 p-3 bg-violet-500/10 border border-white/10/20 rounded-lg text-center">
             <p className="text-sm text-violet-600 font-medium">
               🔄 Arraste os cards para reordenar
             </p>
@@ -119,7 +119,7 @@ const ArtesMusicosMarketing = () => {
           >
             {isReordering && (
               <div className="absolute top-2 right-2 z-10 p-1 bg-violet-500/20 rounded-md">
-                <GripVertical className="h-4 w-4 text-violet-500" />
+                <GripVertical className="h-4 w-4 text-slate-400" />
               </div>
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -143,12 +143,12 @@ const ArtesMusicosMarketing = () => {
             <Card className="p-6 border-2 border-white/10 relative" {...getDragProps("push-analytics")}>
               {isReordering && (
                 <div className="absolute top-2 right-2 z-10 p-1 bg-violet-500/20 rounded-md">
-                  <GripVertical className="h-4 w-4 text-violet-500" />
+                  <GripVertical className="h-4 w-4 text-slate-400" />
                 </div>
               )}
               <div className="flex items-center gap-3 mb-4">
                 <div className="p-2 bg-violet-500/20 rounded-full">
-                  <Bell className="h-6 w-6 text-violet-500" />
+                  <Bell className="h-6 w-6 text-slate-400" />
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-foreground">Analytics de Notificações Push</p>

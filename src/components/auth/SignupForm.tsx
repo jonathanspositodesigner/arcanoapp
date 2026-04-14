@@ -109,7 +109,7 @@ const variantStyles = {
     label: 'text-white/80',
     input: 'bg-[#0f0f1a] border-white/10 text-white',
     alert: 'bg-violet-500/10 border-white/10',
-    alertIcon: 'text-violet-500',
+    alertIcon: 'text-slate-400',
     alertText: 'text-violet-200',
     button: 'bg-emerald-500 hover:bg-emerald-600 text-white',
     backButton: 'text-white/60 hover:text-white',

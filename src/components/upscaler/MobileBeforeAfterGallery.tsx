@@ -176,7 +176,7 @@ export const MobileBeforeAfterGallery = ({ items }: MobileBeforeAfterGalleryProp
             onClick={() => { setCurrentIndex(i); setSliderPosition(50); }}
             className={`rounded-full transition-all duration-300 ${
               i === currentIndex
-                ? "w-8 h-2 bg-fuchsia-500"
+                ? "w-8 h-2 bg-slate-500"
                 : "w-2 h-2 bg-white/30"
             }`}
             aria-label={`Slide ${i + 1}`}

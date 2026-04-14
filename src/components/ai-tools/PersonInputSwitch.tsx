@@ -138,7 +138,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
               </p>
               <Button
                 size="sm"
-                className="h-7 text-[10px] bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-semibold border-0"
+                className="h-7 text-[10px] bg-slate-600 hover:bg-slate-500 text-white font-semibold border-0"
                 onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />
@@ -156,7 +156,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                     className={cn(
                       'relative aspect-square rounded-md overflow-hidden border-2 transition-all',
                       selectedCharacterId === char.id
-                        ? 'border-fuchsia-500 ring-1 ring-fuchsia-500/50'
+                        ? 'border-white/15 ring-1 ring-white/20'
                         : 'border-white/10 hover:border-white/15'
                     )}
                     onClick={() => handleSelectCharacter(char)}
@@ -185,7 +185,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
               </div>
               <Button
                 size="sm"
-                className="w-full h-6 mt-1.5 text-[10px] bg-fuchsia-600/80 hover:bg-fuchsia-500 text-white font-semibold border-0"
+                className="w-full h-6 mt-1.5 text-[10px] bg-slate-600 hover:bg-slate-500 text-white font-semibold border-0"
                 onClick={() => navigate('/gerador-avatar')}
               >
                 <Plus className="w-3 h-3 mr-1" />

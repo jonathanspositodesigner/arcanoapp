@@ -62,14 +62,14 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
       <div className="hidden md:flex justify-end gap-2 mb-4">
         <button
           onClick={handlePrev}
-          className="w-10 h-10 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 hover:bg-fuchsia-500/30 transition-colors"
+          className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-white/10 transition-colors"
           aria-label="Anterior"
         >
           <ChevronLeft className="w-5 h-5" />
         </button>
         <button
           onClick={handleNext}
-          className="w-10 h-10 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 flex items-center justify-center text-fuchsia-400 hover:bg-fuchsia-500/30 transition-colors"
+          className="w-10 h-10 rounded-full bg-white/10 border border-white/10 flex items-center justify-center text-gray-400 hover:bg-white/10 transition-colors"
           aria-label="Próximo"
         >
           <ChevronRight className="w-5 h-5" />
@@ -125,7 +125,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
 
                   <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-transparent">
                     <div className="absolute bottom-5 left-5 right-5">
-                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
+                      <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 text-gray-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
                         {badgeText}
                       </span>
                       {item.label && (
@@ -163,7 +163,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
             <button
               key={i}
               onClick={() => setMobileIndex(i)}
-              className={`rounded-full transition-all duration-300 ${i === mobileIndex ? "w-4 h-1.5 bg-fuchsia-400" : "w-1.5 h-1.5 bg-white/30"}`}
+              className={`rounded-full transition-all duration-300 ${i === mobileIndex ? "w-4 h-1.5 bg-slate-400" : "w-1.5 h-1.5 bg-white/30"}`}
               aria-label={`Ir para imagem ${i + 1}`}
             />
           ))}
@@ -213,7 +213,7 @@ const ExpandingGallery = ({ items, badgeText = "Feito com o Arcano Cloner" }: Ex
               {isActive && (
                 <div className="absolute inset-0 pointer-events-none bg-gradient-to-t from-black/70 via-transparent to-transparent">
                   <div className="absolute bottom-6 left-6 right-6">
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-fuchsia-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/10 border border-white/10 text-gray-300 text-[10px] font-medium tracking-wide uppercase mb-1.5">
                       {badgeText}
                     </span>
                     {item.label && (

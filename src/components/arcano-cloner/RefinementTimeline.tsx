@@ -24,7 +24,7 @@ const RefinementTimeline: React.FC<RefinementTimelineProps> = ({ versions, selec
             onClick={() => onSelect(i)}
             className={`flex-shrink-0 w-14 h-14 rounded-md overflow-hidden border-2 transition-all ${
               i === selectedIndex
-                ? 'border-fuchsia-500 ring-1 ring-fuchsia-500/50'
+                ? 'border-white/15 ring-1 ring-white/20'
                 : 'border-white/10 hover:border-white/15'
             }`}
           >

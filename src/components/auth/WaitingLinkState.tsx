@@ -59,9 +59,9 @@ const variantStyles = {
   teal: {
     card: 'bg-[#1a1a2e]/80 border-white/10',
     iconBg: 'bg-violet-500/20',
-    icon: 'text-violet-400',
+    icon: 'text-gray-400',
     title: 'text-white',
-    email: 'text-violet-400 font-medium',
+    email: 'text-gray-400 font-medium',
     description: 'text-white/60',
     resendButton: 'bg-violet-600 hover:bg-violet-700 text-white',
     changeButton: 'text-white/60 hover:text-white',

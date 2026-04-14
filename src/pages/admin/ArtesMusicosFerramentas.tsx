@@ -21,9 +21,9 @@ const ArtesMusicosFerramentas = () => {
         </div>
 
         {/* Info Banner */}
-        <div className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-lg mb-6">
+        <div className="p-4 bg-violet-500/10 border border-white/10/20 rounded-lg mb-6">
           <div className="flex items-center gap-3">
-            <Clock className="h-5 w-5 text-violet-500" />
+            <Clock className="h-5 w-5 text-slate-400" />
             <p className="text-sm text-violet-600 font-medium">
               As demais ferramentas estão em desenvolvimento. Em breve você poderá configurar tudo por aqui!
             </p>
@@ -32,13 +32,13 @@ const ArtesMusicosFerramentas = () => {
 
         {/* Stats Cards - Disabled */}
         <div className="grid grid-cols-1 gap-4 mb-6">
-          <Card className="p-6 bg-gradient-to-r from-violet-500/10 to-violet-500/5 border-violet-500/20 opacity-60 cursor-not-allowed relative">
+          <Card className="p-6 bg-gradient-to-r from-violet-500/10 to-slate-400/5 border-white/10/20 opacity-60 cursor-not-allowed relative">
             <Badge className="absolute top-2 right-2 bg-violet-500/20 text-violet-600 border-white/10">
               Em breve
             </Badge>
             <div className="flex items-center gap-4">
               <div className="p-3 bg-violet-500/20 rounded-full">
-                <Inbox className="h-8 w-8 text-violet-500" />
+                <Inbox className="h-8 w-8 text-slate-400" />
               </div>
               <div className="flex-1">
                 <p className="text-sm text-muted-foreground mb-2">Envios para aprovar</p>
@@ -57,7 +57,7 @@ const ArtesMusicosFerramentas = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           {/* Upload - ENABLED */}
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
             onClick={() => navigate("/admin-upload-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -70,7 +70,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
             onClick={() => navigate("/admin-artes-musicos/review")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -83,7 +83,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
             onClick={() => navigate("/admin-manage-artes-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -109,7 +109,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
             onClick={() => navigate("/admin-premium-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
@@ -122,7 +122,7 @@ const ArtesMusicosFerramentas = () => {
           </Card>
 
           <Card 
-            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-violet-500/50"
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-lg transition-all hover:border-white/10/50"
             onClick={() => navigate("/admin-categories-musicos")}
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">

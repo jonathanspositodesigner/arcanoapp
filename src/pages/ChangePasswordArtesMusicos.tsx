@@ -94,7 +94,7 @@ const ChangePasswordArtesMusicos = () => {
   if (isCheckingAuth) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#2d1b4e] to-[#0f0f1a] flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-violet-400 animate-spin" />
+        <Loader2 className="h-8 w-8 text-gray-400 animate-spin" />
       </div>
     );
   }
@@ -106,10 +106,10 @@ const ChangePasswordArtesMusicos = () => {
         <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
           <CardHeader className="text-center">
             <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
-              <Mail className="h-6 w-6 text-violet-400" />
+              <Mail className="h-6 w-6 text-gray-400" />
             </div>
             <div className="flex items-center justify-center gap-2 mb-2">
-              <Music className="h-5 w-5 text-violet-400" />
+              <Music className="h-5 w-5 text-gray-400" />
             </div>
             <CardTitle className="text-2xl text-white">Primeiro Acesso</CardTitle>
             <CardDescription className="text-white/60">
@@ -219,10 +219,10 @@ const ChangePasswordArtesMusicos = () => {
       <Card className="w-full max-w-md bg-[#1a1a2e]/80 border-white/10">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-violet-500/30 rounded-full flex items-center justify-center mb-4">
-            <Lock className="h-6 w-6 text-violet-400" />
+            <Lock className="h-6 w-6 text-gray-400" />
           </div>
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Music className="h-5 w-5 text-violet-400" />
+            <Music className="h-5 w-5 text-gray-400" />
           </div>
           <CardTitle className="text-2xl text-white">Alterar Senha</CardTitle>
           <CardDescription className="text-white/60">

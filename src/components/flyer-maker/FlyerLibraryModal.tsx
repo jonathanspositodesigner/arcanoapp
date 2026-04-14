@@ -109,7 +109,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
       <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#111113] border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
-            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />
+            <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
             Biblioteca de Flyers
           </DialogTitle>
         </DialogHeader>
@@ -160,7 +160,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                   <button
                     key={flyer.id}
                     onClick={() => handleSelectFlyer(flyer)}
-                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
+                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
                   >
                     <img 
                       src={flyer.image_url} 
@@ -172,8 +172,8 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                     <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
                     </div>
-                    <div className="absolute inset-0 bg-fuchsia-500/0 group-hover:bg-fuchsia-500/10 transition-colors flex items-center justify-center">
-                      <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-fuchsia-600 px-3 py-1 rounded-full transition-opacity">Selecionar</span>
+                    <div className="absolute inset-0 bg-slate-500/0 group-hover:bg-slate-500/10 transition-colors flex items-center justify-center">
+                      <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-white text-xs font-medium bg-slate-600 px-3 py-1 rounded-full transition-opacity">Selecionar</span>
                     </div>
                   </button>
                 ))}
