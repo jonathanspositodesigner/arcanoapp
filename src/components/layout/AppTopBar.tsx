@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu } from "lucide-react";
+import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
+import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MyCreationsModal } from "@/components/ai-tools/creations";
@@ -29,6 +30,7 @@ interface AppTopBarProps {
 const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleSidebar }: AppTopBarProps) => {
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
+  const { theme, toggleTheme } = useTheme();
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
 
@@ -107,6 +109,14 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         >
           <Settings className="w-4 h-4 mr-2" />
           Configurações
+        </DropdownMenuItem>
+
+        <DropdownMenuItem
+          onClick={(e) => { e.preventDefault(); toggleTheme(); }}
+          className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
+        >
+          {theme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+          {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
         </DropdownMenuItem>
 
         <DropdownMenuSeparator className="bg-white/50/20" />
