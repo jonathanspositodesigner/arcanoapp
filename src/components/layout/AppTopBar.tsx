@@ -111,6 +111,14 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           Configurações
         </DropdownMenuItem>
 
+        <DropdownMenuItem
+          onClick={(e) => { e.preventDefault(); toggleTheme(); }}
+          className="cursor-pointer hover:bg-white/50/20 focus:bg-white/50/20"
+        >
+          {theme === "dark" ? <Sun className="w-4 h-4 mr-2" /> : <Moon className="w-4 h-4 mr-2" />}
+          {theme === "dark" ? "Tema Claro" : "Tema Escuro"}
+        </DropdownMenuItem>
+
         <DropdownMenuSeparator className="bg-white/50/20" />
 
         <DropdownMenuItem
