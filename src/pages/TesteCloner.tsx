@@ -62,7 +62,7 @@ const TesteCloner = () => {
         <HeroCarouselBackground />
 
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-muted/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         <div className="absolute inset-0 z-[10] flex items-center justify-center pointer-events-none">
@@ -143,7 +143,7 @@ const TesteCloner = () => {
 
       {/* ==================== TUDO FEITO COM UM CLIQUE ==================== */}
       <LazySection rootMargin="100px">
-        <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+        <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
           <div className="max-w-7xl mx-auto text-center">
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">

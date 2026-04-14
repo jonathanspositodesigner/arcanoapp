@@ -647,7 +647,7 @@ const FlyerMakerTool: React.FC = () => {
                     />
 
                     {/* Artist Photos */}
-                    <div className="border border-border rounded-xl p-4 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 bg-muted/50">
                       <span className="text-sm font-medium text-foreground mb-2 block">Fotos dos Artistas (Max 5)</span>
                       <div className="grid grid-cols-3 gap-2">
                         {[0, 1, 2, 3, 4].map((idx) => {
@@ -656,7 +656,7 @@ const FlyerMakerTool: React.FC = () => {
                             return (
                               <div key={idx} className={`relative aspect-[3/4] rounded-lg overflow-hidden group ${idx >= 3 ? 'col-span-1' : ''}`}>
                                 <img src={photo.url} alt="" className="w-full h-full object-cover" />
-                                <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
+                                <button onClick={() => removeArtistPhoto(idx)} className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
                                   <Trash2 className="w-4 h-4" />
                                 </button>
                               </div>
@@ -676,12 +676,12 @@ const FlyerMakerTool: React.FC = () => {
                     </div>
 
                     {/* Logo */}
-                    <div className="border border-border rounded-xl p-4 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 bg-muted/50">
                       <span className="text-sm font-medium text-foreground mb-2 block">Logo do Local</span>
                       {logoImage ? (
                         <div className="relative h-20 rounded-lg overflow-hidden group">
-                          <img src={logoImage} alt="" className="w-full h-full object-contain bg-black/20" />
-                          <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
+                          <img src={logoImage} alt="" className="w-full h-full object-contain bg-muted/50" />
+                          <button onClick={() => { setLogoImage(null); setLogoFile(null); }} className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity" disabled={isProcessing}>
                             <Trash2 className="w-4 h-4" />
                           </button>
                         </div>
@@ -698,30 +698,30 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="space-y-2.5">
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Data e Horário:</span>
-                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Título do Evento:</span>
-                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Endereço:</span>
-                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Nomes dos Artistas:</span>
-                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção:</span>
-                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-black/40 border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
                     {/* Size Toggle */}
                     <div>
                       <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
-                      <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
+                      <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
                         <button
                           onClick={() => setImageSize('3:4')}
                           className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${

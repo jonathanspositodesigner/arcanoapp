@@ -56,7 +56,7 @@ const NavigationBlockerModal = ({
         <AlertDialogFooter className="flex-col sm:flex-row gap-2 mt-4">
           <AlertDialogCancel 
             onClick={onCancelLeave}
-            className="bg-slate-600 hover:bg-slate-700 text-foreground border-0 w-full sm:w-auto"
+            className="bg-secondary hover:bg-secondary text-foreground border-0 w-full sm:w-auto"
           >
             Continuar Esperando
           </AlertDialogCancel>

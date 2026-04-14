@@ -13,7 +13,7 @@ export const LandingTrialSignupSection = () => {
   };
 
   return (
-    <section className="px-4 py-16 md:py-20 bg-black/30">
+    <section className="px-4 py-16 md:py-20 bg-muted/50">
       <AnimatedSection className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">

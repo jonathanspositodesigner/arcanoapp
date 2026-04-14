@@ -151,8 +151,8 @@ const FullscreenModal = ({
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-14 h-14 bg-white rounded-full shadow-xl flex items-center justify-center">
             <div className="flex gap-0.5">
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
-              <div className="w-0.5 h-6 bg-gray-400 rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
+              <div className="w-0.5 h-6 bg-border rounded-full" />
             </div>
           </div>
         </div>
@@ -174,7 +174,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02] hover:shadow-slate-500/20 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -569,14 +569,14 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
       {/* Arrows */}
       <button
         onClick={() => goTo(-1)}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-muted/70 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Anterior"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
       <button
         onClick={() => goTo(1)}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-black/50 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-muted/70 hover:bg-black/70 text-foreground rounded-full p-1.5 backdrop-blur-sm transition-colors"
         aria-label="Próximo"
       >
         <ChevronRight className="h-4 w-4" />
@@ -587,7 +587,7 @@ const HeroCarousel = ({ isMobile, locale, label }: { isMobile: boolean; locale: 
           <button
             key={i}
             onClick={() => setCurrentSlide(i)}
-            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-slate-400 w-5' : 'bg-white/30 hover:bg-accent0'}`}
+            className={`w-2 h-2 rounded-full transition-all ${i === currentSlide ? 'bg-muted-foreground w-5' : 'bg-white/30 hover:bg-accent0'}`}
             aria-label={`Slide ${i + 1}`}
           />
         ))}
@@ -855,7 +855,7 @@ const PlanosUpscalerArcano69v2 = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30">
+          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-8 md:mb-12 tracking-wide">
@@ -925,7 +925,7 @@ const PlanosUpscalerArcano69v2 = () => {
           </Suspense>
 
           {/* PARA QUEM É */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">
@@ -972,7 +972,7 @@ const PlanosUpscalerArcano69v2 = () => {
                         <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-slate-500/20">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
                       <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
@@ -994,7 +994,7 @@ const PlanosUpscalerArcano69v2 = () => {
           <UpscalerPricingSection isPremium={isPremium} tool={tool} t={t} />
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
-          <AnimatedSection className="px-4 py-20 bg-black/30">
+          <AnimatedSection className="px-4 py-20 bg-muted/50">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-12 tracking-wide">

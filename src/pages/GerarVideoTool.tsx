@@ -588,7 +588,7 @@ const GerarVideoTool = () => {
             </p>
             <button
               onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
+              className="mt-4 px-6 py-2.5 rounded-full bg-secondary hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
             >
               Voltar
             </button>
@@ -631,7 +631,7 @@ const GerarVideoTool = () => {
         <div className="flex-1 flex items-center justify-center p-4">
           {resultUrl ? (
             <div className="w-full max-w-2xl">
-              <div className="rounded-2xl overflow-hidden border border-border bg-black/30 shadow-2xl">
+              <div className="rounded-2xl overflow-hidden border border-border bg-muted/50 shadow-2xl">
                 <video src={resultUrl} controls autoPlay className="w-full h-auto" />
               </div>
             </div>
@@ -717,7 +717,7 @@ const GerarVideoTool = () => {
                         {isVeoModel ? 'Imagem de Referência' : '1º Frame (início)'}
                       </p>
                       {startFrame ? (
-                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                        <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-muted/50">
                           <img src={startFrame.preview} alt={isVeoModel ? 'Imagem de referência' : 'Primeiro frame'} className="w-full h-full object-cover" />
                           <button 
                             onClick={() => setStartFrame(null)} 
@@ -751,7 +751,7 @@ const GerarVideoTool = () => {
                             {isVeoModel ? 'Último Frame (opcional)' : 'Último Frame (fim)'}
                           </p>
                           {endFrame ? (
-                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-black/30">
+                            <div className="relative h-16 rounded-lg overflow-hidden border border-green-500/50 bg-muted/50">
                               <img src={endFrame.preview} alt="Último frame" className="w-full h-full object-cover" />
                               <button 
                                 onClick={() => setEndFrame(null)} 
@@ -847,7 +847,7 @@ const GerarVideoTool = () => {
 
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                      <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors">
                         <span className="font-medium">{currentModel.name}</span>
                         <ChevronDown className="h-3 w-3 text-muted-foreground" />
                       </button>
@@ -879,7 +879,7 @@ const GerarVideoTool = () => {
                   {(isVeoModel || isGeminiLite) && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                        <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors">
                           <span className="font-medium">{ASPECT_RATIO_LABELS[aspectRatio] || aspectRatio}</span>
                           <ChevronDown className="h-3 w-3 text-muted-foreground" />
                         </button>
@@ -904,8 +904,8 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
-                          ? 'bg-slate-600/30 border-border/50 text-muted-foreground'
-                          : 'bg-accent border-slate-500/25 text-muted-foreground hover:text-muted-foreground hover:bg-slate-800/50'
+                          ? 'bg-muted/30 border-border/50 text-muted-foreground'
+                          : 'bg-accent border-slate-500/25 text-muted-foreground hover:text-muted-foreground hover:bg-muted/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}
                     >

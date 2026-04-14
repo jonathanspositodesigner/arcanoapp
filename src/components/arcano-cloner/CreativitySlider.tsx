@@ -37,7 +37,7 @@ const CreativitySlider: React.FC<CreativitySliderProps> = ({
         
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-[9px] text-muted-foreground">Mais fiel</span>
-          <span className="text-[10px] font-bold text-foreground bg-slate-600/40 rounded px-1.5 py-0.5">
+          <span className="text-[10px] font-bold text-foreground bg-muted/40 rounded px-1.5 py-0.5">
             {value}
           </span>
           <span className="text-[9px] text-muted-foreground">Muito criativo</span>

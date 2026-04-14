@@ -173,8 +173,8 @@ export const FullscreenModal = ({
                   >
                     <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-md flex items-center justify-center">
                       <div className="flex gap-[1px]">
-                        <div className="w-[1px] h-4 bg-gray-400 rounded-full" />
-                        <div className="w-[1px] h-4 bg-gray-400 rounded-full" />
+                        <div className="w-[1px] h-4 bg-border rounded-full" />
+                        <div className="w-[1px] h-4 bg-border rounded-full" />
                       </div>
                     </div>
                   </div>

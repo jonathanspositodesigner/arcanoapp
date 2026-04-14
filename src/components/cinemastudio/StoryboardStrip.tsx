@@ -52,7 +52,7 @@ const StoryboardStrip: React.FC<Props> = ({ scenes, activeSceneId, onLoad, onRem
               {hasContent && (
                 <button
                   onClick={e => { e.stopPropagation(); onRemove(scene.id); }}
-                  className="absolute top-0.5 right-0.5 p-0.5 bg-black/50 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                  className="absolute top-0.5 right-0.5 p-0.5 bg-muted/70 rounded-full opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                 >
                   <X className="w-2.5 h-2.5 text-muted-foreground" />
                 </button>

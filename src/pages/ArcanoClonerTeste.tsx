@@ -177,7 +177,7 @@ const ArcanoClonerTeste = () => {
 
         {/* Layer 2: Purple glow behind person */}
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-muted/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
@@ -257,7 +257,7 @@ const ArcanoClonerTeste = () => {
 
       {/* ==================== PAIN POINTS (OCULTO)
       <LazySection>
-      <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-black/30">
+      <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" className="text-center" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 md:mb-12">
@@ -401,7 +401,7 @@ const ArcanoClonerTeste = () => {
 
 
       <LazySection rootMargin="100px">
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+      <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
         <div className="max-w-7xl mx-auto text-center">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">
@@ -433,7 +433,7 @@ const ArcanoClonerTeste = () => {
 
       {/* ==================== HOW IT WORKS ==================== */}
       <LazySection>
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+      <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
@@ -454,7 +454,7 @@ const ArcanoClonerTeste = () => {
 
       {/* ==================== BONUS (OCULTO)
       <LazySection>
-      <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
+      <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
@@ -464,7 +464,7 @@ const ArcanoClonerTeste = () => {
           </AnimatedSection>
         </div>
       </AnimatedSection>
-      <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
+      <AnimatedSection className="px-4 py-10 md:py-14 bg-muted/50">
         ... bonus 1 e 2 ...
       </AnimatedSection>
       </LazySection>
@@ -514,7 +514,7 @@ const ArcanoClonerTeste = () => {
       {/* ==================== PRICING (OCULTO) ====================
       <LazySection>
       <div id="pricing-section">
-        <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
+        <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50" animation="scale">
           ... pricing + guarantee hidden ...
         </AnimatedSection>
       </div>

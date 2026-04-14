@@ -37,7 +37,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
     { name: "Pose Changer", path: "/pose-changer-tool", badge: null, badgeColor: null, disabled: false },
     { name: "Veste AI", path: "/veste-ai-tool", badge: null, badgeColor: null, disabled: false },
     { name: "MovieLed Maker", path: "/movieled-maker", badge: "Novo", badgeColor: "bg-green-500/30", textColor: "text-green-300", disabled: false },
-    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-slate-400/30", textColor: "text-muted-foreground", disabled: true },
+    { name: "Forja de Selos 3D", path: "#", badge: "Em breve", badgeColor: "bg-muted/30", textColor: "text-muted-foreground", disabled: true },
   ];
 
   const handleLogout = async () => {
@@ -53,7 +53,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
   return (
     <>
       {/* Overlay */}
-      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-black/50 z-40" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
       <aside className={`

@@ -100,7 +100,7 @@ const VideoSettingsSection: React.FC<Props> = ({ settings, updateSettings, mode 
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-16 flex-shrink-0">Rampa</span>
             <Select value={settings.speedRamp} onValueChange={v => updateSettings({ speedRamp: v })}>
-              <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+              <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent className="bg-background border-border">

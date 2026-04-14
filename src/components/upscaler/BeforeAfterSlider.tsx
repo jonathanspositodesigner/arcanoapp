@@ -97,7 +97,7 @@ export const BeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
+        className="relative w-full rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-primary/5"
         onDragStart={(e) => e.preventDefault()}
         style={{ aspectRatio: getAspectRatio() }}
         onMouseDown={handleMouseDown}
@@ -160,8 +160,8 @@ export const BeforeAfterSlider = ({
               : 'bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-8 h-8'
           }`}>
             <div className={`flex ${compact ? 'gap-[1px]' : 'gap-[1px]'}`}>
-              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
-              <div className={`bg-gray-400 rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
+              <div className={`bg-border rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
+              <div className={`bg-border rounded-full ${compact ? 'w-[1px] h-2' : 'w-[1px] h-3'}`} />
             </div>
           </div>
         </div>

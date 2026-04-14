@@ -382,7 +382,7 @@ const AdminCollections = () => {
                       isPremium={prompt.isPremium}
                       muted
                     />
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/30">
+                    <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
                       <Play className="h-6 w-6 text-foreground" fill="currentColor" />
                     </div>
                   </div>

@@ -245,10 +245,10 @@ const Planos = () => {
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-background border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative">
                 <span className="absolute -top-3 left-1/2 -translate-x-1/2 text-[10px] text-green-400 font-medium whitespace-nowrap">
                   {t('planos.discount')}
                 </span>
@@ -278,7 +278,7 @@ const Planos = () => {
             const isBestSeller = (plan as any).bestSeller;
             const savingsPercent = (plan as any).savingsPercent;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-background w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-border"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-background w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-primary/10" : "border border-border"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-foreground px-4 py-1">
                   {t('planos.bestSeller')}
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>
@@ -409,7 +409,7 @@ const Planos = () => {
               {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-foreground">
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-secondary hover:bg-secondary text-foreground">
             {t('planos.comingSoon.understood')}
           </Button>
         </DialogContent>

@@ -105,7 +105,7 @@ const ControlPanel: React.FC<Props> = ({
               onChange={e => updateSettings({ scenePrompt: e.target.value.slice(0, 1024) })}
               placeholder="Descreva sua cena, personagem e ambiente..."
               rows={3}
-              className="bg-black/20 border-border text-muted-foreground text-[12px] min-h-[60px] resize-none placeholder:text-muted-foreground focus:min-h-[100px] transition-all duration-200"
+              className="bg-muted/50 border-border text-muted-foreground text-[12px] min-h-[60px] resize-none placeholder:text-muted-foreground focus:min-h-[100px] transition-all duration-200"
             />
           </div>
 
@@ -212,7 +212,7 @@ const ControlPanel: React.FC<Props> = ({
             <Textarea
               value={assembledPrompt}
               readOnly
-              className="bg-black/30 border-border text-muted-foreground text-[10px] min-h-[60px] resize-none font-mono"
+              className="bg-muted/50 border-border text-muted-foreground text-[10px] min-h-[60px] resize-none font-mono"
             />
             <button
               onClick={copyPrompt}

@@ -839,7 +839,7 @@ const GeradorPersonagemTool: React.FC = () => {
               {/* Action Buttons */}
               {viewedImage && status === 'completed' && (
                 <div className="border-t border-border px-3 py-2 flex gap-2 flex-shrink-0">
-                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}>
+                  <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-secondary/80 border-border text-foreground hover:bg-accent0/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
                   <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground" onClick={() => setShowRefinePanel(true)}>

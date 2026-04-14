@@ -536,7 +536,7 @@ const GerarImagemTool = () => {
             <p className="text-muted-foreground text-sm">
               A geração de imagens está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
             </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-slate-600 hover:bg-accent0 text-foreground text-sm font-medium transition-colors">
+            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-secondary hover:bg-accent0 text-foreground text-sm font-medium transition-colors">
               Voltar
             </button>
           </div>
@@ -575,7 +575,7 @@ const GerarImagemTool = () => {
         >
           {/* Drag overlay */}
           {isDragOver && (
-            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-slate-900/60 backdrop-blur-sm border-2 border-dashed border-border pointer-events-none">
+            <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-background/60 backdrop-blur-sm border-2 border-dashed border-border pointer-events-none">
               <ImagePlus className="h-12 w-12 text-muted-foreground mb-2" />
               <p className="text-muted-foreground font-semibold text-sm">Solte para adicionar referência</p>
             </div>
@@ -586,7 +586,7 @@ const GerarImagemTool = () => {
 
           {resultUrl ? (
             <div className="w-full h-full flex flex-col items-center justify-center space-y-3 overflow-hidden">
-              <div className="rounded-2xl overflow-hidden border border-border bg-black/30 shadow-2xl max-w-2xl max-h-full flex items-center justify-center">
+              <div className="rounded-2xl overflow-hidden border border-border bg-muted/50 shadow-2xl max-w-2xl max-h-full flex items-center justify-center">
                 <TransformWrapper>
                   <TransformComponent wrapperClass="!w-full !h-full !flex !items-center !justify-center" contentClass="!w-full !h-full !flex !items-center !justify-center">
                     <img src={resultUrl} alt="Imagem gerada" className="max-w-full max-h-[calc(100vh-180px)] object-contain" />
@@ -788,7 +788,7 @@ const GerarImagemTool = () => {
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>
-                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-accent border border-slate-500/25 text-xs text-muted-foreground hover:bg-slate-800/50 transition-colors">
+                  <button onClick={handleNewGeneration} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-accent border border-slate-500/25 text-xs text-muted-foreground hover:bg-muted/50 transition-colors">
                     <Sparkles className="h-3 w-3" />
                     <span className="font-medium">Nova</span>
                   </button>

@@ -147,7 +147,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
         {/* Cenário selector */}
         <button
           onClick={() => { setScenarioModalOpen(true); setShowCreate(false); resetForm(); }}
-          className="flex items-center gap-2 w-full p-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
+          className="flex items-center gap-2 w-full p-2 rounded-md bg-muted/50 border border-border hover:border-border transition-colors"
         >
           {selectedScenario?.image_url ? (
             <img src={selectedScenario.image_url} alt="" className="w-8 h-8 rounded object-cover flex-shrink-0" />
@@ -184,7 +184,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
             <div className="space-y-3 pt-2">
               <div
                 onClick={() => fileRef.current?.click()}
-                className="w-full aspect-square rounded-lg border border-dashed border-border bg-black/20 flex items-center justify-center cursor-pointer hover:border-border transition-colors overflow-hidden"
+                className="w-full aspect-square rounded-lg border border-dashed border-border bg-muted/50 flex items-center justify-center cursor-pointer hover:border-border transition-colors overflow-hidden"
               >
                 {newImagePreview ? (
                   <img src={newImagePreview} alt="" className="w-full h-full object-cover" />
@@ -196,8 +196,8 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                 )}
               </div>
               <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
-              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-black/20 border-border text-muted-foreground text-[12px]" />
-              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-black/20 border-border text-muted-foreground text-[12px] resize-none" />
+              <Input value={newName} onChange={e => setNewName(e.target.value)} placeholder="Nome" className="bg-muted/50 border-border text-muted-foreground text-[12px]" />
+              <Textarea value={newDesc} onChange={e => setNewDesc(e.target.value)} placeholder="Descrição..." rows={3} className="bg-muted/50 border-border text-muted-foreground text-[12px] resize-none" />
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" onClick={() => { setShowCreate(false); resetForm(); }} className="flex-1 text-muted-foreground text-[11px]">Cancelar</Button>
                 <Button size="sm" onClick={handleSaveScenario} disabled={saving || !newName.trim() || !newImage} className="flex-1 bg-white/[0.08] hover:bg-white/[0.14] text-foreground text-[11px]">
@@ -248,7 +248,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             <Trash2 className="w-2.5 h-2.5 text-red-400" />
                           </button>
                         </div>
-                        <div className="px-1 py-1 bg-black/40">
+                        <div className="px-1 py-1 bg-muted">
                           <span className="text-[9px] text-muted-foreground font-medium block truncate text-center">{item.name}</span>
                         </div>
                       </div>
@@ -259,7 +259,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                       <div className="aspect-square bg-white/[0.02] flex items-center justify-center">
                         <div className="w-3 h-3 rounded-full border border-border" />
                       </div>
-                      <div className="px-1 py-1 bg-black/20">
+                      <div className="px-1 py-1 bg-muted/50">
                         <span className="text-[9px] text-muted-foreground block text-center">—</span>
                       </div>
                     </div>

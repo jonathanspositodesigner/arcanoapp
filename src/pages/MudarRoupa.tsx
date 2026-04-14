@@ -78,7 +78,7 @@ const MudarRoupa = () => {
               </h2>
               
               {/* Video Player */}
-              <div className="aspect-video w-full rounded-lg overflow-hidden bg-black/50 mb-4">
+              <div className="aspect-video w-full rounded-lg overflow-hidden bg-muted/70 mb-4">
                 <iframe
                   src={lesson.videoUrl}
                   title={t(lesson.titleKey)}

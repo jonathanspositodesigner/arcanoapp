@@ -108,7 +108,7 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
 
 
   return (
-    <AnimatedSection className="px-4 py-20 bg-black/30">
+    <AnimatedSection className="px-4 py-20 bg-muted/50">
       <div className="max-w-5xl mx-auto">
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 tracking-tight leading-tight px-2">
@@ -130,8 +130,8 @@ export const SocialProofSectionPT = ({ onZoomClick, isMobile = false }: SocialPr
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="-left-2 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
-            <CarouselNext className="-right-2 h-10 w-10 bg-accent0 hover:bg-slate-600 border-none text-foreground shadow-lg shadow-slate-500/20" />
+            <CarouselPrevious className="-left-2 h-10 w-10 bg-accent0 hover:bg-secondary border-none text-foreground shadow-lg shadow-primary/10" />
+            <CarouselNext className="-right-2 h-10 w-10 bg-accent0 hover:bg-secondary border-none text-foreground shadow-lg shadow-primary/10" />
           </Carousel>
         </div>
 

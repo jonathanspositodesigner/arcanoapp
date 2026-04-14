@@ -249,7 +249,7 @@ const UpscalerArcanoVersionSelect = () => {
                        Em Breve
                      </div>
                    ) : isLegacyVersion ? (
-                     <div className="flex items-center gap-1.5 bg-gray-600/80 backdrop-blur-sm text-foreground px-3 py-1 rounded-full text-xs font-medium">
+                     <div className="flex items-center gap-1.5 bg-muted/80 backdrop-blur-sm text-foreground px-3 py-1 rounded-full text-xs font-medium">
                        Versão defasada
                      </div>
                    ) : (
@@ -278,7 +278,7 @@ const UpscalerArcanoVersionSelect = () => {
                       ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground group-hover:scale-[1.02] transition-transform' 
                       : isV3
                         ? 'bg-gradient-to-r from-slate-600 to-slate-400 hover:opacity-90 text-foreground group-hover:scale-[1.02] transition-transform'
-                        : 'bg-gray-600 text-muted-foreground cursor-not-allowed'
+                        : 'bg-muted text-muted-foreground cursor-not-allowed'
                     }`}
                     disabled={!hasVersionAccess && !isV3}
                     onClick={(e) => {

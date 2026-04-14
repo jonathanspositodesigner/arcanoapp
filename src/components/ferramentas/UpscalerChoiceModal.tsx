@@ -105,7 +105,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-12 bg-slate-600 hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 text-base"
+                    className="w-full h-12 bg-secondary hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-primary/5 text-base"
                   >
                     Acessar Versão Ilimitada
                   </Button>
@@ -167,7 +167,7 @@ const UpscalerChoiceModal = ({
                       handleAppVersionClick();
                     }}
                     disabled={isCheckingClaim || isClaiming}
-                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isCheckingClaim || isClaiming ? (
                       <span className="flex items-center justify-center gap-2">
@@ -219,7 +219,7 @@ const UpscalerChoiceModal = ({
                       e.stopPropagation();
                       handleUnlimitedClick();
                     }}
-                    className="w-full h-11 bg-slate-600 hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-white/5"
+                    className="w-full h-11 bg-secondary hover:bg-accent0 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-primary/5"
                   >
                     Acessar Versão Ilimitada
                   </Button>

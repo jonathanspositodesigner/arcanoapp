@@ -272,7 +272,7 @@ const ChangePasswordArtesMusicos = () => {
 
             <Button
               type="submit"
-              className="w-full bg-slate-600 hover:bg-slate-700 text-foreground"
+              className="w-full bg-secondary hover:bg-secondary text-foreground"
               disabled={isLoading}
             >
               {isLoading ? "Alterando..." : "Alterar Senha"}

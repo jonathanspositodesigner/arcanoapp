@@ -816,7 +816,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   {/* Modo */}
                   <div>
                     <span className="text-sm font-medium text-foreground mb-2 block">Modo</span>
-                    <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
+                    <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
                       <button
                         onClick={() => setVersion('standard')}
                         className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${
@@ -854,7 +854,7 @@ const UpscalerArcanoTool: React.FC = () => {
                           }
                         }}
                       >
-                        <SelectTrigger className="w-full bg-black/40 border-border text-foreground text-sm h-10">
+                        <SelectTrigger className="w-full bg-muted border-border text-foreground text-sm h-10">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-card border-border">
@@ -872,7 +872,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   {!isSpecialWorkflow && (
                     <div>
                       <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
-                      <div className="inline-flex gap-0 bg-black/40 border border-border rounded-lg p-1">
+                      <div className="inline-flex gap-0 bg-muted border border-border rounded-lg p-1">
                         <button
                           onClick={() => setResolution('2k')}
                           className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
@@ -899,7 +899,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
                   {/* Detalhar Rosto */}
                   {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                    <div className="border border-border rounded-xl p-4 space-y-3 bg-black/30">
+                    <div className="border border-border rounded-xl p-4 space-y-3 bg-muted/50">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-foreground">Detalhar Rosto</span>
                         <Switch
@@ -1280,8 +1280,8 @@ const UpscalerArcanoTool: React.FC = () => {
                                 style={{ touchAction: 'none' }}
                               >
                                 <div className="flex gap-0.5">
-                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
-                                  <div className="w-0.5 h-4 bg-gray-400 rounded-full" />
+                                  <div className="w-0.5 h-4 bg-border rounded-full" />
+                                  <div className="w-0.5 h-4 bg-border rounded-full" />
                                 </div>
                               </div>
                             </div>
@@ -1386,8 +1386,8 @@ const UpscalerArcanoTool: React.FC = () => {
                     >
                       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white shadow-md flex items-center justify-center">
                         <div className="flex gap-[1px]">
-                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
-                          <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
+                          <div className="w-[1px] h-3 bg-border rounded-full" />
+                          <div className="w-[1px] h-3 bg-border rounded-full" />
                         </div>
                       </div>
                     </div>
@@ -1420,7 +1420,7 @@ const UpscalerArcanoTool: React.FC = () => {
               {/* Modo */}
               <div>
                 <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Modo</span>
-                <div className="grid grid-cols-2 gap-0 bg-black/40 border border-border rounded-lg p-1">
+                <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
                   <button
                     onClick={() => setVersion('standard')}
                     className={`py-2 px-3 text-sm rounded-md transition-all font-medium ${
@@ -1444,7 +1444,7 @@ const UpscalerArcanoTool: React.FC = () => {
               {!isSpecialWorkflow && (
                 <div>
                   <span className="text-xs font-medium text-muted-foreground mb-1.5 block">Tamanho</span>
-                  <div className="inline-flex gap-0 bg-black/40 border border-border rounded-lg p-1">
+                  <div className="inline-flex gap-0 bg-muted border border-border rounded-lg p-1">
                     <button
                       onClick={() => setResolution('2k')}
                       className={`px-6 py-2 text-sm rounded-md transition-all font-medium ${
@@ -1467,7 +1467,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
               {/* Detalhar Rosto */}
               {version === 'pro' && !isLongeMode && !isSpecialWorkflow && (
-                <div className="border border-border rounded-xl p-3 space-y-2 bg-black/30">
+                <div className="border border-border rounded-xl p-3 space-y-2 bg-muted/50">
                   <div className="flex items-center justify-between">
                     <span className="text-xs font-medium text-foreground">Detalhar Rosto</span>
                     <Switch
@@ -1550,7 +1550,7 @@ const UpscalerArcanoTool: React.FC = () => {
                       }
                     }}
                   >
-                    <SelectTrigger className="w-full bg-black/40 border-border text-foreground text-sm h-9">
+                    <SelectTrigger className="w-full bg-muted border-border text-foreground text-sm h-9">
                       <SelectValue placeholder="Escolha o tipo de imagem" />
                     </SelectTrigger>
                     <SelectContent className="bg-card border-border">

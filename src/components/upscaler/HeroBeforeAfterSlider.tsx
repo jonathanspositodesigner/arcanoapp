@@ -84,7 +84,7 @@ export const HeroBeforeAfterSlider = ({
     <div className="space-y-3">
       <div 
         ref={containerRef}
-        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-white/5"
+        className="relative w-full aspect-[3/4] md:aspect-[4/3] rounded-3xl overflow-hidden cursor-ew-resize select-none border-2 border-border shadow-2xl shadow-primary/5"
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseUp}
@@ -143,8 +143,8 @@ export const HeroBeforeAfterSlider = ({
         >
           <div className="absolute left-1/2 -translate-x-1/2 bottom-6 md:bottom-auto md:top-1/2 md:-translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-md flex items-center justify-center">
             <div className="flex gap-[1px]">
-              <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
-              <div className="w-[1px] h-3 bg-gray-400 rounded-full" />
+              <div className="w-[1px] h-3 bg-border rounded-full" />
+              <div className="w-[1px] h-3 bg-border rounded-full" />
             </div>
           </div>
         </div>

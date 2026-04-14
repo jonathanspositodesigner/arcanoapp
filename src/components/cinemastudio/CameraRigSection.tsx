@@ -59,7 +59,7 @@ const CameraStyleDropdown: React.FC<{
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-black/20 border border-border hover:border-border transition-colors"
+        className="flex items-center justify-between w-full py-1.5 px-2 rounded-md bg-muted/50 border border-border hover:border-border transition-colors"
       >
         <div className="flex items-center gap-2 min-w-0">
           <span className="text-[9px] text-muted-foreground uppercase tracking-[0.12em] font-semibold w-12 flex-shrink-0">{label}</span>
@@ -152,7 +152,7 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Corpo</span>
       <Select value={settings.cameraBody} onValueChange={v => updateSettings({ cameraBody: v })}>
-        <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+        <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-background border-border">
@@ -169,7 +169,7 @@ const CameraControls: React.FC<{ settings: CinemaSettings; updateSettings: (p: P
     <div className="flex items-center gap-2">
       <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Lente</span>
       <Select value={settings.lensType} onValueChange={v => updateSettings({ lensType: v })}>
-        <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+        <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
           <SelectValue />
         </SelectTrigger>
         <SelectContent className="bg-background border-border">
@@ -233,7 +233,7 @@ const CameraRigSection: React.FC<Props> = ({ settings, updateSettings, mode = 'p
             className={`flex items-center gap-1.5 w-full py-1.5 px-2 rounded-md border transition-colors text-[10px] ${
               advancedOpen
                 ? 'bg-accent0/10 border-border text-muted-foreground'
-                : 'bg-black/20 border-border text-muted-foreground hover:text-muted-foreground hover:border-border'
+                : 'bg-muted/50 border-border text-muted-foreground hover:text-muted-foreground hover:border-border'
             }`}
           >
             <Settings2 className="w-3 h-3" />

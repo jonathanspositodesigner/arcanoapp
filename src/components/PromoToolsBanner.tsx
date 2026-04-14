@@ -33,7 +33,7 @@ const PromoToolsBanner = ({ onClose }: PromoToolsBannerProps) => {
       <div className="container mx-auto px-4 py-3 sm:py-2">
         <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-4 relative pr-8 sm:pr-0">
           {/* Badge */}
-          <div className="flex items-center gap-1.5 bg-black/30 backdrop-blur-sm px-2.5 py-1 rounded-full border border-border shrink-0">
+          <div className="flex items-center gap-1.5 bg-muted/50 backdrop-blur-sm px-2.5 py-1 rounded-full border border-border shrink-0">
             <Tag className="w-3.5 h-3.5 text-foreground" />
             <span className="text-xs font-bold text-foreground uppercase tracking-wide">
               Oferta Limitada

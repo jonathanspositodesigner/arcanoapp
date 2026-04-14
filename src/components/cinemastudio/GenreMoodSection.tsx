@@ -17,7 +17,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Gênero</span>
         <Select value={settings.genre} onValueChange={v => updateSettings({ genre: v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+          <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-background border-border">
@@ -32,7 +32,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Tom</span>
         <Select value={settings.mood || 'none'} onValueChange={v => updateSettings({ mood: v === 'none' ? '' : v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+          <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
             <SelectValue placeholder="Nenhum" />
           </SelectTrigger>
           <SelectContent className="bg-background border-border">
@@ -48,7 +48,7 @@ const GenreMoodSection: React.FC<Props> = ({ settings, updateSettings }) => {
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-muted-foreground uppercase tracking-wider w-14 flex-shrink-0">Cor</span>
         <Select value={settings.colorGrade} onValueChange={v => updateSettings({ colorGrade: v })}>
-          <SelectTrigger className="flex-1 bg-black/20 border-border text-muted-foreground text-[11px] h-7">
+          <SelectTrigger className="flex-1 bg-muted/50 border-border text-muted-foreground text-[11px] h-7">
             <SelectValue />
           </SelectTrigger>
           <SelectContent className="bg-background border-border">

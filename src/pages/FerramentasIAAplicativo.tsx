@@ -338,7 +338,7 @@ const FerramentasIAAplicativo = () => {
               <Button
                 size="sm"
                 disabled
-                className="mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium bg-gray-600 text-muted-foreground cursor-not-allowed"
+                className="mt-2 sm:mt-3 w-full text-xs sm:text-sm font-medium bg-muted text-muted-foreground cursor-not-allowed"
               >
                 Em Breve
               </Button>

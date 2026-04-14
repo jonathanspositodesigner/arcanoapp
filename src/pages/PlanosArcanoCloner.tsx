@@ -148,7 +148,7 @@ const PlanosArcanoCloner = () => {
 
         {/* Layer 2: Purple glow behind person */}
         <div className="absolute inset-0 z-[5] flex items-center justify-center pointer-events-none">
-          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-slate-600/50 blur-[150px] md:blur-[200px] rounded-full" />
+          <div className="w-[400px] h-[500px] md:w-[600px] md:h-[700px] bg-muted/50 blur-[150px] md:blur-[200px] rounded-full" />
         </div>
 
         {/* Layer 3: Hero PNG image - LARGE, centered */}
@@ -224,7 +224,7 @@ const PlanosArcanoCloner = () => {
 
       {/* ==================== PAIN POINTS (OCULTO)
       <LazySection>
-      <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-black/30">
+      <AnimatedSection className="px-3 md:px-4 pt-4 pb-10 md:py-20 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" className="text-center" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2 md:mb-12">
@@ -297,7 +297,7 @@ const PlanosArcanoCloner = () => {
 
       {/* ==================== HOW IT WORKS ==================== */}
       <LazySection>
-      <AnimatedSection className="px-4 py-16 md:py-20 bg-black/30">
+      <AnimatedSection className="px-4 py-16 md:py-20 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
@@ -318,7 +318,7 @@ const PlanosArcanoCloner = () => {
 
       {/* ==================== BONUS HEADER ==================== */}
       <LazySection>
-      <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-black/30">
+      <AnimatedSection className="px-4 pt-16 md:pt-20 pb-6 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
@@ -330,7 +330,7 @@ const PlanosArcanoCloner = () => {
       </AnimatedSection>
 
       {/* ==================== BONUS 1: +300 REFERÊNCIAS ==================== */}
-      <AnimatedSection className="px-4 py-10 md:py-14 bg-black/30">
+      <AnimatedSection className="px-4 py-10 md:py-14 bg-muted/50">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">
@@ -388,7 +388,7 @@ const PlanosArcanoCloner = () => {
       </AnimatedSection>
 
       {/* ==================== BONUS 2: UPSCALER GRATUITO ==================== */}
-      <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-black/30">
+      <AnimatedSection className="px-4 py-10 md:py-14 pb-16 md:pb-20 bg-muted/50">
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-8">
             <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">
@@ -456,7 +456,7 @@ const PlanosArcanoCloner = () => {
       {/* ==================== PRICING ==================== */}
       <LazySection>
       <div id="pricing-section">
-        <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-black/30" animation="scale">
+        <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-muted/50" animation="scale">
           <div className="max-w-xl mx-auto">
             <div className="text-center mb-6">
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-2">
@@ -487,7 +487,7 @@ const PlanosArcanoCloner = () => {
             </div>
 
             {/* Single pricing card */}
-            <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-border/50 shadow-lg shadow-white/5">
+            <Card className="relative p-8 flex flex-col rounded-xl bg-background border-2 border-border/50 shadow-lg shadow-primary/5">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                 <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-foreground px-4 py-1 text-sm font-bold rounded-full">
@@ -511,7 +511,7 @@ const PlanosArcanoCloner = () => {
 
               <Button
                 onClick={handlePurchase}
-                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground font-bold rounded-full shadow-xl shadow-slate-500/20 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground font-bold rounded-full shadow-xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
               >
                 COMPRAR AGORA
                 <ArrowRight className="h-5 w-5 ml-2" />

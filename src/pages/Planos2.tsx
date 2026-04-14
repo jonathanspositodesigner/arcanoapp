@@ -432,10 +432,10 @@ const Planos2 = () => {
           {/* Billing Toggle */}
           <Tabs value={billingPeriod} onValueChange={v => setBillingPeriod(v as "mensal" | "anual")} className="inline-flex">
             <TabsList className="bg-background border border-border">
-              <TabsTrigger value="mensal" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6">
+              <TabsTrigger value="mensal" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6">
                 {t('planos.monthly')}
               </TabsTrigger>
-              <TabsTrigger value="anual" className="data-[state=active]:bg-slate-600 data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
+              <TabsTrigger value="anual" className="data-[state=active]:bg-secondary data-[state=active]:text-primary-foreground text-muted-foreground px-6 relative flex items-center gap-2">
                 {t('planos.annualInstallments')}
                 <span className="bg-gradient-to-r from-slate-600 to-pink-500 text-foreground text-[10px] font-bold px-2 py-0.5 rounded-full">
                   52% OFF
@@ -461,7 +461,7 @@ const Planos2 = () => {
             const isUnlimitedBadge = (plan as any).isUnlimitedBadge;
             return (
             <div key={plan.name} className="flex flex-col h-full w-full">
-              <Card className={`relative p-4 flex flex-col rounded-lg bg-background w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-border"}`}>
+              <Card className={`relative p-4 flex flex-col rounded-lg bg-background w-full h-full ${isUnlimitedBadge ? "border-2 border-yellow-400 shadow-lg shadow-yellow-400/30" : isBestSeller ? "border-2 border-lime-400 shadow-lg shadow-lime-400/30" : hasCountdown ? "border-2 border-slate-500 shadow-lg shadow-primary/10" : "border border-border"}`}>
               {isBestSeller && (
                 <Badge className="absolute -top-2.5 left-1/2 -translate-x-1/2 border-0 text-[10px] whitespace-nowrap bg-gradient-to-r from-lime-400 to-lime-500 text-black font-semibold px-3 py-0.5">
                   {t('planos.bestSeller')}
@@ -546,7 +546,7 @@ const Planos2 = () => {
                         }
                       }}
                       disabled={isDisabled || isMPLoading}
-                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                      className={`w-full mb-1 text-sm h-9 ${isCurrentPlan ? "bg-accent0/20 border border-slate-500/40 text-muted-foreground cursor-not-allowed" : isUnlimitedBadge ? "bg-gradient-to-r from-yellow-400 via-amber-500 to-yellow-400 hover:from-yellow-500 hover:via-amber-600 hover:to-yellow-500 text-black font-bold" : isBestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" : hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
                     >
                       {buttonText}
                     </Button>
@@ -561,7 +561,7 @@ const Planos2 = () => {
               <div className="h-[28px] mb-2 flex items-center justify-center">
                 {billingPeriod === "anual" ? (
                   plan.name === "Starter" || plan.name === "Free" ? (
-                    <div className="flex items-center justify-center gap-1.5 bg-gray-800/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
+                    <div className="flex items-center justify-center gap-1.5 bg-muted/50 border border-gray-600/30 rounded-full px-3 py-1 whitespace-nowrap">
                       <Tag className="w-3 h-3 text-muted-foreground flex-shrink-0" />
                       <span className="text-[10px] text-muted-foreground">Sem diferença comparado ao mensal</span>
                     </div>
@@ -814,7 +814,7 @@ const Planos2 = () => {
               {t('planos.comingSoon.description')}
             </DialogDescription>
           </DialogHeader>
-          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-slate-600 hover:bg-slate-700 text-foreground">
+          <Button onClick={() => setShowComingSoonModal(false)} className="w-full mt-4 bg-secondary hover:bg-secondary text-foreground">
             {t('planos.comingSoon.understood')}
           </Button>
         </DialogContent>

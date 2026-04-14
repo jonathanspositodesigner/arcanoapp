@@ -147,7 +147,7 @@ const ToolsHeader = ({
                   className={`rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer ${
                     isUnlimited
                       ? 'bg-emerald-900/40 border border-emerald-500/30 hover:bg-emerald-800/40'
-                      : 'bg-accent border border-border hover:bg-slate-800/50'
+                      : 'bg-accent border border-border hover:bg-muted/50'
                   }`}
                   onClick={() => navigate('/credit-history')}
                 >
