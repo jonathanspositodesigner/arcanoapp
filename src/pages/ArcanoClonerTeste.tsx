@@ -278,7 +278,7 @@ const ArcanoClonerTeste = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-border rounded-3xl p-8 text-center">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-purple-500/10 to-purple-500/10 border border-border rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-foreground font-semibold">
                 Com o Arcano Cloner você resolve tudo isso

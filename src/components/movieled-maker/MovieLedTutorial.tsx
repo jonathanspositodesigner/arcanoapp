@@ -191,7 +191,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
 
           <Button
             onClick={() => { setPhase('active'); onPhaseChange?.('active'); }}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground font-semibold gap-2 rounded-xl py-5 mb-2"
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
           >
             <Play className="w-4 h-4" />
             Iniciar Tutorial
@@ -305,7 +305,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
 
           {/* Content */}
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center text-xl flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 border border-border flex items-center justify-center text-xl flex-shrink-0">
               {step.emoji}
             </div>
             <div className="flex-1 min-w-0">

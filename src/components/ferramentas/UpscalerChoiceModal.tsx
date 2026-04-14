@@ -55,7 +55,7 @@ const UpscalerChoiceModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className={`${hasLifetimePack ? 'sm:max-w-[420px]' : 'sm:max-w-[580px]'} w-[calc(100%-32px)] sm:w-full p-0 bg-gradient-to-b from-[#0D0B1A] to-[#1A0A2E] border border-slate-500/40 overflow-hidden rounded-xl`}>
+      <DialogContent className={`${hasLifetimePack ? 'sm:max-w-[420px]' : 'sm:max-w-[580px]'} w-[calc(100%-32px)] sm:w-full p-0 bg-gradient-to-b from-[#0D0B1A] to-[#1A0A2E] border border-purple-500/40 overflow-hidden rounded-xl`}>
         {/* Header */}
         <DialogHeader className="px-6 pt-6 pb-4">
           <DialogTitle className="text-center text-2xl font-bold text-foreground flex items-center justify-center gap-2">
@@ -85,7 +85,7 @@ const UpscalerChoiceModal = ({
 
                 <div className="p-6">
                   {/* Icon */}
-                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                  <div className="w-16 h-16 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/20 flex items-center justify-center mb-5 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
                     <Infinity className="w-8 h-8 text-muted-foreground" />
                   </div>
 
@@ -146,7 +146,7 @@ const UpscalerChoiceModal = ({
 
                 <div className="p-5">
                   {/* Icon */}
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-600/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
                     <Zap className="w-7 h-7 text-muted-foreground" />
                   </div>
 
@@ -167,7 +167,7 @@ const UpscalerChoiceModal = ({
                       handleAppVersionClick();
                     }}
                     disabled={isCheckingClaim || isClaiming}
-                    className="w-full h-11 bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-foreground font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full h-11 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white font-semibold rounded-lg transition-all duration-200 shadow-lg shadow-primary/5 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isCheckingClaim || isClaiming ? (
                       <span className="flex items-center justify-center gap-2">
@@ -199,7 +199,7 @@ const UpscalerChoiceModal = ({
 
                 <div className="p-5">
                   {/* Icon */}
-                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-slate-500/30 to-slate-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/30 to-purple-500/20 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 mx-auto border border-border">
                     <Infinity className="w-7 h-7 text-muted-foreground" />
                   </div>
 

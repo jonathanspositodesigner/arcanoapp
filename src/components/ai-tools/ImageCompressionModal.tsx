@@ -100,7 +100,7 @@ const ImageCompressionModal: React.FC<ImageCompressionModalProps> = ({
           <Button
             onClick={handleCompress}
             disabled={isCompressing}
-            className="bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-primary-foreground flex items-center gap-2"
+            className="bg-gradient-to-r from-purple-600 to-purple-500 hover:opacity-90 text-white flex items-center gap-2"
           >
             {isCompressing ? (
               <>

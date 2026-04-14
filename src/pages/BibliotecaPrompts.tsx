@@ -430,13 +430,13 @@ const BibliotecaPrompts = () => {
 
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
-      {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-purple-500 text-foreground border-0 text-[10px] sm:text-xs">
+      {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-purple-500 text-white border-0 text-[10px] sm:text-xs">
         <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
         {t('badges.premium')}
       </Badge> : <Badge variant="outline" className="border-green-500 dark:text-green-400 text-green-600 text-[10px] sm:text-xs">
         {t('badges.free')}
       </Badge>}
-      {item.tutorialUrl && <Badge className="bg-red-600 text-primary-foreground border-0 text-[10px] sm:text-xs">
+      {item.tutorialUrl && <Badge className="bg-red-600 text-white border-0 text-[10px] sm:text-xs">
         <Youtube className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
         {t('badges.tutorial')}
       </Badge>}
@@ -528,7 +528,7 @@ const BibliotecaPrompts = () => {
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-slate-400"
+              className="pl-10 h-9 text-sm bg-accent0/10 border-border text-foreground placeholder:text-muted-foreground focus:border-primary"
             />
           </div>
         </div>
@@ -588,12 +588,12 @@ const BibliotecaPrompts = () => {
                   <h3 className="font-bold text-[9px] sm:text-sm text-foreground line-clamp-1 sm:line-clamp-2 mb-1">{item.title}</h3>
                   <div className="flex flex-wrap gap-0.5 sm:gap-1 mb-1 sm:mb-2">
                     {item.isPremium ? (
-                      <Badge className="bg-slate-600/90 text-foreground border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                      <Badge className="bg-purple-600/90 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
                         <Star className="h-2 w-2 sm:h-2.5 sm:w-2.5 mr-0.5" fill="currentColor" />
                         Pro
                       </Badge>
                     ) : (
-                      <Badge className="bg-green-600/80 text-foreground border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
+                      <Badge className="bg-green-600/80 text-white border-0 text-[7px] sm:text-[10px] px-1 sm:px-1.5 py-0 leading-tight">
                         Free
                       </Badge>
                     )}
@@ -630,7 +630,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-foreground min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
                     >
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar foto</span>
@@ -660,7 +660,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white min-w-0"
                     >
                       <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar movie</span>
@@ -669,7 +669,7 @@ const BibliotecaPrompts = () => {
                   {item.category === 'Seedance 2' && (
                     <Button
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-foreground min-w-0 shadow-lg shadow-green-500/30 font-bold border-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white min-w-0 shadow-lg shadow-green-500/30 font-bold border-0"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate('/seedance2', { state: { 
@@ -725,7 +725,7 @@ const BibliotecaPrompts = () => {
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground py-6 text-lg">
+            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white py-6 text-lg">
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
             </Button>
@@ -773,7 +773,7 @@ const BibliotecaPrompts = () => {
                   {t('modal.download')}
                 </Button>
                 {selectedPrompt.tutorialUrl && (
-                  <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} className="bg-red-600 hover:bg-red-700 text-foreground">
+                  <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} className="bg-red-600 hover:bg-red-700 text-white">
                     <Play className="h-4 w-4 mr-2" />
                     {t('modal.watchTutorial')}
                   </Button>
@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-slate-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-primary-foreground'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
@@ -808,7 +808,7 @@ const BibliotecaPrompts = () => {
                         prefillThumbnail: selectedPrompt.thumbnailUrl || selectedPrompt.imageUrl
                       } });
                     }}
-                    className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-foreground shadow-lg shadow-green-500/30 font-bold border-0"
+                    className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white shadow-lg shadow-green-500/30 font-bold border-0"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Gerar sua versão
@@ -858,7 +858,7 @@ const BibliotecaPrompts = () => {
             <p className="text-muted-foreground mb-6">
               {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
             </p>
-            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-foreground py-6">
+            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6">
               {t('limitModal.upgrade')}
             </Button>
           </div>

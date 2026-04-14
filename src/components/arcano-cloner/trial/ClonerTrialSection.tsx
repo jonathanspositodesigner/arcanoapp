@@ -336,12 +336,12 @@ export default function ClonerTrialSection() {
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-2xl flex flex-col items-center justify-center gap-6 z-10">
                 {phase === "locked" ? (
                   <>
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
                       <Sparkles className="w-10 h-10 text-foreground" />
                     </div>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
+                      className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={openSignup}
                     >
                       <Sparkles className="w-5 h-5 mr-2" />
@@ -358,7 +358,7 @@ export default function ClonerTrialSection() {
                     </p>
                     <Button
                       size="lg"
-                      className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
+                      className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-bold text-lg px-8 py-6 rounded-xl border-0 shadow-lg shadow-primary/10"
                       onClick={scrollToPricing}
                     >
                       <ShoppingCart className="w-5 h-5 mr-2" />

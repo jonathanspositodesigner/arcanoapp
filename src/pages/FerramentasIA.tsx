@@ -213,7 +213,7 @@ const FerramentasIA = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
             </div>
           )}
@@ -228,10 +228,10 @@ const FerramentasIA = () => {
           )}
           
           <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 via-50% to-transparent flex flex-col justify-end p-4">
-            <h3 className="font-bold text-base sm:text-lg text-foreground text-center leading-tight drop-shadow-lg">
+            <h3 className="font-bold text-base sm:text-lg text-white text-center leading-tight drop-shadow-lg">
               {tool.name}
             </h3>
-            <p className="text-xs sm:text-sm text-foreground text-center mt-1 line-clamp-2">
+            <p className="text-xs sm:text-sm text-white text-center mt-1 line-clamp-2">
               {description}
             </p>
             
@@ -240,7 +240,7 @@ const FerramentasIA = () => {
               className={`mt-3 w-full text-sm font-medium ${
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
-                  : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
+                  : "bg-gradient-to-r from-purple-500 to-purple-400 hover:opacity-90"
               } text-primary-foreground`}
             >
               {hasAccess ? (
@@ -270,7 +270,7 @@ const FerramentasIA = () => {
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/login-artes?redirect=/ferramentas-ia')}
-              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground"
+              className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
               size="sm"
             >
               <UserCheck className="w-4 h-4 mr-2" />
@@ -282,11 +282,11 @@ const FerramentasIA = () => {
 
       {/* Button for VIP users: has upscaler pack AND (is prompts premium OR has credits) */}
       {hasUpscalerArcano && (promptsPlanType || credits > 0) && (
-        <div className="bg-gradient-to-r from-white/5 to-slate-900/50 border-b border-border">
+        <div className="bg-gradient-to-r from-primary/5 to-primary/10 border-b border-border">
           <div className="container mx-auto px-4 py-3">
             <Button
               onClick={() => navigate('/ferramentas-ia-aplicativo')}
-              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-foreground shadow-lg"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white shadow-lg"
               size="sm"
             >
               <Smartphone className="w-4 h-4 mr-2" />

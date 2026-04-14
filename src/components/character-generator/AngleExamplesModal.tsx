@@ -40,7 +40,7 @@ const AngleExamplesModal: React.FC<AngleExamplesModalProps> = ({ open, onOpenCha
 
         <DialogFooter className="mt-3">
           <Button
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground text-xs"
+            className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white text-xs"
             onClick={() => onOpenChange(false)}
           >
             Ok, entendi!

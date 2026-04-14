@@ -577,7 +577,7 @@ const MovieLedMakerTool = () => {
                       <button
                         onClick={() => { setSelectedLibraryItem(null); setUploadedImage(null); setUploadedFileName(''); }}
                         disabled={isProcessing}
-                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-foreground hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
+                        className="h-7 w-7 rounded-lg bg-accent backdrop-blur-sm text-white hover:bg-red-500/100/40 transition-colors flex items-center justify-center"
                       >
                         <X className="w-3 h-3" />
                       </button>
@@ -801,7 +801,7 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border/20 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 border border-border/20 flex items-center justify-center">
                       <Video className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>

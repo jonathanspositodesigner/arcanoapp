@@ -161,7 +161,7 @@ const FullscreenModal = ({
         <div className="absolute top-4 left-4 bg-black/80 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.before')}
         </div>
-        <div className="absolute top-4 right-4 bg-gradient-to-r from-slate-500 to-slate-500 text-foreground text-base font-semibold px-5 py-2.5 rounded-full">
+        <div className="absolute top-4 right-4 bg-gradient-to-r from-purple-500 to-purple-500 text-white text-base font-semibold px-5 py-2.5 rounded-full">
           {t('tools:upscaler.beforeAfter.after')}
         </div>
       </div>
@@ -174,7 +174,7 @@ const CTAButton = ({ onClick, isPremium, t, loading }: { onClick: () => void; is
   <Button
     onClick={onClick}
     disabled={loading}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 disabled:opacity-70 disabled:cursor-wait"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-600 hover:to-purple-600 text-white shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 disabled:opacity-70 disabled:cursor-wait"
   >
     {loading ? 'Gerando checkout...' : t('tools:upscaler.cta')}
     {!loading && <ArrowRight className="h-5 w-5 ml-2" />}
@@ -403,12 +403,12 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   </Badge>
                 )}
                 {plan.hasCountdown && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-foreground px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-1">
                     MELHOR CUSTO/BENEFÍCIO
                   </Badge>
                 )}
                 {plan.isLifetime && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-foreground font-semibold px-4 py-1">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold px-4 py-1">
                     ♾️ ACESSO VITALÍCIO
                   </Badge>
                 )}
@@ -443,9 +443,9 @@ const UpscalerPricingSection = ({ isPremium, tool, t }: { isPremium: boolean; to
                   onClick={() => handlePurchase(plan)}
                   disabled={false}
                   className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
-                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-semibold" :
+                    plan.isLifetime ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-semibold" :
                     plan.bestSeller ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold" :
-                    plan.hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold" :
+                    plan.hasCountdown ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold" :
                     "bg-accent hover:bg-white/20 text-foreground"
                   }`}
                 >
@@ -764,7 +764,7 @@ const PlanosUpscalerArcano69v2 = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -773,7 +773,7 @@ const PlanosUpscalerArcano69v2 = () => {
               </p>
               <Button
                 onClick={() => navigate("/biblioteca-artes")}
-                className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-full px-8 py-6"
+                className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-full px-8 py-6"
               >
                 {t('tools:upscaler.goToLibrary')}
               </Button>
@@ -941,7 +941,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       key={index}
                       className="bg-gradient-to-br from-white/10 to-white/5 border border-border rounded-3xl p-8 text-center hover:border-border/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
@@ -969,13 +969,13 @@ const PlanosUpscalerArcano69v2 = () => {
                     <div key={index} className="text-center flex flex-col items-center relative">
                       {/* Linha conectora para desktop */}
                       {index < steps.length - 1 && (
-                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-purple-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
@@ -1010,7 +1010,7 @@ const PlanosUpscalerArcano69v2 = () => {
                       key={index}
                       className="flex items-center gap-4 bg-accent border border-border rounded-2xl p-5 hover:border-border transition-all duration-300"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 flex items-center justify-center flex-shrink-0">
                         <IconComponent className="h-6 w-6 text-muted-foreground" />
                       </div>
                       <span className="text-white/90 text-lg">{feature.text}</span>

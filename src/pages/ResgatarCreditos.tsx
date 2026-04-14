@@ -119,7 +119,7 @@ const ResgatarCreditos = () => {
           <>
             {/* Header */}
             <div className="text-center mb-6">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4 shadow-lg shadow-primary/10">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4 shadow-lg shadow-primary/10">
                 <Gift className="w-8 h-8 text-foreground" />
               </div>
               <h2 className="text-2xl font-bold text-foreground mb-2">
@@ -147,7 +147,7 @@ const ResgatarCreditos = () => {
               <Button
                 type="submit"
                 disabled={status === 'checking'}
-                className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-base shadow-lg shadow-primary/10"
+                className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-base shadow-lg shadow-primary/10"
               >
                 {status === 'checking' ? (
                   <>
@@ -204,7 +204,7 @@ const ResgatarCreditos = () => {
               {errorReason === 'already_claimed' ? (
                 <Button
                   onClick={() => navigate('/ferramentas-ia-aplicativo')}
-                  className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
+                  className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
                 >
                   Ir para a ferramenta
                   <ArrowRight className="w-5 h-5 ml-2" />
@@ -213,7 +213,7 @@ const ResgatarCreditos = () => {
                 <>
                   <Button
                     onClick={handleViewPlans}
-                    className="w-full h-12 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold"
+                    className="w-full h-12 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
                   >
                     Ver Planos de Créditos
                     <ArrowRight className="w-5 h-5 ml-2" />

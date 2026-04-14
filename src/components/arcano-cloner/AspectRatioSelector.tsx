@@ -65,7 +65,7 @@ const AspectRatioSelector: React.FC<AspectRatioSelectorProps> = ({
                 "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg transition-all",
                 "border text-center",
                 isSelected
-                  ? "bg-gradient-to-r from-slate-600 to-slate-500 border-border text-foreground"
+                  ? "bg-gradient-to-r from-purple-600 to-purple-500 border-border text-white"
                   : "bg-accent border-border text-muted-foreground hover:bg-accent0/20 hover:text-foreground",
                 disabled && "opacity-50 cursor-not-allowed"
               )}

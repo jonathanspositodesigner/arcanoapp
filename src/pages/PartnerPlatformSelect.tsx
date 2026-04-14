@@ -16,7 +16,7 @@ const PLATFORM_CONFIG = {
     title: "Prompts",
     description: "Envie e gerencie prompts de IA",
     icon: FileImage,
-    color: "from-slate-500 to-slate-700",
+    color: "from-purple-500 to-purple-700",
     route: "/parceiro-dashboard",
   },
   artes_eventos: {

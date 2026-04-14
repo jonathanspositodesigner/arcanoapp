@@ -276,7 +276,7 @@ const UpscalerArcanoV1 = () => {
                     onClick={() => window.open(TOOL_LINK, '_blank')}
                     className={`w-full h-12 text-base font-semibold transition-all duration-500 ${
                       isToolUnlocked 
-                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-foreground shadow-lg shadow-orange-500/30' 
+                        ? 'bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-white shadow-lg shadow-orange-500/30' 
                         : 'bg-zinc-700 text-zinc-300 border border-zinc-600 cursor-not-allowed'
                     }`}
                   >
@@ -346,7 +346,7 @@ const UpscalerArcanoV1 = () => {
                   onClick={() => toggleWatchedStatus(selectedLesson + 1)}
                   className={`w-full sm:w-auto ${
                     watchedLessons.includes(selectedLesson + 1) 
-                      ? 'bg-green-600 hover:bg-green-700 text-primary-foreground' 
+                      ? 'bg-green-600 hover:bg-green-700 text-white' 
                       : 'border-border text-muted-foreground hover:bg-green-600/10 hover:text-green-500 hover:border-green-600'
                   }`}
                 >
@@ -368,7 +368,7 @@ const UpscalerArcanoV1 = () => {
                             ? handleToolButtonClick(button.url)
                             : handleRegularButtonClick(button.url)
                         }
-                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-foreground"
+                        className="flex-1 bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"
                       >
                         <ExternalLink className="h-4 w-4 mr-2" />
                         {t(button.labelKey)}
@@ -395,7 +395,7 @@ const UpscalerArcanoV1 = () => {
                   {/* Lesson number or checkmark */}
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors ${
                     watchedLessons.includes(index + 1)
-                      ? 'bg-green-500 text-primary-foreground'
+                      ? 'bg-green-500 text-white'
                       : selectedLesson === index 
                         ? 'bg-accent text-accent-foreground' 
                         : 'bg-accent text-muted-foreground'

@@ -105,7 +105,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         </Button>
         <Button
           size="sm"
-          className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground"
+          className="flex-1 h-8 text-xs bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
           onClick={onSubmit}
           disabled={isRefining || !prompt.trim() || disabled}
         >

@@ -692,7 +692,7 @@ const PoseChangerTool: React.FC = () => {
                     </div>
                     <div className="w-48 h-2 bg-accent rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -706,7 +706,7 @@ const PoseChangerTool: React.FC = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border/20 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 border border-border/20 flex items-center justify-center">
                       <ImageIcon className="w-10 h-10 text-muted-foreground" />
                     </div>
                     <div>

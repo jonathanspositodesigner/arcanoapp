@@ -699,7 +699,7 @@ const GerarVideoTool = () => {
             {/* When result is showing: Download + Novo buttons */}
             {resultUrl ? (
               <div className="flex gap-2 justify-center">
-                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-foreground rounded-full px-5">
+                <Button onClick={handleDownload} size="sm" className="bg-green-600 hover:bg-green-700 text-white rounded-full px-5">
                   <Download className="h-4 w-4 mr-2" /> Baixar
                 </Button>
                 <Button onClick={handleNewGeneration} size="sm" variant="outline" className="border-slate-500/50 text-muted-foreground hover:bg-accent0/20 rounded-full px-5">
@@ -730,7 +730,7 @@ const GerarVideoTool = () => {
                         <button
                           onClick={() => startFrameRef.current?.click()}
                           disabled={isGenerating}
-                          className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
+                          className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
                         >
                           <Upload className="h-4 w-4 text-muted-foreground" />
                           <span className="text-[10px] text-muted-foreground">Enviar imagem</span>
@@ -764,7 +764,7 @@ const GerarVideoTool = () => {
                             <button
                               onClick={() => endFrameRef.current?.click()}
                               disabled={isGenerating}
-                              className="w-full h-16 rounded-lg border-2 border-dashed border-slate-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
+                              className="w-full h-16 rounded-lg border-2 border-dashed border-purple-500/40 hover:border-border/60 bg-accent hover:bg-accent flex flex-col items-center justify-center gap-1 transition-colors"
                             >
                               <Upload className="h-4 w-4 text-muted-foreground" />
                               <span className="text-[10px] text-muted-foreground">Enviar imagem</span>
@@ -800,7 +800,7 @@ const GerarVideoTool = () => {
                     onClick={handleGenerate}
                     disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !framesReady)}
                     size="sm"
-                    className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
+                    className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
                   >
                     {isGenerating ? (
                       <>

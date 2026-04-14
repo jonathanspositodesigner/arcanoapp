@@ -118,7 +118,7 @@ const FerramentasIAES = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-foreground" />
             </div>
           )}
@@ -145,7 +145,7 @@ const FerramentasIAES = () => {
               className={`mt-3 w-full text-sm font-medium ${
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
-                  : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
+                  : "bg-gradient-to-r from-purple-500 to-purple-400 hover:opacity-90"
               } text-primary-foreground`}
             >
               {hasAccess ? (
@@ -172,7 +172,7 @@ const FerramentasIAES = () => {
       <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-lg border-b border-border">
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-foreground" />
             </div>
             <h1 className="text-base sm:text-xl font-bold text-foreground">
@@ -189,7 +189,7 @@ const FerramentasIAES = () => {
             <div className="flex gap-2">
               <Button
                 onClick={() => navigate('/login-artes?redirect=/ferramentas-ia-es')}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-foreground"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white"
                 size="sm"
               >
                 <UserCheck className="w-4 h-4 mr-2" />

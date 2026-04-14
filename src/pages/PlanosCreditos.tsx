@@ -13,13 +13,13 @@ const availableTools = [
     name: "Upscaler Arcano",
     description: "Aumente a qualidade das suas imagens com IA",
     icon: Wand2,
-    color: "from-slate-500 to-slate-400"
+    color: "from-purple-500 to-purple-400"
   },
   {
     name: "Mudar Roupa",
     description: "Troque a roupa de pessoas em fotos",
     icon: Shirt,
-    color: "from-slate-500 to-pink-500"
+    color: "from-purple-500 to-pink-500"
   },
   {
     name: "Mudar Pose",
@@ -59,7 +59,7 @@ const creditPlans = [
     savings: "",
     link: "https://payfast.greenn.com.br/156946/offer/C5k6VZ",
     icon: Coins,
-    color: "from-slate-500 to-slate-400"
+    color: "from-purple-500 to-purple-400"
   },
   { 
     credits: "+4.200", 
@@ -70,7 +70,7 @@ const creditPlans = [
     link: "https://payfast.greenn.com.br/156948/offer/lwl67R", 
     popular: true,
     icon: Zap,
-    color: "from-slate-500 to-pink-500"
+    color: "from-purple-500 to-pink-500"
   },
   { 
     credits: "+14.000", 
@@ -154,7 +154,7 @@ const PlanosCreditos = () => {
 
         {/* AI Tools Section */}
         <section className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4">
             <Sparkles className="w-7 h-7 text-foreground" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
@@ -213,7 +213,7 @@ const PlanosCreditos = () => {
         {/* Credits Section */}
         <section>
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 mb-4">
               <Coins className="w-7 h-7 text-foreground" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
@@ -249,12 +249,12 @@ const PlanosCreditos = () => {
                 >
                   {/* Badges */}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-yellow-500 to-orange-500 text-white border-0 px-3 py-1 text-xs">
                       ⭐ MELHOR VALOR
                     </Badge>
                   )}
                   {plan.popular && !plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-foreground border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
                       🔥 POPULAR
                     </Badge>
                   )}
@@ -279,7 +279,7 @@ const PlanosCreditos = () => {
 
                   {/* Savings Badge */}
                   {plan.savings && (
-                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-border text-muted-foreground text-xs mb-2 gap-1">
+                    <Badge className="bg-gradient-to-r from-purple-500/20 to-purple-400/20 border border-border text-muted-foreground text-xs mb-2 gap-1">
                       <Tag className="w-3 h-3" />
                       Economize {plan.savings}%
                     </Badge>

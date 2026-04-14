@@ -105,7 +105,7 @@ const FakePurchaseNotifications = () => {
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 bg-emerald-600 text-foreground rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
         <ShoppingCart className="h-4 w-4 shrink-0" />
         <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
         <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-accent rounded p-0.5">
@@ -133,7 +133,7 @@ const StickyFooterBar = () => {
   };
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-slate-600 to-slate-600 border-b border-border shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-purple-600 to-purple-600 border-b border-border shadow-[0_4px_20px_rgba(217,70,239,0.3)]">
       <div className="max-w-7xl mx-auto px-3 py-3 sm:py-2.5 flex items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-1.5 sm:gap-2 text-foreground text-xs sm:text-sm font-medium min-w-0">
           <span className="truncate">🔥 Suas imagens em qualidade cinematográfica</span>
@@ -153,7 +153,7 @@ const StickyFooterBar = () => {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-600 hover:to-purple-600 text-white shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -541,7 +541,7 @@ const PlanosUpscalerArcano = () => {
         <div className="max-w-lg mx-auto px-4 py-12">
           <Card className="bg-background/80 border-green-500/50 rounded-3xl">
             <CardContent className="p-8 text-center">
-              <Badge className="bg-green-500 text-foreground text-lg px-6 py-3 rounded-full mb-6">
+              <Badge className="bg-green-500 text-white text-lg px-6 py-3 rounded-full mb-6">
                 <Check className="h-5 w-5 mr-2" />
                 {t('tools:upscaler.alreadyHaveAccess')}
               </Badge>
@@ -550,7 +550,7 @@ const PlanosUpscalerArcano = () => {
               </p>
               <Button
                 onClick={() => navigate("/biblioteca-artes")}
-                className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-full px-8 py-6"
+                className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-full px-8 py-6"
               >
                 {t('tools:upscaler.goToLibrary')}
               </Button>
@@ -652,12 +652,12 @@ const PlanosUpscalerArcano = () => {
                   return (
                     <div key={index} className="text-center flex flex-col items-center relative">
                       {index < steps.length - 1 && (
-                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-purple-500/50 to-transparent" />
                       )}
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-foreground font-bold text-lg mb-4 shadow-lg shadow-primary/10">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-primary/10">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-border flex items-center justify-center mb-5">
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 border border-border flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-foreground mb-2">{step.title}</h3>
@@ -695,7 +695,7 @@ const PlanosUpscalerArcano = () => {
                       key={index}
                       className="bg-gradient-to-br from-white/10 to-white/5 border border-border rounded-3xl p-8 text-center hover:border-border/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-500/20 to-purple-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-muted-foreground" />
                       </div>
                       <h3 className="text-xl font-semibold text-foreground mb-3">{item.title}</h3>
@@ -774,12 +774,12 @@ const PlanosUpscalerArcano = () => {
                     </Badge>
                   )}
                   {plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-foreground px-4 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-1">
                       MELHOR CUSTO/BENEFÍCIO
                     </Badge>
                   )}
                   {plan.isLifetime && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-green-500 to-emerald-600 text-foreground font-semibold px-4 py-1">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 z-10 border-0 text-[11px] whitespace-nowrap bg-gradient-to-r from-green-500 to-emerald-600 text-white font-semibold px-4 py-1">
                       🔥 69% OFF
                     </Badge>
                   )}
@@ -813,11 +813,11 @@ const PlanosUpscalerArcano = () => {
                       onClick={() => openCheckout(plan.productSlug)}
                       className={`w-full mb-2 text-sm lg:text-base h-10 lg:h-12 ${
                         plan.isLifetime
-                          ? "bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-foreground font-semibold"
+                          ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white font-semibold"
                           : plan.bestSeller
                           ? "bg-gradient-to-r from-lime-400 to-lime-500 hover:from-lime-500 hover:to-lime-600 text-black font-semibold"
                           : plan.bestValue
-                          ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-foreground font-semibold"
+                          ? "bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold"
                           : "bg-accent hover:bg-white/20 text-foreground"
                       }`}
                     >
@@ -829,7 +829,7 @@ const PlanosUpscalerArcano = () => {
                     )}
 
                     <div className="flex flex-col items-center mb-5 lg:mb-6 mt-3 gap-1.5">
-                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-primary-foreground bg-gradient-to-r from-purple-600 to-purple-500">
+                      <span className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs lg:text-sm font-bold text-white bg-gradient-to-r from-purple-600 to-purple-500">
                         <Sparkles className="w-3.5 h-3.5" />
                         {plan.credits}
                       </span>
@@ -958,7 +958,7 @@ const PlanosUpscalerArcano = () => {
           <div className="flex justify-center px-4 md:px-6 pt-6 pb-14 md:pb-12">
             <Button
               onClick={() => document.getElementById("planos")?.scrollIntoView({ behavior: "smooth" })}
-              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-foreground shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 active:scale-95"
+              className="w-full max-w-[90%] md:max-w-md h-auto px-5 md:px-8 py-4 md:py-6 text-sm sm:text-base md:text-lg leading-snug text-center whitespace-normal break-words font-bold rounded-2xl md:rounded-full bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-600 hover:to-purple-600 text-white shadow-2xl shadow-primary/10 transition-all duration-300 hover:scale-[1.02] hover:shadow-primary/10 active:scale-95"
             >
               🚀 Quero melhorar minhas imagens agora
             </Button>
@@ -1019,4 +1019,3 @@ const PlanosUpscalerArcano = () => {
 };
 
 export default PlanosUpscalerArcano;
-

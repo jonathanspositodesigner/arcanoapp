@@ -218,7 +218,7 @@ export const ResilientImage = ({
             <Button
               onClick={handleDownload}
               size="sm"
-              className="bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600"
+              className="bg-gradient-to-r from-purple-500 to-purple-500 hover:from-purple-600 hover:to-purple-600"
             >
               <Download className="w-4 h-4 mr-2" />
               {locale === 'es' ? 'Descargar HD' : 'Baixar em HD'}

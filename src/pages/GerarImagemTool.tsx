@@ -675,7 +675,7 @@ const GerarImagemTool = () => {
               >
                 <Paperclip className="h-4 w-4" />
                 {referenceImages.length > 0 && (
-                  <span className="absolute -top-1 -right-1 bg-green-500 text-foreground text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 bg-green-500 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                     {referenceImages.length}
                   </span>
                 )}
@@ -784,7 +784,7 @@ const GerarImagemTool = () => {
 
               {resultUrl && (
                 <>
-                  <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-600/80 border border-green-500/40 text-xs text-foreground hover:bg-green-600 transition-colors">
+                  <button onClick={handleDownload} className="flex items-center gap-1 px-2 py-1.5 rounded-lg bg-green-600/80 border border-green-500/40 text-xs text-white hover:bg-green-600 transition-colors">
                     <Download className="h-3 w-3" />
                     <span className="font-medium">Baixar</span>
                   </button>
@@ -802,7 +802,7 @@ const GerarImagemTool = () => {
                 onClick={handleGenerate}
                 disabled={isSubmitting || isProcessing || !prompt.trim()}
                 size="sm"
-                className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 shrink-0"
+                className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-8 shrink-0"
               >
                 {isSubmitting || isProcessing ? (
                   <>

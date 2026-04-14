@@ -16,21 +16,21 @@ type GenderFilter = 'homem' | 'mulher';
 const PLACEHOLDER_POSES: Record<GenderFilter, Array<{ id: string; label: string; color: string }>> = {
   homem: [
     { id: 'h1', label: 'Em Pé Casual', color: 'from-blue-600 to-blue-800' },
-    { id: 'h2', label: 'Braços Cruzados', color: 'from-slate-600 to-slate-800' },
-    { id: 'h3', label: 'Sentado', color: 'from-slate-600 to-slate-700' },
-    { id: 'h4', label: 'Caminhando', color: 'from-slate-600 to-slate-700' },
+    { id: 'h2', label: 'Braços Cruzados', color: 'from-purple-600 to-purple-800' },
+    { id: 'h3', label: 'Sentado', color: 'from-purple-600 to-purple-700' },
+    { id: 'h4', label: 'Caminhando', color: 'from-purple-600 to-purple-700' },
     { id: 'h5', label: 'Apontando', color: 'from-blue-700 to-slate-900' },
-    { id: 'h6', label: 'Mãos no Bolso', color: 'from-slate-600 to-slate-800' },
+    { id: 'h6', label: 'Mãos no Bolso', color: 'from-purple-600 to-purple-800' },
     { id: 'h7', label: 'Pose Confiante', color: 'from-cyan-600 to-cyan-800' },
     { id: 'h8', label: 'Pose Executivo', color: 'from-gray-600 to-gray-800' },
   ],
   mulher: [
     { id: 'm1', label: 'Em Pé Elegante', color: 'from-pink-600 to-pink-800' },
     { id: 'm2', label: 'Mãos na Cintura', color: 'from-rose-600 to-rose-800' },
-    { id: 'm3', label: 'Sentada', color: 'from-slate-600 to-slate-700' },
-    { id: 'm4', label: 'Pose Fashion', color: 'from-slate-600 to-slate-700' },
+    { id: 'm3', label: 'Sentada', color: 'from-purple-600 to-purple-700' },
+    { id: 'm4', label: 'Pose Fashion', color: 'from-purple-600 to-purple-700' },
     { id: 'm5', label: 'Caminhando', color: 'from-pink-700 to-rose-900' },
-    { id: 'm6', label: 'Braços Cruzados', color: 'from-slate-600 to-slate-700' },
+    { id: 'm6', label: 'Braços Cruzados', color: 'from-purple-600 to-purple-700' },
     { id: 'm7', label: 'Pose Casual', color: 'from-magenta-600 to-magenta-800' },
     { id: 'm8', label: 'Pose Profissional', color: 'from-red-600 to-red-800' },
   ],
@@ -72,7 +72,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
             className={cn(
               "flex-1",
               filter === 'homem'
-                ? "bg-gradient-to-r from-slate-500 to-slate-700 text-foreground border-0"
+                ? "bg-gradient-to-r from-purple-500 to-purple-700 text-white border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >
@@ -86,7 +86,7 @@ const PoseLibraryModal: React.FC<PoseLibraryModalProps> = ({
             className={cn(
               "flex-1",
               filter === 'mulher'
-                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-foreground border-0"
+                ? "bg-gradient-to-r from-pink-600 to-rose-600 text-white border-0"
                 : "bg-transparent border-border text-muted-foreground hover:bg-accent0/20"
             )}
           >

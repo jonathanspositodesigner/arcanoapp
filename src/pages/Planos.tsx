@@ -260,7 +260,7 @@ const Planos = () => {
 
         {/* Discount Banner - Only show on annual */}
         {billingPeriod === "anual" && (
-          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-slate-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
+          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
             <span className="text-foreground font-semibold tracking-wide">
               Economize até 20% no plano anual!
             </span>
@@ -280,12 +280,12 @@ const Planos = () => {
             return (
             <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-background w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-primary/10" : "border border-border"}`}>
               {isBestSeller && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-foreground px-4 py-1">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
               {(plan.promo || plan.popular) && !isBestSeller && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-green-500 text-foreground"}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-green-500 text-white"}`}>
                   {plan.promo ? t('planos.launchPromo') : t('planos.popular')}
                 </Badge>
               )}
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-foreground font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent text-muted-foreground"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-secondary hover:bg-secondary text-white" : "bg-accent hover:bg-accent text-muted-foreground"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>

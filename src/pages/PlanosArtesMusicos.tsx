@@ -160,7 +160,7 @@ const PlanosArtesMusicos = () => {
           </Tabs>
         </div>
 
-        <div className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
+        <div className="bg-gradient-to-r from-purple-600 to-purple-500 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
           <span className="text-foreground font-semibold tracking-wide">{t('plansMusicos.discountBanner', { percent: billingPeriod === "anual" ? "40" : "20" })}</span>
         </div>
 
@@ -168,7 +168,7 @@ const PlanosArtesMusicos = () => {
           {currentPlans.map((plan, index) => (
             <Card key={plan.name} className={`relative bg-card border-border/20 p-6 flex flex-col rounded-xl lg:rounded-none ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === 2 ? "lg:rounded-br-xl" : ""} ${plan.popular ? "border-2 border-border" : ""}`}>
               {(plan.promo || plan.popular) && (
-                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-foreground" : "bg-emerald-500 text-foreground"}`}>
+                <Badge className={`absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap ${plan.promo ? "bg-orange-500 text-white" : "bg-emerald-500 text-white"}`}>
                   {plan.promo ? t('plansMusicos.badges.promo') : t('plansMusicos.badges.popular')}
                 </Badge>
               )}

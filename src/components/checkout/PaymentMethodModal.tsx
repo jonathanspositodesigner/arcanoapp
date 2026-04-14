@@ -31,7 +31,7 @@ const PaymentMethodModal = ({
     : 'hover:border-primary/40 hover:bg-secondary';
   const cardGradient = isOrange
     ? 'from-[#EF672C] to-[#f65928]'
-    : 'from-slate-500 to-slate-500';
+    : 'from-purple-500 to-purple-500';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

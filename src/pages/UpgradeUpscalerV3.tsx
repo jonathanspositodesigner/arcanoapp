@@ -205,7 +205,7 @@ const FakePurchaseNotifications = () => {
         isVisible ? "translate-x-0 opacity-100" : "translate-x-full opacity-0"
       }`}
     >
-      <div className="flex items-center gap-3 bg-emerald-600 text-foreground rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
+      <div className="flex items-center gap-3 bg-emerald-600 text-white rounded-xl px-4 py-3 shadow-lg shadow-emerald-900/40 border border-emerald-400/20">
         <ShoppingCart className="h-4 w-4 shrink-0" />
         <span className="text-xs font-medium leading-tight">{notification.name} acabou de comprar!</span>
         <button onClick={() => setIsVisible(false)} className="shrink-0 ml-1 hover:bg-accent rounded p-0.5">
@@ -361,7 +361,7 @@ const UpgradeUpscalerV3 = () => {
       <LazyFakePurchaseNotifications />
 
       {/* BARRA STICKY */}
-      <div className="sticky top-0 z-50 w-full bg-gradient-to-r from-slate-600 to-slate-600 backdrop-blur-md border-b border-border">
+      <div className="sticky top-0 z-50 w-full bg-gradient-to-r from-purple-600 to-purple-600 backdrop-blur-md border-b border-border">
         <div className="max-w-7xl mx-auto px-4 py-2.5 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="text-xs sm:text-sm font-semibold text-white/90 text-center sm:text-left flex items-center gap-2">
             <Sparkles className="h-4 w-4 text-amber-400 shrink-0" />

@@ -79,7 +79,7 @@ const RefineSelector: React.FC<RefineSelectorProps> = ({
       {/* Submit */}
       <Button
         size="sm"
-        className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium text-xs disabled:opacity-50"
+        className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-medium text-xs disabled:opacity-50"
         disabled={!canSubmit}
         onClick={() => onSubmit(selectionText)}
       >

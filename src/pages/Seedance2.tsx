@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-primary/10 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-purple-600 to-purple-400 text-white shadow-lg shadow-primary/10 active:scale-[0.98]"
                       : "cursor-not-allowed bg-accent text-muted-foreground"
                   }`}
                 >
@@ -710,7 +710,7 @@ export default function Seedance2() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                   placeholder="Descreva o vídeo que deseja gerar..."
-                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-border bg-white/[0.04] px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-slate-500/40"
+                  className="min-h-[60px] max-h-[100px] resize-none rounded-xl border border-border bg-white/[0.04] px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus:border-purple-500/40"
                   rows={2}
                 />
                 <span className="text-right text-[10px] text-muted-foreground -mt-1">{prompt.length}/2000</span>
@@ -772,7 +772,7 @@ export default function Seedance2() {
                     value={prompt}
                     onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
                     placeholder="Descreva o vídeo que deseja gerar..."
-                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-border bg-white/[0.04] px-3.5 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-slate-500/40 focus:min-h-[100px]"
+                    className="min-h-[80px] max-h-[160px] min-w-0 resize-y rounded-xl border border-border bg-white/[0.04] px-3.5 py-2.5 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-purple-500/40 focus:min-h-[100px]"
                     rows={3}
                   />
                   <div className="flex flex-col gap-2">
@@ -781,7 +781,7 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-foreground shadow-lg shadow-primary/10 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-purple-600 to-purple-400 text-white shadow-lg shadow-primary/10 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-accent text-muted-foreground"
                       }`}
                     >
@@ -957,7 +957,7 @@ export default function Seedance2() {
                   onClick={() => { setRatio(item.value); setShowRatioModal(false); }}
                   className={`rounded-xl border px-3 py-2.5 text-xs font-medium transition-all ${
                     ratio === item.value
-                      ? "border-slate-500/40 bg-accent0/20 text-muted-foreground"
+                      ? "border-purple-500/40 bg-accent0/20 text-muted-foreground"
                       : "border-border bg-white/[0.04] text-muted-foreground hover:bg-white/[0.08]"
                   }`}
                 >

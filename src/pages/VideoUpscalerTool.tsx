@@ -481,7 +481,7 @@ const VideoUpscalerTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-foreground font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -588,7 +588,7 @@ const VideoUpscalerTool: React.FC = () => {
                     {/* Progress bar */}
                     <div className="w-36 h-1.5 bg-accent rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-purple-500 to-purple-400 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -643,7 +643,7 @@ const VideoUpscalerTool: React.FC = () => {
                   </Button>
                   <Button
                     size="sm"
-                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-foreground"
+                    className="flex-1 h-8 text-xs bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white"
                     onClick={handleDownload}
                   >
                     <Download className="w-3.5 h-3.5 mr-1.5" />
