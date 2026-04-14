@@ -95,6 +95,7 @@ const BibliotecaPrompts = () => {
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
+  const toolsScrollRef = useRef<HTMLDivElement>(null);
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
 
@@ -534,6 +535,7 @@ const BibliotecaPrompts = () => {
               <ChevronRight className="h-4 w-4" />
             </button>
           </div>
+        </div>
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
