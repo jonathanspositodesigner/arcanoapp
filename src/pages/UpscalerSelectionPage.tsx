@@ -54,7 +54,7 @@ const UpscalerSelectionPage = () => {
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-slate-500 shadow-lg shadow-primary/5 group-hover:shadow-gray-500 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-purple-600 to-purple-500 shadow-lg shadow-primary/5 group-hover:shadow-gray-500 transition-shadow">
                 <Image className="w-5 h-5 sm:w-8 sm:h-8 text-foreground" />
               </div>
             </div>
