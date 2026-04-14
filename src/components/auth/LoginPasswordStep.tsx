@@ -60,7 +60,7 @@ const variantStyles = {
     emailText: 'text-white/80',
     changeBtn: 'text-gray-400 hover:text-gray-300',
     input: 'bg-[#0f0f1a] border-white/10 text-white',
-    button: 'bg-slate-600 hover:bg-violet-700 text-white',
+    button: 'bg-slate-600 hover:bg-slate-700 text-white',
     forgotLink: 'text-gray-400 hover:text-gray-300 underline',
   },
 };

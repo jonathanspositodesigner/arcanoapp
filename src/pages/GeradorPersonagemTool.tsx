@@ -787,7 +787,7 @@ const GeradorPersonagemTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-fuchsia-500 animate-spin" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-400 animate-spin" />
                       <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <div className="text-center">

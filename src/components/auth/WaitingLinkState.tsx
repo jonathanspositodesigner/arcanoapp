@@ -63,7 +63,7 @@ const variantStyles = {
     title: 'text-white',
     email: 'text-gray-400 font-medium',
     description: 'text-white/60',
-    resendButton: 'bg-slate-600 hover:bg-violet-700 text-white',
+    resendButton: 'bg-slate-600 hover:bg-slate-700 text-white',
     changeButton: 'text-white/60 hover:text-white',
   },
 };

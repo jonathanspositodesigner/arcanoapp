@@ -904,7 +904,7 @@ const GerarVideoTool = () => {
                       disabled={isGenerating}
                       className={`flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-medium transition-colors ${
                         generateAudio
-                          ? 'bg-slate-600/30 border-white/15/50 text-fuchsia-200'
+                          ? 'bg-slate-600/30 border-white/15/50 text-gray-300'
                           : 'bg-white/5 border-slate-500/25 text-gray-400 hover:text-gray-300 hover:bg-slate-800/50'
                       } disabled:opacity-40 disabled:cursor-not-allowed`}
                       title={generateAudio ? 'Desativar áudio' : 'Ativar áudio (custo extra)'}

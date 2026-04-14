@@ -1091,7 +1091,7 @@ const ArcanoClonerTool: React.FC = () => {
                 ) : isRefining ? (
                   <div className="flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-fuchsia-500 animate-spin" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-400 animate-spin" />
                       <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <p className="text-sm text-white font-medium">Refinando imagem...</p>

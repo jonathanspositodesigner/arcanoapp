@@ -473,7 +473,7 @@ const ToolVersionLessons = () => {
             {/* Progress Bar */}
             <div className="h-3 bg-white/5 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-slate-600 via-violet-500 to-gray-400 
+                className="h-full bg-gradient-to-r from-slate-600 via-slate-500 to-gray-400 
                            transition-all duration-700 ease-out rounded-full"
                 style={{ width: `${totalLessons > 0 ? (progressCount / totalLessons) * 100 : 0}%` }}
               />

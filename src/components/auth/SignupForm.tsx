@@ -110,7 +110,7 @@ const variantStyles = {
     input: 'bg-[#0f0f1a] border-white/10 text-white',
     alert: 'bg-slate-500/10 border-white/10',
     alertIcon: 'text-slate-400',
-    alertText: 'text-violet-200',
+    alertText: 'text-gray-300',
     button: 'bg-emerald-500 hover:bg-emerald-600 text-white',
     backButton: 'text-white/60 hover:text-white',
     progressBg: 'bg-emerald-500/20',
