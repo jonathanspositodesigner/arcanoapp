@@ -24,18 +24,18 @@ const PaymentMethodModal = ({
 }: PaymentMethodModalProps) => {
   const isOrange = colorScheme === 'orange';
   const modalBg = isOrange ? 'bg-[#1a0a0a]' : 'bg-[#1A0A2E]';
-  const borderAccent = isOrange ? 'border-[#EF672C]/30' : 'border-purple-500/30';
-  const descColor = isOrange ? 'text-orange-300/70' : 'text-purple-300';
-  const btnBorder = isOrange ? 'border-[#EF672C]/30' : 'border-purple-500/30';
-  const btnBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-purple-900/20';
+  const borderAccent = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
+  const descColor = isOrange ? 'text-orange-300/70' : 'text-gray-300';
+  const btnBorder = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
+  const btnBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-white/5';
   const btnHoverCard = isOrange
     ? 'hover:border-[#EF672C]/60 hover:bg-[#EF672C]/20'
-    : 'hover:border-purple-400/60 hover:bg-purple-800/30';
+    : 'hover:border-white/15/60 hover:bg-slate-800/30';
   const cardGradient = isOrange
     ? 'from-[#EF672C] to-[#f65928]'
-    : 'from-purple-500 to-fuchsia-600';
-  const subTextColor = isOrange ? 'text-orange-300/50' : 'text-purple-400';
-  const spinnerColor = isOrange ? 'text-[#EF672C]' : 'text-purple-400';
+    : 'from-slate-500 to-slate-500';
+  const subTextColor = isOrange ? 'text-orange-300/50' : 'text-gray-400';
+  const spinnerColor = isOrange ? 'text-[#EF672C]' : 'text-gray-400';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

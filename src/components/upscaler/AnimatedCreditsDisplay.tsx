@@ -42,7 +42,7 @@ export const AnimatedCreditsDisplay = ({
     return (
       <div className={cn("flex items-center gap-1.5", className)}>
         {showCoin && <Coins className={cn(sizeClasses[size].coin, "text-yellow-400")} />}
-        <Loader2 className={cn(sizeClasses[size].coin, "animate-spin text-purple-400")} />
+        <Loader2 className={cn(sizeClasses[size].coin, "animate-spin text-gray-400")} />
       </div>
     );
   }
@@ -83,7 +83,7 @@ export const AnimatedCreditsDisplay = ({
           "font-medium flex items-center gap-1.5 transition-colors duration-200",
           isUnlimited 
             ? "bg-emerald-600/80 text-white border border-emerald-400/30" 
-            : "bg-purple-600 text-white",
+            : "bg-slate-600 text-white",
           sizeClasses[size].badge,
           direction && "bg-opacity-90",
           className

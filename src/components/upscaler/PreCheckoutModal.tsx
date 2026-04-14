@@ -81,8 +81,8 @@ const PreCheckoutModal = ({ isOpen, onClose, userEmail, userId, productSlug = 'u
   const accentBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-fuchsia-500/10';
   const accentText = isOrange ? 'text-[#EF672C]' : 'text-fuchsia-400';
   const accentTextLight = isOrange ? 'text-[#EF672C]/80' : 'text-fuchsia-300';
-  const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-fuchsia-500 to-purple-600';
-  const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-fuchsia-600 hover:to-purple-700';
+  const btnGradient = isOrange ? 'from-[#EF672C] to-[#f65928]' : 'from-slate-500 to-slate-500';
+  const btnGradientHover = isOrange ? 'hover:from-[#d55a24] hover:to-[#e04e1f]' : 'hover:from-slate-600 hover:to-slate-600';
   const btnShadow = isOrange ? 'shadow-[#EF672C]/25' : 'shadow-fuchsia-500/25';
   const modalBg = isOrange ? 'from-[#1a0a0a] to-[#150a05]' : 'from-[#1a0f25] to-[#150a1a]';
   const modalShadow = isOrange ? 'shadow-[#EF672C]/10' : 'shadow-fuchsia-500/10';

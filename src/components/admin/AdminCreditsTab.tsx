@@ -389,7 +389,7 @@ const AdminCreditsTab = () => {
       case 'monthly':
         return <Badge variant="secondary" className="text-[9px] px-1">Mensal</Badge>;
       case 'lifetime':
-        return <Badge variant="secondary" className="text-[9px] px-1 bg-purple-100 text-purple-700">Vitalício</Badge>;
+        return <Badge variant="secondary" className="text-[9px] px-1 bg-slate-100 text-slate-600">Vitalício</Badge>;
       case 'mixed':
         return <Badge variant="secondary" className="text-[9px] px-1 bg-amber-100 text-amber-700">Misto</Badge>;
       default:
@@ -433,7 +433,7 @@ const AdminCreditsTab = () => {
         </Card>
         <Card>
           <CardContent className="p-4 flex items-center gap-4">
-            <Coins className="h-8 w-8 text-purple-500" />
+            <Coins className="h-8 w-8 text-slate-400" />
             <div>
               <p className="text-sm text-muted-foreground">Créditos Vitalícios</p>
               <p className="text-2xl font-bold">{formatNumber(totalLifetimeCredits)}</p>
@@ -532,7 +532,7 @@ const AdminCreditsTab = () => {
                         </span>
                       </TableCell>
                       <TableCell className="text-right">
-                        <span className="text-purple-600 font-medium">
+                        <span className="text-slate-500 font-medium">
                           {formatNumber(user.lifetime_balance)}
                         </span>
                       </TableCell>
@@ -743,7 +743,7 @@ const AdminCreditsTab = () => {
                 </div>
                 <div className="p-3 border rounded-lg text-center">
                   <p className="text-sm text-muted-foreground">Vitalícios</p>
-                  <p className="text-xl font-bold text-purple-600">
+                  <p className="text-xl font-bold text-slate-500">
                     {formatNumber(selectedUser.lifetime_balance)}
                   </p>
                 </div>
@@ -793,7 +793,7 @@ const AdminCreditsTab = () => {
                 </Button>
                 <Button
                   variant="outline"
-                  className="border-purple-500 text-purple-600 hover:bg-purple-50"
+                  className="border-slate-500 text-slate-500 hover:bg-purple-50"
                   onClick={() => handleCreditAction('add_lifetime')}
                   disabled={isSubmitting || creditAmount <= 0}
                 >
@@ -957,7 +957,7 @@ const AdminCreditsTab = () => {
                     Mensais
                   </Button>
                   <Button
-                    className="bg-purple-600 hover:bg-purple-700"
+                    className="bg-slate-600 hover:bg-slate-700"
                     onClick={() => handleAddCreditsToUser('lifetime')}
                     disabled={addUserModalState === 'submitting' || newUserAmount <= 0}
                   >

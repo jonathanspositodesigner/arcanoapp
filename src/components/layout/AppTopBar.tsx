@@ -38,37 +38,37 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         <Button
           variant="ghost"
           size="icon"
-          className={`${isMobile ? 'text-white hover:bg-white/20' : 'text-purple-300 hover:text-white hover:bg-purple-500/20'} rounded-full`}
+          className={`${isMobile ? 'text-white hover:bg-white/20' : 'text-gray-300 hover:text-white hover:bg-slate-500/20'} rounded-full`}
         >
           <User className="w-5 h-5" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="end"
-        className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
+        className="w-56 bg-[#1A0A2E] border-white/10 text-white"
       >
-        <DropdownMenuLabel className="text-purple-200">
+        <DropdownMenuLabel className="text-gray-300">
           <div className="flex flex-col gap-1">
             <span className="font-medium">
               {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
             </span>
-            <span className="text-xs text-purple-400 font-normal">
+            <span className="text-xs text-gray-400 font-normal">
               {user?.email}
             </span>
           </div>
         </DropdownMenuLabel>
 
         {userProfile?.phone && (
-          <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
+          <div className="px-2 py-1.5 text-sm text-gray-300 flex items-center gap-2">
             <Phone className="w-3.5 h-3.5" />
             {userProfile.phone}
           </div>
         )}
 
-        <DropdownMenuSeparator className="bg-purple-500/20" />
+        <DropdownMenuSeparator className="bg-slate-500/20" />
 
         <div className="px-2 py-2 flex items-center justify-between">
-          <span className="text-sm text-purple-300 flex items-center gap-2">
+          <span className="text-sm text-gray-300 flex items-center gap-2">
             <Coins className="w-4 h-4 text-yellow-400" />
             Créditos
           </span>
@@ -83,7 +83,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
             />
             <button
               onClick={() => navigate('/planos-creditos')}
-              className="p-1 rounded hover:bg-purple-500/10"
+              className="p-1 rounded hover:bg-slate-500/10"
               title="Comprar créditos"
             >
               <PlusCircle className="w-4 h-4 text-fuchsia-400" />
@@ -91,11 +91,11 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           </div>
         </div>
 
-        <DropdownMenuSeparator className="bg-purple-500/20" />
+        <DropdownMenuSeparator className="bg-slate-500/20" />
 
         <DropdownMenuItem
           onClick={() => navigate('/change-password')}
-          className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+          className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
         >
           <Lock className="w-4 h-4 mr-2" />
           Alterar Senha
@@ -103,13 +103,13 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
 
         <DropdownMenuItem
           onClick={() => navigate('/profile-settings')}
-          className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+          className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
         >
           <Settings className="w-4 h-4 mr-2" />
           Configurações
         </DropdownMenuItem>
 
-        <DropdownMenuSeparator className="bg-purple-500/20" />
+        <DropdownMenuSeparator className="bg-slate-500/20" />
 
         <DropdownMenuItem
           onClick={onLogout}
@@ -125,23 +125,23 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   return (
     <>
       {/* Top Bar - Desktop */}
-      <header className="hidden lg:flex bg-[#0D0221]/80 backdrop-blur-lg border-b border-purple-500/20 px-6 py-3 items-center justify-between sticky top-0 z-50">
+      <header className="hidden lg:flex bg-[#111113]/80 backdrop-blur-lg border-b border-white/10 px-6 py-3 items-center justify-between sticky top-0 z-50">
         <div className="flex items-center gap-4">
         </div>
         <div className="flex items-center gap-3">
           {user && (
-            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-slate-500/20">
               <ImageIcon className="h-4 w-4 mr-2" />
               Minhas Criações
             </Button>
           )}
           {!user && (
             <>
-              <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-purple-300 hover:text-white hover:bg-purple-500/20">
+              <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} variant="ghost" size="sm" className="text-gray-300 hover:text-white hover:bg-slate-500/20">
                 <LogIn className="h-4 w-4 mr-2" />
                 {t('header.login')}
               </Button>
-              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white">
+              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -149,7 +149,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           )}
           {user && !isPremium && (
             <>
-              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white">
+              <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white">
                 <Star className="h-3 w-3 mr-2" fill="currentColor" />
                 {t('header.becomePremium')}
               </Button>
@@ -160,7 +160,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 />
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
@@ -182,7 +182,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 />
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
@@ -195,19 +195,19 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
       </header>
 
       {/* Top Bar - Mobile */}
-      <header className="lg:hidden bg-[#0D0221]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-purple-500/20 sticky top-0 z-50">
+      <header className="lg:hidden bg-[#111113]/95 backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-lg border-b border-white/10 sticky top-0 z-50">
         <div className="flex items-center gap-2">
-          <button onClick={onToggleSidebar} className="text-purple-300 hover:text-white p-1">
+          <button onClick={onToggleSidebar} className="text-gray-300 hover:text-white p-1">
             <Menu className="h-5 w-5" />
           </button>
         </div>
         {!user && (
           <div className="flex items-center gap-2">
-            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-purple-300 hover:bg-purple-500/20 text-xs">
+            <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-gray-300 hover:bg-slate-500/20 text-xs">
               <LogIn className="h-4 w-4 mr-1" />
               {t('header.login')}
             </Button>
-            <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white text-xs">
+            <Button onClick={() => navigate("/planos-2")} size="sm" className="bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white text-xs">
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Button>
@@ -222,7 +222,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 rounded hover:bg-purple-500/10"
+                className="p-0.5 rounded hover:bg-slate-500/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-fuchsia-400" />
@@ -244,7 +244,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               />
               <button
                 onClick={() => navigate('/planos-creditos')}
-                className="p-0.5 rounded hover:bg-purple-500/10"
+                className="p-0.5 rounded hover:bg-slate-500/10"
                 title="Comprar créditos"
               >
                 <PlusCircle className="w-3.5 h-3.5 text-fuchsia-400" />

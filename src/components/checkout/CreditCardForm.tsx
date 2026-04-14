@@ -207,11 +207,11 @@ const CreditCardForm = ({
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!busy) onOpenChange(v); }}>
-      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30 max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10 max-h-[90vh] overflow-y-auto">
         {busy ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <div className="relative">
-              <div className="w-16 h-16 rounded-full border-4 border-white/10 text-purple-400 border-t-current animate-spin" />
+              <div className="w-16 h-16 rounded-full border-4 border-white/10 text-gray-400 border-t-current animate-spin" />
             </div>
             <div className="text-center">
               <p className="text-white font-semibold text-lg">
@@ -228,10 +228,10 @@ const CreditCardForm = ({
           <>
             <DialogHeader className="text-center">
               <DialogTitle className="text-xl font-bold text-center text-white flex items-center justify-center gap-2">
-                <CreditCard className="w-5 h-5 text-purple-400" />
+                <CreditCard className="w-5 h-5 text-gray-400" />
                 Dados do Cartão
               </DialogTitle>
-              <DialogDescription className="text-center text-purple-300">
+              <DialogDescription className="text-center text-gray-300">
                 {planName
                   ? `Assinatura recorrente — ${planName}`
                   : "Preencha os dados do seu cartão de crédito"}
@@ -240,12 +240,12 @@ const CreditCardForm = ({
 
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label className="text-purple-200 text-sm">Número do Cartão</Label>
+                <Label className="text-gray-300 text-sm">Número do Cartão</Label>
                 <Input
                   value={cardNumber}
                   onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
                   placeholder="0000 0000 0000 0000"
-                  className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-lg tracking-wider"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-lg tracking-wider"
                   maxLength={19}
                   inputMode="numeric"
                   autoComplete="cc-number"
@@ -253,48 +253,48 @@ const CreditCardForm = ({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-purple-200 text-sm">Nome Impresso no Cartão</Label>
+                <Label className="text-gray-300 text-sm">Nome Impresso no Cartão</Label>
                 <Input
                   value={cardName}
                   onChange={(e) => setCardName(e.target.value.toUpperCase())}
                   placeholder="NOME COMPLETO"
-                  className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 uppercase"
+                  className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 uppercase"
                   autoComplete="cc-name"
                 />
               </div>
 
               <div className="grid grid-cols-3 gap-3">
                 <div className="space-y-2">
-                  <Label className="text-purple-200 text-sm">Mês</Label>
+                  <Label className="text-gray-300 text-sm">Mês</Label>
                   <Input
                     value={expMonth}
                     onChange={(e) => setExpMonth(e.target.value.replace(/\D/g, "").slice(0, 2))}
                     placeholder="MM"
-                    className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-center"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-center"
                     maxLength={2}
                     inputMode="numeric"
                     autoComplete="cc-exp-month"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-purple-200 text-sm">Ano</Label>
+                  <Label className="text-gray-300 text-sm">Ano</Label>
                   <Input
                     value={expYear}
                     onChange={(e) => setExpYear(e.target.value.replace(/\D/g, "").slice(0, 2))}
                     placeholder="AA"
-                    className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-center"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-center"
                     maxLength={2}
                     inputMode="numeric"
                     autoComplete="cc-exp-year"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-purple-200 text-sm">CVV</Label>
+                  <Label className="text-gray-300 text-sm">CVV</Label>
                   <Input
                     value={cvv}
                     onChange={(e) => setCvv(e.target.value.replace(/\D/g, "").slice(0, 4))}
                     placeholder="000"
-                    className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-center"
+                    className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-center"
                     maxLength={4}
                     inputMode="numeric"
                     type="password"
@@ -304,31 +304,31 @@ const CreditCardForm = ({
               </div>
 
               {/* Address Section */}
-              <div className="border-t border-purple-500/20 pt-4 mt-2">
+              <div className="border-t border-white/10 pt-4 mt-2">
                 <div className="flex items-center gap-2 mb-3">
-                  <MapPin className="w-4 h-4 text-purple-400" />
-                  <span className="text-purple-200 text-sm font-medium">Endereço de Cobrança</span>
+                  <MapPin className="w-4 h-4 text-gray-400" />
+                  <span className="text-gray-300 text-sm font-medium">Endereço de Cobrança</span>
                 </div>
 
                 <div className="space-y-3">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label className="text-purple-200 text-xs">CEP *</Label>
+                      <Label className="text-gray-300 text-xs">CEP *</Label>
                       <Input
                         value={cep}
                         onChange={(e) => handleCepChange(e.target.value)}
                         placeholder="00000-000"
-                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-sm"
                         maxLength={9}
                         inputMode="numeric"
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-purple-200 text-xs">Estado *</Label>
+                      <Label className="text-gray-300 text-xs">Estado *</Label>
                       <select
                         value={uf}
                         onChange={(e) => setUf(e.target.value)}
-                        className="flex h-10 w-full rounded-md border border-purple-500/30 bg-purple-900/20 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className="flex h-10 w-full rounded-md border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <option value="" className="bg-[#1A0A2E]">UF</option>
                         {UF_OPTIONS.map(u => (
@@ -340,42 +340,42 @@ const CreditCardForm = ({
 
                   <div className="grid grid-cols-3 gap-3">
                     <div className="col-span-2 space-y-1">
-                      <Label className="text-purple-200 text-xs">Rua *</Label>
+                      <Label className="text-gray-300 text-xs">Rua *</Label>
                       <Input
                         value={street}
                         onChange={(e) => setStreet(e.target.value)}
                         placeholder="Rua / Av."
-                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-sm"
                         disabled={cepLoading}
                       />
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-purple-200 text-xs">Nº *</Label>
+                      <Label className="text-gray-300 text-xs">Nº *</Label>
                       <Input
                         value={number}
                         onChange={(e) => setNumber(e.target.value)}
                         placeholder="123"
-                        className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                        className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-sm"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <Label className="text-purple-200 text-xs">Cidade *</Label>
+                    <Label className="text-gray-300 text-xs">Cidade *</Label>
                     <Input
                       value={city}
                       onChange={(e) => setCity(e.target.value)}
                       placeholder="Cidade"
-                      className="bg-purple-900/20 border-purple-500/30 text-white placeholder:text-purple-500/50 text-sm"
+                      className="bg-white/5 border-white/10 text-white placeholder:text-slate-400/50 text-sm"
                       disabled={cepLoading}
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="bg-purple-900/30 border border-purple-500/20 rounded-lg p-3 flex items-start gap-2">
+              <div className="bg-white/5 border border-white/10 rounded-lg p-3 flex items-start gap-2">
                 <Lock className="w-4 h-4 text-green-400 mt-0.5 shrink-0" />
-                <p className="text-purple-300/70 text-xs leading-relaxed">
+                <p className="text-gray-400 text-xs leading-relaxed">
                   Seus dados são criptografados e enviados diretamente ao gateway de pagamento. 
                   Nenhuma informação do cartão é armazenada em nossos servidores.
                 </p>
@@ -383,7 +383,7 @@ const CreditCardForm = ({
 
               <Button
                 type="submit"
-                className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold py-5"
+                className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-fuchsia-700 text-white font-semibold py-5"
               >
                 Confirmar Pagamento
               </Button>

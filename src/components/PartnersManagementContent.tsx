@@ -32,7 +32,7 @@ const PLATFORM_CONFIG = {
   prompts: {
     label: "Prompts",
     icon: FileImage,
-    color: "text-purple-500",
+    color: "text-slate-400",
   },
   artes_eventos: {
     label: "Artes Eventos",

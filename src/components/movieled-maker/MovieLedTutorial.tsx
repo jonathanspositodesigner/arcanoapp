@@ -184,14 +184,14 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
     return (
       <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
         <div className="absolute inset-0 bg-black/80 pointer-events-auto" onClick={finishTutorial} />
-        <div className="relative z-10 bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
+        <div className="relative z-10 bg-[#1e1e3a] border border-white/10 rounded-2xl p-6 shadow-2xl shadow-purple-900/40 max-w-xs w-full pointer-events-auto animate-scale-in text-center">
           <div className="text-4xl mb-3">🎬</div>
           <h2 className="text-lg font-bold text-white mb-1">Primeira vez aqui?</h2>
           <p className="text-xs text-gray-400 mb-5">Aprenda a usar em 5 passos rápidos.</p>
 
           <Button
             onClick={() => { setPhase('active'); onPhaseChange?.('active'); }}
-            className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-fuchsia-700 text-white font-semibold gap-2 rounded-xl py-5 mb-2"
           >
             <Play className="w-4 h-4" />
             Iniciar Tutorial
@@ -278,13 +278,13 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
           zIndex: 100,
         }}
       >
-        <div className="bg-[#1e1e3a] border border-purple-500/30 rounded-2xl p-4 shadow-2xl shadow-purple-900/30 max-w-lg mx-auto">
+        <div className="bg-[#1e1e3a] border border-white/10 rounded-2xl p-4 shadow-2xl shadow-purple-900/30 max-w-lg mx-auto">
           {/* Progress */}
           <div className="mb-3">
             <div className="flex items-center justify-between mb-1.5">
               <div className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-                <span className="text-[10px] font-medium text-purple-300 uppercase tracking-wider">Tutorial</span>
+                <Sparkles className="w-3.5 h-3.5 text-gray-400" />
+                <span className="text-[10px] font-medium text-gray-300 uppercase tracking-wider">Tutorial</span>
               </div>
               <span className="text-[10px] text-gray-400 font-medium">{currentStep + 1}/{STEPS.length}</span>
             </div>
@@ -297,7 +297,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
               <div
                 key={i}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  i === currentStep ? 'w-6 bg-purple-500' : completedSteps.has(i) ? 'w-2 bg-green-500' : 'w-2 bg-white/15'
+                  i === currentStep ? 'w-6 bg-slate-500' : completedSteps.has(i) ? 'w-2 bg-green-500' : 'w-2 bg-white/15'
                 }`}
               />
             ))}
@@ -305,7 +305,7 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
 
           {/* Content */}
           <div className="flex items-start gap-3">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-purple-500/20 to-fuchsia-500/20 border border-purple-500/20 flex items-center justify-center text-xl flex-shrink-0">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-white/10 flex items-center justify-center text-xl flex-shrink-0">
               {step.emoji}
             </div>
             <div className="flex-1 min-w-0">
@@ -316,9 +316,9 @@ const MovieLedTutorial = ({ onComplete, persistCompletion = true, onPhaseChange 
               <p className="text-xs text-gray-300 leading-relaxed">{step.description}</p>
 
               {/* Action hint - this is the key instruction */}
-              <div className="mt-2 flex items-center gap-2 bg-purple-500/10 border border-purple-500/15 rounded-lg px-3 py-1.5 animate-pulse">
-                <MousePointerClick className="w-3.5 h-3.5 text-purple-400 flex-shrink-0" />
-                <span className="text-[11px] text-purple-300 font-medium">{step.action}</span>
+              <div className="mt-2 flex items-center gap-2 bg-slate-500/10 border border-slate-500/15 rounded-lg px-3 py-1.5 animate-pulse">
+                <MousePointerClick className="w-3.5 h-3.5 text-gray-400 flex-shrink-0" />
+                <span className="text-[11px] text-gray-300 font-medium">{step.action}</span>
               </div>
             </div>
           </div>

@@ -93,14 +93,14 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   return (
     <div className="flex flex-col gap-1.5">
       {/* Switch tabs */}
-      <div className="flex rounded-lg overflow-hidden border border-purple-500/30 h-7">
+      <div className="flex rounded-lg overflow-hidden border border-white/10 h-7">
         <button
           type="button"
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'character'
-              ? 'bg-purple-600 text-white'
-              : 'bg-purple-900/20 text-purple-300 hover:bg-purple-900/40'
+              ? 'bg-slate-600 text-white'
+              : 'bg-white/5 text-gray-300 hover:bg-white/5'
           )}
           onClick={() => handleModeChange('character')}
           disabled={disabled}
@@ -113,8 +113,8 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
           className={cn(
             'flex-1 flex items-center justify-center gap-1.5 text-[10px] font-medium transition-colors',
             mode === 'photo'
-              ? 'bg-purple-600 text-white'
-              : 'bg-purple-900/20 text-purple-300 hover:bg-purple-900/40'
+              ? 'bg-slate-600 text-white'
+              : 'bg-white/5 text-gray-300 hover:bg-white/5'
           )}
           onClick={() => handleModeChange('photo')}
           disabled={disabled}
@@ -126,14 +126,14 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
 
       {/* Content based on mode */}
       {mode === 'character' ? (
-        <Card className="bg-purple-900/20 border-purple-500/30 p-2">
+        <Card className="bg-white/5 border-white/10 p-2">
           {isLoading ? (
             <div className="flex items-center justify-center py-6">
-              <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
+              <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
             </div>
           ) : characters.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-4">
-              <p className="text-[10px] text-purple-400 text-center">
+              <p className="text-[10px] text-gray-400 text-center">
                 Nenhum avatar salvo
               </p>
               <Button
@@ -157,7 +157,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                       'relative aspect-square rounded-md overflow-hidden border-2 transition-all',
                       selectedCharacterId === char.id
                         ? 'border-fuchsia-500 ring-1 ring-fuchsia-500/50'
-                        : 'border-purple-500/20 hover:border-purple-400/50'
+                        : 'border-white/10 hover:border-white/15'
                     )}
                     onClick={() => handleSelectCharacter(char)}
                   >
@@ -171,7 +171,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                         const parent = target.parentElement;
                         if (parent && !parent.querySelector('.avatar-fallback')) {
                           const fallback = document.createElement('div');
-                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-purple-900/40 text-purple-300 text-[8px] text-center p-0.5';
+                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-white/5 text-gray-300 text-[8px] text-center p-0.5';
                           fallback.textContent = char.name;
                           parent.appendChild(fallback);
                         }

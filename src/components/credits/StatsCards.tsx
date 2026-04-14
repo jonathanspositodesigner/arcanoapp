@@ -69,12 +69,12 @@ export const StatsCards = () => {
         <div className="flex items-center gap-6 sm:gap-8 shrink-0">
           {/* Images */}
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-purple-400 mb-1" />
+            <Image className="w-5 h-5 text-gray-400 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">
                 {animatedImages.displayValue.toLocaleString('pt-BR')}
               </span>
-              <span className="text-purple-400 text-lg font-bold">+</span>
+              <span className="text-gray-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
               Imagens Geradas
@@ -83,12 +83,12 @@ export const StatsCards = () => {
 
           {/* Videos */}
           <div className="flex flex-col items-center gap-0.5">
-            <Video className="w-5 h-5 text-purple-400 mb-1" />
+            <Video className="w-5 h-5 text-gray-400 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-white font-bold text-base sm:text-lg">
                 {animatedVideos.displayValue.toLocaleString('pt-BR')}
               </span>
-              <span className="text-purple-400 text-lg font-bold">+</span>
+              <span className="text-gray-400 text-lg font-bold">+</span>
             </div>
             <span className="text-[10px] sm:text-xs text-white/50 uppercase tracking-wider font-medium">
               Vídeos Gerados

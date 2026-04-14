@@ -224,7 +224,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                       <div
                         key={item.id}
                         className={`relative rounded-lg overflow-hidden cursor-pointer transition-all group ${
-                          isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
+                          isSelected ? 'ring-2 ring-slate-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
                         }`}
                         onClick={() => selectScenario(item)}
                       >
@@ -237,7 +237,7 @@ const CharacterScenarioSection: React.FC<Props> = ({ settings, updateSettings, o
                             </div>
                           )}
                           {isSelected && (
-                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                            <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-slate-500 flex items-center justify-center">
                               <span className="text-[8px] text-white font-bold">✓</span>
                             </div>
                           )}

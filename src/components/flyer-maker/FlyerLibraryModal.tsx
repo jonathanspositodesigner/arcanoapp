@@ -106,7 +106,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#1A0A2E] border border-purple-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
+      <DialogContent className="max-w-2xl w-[calc(100%-32px)] sm:w-full bg-[#1A0A2E] border border-slate-500/40 text-white max-h-[80vh] sm:max-h-[85vh] overflow-hidden flex flex-col p-4 sm:p-6 rounded-xl">
         <DialogHeader className="flex-shrink-0 pb-2">
           <DialogTitle className="text-base sm:text-lg font-semibold text-white flex items-center gap-2">
             <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5 text-fuchsia-400" />
@@ -120,36 +120,36 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
           <Button
             onClick={handleUploadClick}
             disabled={isUploading}
-            className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white text-sm font-medium py-2.5 h-auto flex-shrink-0"
+            className="w-full mt-2 sm:mt-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white text-sm font-medium py-2.5 h-auto flex-shrink-0"
           >
             {isUploading ? (<><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Processando...</>) : (<><Upload className="w-4 h-4 mr-2" /> Enviar Seu Próprio Flyer</>)}
           </Button>
         )}
 
         <div className="flex items-center gap-2 mt-3 sm:mt-4 flex-shrink-0">
-          <div className="flex-1 h-px bg-purple-500/30" />
-          <span className="text-[10px] sm:text-xs text-purple-400/80">ou escolha da biblioteca</span>
-          <div className="flex-1 h-px bg-purple-500/30" />
+          <div className="flex-1 h-px bg-slate-500/30" />
+          <span className="text-[10px] sm:text-xs text-gray-400/80">ou escolha da biblioteca</span>
+          <div className="flex-1 h-px bg-slate-500/30" />
         </div>
 
         <div className="relative mt-3 flex-shrink-0">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-purple-400/60" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
           <Input
             type="text"
             placeholder="buscar por nome ou categoria..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10 h-9 text-sm bg-purple-500/10 border-purple-500/30 text-white placeholder:text-purple-400/50 focus:border-fuchsia-400"
+            className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
           />
         </div>
 
         <div className="mt-3 sm:mt-4 overflow-y-auto flex-1 pr-1 -mr-1">
           {isLoading && flyers.length === 0 ? (
             <div className="flex items-center justify-center py-8 sm:py-12">
-              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-purple-400 animate-spin" />
+              <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 animate-spin" />
             </div>
           ) : flyers.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-purple-400">
+            <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-gray-400">
               <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 mb-2 opacity-50" />
               <p className="text-xs sm:text-sm">Nenhum flyer encontrado</p>
             </div>
@@ -160,7 +160,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
                   <button
                     key={flyer.id}
                     onClick={() => handleSelectFlyer(flyer)}
-                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-purple-500/30 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
+                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-white/10 hover:border-fuchsia-400 transition-all active:scale-95 sm:hover:scale-105"
                   >
                     <img 
                       src={flyer.image_url} 
@@ -181,14 +181,14 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
 
               {hasMore && (
                 <div className="flex justify-center mt-3 sm:mt-4">
-                  <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={isLoading} className="bg-purple-500/10 border-purple-500/30 text-purple-200 hover:bg-purple-500/20 text-xs h-8">
+                  <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={isLoading} className="bg-slate-500/10 border-white/10 text-gray-300 hover:bg-slate-500/20 text-xs h-8">
                     {isLoading ? (<><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Carregando...</>) : 'Carregar mais'}
                   </Button>
                 </div>
               )}
             </>
           )}
-          <p className="text-[10px] sm:text-xs text-purple-400/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
+          <p className="text-[10px] sm:text-xs text-gray-400/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
         </div>
       </DialogContent>
     </Dialog>

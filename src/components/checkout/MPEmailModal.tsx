@@ -173,7 +173,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white font-semibold h-12"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-fuchsia-700 hover:to-slate-600 text-white font-semibold h-12"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />

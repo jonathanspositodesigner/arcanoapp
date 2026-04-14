@@ -108,7 +108,7 @@ const ProjectPicker: React.FC<Props> = ({
                 className={`aspect-video rounded-xl overflow-hidden border-2 border-dashed transition-all duration-200 flex flex-col items-center justify-center gap-2
                   ${atLimit
                     ? 'border-white/[0.04] cursor-not-allowed opacity-50'
-                    : 'border-white/[0.08] hover:border-white/[0.16] hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/5 cursor-pointer'
+                    : 'border-white/[0.08] hover:border-white/[0.16] hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 cursor-pointer'
                   } bg-gradient-to-br from-white/[0.02] to-white/[0.01]`}
               >
                 {atLimit ? (
@@ -129,7 +129,7 @@ const ProjectPicker: React.FC<Props> = ({
               {projects.map((project) => (
                 <div
                   key={project.id}
-                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-[#1a1a2e] transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-purple-500/5 hover:ring-1 hover:ring-white/[0.08]"
+                  className="aspect-video rounded-xl overflow-hidden relative group cursor-pointer bg-[#1a1a2e] transition-all duration-200 hover:scale-[1.02] hover:shadow-lg hover:shadow-white/5 hover:ring-1 hover:ring-white/[0.08]"
                   onClick={() => onSelectProject(project.id)}
                 >
                   {/* Cover */}

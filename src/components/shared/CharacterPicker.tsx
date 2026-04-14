@@ -216,7 +216,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
           </span>
           <button
             onClick={openModal}
-            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 transition-all duration-200 hover:border-purple-500/30 hover:bg-white/[0.06] hover:scale-[1.04]"
+            className="flex items-center gap-1.5 rounded-lg border border-white/[0.08] bg-white/[0.04] px-2 py-1 text-[11px] text-gray-300 transition-all duration-200 hover:border-white/10 hover:bg-white/[0.06] hover:scale-[1.04]"
           >
             {selectedCharacters.length > 0 ? (
               <div className="flex items-center gap-1">
@@ -225,13 +225,13 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                     c.image_url ? (
                       <img key={c.id} src={c.image_url} alt="" className="w-4 h-4 rounded-full object-cover border border-[#0a0a18]" />
                     ) : (
-                      <div key={c.id} className="w-4 h-4 rounded-full bg-purple-500/20 border border-[#0a0a18] flex items-center justify-center">
-                        <User className="w-2 h-2 text-purple-300" />
+                      <div key={c.id} className="w-4 h-4 rounded-full bg-slate-500/20 border border-[#0a0a18] flex items-center justify-center">
+                        <User className="w-2 h-2 text-gray-300" />
                       </div>
                     )
                   ))}
                 </div>
-                <span className="text-purple-300">{selectedCharacters.length}/{maxCharacters}</span>
+                <span className="text-gray-300">{selectedCharacters.length}/{maxCharacters}</span>
               </div>
             ) : (
               <span className="flex items-center gap-1 text-gray-500">
@@ -350,7 +350,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
               </Button>
 
               {selectedCharacters.length > 0 && (
-                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px]">
+                <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-slate-500/20 hover:bg-slate-500/30 text-gray-300 text-[11px]">
                   Confirmar seleção ({selectedCharacters.length})
                 </Button>
               )}
@@ -392,7 +392,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                 </Button>
 
                 {selectedCharacters.length > 0 && (
-                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-purple-500/20 hover:bg-purple-500/30 text-purple-300 text-[11px]">
+                  <Button onClick={() => setModalOpen(false)} size="sm" className="w-full bg-slate-500/20 hover:bg-slate-500/30 text-gray-300 text-[11px]">
                     Confirmar seleção ({selectedCharacters.length})
                   </Button>
                 )}
@@ -427,7 +427,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
             <div
               key={item.id}
               className={`relative rounded-lg overflow-hidden cursor-pointer transition-all group ${
-                isSelected ? 'ring-2 ring-purple-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
+                isSelected ? 'ring-2 ring-slate-500 ring-offset-1 ring-offset-[#141420]' : 'hover:ring-1 hover:ring-white/20'
               }`}
               onClick={() => selectItem(item)}
             >
@@ -440,7 +440,7 @@ const CharacterPicker: React.FC<CharacterPickerProps> = ({
                   </div>
                 )}
                 {isSelected && (
-                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-purple-500 flex items-center justify-center">
+                  <div className="absolute top-1 right-1 w-4 h-4 rounded-full bg-slate-500 flex items-center justify-center">
                     <span className="text-[8px] text-white font-bold">✓</span>
                   </div>
                 )}

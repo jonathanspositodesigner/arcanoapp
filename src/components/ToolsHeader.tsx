@@ -65,7 +65,7 @@ const ToolsHeader = ({
   }, [user]);
 
   return (
-    <header className="sticky top-0 z-50 bg-[#0D0221]/95 backdrop-blur-lg border-b border-purple-500/20">
+    <header className="sticky top-0 z-50 bg-[#111113]/95 backdrop-blur-lg border-b border-white/10">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Left Side: Home + Back Button + Title/Logo */}
         <div className="flex items-center gap-3">
@@ -74,7 +74,7 @@ const ToolsHeader = ({
             variant="ghost"
             size="icon"
             onClick={() => navigate('/')}
-            className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+            className="text-gray-300 hover:text-white hover:bg-slate-500/20"
             title="Página Inicial"
           >
             <Home className="w-5 h-5" />
@@ -85,7 +85,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="icon"
               onClick={onBack}
-              className="text-purple-300 hover:text-white hover:bg-purple-500/20"
+              className="text-gray-300 hover:text-white hover:bg-slate-500/20"
             >
               <ArrowLeft className="w-5 h-5" />
             </Button>
@@ -93,7 +93,7 @@ const ToolsHeader = ({
           
           {showLogo ? (
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
                 <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               {title && (
@@ -104,11 +104,11 @@ const ToolsHeader = ({
             </div>
           ) : title ? (
             <div>
-            <h1 className="hidden sm:block text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <h1 className="hidden sm:block text-xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent">
               {title}
             </h1>
               {subtitle && (
-                <p className="text-xs sm:text-sm text-purple-300 hidden sm:block">{subtitle}</p>
+                <p className="text-xs sm:text-sm text-gray-300 hidden sm:block">{subtitle}</p>
               )}
             </div>
           ) : null}
@@ -122,7 +122,7 @@ const ToolsHeader = ({
               variant="ghost"
               size="sm"
               onClick={() => setShowCreationsModal(true)}
-              className="text-purple-300 hover:text-white hover:bg-purple-500/20 hidden sm:flex"
+              className="text-gray-300 hover:text-white hover:bg-slate-500/20 hidden sm:flex"
             >
               <Library className="w-4 h-4 mr-2" />
               <span className="hidden md:inline">Minhas Criações</span>
@@ -134,7 +134,7 @@ const ToolsHeader = ({
               variant="outline"
               size="sm"
               onClick={() => navigate("/login-artes?redirect=" + encodeURIComponent(window.location.pathname))}
-              className="text-purple-300 border-purple-500/30 hover:bg-purple-500/20 text-xs sm:text-sm"
+              className="text-gray-300 border-white/10 hover:bg-slate-500/20 text-xs sm:text-sm"
             >
               <LogIn className="w-4 h-4 mr-1 sm:mr-2" />
               {t('ferramentas.login')}
@@ -147,7 +147,7 @@ const ToolsHeader = ({
                   className={`rounded-full flex items-center gap-1.5 px-2.5 py-1 cursor-pointer ${
                     isUnlimited
                       ? 'bg-emerald-900/40 border border-emerald-500/30 hover:bg-emerald-800/40'
-                      : 'bg-purple-900/50 border border-purple-500/30 hover:bg-purple-800/50'
+                      : 'bg-white/5 border border-white/10 hover:bg-slate-800/50'
                   }`}
                   onClick={() => navigate('/credit-history')}
                 >
@@ -157,13 +157,13 @@ const ToolsHeader = ({
                     size="sm"
                     showCoin={true}
                     variant="text"
-                    className={isUnlimited ? 'text-white' : 'text-purple-200'}
+                    className={isUnlimited ? 'text-white' : 'text-gray-300'}
                     isUnlimited={isUnlimited}
                   />
                 </div>
                 <button
                   onClick={() => navigate('/planos-creditos')}
-                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-purple-500/10"
+                  className="h-7 w-7 flex items-center justify-center rounded hover:bg-slate-500/10"
                   title="Comprar créditos"
                 >
                   <PlusCircle className="w-4 h-4 text-fuchsia-400" style={{ filter: 'drop-shadow(0 0 4px rgba(217, 70, 239, 0.5))' }} />
@@ -176,39 +176,39 @@ const ToolsHeader = ({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-purple-300 hover:text-white hover:bg-purple-500/20 rounded-full"
+                    className="text-gray-300 hover:text-white hover:bg-slate-500/20 rounded-full"
                   >
                     <User className="w-5 h-5" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-56 bg-[#1A0A2E] border-purple-500/30 text-white"
+                  className="w-56 bg-[#1A0A2E] border-white/10 text-white"
                 >
                   {/* User Info */}
-                  <DropdownMenuLabel className="text-purple-200">
+                  <DropdownMenuLabel className="text-gray-300">
                     <div className="flex flex-col gap-1">
                       <span className="font-medium">
                         {userProfile?.name || user?.email?.split('@')[0] || 'Meu Perfil'}
                       </span>
-                      <span className="text-xs text-purple-400 font-normal">
+                      <span className="text-xs text-gray-400 font-normal">
                         {user?.email}
                       </span>
                     </div>
                   </DropdownMenuLabel>
 
                   {userProfile?.phone && (
-                    <div className="px-2 py-1.5 text-sm text-purple-300 flex items-center gap-2">
+                    <div className="px-2 py-1.5 text-sm text-gray-300 flex items-center gap-2">
                       <Phone className="w-3.5 h-3.5" />
                       {userProfile.phone}
                     </div>
                   )}
 
-                  <DropdownMenuSeparator className="bg-purple-500/20" />
+                  <DropdownMenuSeparator className="bg-slate-500/20" />
 
                   {/* Credits Display */}
                   <div className="px-2 py-2 flex items-center justify-between">
-                    <span className="text-sm text-purple-300 flex items-center gap-2">
+                    <span className="text-sm text-gray-300 flex items-center gap-2">
                       <Coins className="w-4 h-4 text-yellow-400" />
                       Créditos
                     </span>
@@ -223,7 +223,7 @@ const ToolsHeader = ({
                       />
                       <button
                         onClick={() => navigate('/planos-creditos')}
-                        className="p-1 rounded hover:bg-purple-500/10"
+                        className="p-1 rounded hover:bg-slate-500/10"
                         title="Comprar créditos"
                       >
                         <PlusCircle className="w-4 h-4 text-fuchsia-400" />
@@ -231,23 +231,23 @@ const ToolsHeader = ({
                     </div>
                   </div>
 
-                  <DropdownMenuSeparator className="bg-purple-500/20" />
+                  <DropdownMenuSeparator className="bg-slate-500/20" />
 
                   {/* Minhas Criações - acessível no mobile via dropdown */}
                   <DropdownMenuItem
                     onClick={() => setShowCreationsModal(true)}
-                    className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
                   >
                     <Library className="w-4 h-4 mr-2" />
                     Minhas Criações
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-purple-500/20" />
+                  <DropdownMenuSeparator className="bg-slate-500/20" />
 
                   {/* Actions */}
                   <DropdownMenuItem
                     onClick={() => navigate('/change-password')}
-                    className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
                   >
                     <Lock className="w-4 h-4 mr-2" />
                     Alterar Senha
@@ -255,13 +255,13 @@ const ToolsHeader = ({
 
                   <DropdownMenuItem
                     onClick={() => navigate('/profile-settings')}
-                    className="cursor-pointer hover:bg-purple-500/20 focus:bg-purple-500/20"
+                    className="cursor-pointer hover:bg-slate-500/20 focus:bg-slate-500/20"
                   >
                     <Settings className="w-4 h-4 mr-2" />
                     Configurações
                   </DropdownMenuItem>
 
-                  <DropdownMenuSeparator className="bg-purple-500/20" />
+                  <DropdownMenuSeparator className="bg-slate-500/20" />
 
                   <DropdownMenuItem
                     onClick={logout}

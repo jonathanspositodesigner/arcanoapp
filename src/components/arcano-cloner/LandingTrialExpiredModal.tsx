@@ -71,7 +71,7 @@ export const LandingTrialExpiredModal = ({ userId, balance }: LandingTrialExpire
               setIsOpen(false);
               navigate("/planos-upscaler-creditos");
             }}
-            className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold py-5 rounded-xl"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-bold py-5 rounded-xl"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             Comprar Créditos

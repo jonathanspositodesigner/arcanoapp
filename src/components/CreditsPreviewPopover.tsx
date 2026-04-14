@@ -64,10 +64,10 @@ const CreditsPreviewPopover = ({
         <button type="button" className="focus:outline-none">
           <Badge 
             variant="outline" 
-            className={`cursor-pointer hover:bg-purple-800/50 transition-all duration-300 ${
+            className={`cursor-pointer hover:bg-slate-800/50 transition-all duration-300 ${
               isDesktop 
-                ? "bg-purple-900/50 border-purple-500/30 text-purple-200 flex items-center gap-1.5 px-2.5 py-1"
-                : "bg-purple-900/50 border-purple-500/30 text-purple-200 text-xs px-2 py-0.5 flex items-center gap-1"
+                ? "bg-white/5 border-white/10 text-gray-300 flex items-center gap-1.5 px-2.5 py-1"
+                : "bg-white/5 border-white/10 text-gray-300 text-xs px-2 py-0.5 flex items-center gap-1"
             } ${
               isUnlimited ? 'border-emerald-400/40 bg-emerald-900/30' :
               direction === 'up' ? 'border-green-400/60 bg-green-900/30' : 
@@ -99,11 +99,11 @@ const CreditsPreviewPopover = ({
         </button>
       </PopoverTrigger>
       <PopoverContent 
-        className="w-64 p-3 bg-[#1A0A2E] border-purple-500/30"
+        className="w-64 p-3 bg-[#1A0A2E] border-white/10"
         align="end"
       >
         <div className="space-y-3">
-          <p className="text-xs font-medium text-purple-300">Últimas transações</p>
+          <p className="text-xs font-medium text-gray-300">Últimas transações</p>
           
           {loading ? (
             <p className="text-xs text-muted-foreground text-center py-2">Carregando...</p>
@@ -114,20 +114,20 @@ const CreditsPreviewPopover = ({
               {transactions.map((tx) => (
                 <div 
                   key={tx.id} 
-                  className="flex items-center justify-between text-xs p-2 rounded bg-purple-900/30"
+                  className="flex items-center justify-between text-xs p-2 rounded bg-white/5"
                 >
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     {tx.amount > 0 ? (
                       <TrendingUp className="h-3 w-3 text-green-400 flex-shrink-0" />
                     ) : (
-                      <Zap className="h-3 w-3 text-purple-400 flex-shrink-0" />
+                      <Zap className="h-3 w-3 text-gray-400 flex-shrink-0" />
                     )}
-                    <span className="text-purple-200 truncate">
+                    <span className="text-gray-300 truncate">
                       {tx.description || tx.transaction_type}
                     </span>
                   </div>
                   <span className={`font-medium flex-shrink-0 ml-2 ${
-                    tx.amount > 0 ? "text-green-400" : "text-purple-400"
+                    tx.amount > 0 ? "text-green-400" : "text-gray-400"
                   }`}>
                     {tx.amount > 0 ? "+" : ""}{Math.abs(tx.amount)}
                   </span>
@@ -139,7 +139,7 @@ const CreditsPreviewPopover = ({
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs text-purple-300 hover:text-white hover:bg-purple-500/20 h-7"
+            className="w-full text-xs text-gray-300 hover:text-white hover:bg-slate-500/20 h-7"
             onClick={() => {
               setOpen(false);
               navigate('/credit-history');

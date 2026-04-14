@@ -26,9 +26,9 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-purple-500/30">
+      <DialogContent className="sm:max-w-md bg-[#1A0A2E] border-white/10">
         <DialogHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500/20 to-purple-500/20 flex items-center justify-center">
+          <div className="mx-auto mb-4 w-16 h-16 rounded-full bg-gradient-to-r from-yellow-500/20 to-slate-400/20 flex items-center justify-center">
             <Coins className="w-8 h-8 text-yellow-500" />
           </div>
           <DialogTitle className="text-2xl font-bold text-center text-white">
@@ -46,7 +46,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           {isNotLogged ? (
             <Button 
               onClick={handleLogin}
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:opacity-90 text-white font-semibold"
             >
               <LogIn className="h-4 w-4 mr-2" />
               Fazer Login
@@ -54,7 +54,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
           ) : (
             <Button 
               onClick={handleRecharge}
-              className="w-full bg-gradient-to-r from-yellow-500 to-purple-600 hover:opacity-90 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-yellow-500 to-slate-500 hover:opacity-90 text-white font-semibold"
             >
               <Coins className="h-4 w-4 mr-2" />
               Recarregar Créditos
@@ -65,7 +65,7 @@ const NoCreditsModal = ({ isOpen, onClose, reason }: NoCreditsModalProps) => {
             <Button 
               onClick={handleRecharge}
               variant="outline"
-              className="w-full border-purple-500/50 text-purple-300 hover:bg-purple-500/10"
+              className="w-full border-slate-500/50 text-gray-300 hover:bg-slate-500/10"
             >
               <Coins className="h-4 w-4 mr-2" />
               Ver Pacotes de Créditos

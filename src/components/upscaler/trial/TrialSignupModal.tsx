@@ -86,7 +86,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="bg-[#1A0A2E] border-purple-500/30 text-white max-w-md">
+      <DialogContent className="bg-[#1A0A2E] border-white/10 text-white max-w-md">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-center">
             {step === "form" ? "🎁 Libere 1 Teste Grátis" : "🔑 Digite o Código"}
@@ -95,12 +95,12 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
         {step === "form" ? (
           <div className="space-y-4 pt-2">
-            <p className="text-purple-200 text-sm text-center">
+            <p className="text-gray-300 text-sm text-center">
               Preencha seus dados e receba um código de verificação no email para liberar 1 {toolName === 'cloner' ? 'geração gratuita' : 'upscale gratuito'}.
             </p>
 
             <div className="space-y-2">
-              <Label htmlFor="trial-name" className="text-purple-200">Nome Completo</Label>
+              <Label htmlFor="trial-name" className="text-gray-300">Nome Completo</Label>
               <Input
                 id="trial-name"
                 placeholder="Seu nome completo"
@@ -111,7 +111,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="trial-email" className="text-purple-200">Email</Label>
+              <Label htmlFor="trial-email" className="text-gray-300">Email</Label>
               <Input
                 id="trial-email"
                 type="email"
@@ -123,7 +123,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
               onClick={handleSendCode}
               disabled={loading}
             >
@@ -142,7 +142,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
           </div>
         ) : (
           <div className="space-y-4 pt-2">
-            <p className="text-purple-200 text-sm text-center">
+            <p className="text-gray-300 text-sm text-center">
               Enviamos um código de 6 dígitos para <strong className="text-white">{email}</strong>
             </p>
 
@@ -160,7 +160,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
             </div>
 
             <Button
-              className="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold"
               onClick={handleVerify}
               disabled={loading || code.length !== 6}
             >
@@ -176,7 +176,7 @@ export default function TrialSignupModal({ open, onClose, onVerified, toolName =
 
             <button
               onClick={() => { setStep("form"); setCode(""); }}
-              className="w-full text-sm text-purple-400 hover:text-purple-300 flex items-center justify-center gap-1"
+              className="w-full text-sm text-gray-400 hover:text-gray-300 flex items-center justify-center gap-1"
             >
               <ArrowLeft className="w-3 h-3" /> Voltar
             </button>
