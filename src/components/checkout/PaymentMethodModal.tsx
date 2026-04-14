@@ -23,33 +23,29 @@ const PaymentMethodModal = ({
   colorScheme = 'purple',
 }: PaymentMethodModalProps) => {
   const isOrange = colorScheme === 'orange';
-  const modalBg = isOrange ? 'bg-[#1a0a0a]' : 'bg-[#111113]';
-  const borderAccent = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
-  const descColor = isOrange ? 'text-orange-300/70' : 'text-gray-300';
-  const btnBorder = isOrange ? 'border-[#EF672C]/30' : 'border-white/10';
-  const btnBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-white/5';
+  const borderAccent = isOrange ? 'border-[#EF672C]/30' : 'border-border';
+  const btnBorder = isOrange ? 'border-[#EF672C]/30' : 'border-border';
+  const btnBg = isOrange ? 'bg-[#EF672C]/10' : 'bg-accent';
   const btnHoverCard = isOrange
     ? 'hover:border-[#EF672C]/60 hover:bg-[#EF672C]/20'
-    : 'hover:border-white/15/60 hover:bg-slate-800/30';
+    : 'hover:border-primary/40 hover:bg-secondary';
   const cardGradient = isOrange
     ? 'from-[#EF672C] to-[#f65928]'
     : 'from-slate-500 to-slate-500';
-  const subTextColor = isOrange ? 'text-orange-300/50' : 'text-gray-400';
-  const spinnerColor = isOrange ? 'text-[#EF672C]' : 'text-gray-400';
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className={`sm:max-w-md max-h-[90dvh] overflow-y-auto ${modalBg} ${borderAccent}`}>
+      <DialogContent className={`sm:max-w-md max-h-[90dvh] overflow-y-auto bg-popover ${borderAccent}`}>
         {isProcessing ? (
           <div className="flex flex-col items-center justify-center py-12 gap-4">
             <div className="relative">
-              <div className={`w-16 h-16 rounded-full border-4 border-white/10 ${spinnerColor} border-t-current animate-spin`} />
+              <div className="w-16 h-16 rounded-full border-4 border-border text-muted-foreground border-t-current animate-spin" />
             </div>
             <div className="text-center">
-              <p className="text-white font-semibold text-lg">Gerando checkout...</p>
-              <p className="text-white/50 text-sm mt-1">Aguarde, você será redirecionado</p>
+              <p className="text-foreground font-semibold text-lg">Gerando checkout...</p>
+              <p className="text-muted-foreground text-sm mt-1">Aguarde, você será redirecionado</p>
             </div>
-            <div className="flex items-center gap-2 mt-2 text-white/30 text-xs">
+            <div className="flex items-center gap-2 mt-2 text-muted-foreground/50 text-xs">
               <Shield className="h-3 w-3" />
               <span>Pagamento 100% seguro</span>
             </div>
@@ -57,10 +53,10 @@ const PaymentMethodModal = ({
         ) : (
           <>
             <DialogHeader className="text-center">
-              <DialogTitle className="text-xl font-bold text-center text-white">
+              <DialogTitle className="text-xl font-bold text-center text-foreground">
                 Escolha a forma de pagamento
               </DialogTitle>
-              <DialogDescription className={`text-center ${descColor}`}>
+              <DialogDescription className="text-center text-muted-foreground">
                 Selecione como deseja pagar
               </DialogDescription>
             </DialogHeader>
@@ -70,20 +66,20 @@ const PaymentMethodModal = ({
                 className={`flex flex-col items-center gap-3 p-6 rounded-xl border-2 ${btnBorder} ${btnBg} hover:border-green-400/60 hover:bg-green-900/20 transition-all duration-200 group`}
               >
                 <div className="w-14 h-14 rounded-full bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                  <QrCode className="w-7 h-7 text-white" />
+                  <QrCode className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <span className="text-white font-semibold text-sm">PIX</span>
-                <span className={`${subTextColor} text-[10px]`}>Aprovação instantânea</span>
+                <span className="text-foreground font-semibold text-sm">PIX</span>
+                <span className="text-muted-foreground text-[10px]">Aprovação instantânea</span>
               </button>
               <button
                 onClick={() => onSelect('CREDIT_CARD')}
                 className={`flex flex-col items-center gap-3 p-6 rounded-xl border-2 ${btnBorder} ${btnBg} ${btnHoverCard} transition-all duration-200 group`}
               >
                 <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${cardGradient} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                  <CreditCard className="w-7 h-7 text-white" />
+                  <CreditCard className="w-7 h-7 text-primary-foreground" />
                 </div>
-                <span className="text-white font-semibold text-sm">Cartão de Crédito</span>
-                <span className={`${subTextColor} text-[10px]`}>Aprovação instantânea</span>
+                <span className="text-foreground font-semibold text-sm">Cartão de Crédito</span>
+                <span className="text-muted-foreground text-[10px]">Aprovação instantânea</span>
               </button>
             </div>
           </>

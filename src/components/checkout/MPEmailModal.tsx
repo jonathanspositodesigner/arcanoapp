@@ -49,7 +49,6 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
   const [cpf, setCpf] = useState("");
   const [errors, setErrors] = useState<{ name?: string; email?: string; confirmEmail?: string; cpf?: string }>({});
 
-  // Reset campos ao reabrir o modal
   useEffect(() => {
     if (open) {
       setName("");
@@ -88,19 +87,19 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-md bg-[#1a0a2e] border-white/15/20">
+      <DialogContent className="sm:max-w-md bg-popover border-border">
         <DialogHeader>
-          <DialogTitle className="text-white text-xl text-center">
+          <DialogTitle className="text-foreground text-xl text-center">
             Preencha seus dados para continuar
           </DialogTitle>
-          <DialogDescription className="text-white/50 text-sm text-center mt-1">
+          <DialogDescription className="text-muted-foreground text-sm text-center mt-1">
             Seu acesso será liberado neste e-mail após o pagamento
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-2">
           <div className="space-y-2">
-            <Label htmlFor="mp-name" className="text-white/70 flex items-center gap-2">
+            <Label htmlFor="mp-name" className="text-muted-foreground flex items-center gap-2">
               <User className="w-4 h-4" /> Nome completo
             </Label>
             <Input
@@ -109,7 +108,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Seu nome completo"
               value={name}
               onChange={(e) => { setName(e.target.value); setErrors(prev => ({ ...prev, name: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
               autoFocus
               disabled={loading}
             />
@@ -117,7 +116,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mp-email" className="text-white/70 flex items-center gap-2">
+            <Label htmlFor="mp-email" className="text-muted-foreground flex items-center gap-2">
               <Mail className="w-4 h-4" /> E-mail
             </Label>
             <Input
@@ -126,7 +125,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="seu@email.com"
               value={email}
               onChange={(e) => { setEmail(e.target.value); setErrors(prev => ({ ...prev, email: undefined, confirmEmail: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -135,7 +134,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mp-confirm-email" className="text-white/70 flex items-center gap-2">
+            <Label htmlFor="mp-confirm-email" className="text-muted-foreground flex items-center gap-2">
               <Mail className="w-4 h-4" /> Confirme seu e-mail
             </Label>
             <Input
@@ -144,7 +143,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="Digite seu e-mail novamente"
               value={confirmEmail}
               onChange={(e) => { setConfirmEmail(e.target.value); setErrors(prev => ({ ...prev, confirmEmail: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
               disabled={loading}
               autoComplete="off"
               onPaste={(e) => e.preventDefault()}
@@ -153,7 +152,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="mp-cpf" className="text-white/70 flex items-center gap-2">
+            <Label htmlFor="mp-cpf" className="text-muted-foreground flex items-center gap-2">
               <FileText className="w-4 h-4" /> CPF
             </Label>
             <Input
@@ -163,7 +162,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
               placeholder="000.000.000-00"
               value={cpf}
               onChange={(e) => { setCpf(formatCPF(e.target.value)); setErrors(prev => ({ ...prev, cpf: undefined })); }}
-              className="bg-white/5 border-white/10 text-white placeholder:text-white/30 focus:border-white/15"
+              className="bg-input border-border text-foreground placeholder:text-muted-foreground/50 focus:border-ring"
               disabled={loading}
               maxLength={14}
             />
@@ -173,7 +172,7 @@ export function MPEmailModal({ open, onClose, onConfirm, loading }: MPEmailModal
           <Button
             type="submit"
             disabled={loading}
-            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-white font-semibold h-12"
+            className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-700 hover:to-slate-600 text-primary-foreground font-semibold h-12"
           >
             {loading ? (
               <Loader2 className="w-5 h-5 animate-spin" />
