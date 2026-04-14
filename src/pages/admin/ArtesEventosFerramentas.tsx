@@ -200,7 +200,7 @@ const ArtesEventosFerramentas = () => {
               </div>
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full">
+              <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
                 <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>

@@ -351,7 +351,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
           <p className="text-gray-300">{t('versionSelect.loginRequired')}</p>
-          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
+          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
         </div>
@@ -378,7 +378,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{toolName}</h1>
           <p className="text-gray-300">{t('versionSelect.noAccess')}</p>
-          <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
+          <Button onClick={() => navigate(plansPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.seePlans')}
           </Button>
         </div>
@@ -398,7 +398,7 @@ const ToolVersionLessons = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('toolLessons.versionNotFound')}</h1>
           <p className="text-gray-300">{t('toolLessons.versionNotFoundDesc')}</p>
-          <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
+          <Button onClick={() => navigate(toolSelectPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('upscaler.back')}
           </Button>
         </div>
@@ -473,7 +473,7 @@ const ToolVersionLessons = () => {
             {/* Progress Bar */}
             <div className="h-3 bg-white/5 rounded-full overflow-hidden">
               <div 
-                className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
+                className="h-full bg-gradient-to-r from-slate-600 via-violet-500 to-gray-400 
                            transition-all duration-700 ease-out rounded-full"
                 style={{ width: `${totalLessons > 0 ? (progressCount / totalLessons) * 100 : 0}%` }}
               />

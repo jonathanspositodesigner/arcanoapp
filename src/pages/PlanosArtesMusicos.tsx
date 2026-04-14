@@ -160,7 +160,7 @@ const PlanosArtesMusicos = () => {
           </Tabs>
         </div>
 
-        <div className="bg-gradient-to-r from-violet-600 to-purple-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
+        <div className="bg-gradient-to-r from-violet-600 to-slate-500 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-5xl mx-auto py-[13px] px-px my-[20px]">
           <span className="text-white font-semibold tracking-wide">{t('plansMusicos.discountBanner', { percent: billingPeriod === "anual" ? "40" : "20" })}</span>
         </div>
 

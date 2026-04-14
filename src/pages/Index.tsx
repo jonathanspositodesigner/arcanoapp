@@ -370,7 +370,7 @@ const Index = () => {
             {showNotificationButton && (
               <button 
                 onClick={handleActivateNotifications} 
-                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-[10px] sm:text-xs font-medium hover:from-purple-700 hover:to-indigo-700 transition-all shadow-sm"
+                className="flex items-center gap-1 px-2 sm:px-3 py-1.5 rounded-md bg-gradient-to-r from-slate-600 to-indigo-600 text-white text-[10px] sm:text-xs font-medium hover:from-slate-700 hover:to-indigo-700 transition-all shadow-sm"
               >
                 <Bell className="h-3 w-3" />
                 <span className="hidden sm:inline">{t('notifications')}</span>

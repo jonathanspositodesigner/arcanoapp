@@ -60,7 +60,7 @@ const ObrigadoArcanoCloner = () => {
           </h1>
 
           {/* Subtitle */}
-          <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-fuchsia-400 to-purple-500 bg-clip-text text-transparent mb-6">
+          <p className="text-xl md:text-2xl font-semibold bg-gradient-to-r from-fuchsia-400 to-slate-400 bg-clip-text text-transparent mb-6">
             Seja bem-vindo ao Arcano Cloner
           </p>
 

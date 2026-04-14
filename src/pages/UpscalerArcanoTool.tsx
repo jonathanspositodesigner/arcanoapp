@@ -1003,7 +1003,7 @@ const UpscalerArcanoTool: React.FC = () => {
                   {/* Generate Button - DESKTOP ONLY */}
                   {!isProcessing && status !== 'completed' && (
                     <Button
-                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                       onClick={processImage}
                       disabled={isSubmitting || !inputImage}
                     >
@@ -1324,7 +1324,7 @@ const UpscalerArcanoTool: React.FC = () => {
                     {/* Progress bar */}
                     <div className="w-48 h-2 bg-white/5 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-pink-500 transition-all duration-500"
+                        className="h-full bg-gradient-to-r from-slate-500 to-pink-500 transition-all duration-500"
                         style={{ width: `${progress}%` }}
                       />
                     </div>
@@ -1565,7 +1565,7 @@ const UpscalerArcanoTool: React.FC = () => {
 
                 {/* Gerar button */}
                 <Button
-                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={processImage}
                   disabled={isSubmitting || !inputImage || promptCategory === null}
                 >

@@ -372,7 +372,7 @@ const RemoverFundoTool: React.FC = () => {
 
               <Button
                 size="sm"
-                className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+                className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
                 disabled={!canProcess || isProcessing || isSubmitting}
                 onClick={handleProcess}
               >
@@ -415,13 +415,13 @@ const RemoverFundoTool: React.FC = () => {
                     </TransformWrapper>
                   ) : isProcessing ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
-                      <div className="relative"><div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-purple-500 animate-spin" /><Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" /></div>
+                      <div className="relative"><div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-500 animate-spin" /><Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" /></div>
                       <div className="text-center">
                         <p className="text-sm text-white font-medium flex items-center gap-2"><span>{currentQueueMessage.emoji}</span><span>{currentQueueMessage.text}</span></p>
                         {status === 'waiting' && queuePosition > 0 && <p className="text-xs text-gray-300 mt-1">Posição na fila: #{queuePosition}</p>}
                         {status === 'processing' && <p className="text-xs text-gray-300 mt-0.5">{Math.round(progress)}% concluído</p>}
                       </div>
-                      <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
+                      <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden"><div className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }} /></div>
                     </div>
                   ) : status === 'error' ? (
                     <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">

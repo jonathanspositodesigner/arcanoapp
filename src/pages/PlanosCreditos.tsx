@@ -13,13 +13,13 @@ const availableTools = [
     name: "Upscaler Arcano",
     description: "Aumente a qualidade das suas imagens com IA",
     icon: Wand2,
-    color: "from-purple-500 to-fuchsia-500"
+    color: "from-slate-500 to-slate-400"
   },
   {
     name: "Mudar Roupa",
     description: "Troque a roupa de pessoas em fotos",
     icon: Shirt,
-    color: "from-fuchsia-500 to-pink-500"
+    color: "from-slate-500 to-pink-500"
   },
   {
     name: "Mudar Pose",
@@ -59,7 +59,7 @@ const creditPlans = [
     savings: "",
     link: "https://payfast.greenn.com.br/156946/offer/C5k6VZ",
     icon: Coins,
-    color: "from-purple-500 to-fuchsia-500"
+    color: "from-slate-500 to-slate-400"
   },
   { 
     credits: "+4.200", 
@@ -70,7 +70,7 @@ const creditPlans = [
     link: "https://payfast.greenn.com.br/156948/offer/lwl67R", 
     popular: true,
     icon: Zap,
-    color: "from-fuchsia-500 to-pink-500"
+    color: "from-slate-500 to-pink-500"
   },
   { 
     credits: "+14.000", 
@@ -146,7 +146,7 @@ const PlanosCreditos = () => {
         
         {/* Stats Cards */}
         <section className="text-center">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-6">
             LIBERTE SUA CRIATIVIDADE
           </h1>
           <StatsCards />
@@ -154,7 +154,7 @@ const PlanosCreditos = () => {
 
         {/* AI Tools Section */}
         <section className="text-center">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 mb-4">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
             <Sparkles className="w-7 h-7 text-white" />
           </div>
           <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
@@ -208,12 +208,12 @@ const PlanosCreditos = () => {
         </section>
 
         {/* Divider */}
-        <div className="w-full max-w-md mx-auto h-px bg-gradient-to-r from-transparent via-purple-500/40 to-transparent" />
+        <div className="w-full max-w-md mx-auto h-px bg-gradient-to-r from-transparent via-gray-500 to-transparent" />
 
         {/* Credits Section */}
         <section>
           <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 mb-4">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-4">
               <Coins className="w-7 h-7 text-white" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
@@ -254,7 +254,7 @@ const PlanosCreditos = () => {
                     </Badge>
                   )}
                   {plan.popular && !plan.bestValue && (
-                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
+                    <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white border-0 px-3 py-1 text-xs">
                       🔥 POPULAR
                     </Badge>
                   )}
@@ -279,7 +279,7 @@ const PlanosCreditos = () => {
 
                   {/* Savings Badge */}
                   {plan.savings && (
-                    <Badge className="bg-gradient-to-r from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
+                    <Badge className="bg-gradient-to-r from-slate-500/20 to-slate-400/20 border border-fuchsia-500/40 text-fuchsia-300 text-xs mb-2 gap-1">
                       <Tag className="w-3 h-3" />
                       Economize {plan.savings}%
                     </Badge>

@@ -188,7 +188,7 @@ const PlanosArcanoCloner = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -245,7 +245,7 @@ const PlanosArcanoCloner = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-fuchsia-400 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-white font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
@@ -265,7 +265,7 @@ const PlanosArcanoCloner = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
               Veja o que o Arcano Cloner é{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">capaz de fazer</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">capaz de fazer</span>
             </h2>
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram geradas com a ferramenta</p>
           </AnimatedSection>
@@ -490,7 +490,7 @@ const PlanosArcanoCloner = () => {
             <Card className="relative p-8 flex flex-col rounded-xl bg-[#1A0A2E] border-2 border-fuchsia-500/50 shadow-lg shadow-fuchsia-500/20">
               {/* Badge */}
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <Badge className="bg-gradient-to-r from-fuchsia-500 to-purple-600 text-white px-4 py-1 text-sm font-bold rounded-full">
+                <Badge className="bg-gradient-to-r from-slate-500 to-slate-500 text-white px-4 py-1 text-sm font-bold rounded-full">
                   OFERTA ESPECIAL
                 </Badge>
               </div>
@@ -511,14 +511,14 @@ const PlanosArcanoCloner = () => {
 
               <Button
                 onClick={handlePurchase}
-                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white font-bold rounded-full shadow-xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02]"
+                className="w-full mb-6 text-lg h-14 bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white font-bold rounded-full shadow-xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02]"
               >
                 COMPRAR AGORA
                 <ArrowRight className="h-5 w-5 ml-2" />
               </Button>
 
               <div className="flex flex-col items-center mb-6">
-                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-fuchsia-600 to-purple-600">
+                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium text-white bg-gradient-to-r from-slate-600 to-slate-500">
                   <Sparkles className="w-4 h-4" />
                   ~70 fotos incluídas
                 </span>

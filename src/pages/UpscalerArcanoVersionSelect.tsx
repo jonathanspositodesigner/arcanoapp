@@ -153,7 +153,7 @@ const UpscalerArcanoVersionSelect = () => {
         <div className="container mx-auto px-4 py-12 max-w-2xl text-center space-y-4">
           <h1 className="text-2xl font-bold text-white">{t('upscaler.title')}</h1>
           <p className="text-gray-300">{t('versionSelect.loginRequired')}</p>
-          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-purple-600 to-blue-500">
+          <Button onClick={() => navigate(loginPath)} className="bg-gradient-to-r from-slate-600 to-blue-500">
             {t('ferramentas.login')}
           </Button>
         </div>
@@ -276,9 +276,9 @@ const UpscalerArcanoVersionSelect = () => {
 
                   <Button 
                     className={`w-full ${hasVersionAccess 
-                      ? 'bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform' 
+                      ? 'bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white group-hover:scale-[1.02] transition-transform' 
                       : isV3
-                        ? 'bg-gradient-to-r from-purple-600 to-fuchsia-500 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
+                        ? 'bg-gradient-to-r from-slate-600 to-slate-400 hover:opacity-90 text-white group-hover:scale-[1.02] transition-transform'
                         : 'bg-gray-600 text-gray-300 cursor-not-allowed'
                     }`}
                     disabled={!hasVersionAccess && !isV3}

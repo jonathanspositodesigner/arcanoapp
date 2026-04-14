@@ -225,7 +225,7 @@ const UpscalerArcanoV1 = () => {
           {/* Progress Bar */}
           <div className="h-3 bg-white/5 rounded-full overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-purple-600 via-violet-500 to-purple-400 
+              className="h-full bg-gradient-to-r from-slate-600 via-violet-500 to-gray-400 
                          transition-all duration-700 ease-out rounded-full"
               style={{ width: `${(progressCount / requiredLessons) * 100}%` }}
             />

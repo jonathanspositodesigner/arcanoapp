@@ -293,7 +293,7 @@ const FerramentasIAAplicativo = () => {
         className={`overflow-hidden transition-all group border border-white/10 shadow-md bg-[#1A0A2E]/50 ${
           isComingSoon 
             ? "cursor-not-allowed opacity-70" 
-            : "cursor-pointer hover:ring-2 hover:ring-purple-400 hover:shadow-xl"
+            : "cursor-pointer hover:ring-2 hover:ring-white/20 hover:shadow-xl"
         }`}
         onClick={handleCardClick}
       >
@@ -316,7 +316,7 @@ const FerramentasIAAplicativo = () => {
             <div className={`w-full h-full flex items-center justify-center ${
               isComingSoon 
                 ? "bg-gradient-to-br from-gray-500 to-gray-600" 
-                : "bg-gradient-to-br from-purple-500 to-fuchsia-600"
+                : "bg-gradient-to-br from-slate-500 to-slate-500"
             }`}>
               {tool.slug === "arcano-cloner" || tool.slug === "flyer-maker" ? (
                 <Users className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
@@ -350,7 +350,7 @@ const FerramentasIAAplicativo = () => {
                   className={`w-full text-[11px] sm:text-sm h-8 sm:h-9 font-medium ${
                     hasAccess
                       ? "bg-green-500 hover:bg-green-600" 
-                      : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                      : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
                   } text-white`}
                   onClick={(e) => {
                     e.stopPropagation();

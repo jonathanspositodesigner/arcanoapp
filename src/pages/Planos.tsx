@@ -238,7 +238,7 @@ const Planos = () => {
         </AnimatedSection>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
-          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-6">
             {t('planos.title')}
           </h1>
 
@@ -260,7 +260,7 @@ const Planos = () => {
 
         {/* Discount Banner - Only show on annual */}
         {billingPeriod === "anual" && (
-          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-purple-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
+          <AnimatedSection animation="scale" delay={100} className="bg-gradient-to-r from-slate-600 to-pink-600 rounded-t-xl lg:rounded-t-xl rounded-xl lg:rounded-b-none text-center max-w-6xl mx-auto py-[13px] px-px my-[20px]" as="div">
             <span className="text-white font-semibold tracking-wide">
               Economize até 20% no plano anual!
             </span>
@@ -278,9 +278,9 @@ const Planos = () => {
             const isBestSeller = (plan as any).bestSeller;
             const savingsPercent = (plan as any).savingsPercent;
             return (
-            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-purple-500/30" : "border border-white/10"}`}>
+            <Card key={plan.name} className={`relative p-6 flex flex-col rounded-xl lg:rounded-none bg-[#1A0A2E] w-full ${index === 0 ? "lg:rounded-bl-xl" : ""} ${index === currentPlans.length - 1 ? "lg:rounded-br-xl" : ""} ${isBestSeller ? "border-2 border-slate-500 shadow-lg shadow-slate-500/20" : "border border-white/10"}`}>
               {isBestSeller && (
-                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-1">
+                <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 border-0 text-xs whitespace-nowrap bg-gradient-to-r from-slate-600 to-pink-600 text-white px-4 py-1">
                   {t('planos.bestSeller')}
                 </Badge>
               )}
@@ -319,7 +319,7 @@ const Planos = () => {
 
               <Button 
                 onClick={() => window.open(appendUtmToUrl((plan as any).paymentUrl, locale), '_blank')}
-                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-purple-900/70 text-gray-300"}`}
+                className={`w-full mb-6 ${isBestSeller ? "bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-700 hover:to-pink-700 text-white font-semibold" : plan.popular ? "bg-slate-600 hover:bg-slate-700 text-white" : "bg-white/5 hover:bg-purple-900/70 text-gray-300"}`}
               >
                 {(plan as any).hasTrial ? t('planos.freeTrial') : t('planos.subscribe')}
               </Button>

@@ -481,7 +481,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("creations")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "creations" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "creations" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Minhas Criações
@@ -489,7 +489,7 @@ export default function Seedance2() {
               <button
                 onClick={() => setGalleryTab("library")}
                 className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 ${
-                  galleryTab === "library" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                  galleryTab === "library" ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                 }`}
               >
                 Biblioteca
@@ -685,7 +685,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-purple-500/25 active:scale-[0.98]"
                       : "cursor-not-allowed bg-white/5 text-gray-600"
                   }`}
                 >
@@ -752,7 +752,7 @@ export default function Seedance2() {
                       />
                       {showCharacterTip && selectedCharacters.length === 0 && (
                         <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
-                          <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
+                          <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-fuchsia-500 to-slate-500 animate-pulse-glow">
                             <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-600 rotate-45 rounded-sm" />
                             <div className="flex items-center gap-2 relative">
                               <span className="text-[11px] sm:text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
@@ -781,11 +781,11 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-purple-600 to-purple-500 text-white shadow-lg shadow-purple-500/25 hover:shadow-purple-500/40 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-slate-600 to-slate-400 text-white shadow-lg shadow-purple-500/25 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-white/5 text-gray-600"
                       }`}
                     >
-                      <span className="absolute inset-0 bg-gradient-to-r from-purple-400/0 via-white/10 to-purple-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <span className="absolute inset-0 bg-gradient-to-r from-gray-400/0 via-white/10 to-gray-400/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
                       {uploading ? "Enviando..." : hasActiveJob ? (
                         <>
                           <span className="h-4 w-4 animate-spin rounded-full border-2 border-white/30 border-t-white" />
@@ -815,7 +815,7 @@ export default function Seedance2() {
                           key={option.value}
                           onClick={() => handleModeChange(option.value)}
                           className={`rounded-md border px-3 py-1 text-[11px] font-medium transition-all duration-200 hover:scale-[1.04] ${
-                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-purple-500/10" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
+                            mode === option.value ? "border-white/10 bg-slate-500/20 text-gray-300 shadow-sm shadow-white/5" : "border-transparent text-gray-500 hover:text-gray-300 hover:bg-white/[0.04]"
                           }`}
                           title={option.desc}
                         >
@@ -848,7 +848,7 @@ export default function Seedance2() {
                         />
                         {showCharacterTip && selectedCharacters.length === 0 && (
                           <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 z-50 animate-bounce">
-                            <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-purple-600 via-fuchsia-500 to-purple-600 animate-pulse-glow">
+                            <div className="relative rounded-xl px-4 py-2.5 shadow-[0_0_20px_rgba(147,51,234,0.5)] whitespace-nowrap bg-gradient-to-r from-slate-600 via-fuchsia-500 to-slate-500 animate-pulse-glow">
                               <div className="flex items-center gap-2 relative">
                                 <span className="text-sm text-white font-bold drop-shadow-sm">👆 Adicione seu rosto aqui!</span>
                                 <button onClick={() => setShowCharacterTip(false)} className="text-white/70 hover:text-white text-sm shrink-0 font-bold">✕</button>

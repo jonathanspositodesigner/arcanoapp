@@ -665,7 +665,7 @@ const MovieLedMakerTool = () => {
                   {status !== 'completed' && status !== 'error' && !isProcessing && (
                     <Button
                       data-tutorial-movieled="generate"
-                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                      className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                       onClick={handleGenerate}
                       disabled={isSubmitting || !canGenerate}
                     >
@@ -801,7 +801,7 @@ const MovieLedMakerTool = () => {
                   </div>
                 ) : (
                   <div className="flex flex-col items-center gap-4 text-center">
-                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/20 flex items-center justify-center">
+                    <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/20 flex items-center justify-center">
                       <Video className="w-10 h-10 text-fuchsia-400" />
                     </div>
                     <div>
@@ -861,7 +861,7 @@ const MovieLedMakerTool = () => {
             {!isProcessing && status !== 'completed' && status !== 'error' && (
               <>
                 <Button
-                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 rounded-xl shadow-lg disabled:opacity-50"
+                  className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-blue-500 to-slate-500 hover:from-blue-600 hover:to-slate-600 rounded-xl shadow-lg disabled:opacity-50"
                   onClick={handleGenerate}
                   disabled={isSubmitting || !canGenerate}
                 >

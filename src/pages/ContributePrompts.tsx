@@ -234,7 +234,7 @@ const ContributePrompts = () => {
 
         <Card className="p-4 sm:p-8 bg-[#1A0A2E] border-white/10">
           <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent mb-2">
+            <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent mb-2">
               {t('contribute.title')}
             </h1>
             <p className="text-gray-300 text-base sm:text-lg">
@@ -381,7 +381,7 @@ const ContributePrompts = () => {
             <Button
               type="submit"
               disabled={isSubmitting}
-              className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
+              className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-opacity text-lg py-6 text-white"
             >
               {isSubmitting ? t('contribute.submitting') : t('contribute.submit')}
             </Button>

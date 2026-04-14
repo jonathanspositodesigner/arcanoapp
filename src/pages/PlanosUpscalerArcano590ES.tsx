@@ -39,7 +39,7 @@ interface ToolData {
 const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: boolean; t: (key: string) => string }) => (
   <Button
     onClick={onClick}
-    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+    className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
   >
     {t('tools:upscaler.cta')}
     <ArrowRight className="h-5 w-5 ml-2" />
@@ -267,7 +267,7 @@ const PlanosUpscalerArcano590ES = () => {
               </p>
               <Button
                 onClick={() => navigate("/ferramentas-ia-aplicativo")}
-                className="bg-gradient-to-r from-fuchsia-600 to-purple-600 rounded-full px-8 py-6"
+                className="bg-gradient-to-r from-slate-600 to-slate-500 rounded-full px-8 py-6"
               >
                 {t('tools:upscaler.goToTools')}
               </Button>
@@ -283,7 +283,7 @@ const PlanosUpscalerArcano590ES = () => {
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
                     {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
@@ -395,7 +395,7 @@ const PlanosUpscalerArcano590ES = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
               
@@ -407,7 +407,7 @@ const PlanosUpscalerArcano590ES = () => {
                       key={index}
                       className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-8 text-center hover:border-fuchsia-500/50 transition-all duration-300 hover:transform hover:scale-[1.02] h-full flex flex-col"
                     >
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center mx-auto mb-6">
+                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center mx-auto mb-6">
                         <IconComponent className="h-8 w-8 text-fuchsia-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-3">{item.title}</h3>
@@ -435,13 +435,13 @@ const PlanosUpscalerArcano590ES = () => {
                     <div key={index} className="text-center flex flex-col items-center relative">
                       {/* Linha conectora para desktop */}
                       {index < steps.length - 1 && (
-                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-fuchsia-500/50 to-transparent" />
+                        <div className="hidden md:block absolute top-10 left-[60%] w-full h-0.5 bg-gradient-to-r from-slate-500/50 to-transparent" />
                       )}
                       
-                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-fuchsia-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
+                      <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center text-white font-bold text-lg mb-4 shadow-lg shadow-fuchsia-500/30">
                         {index + 1}
                       </div>
-                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 border border-fuchsia-500/30 flex items-center justify-center mb-5">
                         <IconComponent className="h-10 w-10 text-fuchsia-400" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-2">{step.title}</h3>
@@ -478,7 +478,7 @@ const PlanosUpscalerArcano590ES = () => {
                   </Badge>
 
                   {isPremium && (
-                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-slate-500 to-pink-500 text-white text-xs md:text-sm px-3 md:px-4 py-1.5 md:py-2 rounded-full mb-4 md:mb-6">
                       <Crown className="h-3 w-3 md:h-4 md:w-4" />
                       {t('tools:upscaler.finalCTA.memberDiscount')}
                     </div>
@@ -521,7 +521,7 @@ const PlanosUpscalerArcano590ES = () => {
                   <div className="px-0 md:px-2">
                     <Button
                       onClick={handlePurchase}
-                      className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-fuchsia-500 to-purple-600 hover:from-fuchsia-600 hover:to-purple-700 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
+                      className="w-full max-w-md py-6 text-lg font-bold rounded-full bg-gradient-to-r from-slate-500 to-slate-500 hover:from-slate-600 hover:to-slate-600 text-white shadow-2xl shadow-fuchsia-500/30 transition-all duration-300 hover:scale-[1.02] hover:shadow-fuchsia-500/40"
                     >
                       ¡QUIERO MI ACCESO AHORA!
                       <ArrowRight className="h-5 w-5 ml-2" />
@@ -561,7 +561,7 @@ const PlanosUpscalerArcano590ES = () => {
                       key={index}
                       className="flex items-center gap-4 bg-white/5 border border-white/10 rounded-2xl p-5 hover:border-fuchsia-500/30 transition-all duration-300"
                     >
-                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-500/20 to-purple-500/20 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-500/20 to-slate-400/20 flex items-center justify-center flex-shrink-0">
                         <IconComponent className="h-6 w-6 text-fuchsia-400" />
                       </div>
                       <span className="text-white/90 text-lg">{feature.text}</span>

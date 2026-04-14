@@ -133,8 +133,8 @@ const PlanosForjaSelos3D = () => {
           </AnimatedSection>
         ) : (
           <AnimatedSection animation="scale" delay={200} as="div">
-            <Card className="relative bg-[#1a1a2e]/80 border-2 border-slate-500/50 ring-2 ring-purple-500/20">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+            <Card className="relative bg-[#1a1a2e]/80 border-2 border-slate-500/50 ring-2 ring-slate-500/20">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-slate-500 to-pink-500 text-white px-4 py-1 rounded-full text-sm font-medium">
                 {t("forja3D.lifetimeAccess")}
               </div>
 
@@ -147,7 +147,7 @@ const PlanosForjaSelos3D = () => {
 
               <CardHeader className="text-center pt-8">
                 <div className="flex justify-center mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
+                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-slate-500/20 to-pink-500/20 flex items-center justify-center border border-white/10">
                     <Box className="h-10 w-10 text-gray-400" />
                   </div>
                 </div>
@@ -181,7 +181,7 @@ const PlanosForjaSelos3D = () => {
 
                 <Button
                   onClick={handlePurchase}
-                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/25 hover-lift"
+                  className="w-full py-6 text-lg font-semibold bg-gradient-to-r from-slate-500 to-pink-500 hover:from-slate-600 hover:to-pink-600 text-white shadow-lg shadow-purple-500/25 hover-lift"
                 >
                   {t("forja3D.buyNow")}
                 </Button>

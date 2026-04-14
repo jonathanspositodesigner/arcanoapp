@@ -19,7 +19,7 @@ const Promptverso = () => {
           <div className="flex justify-center">
             <img src={logoHorizontal} alt="ArcanoApp" className="h-8 sm:h-10 w-auto" />
           </div>
-          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent px-2">
+          <h1 className="text-2xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent px-2">
             {t('promptverso.title')}
           </h1>
           <p className="text-base sm:text-xl text-gray-300 mx-auto text-center px-2">
@@ -28,7 +28,7 @@ const Promptverso = () => {
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-2">
-          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg shadow-purple-500/20 hover:scale-105 w-full sm:w-auto text-white">
+          <Button onClick={() => navigate("/biblioteca-prompts")} size="lg" className="bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 transition-all text-sm sm:text-lg px-6 sm:px-8 py-5 sm:py-6 shadow-lg shadow-white/5 hover:scale-105 w-full sm:w-auto text-white">
             <Library className="mr-2 h-5 w-5 sm:h-6 sm:w-6" />
             {t('promptverso.accessPrompts')}
           </Button>

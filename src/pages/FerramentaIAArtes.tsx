@@ -232,7 +232,7 @@ const FerramentaIAArtes = () => {
                         <Button
                           key={btnIndex}
                           onClick={() => window.open(button.url, "_blank")}
-                          className="bg-gradient-to-r from-purple-600 to-blue-500 hover:opacity-90"
+                          className="bg-gradient-to-r from-slate-600 to-blue-500 hover:opacity-90"
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           {button.text}

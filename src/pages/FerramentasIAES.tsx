@@ -107,7 +107,7 @@ const FerramentasIAES = () => {
     return (
       <Card 
         key={tool.id}
-        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-purple-400 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
+        className="overflow-hidden cursor-pointer hover:ring-2 hover:ring-white/20 transition-all group border border-white/10 shadow-md hover:shadow-xl bg-[#1A0A2E]/50"
         onClick={() => handleToolClick(tool)}
       >
         <div className="aspect-[16/9] sm:aspect-[3/4] relative overflow-hidden">
@@ -118,7 +118,7 @@ const FerramentasIAES = () => {
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />
           ) : (
-            <div className="w-full h-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+            <div className="w-full h-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
               <Sparkles className="h-12 w-12 sm:h-16 sm:w-16 text-white/80" />
             </div>
           )}
@@ -145,7 +145,7 @@ const FerramentasIAES = () => {
               className={`mt-3 w-full text-sm font-medium ${
                 hasAccess 
                   ? "bg-green-500 hover:bg-green-600" 
-                  : "bg-gradient-to-r from-purple-500 to-fuchsia-500 hover:opacity-90"
+                  : "bg-gradient-to-r from-slate-500 to-slate-400 hover:opacity-90"
               } text-white`}
             >
               {hasAccess ? (
@@ -172,7 +172,7 @@ const FerramentasIAES = () => {
       <header className="sticky top-0 z-50 bg-[#111113]/95 backdrop-blur-lg border-b border-white/10">
         <div className="container mx-auto px-4 py-3 flex items-center justify-center">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 flex items-center justify-center">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 flex items-center justify-center">
               <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <h1 className="text-base sm:text-xl font-bold text-white">

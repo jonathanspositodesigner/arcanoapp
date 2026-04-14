@@ -265,7 +265,7 @@ const PlanosArtesMembro = () => {
         </Button>
 
         <div className="text-center mb-8">
-          <Badge className="bg-gradient-to-r from-purple-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
+          <Badge className="bg-gradient-to-r from-slate-500 to-violet-500 text-white text-lg px-4 py-2 mb-4">
             <Crown className="h-5 w-5 mr-2" />
             {t('memberDiscountLabel')}
           </Badge>
@@ -303,7 +303,7 @@ const PlanosArtesMembro = () => {
               [...availablePacks].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
                 <Card
                   key={pack.id}
-                  className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-purple-500 transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-purple-500/50' : ''}`}
+                  className={`bg-[#1a1a2e]/80 border-[#2d4a5e]/30 cursor-pointer hover:ring-2 hover:ring-slate-500 transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-slate-500/50' : ''}`}
                   onClick={() => setSelectedPack(pack)}
                 >
                   {pack.slug === 'pack-arcano-vol-4' && (
@@ -408,7 +408,7 @@ const PlanosArtesMembro = () => {
                         ))}
                       </ul>
                       <Button
-                        className="w-full bg-gradient-to-r from-purple-500 to-violet-500 hover:from-purple-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-purple-500/30"
+                        className="w-full bg-gradient-to-r from-slate-500 to-violet-500 hover:from-slate-600 hover:to-violet-600 text-white font-bold shadow-lg shadow-slate-500/20"
                         onClick={() => handleSelectOption(selectedAccessType)}
                         disabled={isCheckoutSubmitting}
                       >

@@ -430,7 +430,7 @@ const BibliotecaPrompts = () => {
 
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
-      {item.isPremium ? <Badge className="bg-gradient-to-r from-purple-600 to-blue-500 text-white border-0 text-[10px] sm:text-xs">
+      {item.isPremium ? <Badge className="bg-gradient-to-r from-slate-600 to-blue-500 text-white border-0 text-[10px] sm:text-xs">
         <Star className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" fill="currentColor" />
         {t('badges.premium')}
       </Badge> : <Badge variant="outline" className="border-green-500 text-green-400 text-[10px] sm:text-xs">
@@ -461,7 +461,7 @@ const BibliotecaPrompts = () => {
 
         {/* Page Title and Content Type Tabs */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">{t('library.title')}</h2>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r from-gray-400 to-pink-400 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-gray-400">{t('library.description')}</p>
 
           {/* Content Type Tabs */}
@@ -528,7 +528,7 @@ const BibliotecaPrompts = () => {
               placeholder="Buscar por palavra-chave..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-fuchsia-400"
+              className="pl-10 h-9 text-sm bg-slate-500/10 border-white/10 text-white placeholder:text-gray-500 focus:border-slate-400"
             />
           </div>
         </div>
@@ -630,7 +630,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
                     >
                       <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar foto</span>
@@ -660,7 +660,7 @@ const BibliotecaPrompts = () => {
                         }
                       }}
                       size="sm"
-                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-700 hover:to-purple-700 text-white min-w-0"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-slate-600 to-slate-500 hover:from-fuchsia-700 hover:to-slate-600 text-white min-w-0"
                     >
                       <Video className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
                       <span className="truncate">Gerar movie</span>
@@ -708,7 +708,7 @@ const BibliotecaPrompts = () => {
       <Dialog open={showPremiumModal} onOpenChange={handleClosePremiumModal}>
         <DialogContent className="max-w-lg bg-[#1A0A2E] border-white/10 text-white">
           <div className="text-center p-6">
-            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-purple-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
+            <div className="w-20 h-20 mx-auto bg-gradient-to-r from-slate-600 to-blue-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-10 w-10 text-white" fill="currentColor" />
             </div>
             <h2 className="text-2xl font-bold mb-2">{t('premiumModal.title')}</h2>
@@ -725,7 +725,7 @@ const BibliotecaPrompts = () => {
                 </div>
               </div>
             )}
-            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-purple-600 to-blue-500 hover:from-purple-500 hover:to-blue-400 text-white py-6 text-lg">
+            <Button onClick={() => navigate("/planos-2")} className="w-full bg-gradient-to-r from-slate-600 to-blue-500 hover:from-slate-500 hover:to-blue-400 text-white py-6 text-lg">
               <Star className="h-5 w-5 mr-2" fill="currentColor" />
               {t('premiumModal.becomePremium')}
             </Button>
@@ -789,7 +789,7 @@ const BibliotecaPrompts = () => {
                         navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                       }
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-gray-300' : 'bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-700 hover:to-purple-700 text-white'}`}
+                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-purple-900/60 hover:bg-purple-900/80 text-gray-300' : 'bg-gradient-to-r from-pink-600 to-slate-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
                   >
                     {selectedPrompt.isPremium && !isPremium ? (
                       <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
@@ -858,7 +858,7 @@ const BibliotecaPrompts = () => {
             <p className="text-gray-300 mb-6">
               {t('limitModal.description', { limit: planType === 'arcano_basico' ? 10 : 24 })}
             </p>
-            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90 text-white py-6">
+            <Button onClick={() => { setShowLimitModal(false); navigate("/planos-2"); }} className="w-full bg-gradient-to-r from-slate-500 to-pink-500 hover:opacity-90 text-white py-6">
               {t('limitModal.upgrade')}
             </Button>
           </div>

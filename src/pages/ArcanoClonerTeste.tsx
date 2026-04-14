@@ -221,7 +221,7 @@ const ArcanoClonerTeste = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -278,7 +278,7 @@ const ArcanoClonerTeste = () => {
             })}
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
-            <div className="mt-10 md:mt-12 bg-gradient-to-r from-fuchsia-500/10 to-purple-600/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
+            <div className="mt-10 md:mt-12 bg-gradient-to-r from-slate-500/10 to-slate-500/10 border border-fuchsia-500/30 rounded-3xl p-8 text-center">
               <Sparkles className="h-8 w-8 text-fuchsia-400 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-white font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
@@ -298,7 +298,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white text-center mb-3">
                 Gere suas fotos{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem gastar com ensaios</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem gastar com ensaios</span>
              </h2>
             <p className="text-white/50 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
@@ -406,7 +406,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-white mb-3">
               Tudo feito com um clique,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-purple-500">sem prompt!</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 to-slate-400">sem prompt!</span>
             </h2>
             <p className="text-white/50 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner

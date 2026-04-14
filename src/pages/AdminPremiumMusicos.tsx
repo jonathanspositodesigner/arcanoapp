@@ -375,7 +375,7 @@ const AdminPremiumMusicos = () => {
               <p className="text-muted-foreground">Gerencie assinantes da plataforma de músicos</p>
             </div>
           </div>
-          <Button onClick={handleOpenAdd} className="bg-gradient-to-r from-violet-500 to-purple-500">
+          <Button onClick={handleOpenAdd} className="bg-gradient-to-r from-violet-500 to-slate-400">
             <Plus className="h-4 w-4 mr-2" />
             Novo Cliente
           </Button>
@@ -640,7 +640,7 @@ const AdminPremiumMusicos = () => {
               <Button 
                 onClick={handleSave} 
                 disabled={isSaving}
-                className="flex-1 bg-gradient-to-r from-violet-500 to-purple-500"
+                className="flex-1 bg-gradient-to-r from-violet-500 to-slate-400"
               >
                 {isSaving ? "Salvando..." : "Salvar"}
               </Button>

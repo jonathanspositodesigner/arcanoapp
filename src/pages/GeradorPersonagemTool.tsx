@@ -670,7 +670,7 @@ const GeradorPersonagemTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -744,7 +744,7 @@ const GeradorPersonagemTool: React.FC = () => {
             <button
               type="button"
               onClick={() => navigate('/arcano-cloner-tool')}
-              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-fuchsia-600/20 to-purple-600/20 border border-fuchsia-500/30 rounded-lg p-3 hover:from-fuchsia-600/30 hover:to-purple-600/30 transition-all group"
+              className="w-full flex items-center justify-between gap-2 bg-gradient-to-r from-slate-600/20 to-slate-500/20 border border-fuchsia-500/30 rounded-lg p-3 hover:from-slate-600/30 hover:to-slate-500/30 transition-all group"
             >
               <div className="flex items-center gap-2.5 min-w-0">
                 <Sparkles className="w-4 h-4 text-fuchsia-400 flex-shrink-0" />
@@ -799,7 +799,7 @@ const GeradorPersonagemTool: React.FC = () => {
                       {status === 'processing' && <p className="text-xs text-gray-300 mt-0.5">{Math.round(progress)}% concluído</p>}
                     </div>
                     <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300" style={{ width: `${progress}%` }} />
+                      <div className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }} />
                     </div>
                   </div>
                 ) : status === 'error' ? (
@@ -842,7 +842,7 @@ const GeradorPersonagemTool: React.FC = () => {
                   <Button variant="outline" size="sm" className="flex-1 h-8 text-xs bg-slate-600/80 border-white/15 text-white hover:bg-slate-500/90" onClick={handleReset}>
                     <RotateCcw className="w-3.5 h-3.5 mr-1.5" />Nova
                   </Button>
-                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>
+                  <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-slate-600 to-pink-600 hover:from-slate-500 hover:to-pink-500 text-white" onClick={() => setShowRefinePanel(true)}>
                     <Wand2 className="w-3.5 h-3.5 mr-1.5" />Refinar
                   </Button>
                   <Button size="sm" className="flex-1 h-8 text-xs bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white" onClick={() => setShowSaveDialog(true)}>

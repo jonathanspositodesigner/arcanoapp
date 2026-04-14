@@ -31,7 +31,7 @@ const UpscalerSelectionPage = () => {
       <main className="container mx-auto px-4 py-4 sm:py-8 md:py-16">
         {/* Hero Section */}
         <div className="text-center mb-6 sm:mb-12">
-          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-purple-500 to-fuchsia-600 mb-3 sm:mb-6 shadow-lg shadow-purple-500/30">
+          <div className="inline-flex items-center justify-center w-12 h-12 sm:w-20 sm:h-20 rounded-full bg-gradient-to-br from-slate-500 to-slate-500 mb-3 sm:mb-6 shadow-lg shadow-slate-500/20">
             <Sparkles className="w-6 h-6 sm:w-10 sm:h-10 text-white" />
           </div>
           <h1 className="text-xl sm:text-3xl md:text-4xl font-bold text-white mb-2 sm:mb-4">
@@ -47,14 +47,14 @@ const UpscalerSelectionPage = () => {
           {/* Image Upscaler Card */}
           <button
             onClick={handleSelectImage}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-white/15/60 hover:shadow-xl hover:shadow-purple-500/20 hover:scale-[1.02]"
+            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-white/15/60 hover:shadow-xl hover:shadow-white/5 hover:scale-[1.02]"
           >
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 shadow-lg shadow-purple-500/20 group-hover:shadow-purple-500/40 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-blue-500 to-slate-500 shadow-lg shadow-white/5 group-hover:shadow-gray-500 transition-shadow">
                 <Image className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
@@ -102,11 +102,11 @@ const UpscalerSelectionPage = () => {
             className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-[#1A0A2E] to-[#111113] p-4 sm:p-8 text-left transition-all duration-300 hover:border-fuchsia-400/60 hover:shadow-xl hover:shadow-fuchsia-500/20 hover:scale-[1.02]"
           >
             {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute inset-0 bg-gradient-to-br from-slate-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             
             {/* Icon */}
             <div className="relative mb-3 sm:mb-6">
-              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-fuchsia-500 to-pink-600 shadow-lg shadow-fuchsia-500/20 group-hover:shadow-fuchsia-500/40 transition-shadow">
+              <div className="inline-flex items-center justify-center w-10 h-10 sm:w-16 sm:h-16 rounded-xl bg-gradient-to-br from-slate-500 to-pink-600 shadow-lg shadow-fuchsia-500/20 group-hover:shadow-fuchsia-500/40 transition-shadow">
                 <Video className="w-5 h-5 sm:w-8 sm:h-8 text-white" />
               </div>
             </div>
@@ -145,7 +145,7 @@ const UpscalerSelectionPage = () => {
             </div>
 
             {/* Decorative corner */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-fuchsia-500/10 to-transparent rounded-bl-full" />
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-slate-500/10 to-transparent rounded-bl-full" />
           </button>
         </div>
 

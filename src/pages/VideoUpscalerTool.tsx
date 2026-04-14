@@ -481,7 +481,7 @@ const VideoUpscalerTool: React.FC = () => {
             {/* Action Button */}
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-500 hover:to-fuchsia-500 text-white font-medium py-2 text-xs disabled:opacity-50"
+              className="w-full bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-medium py-2 text-xs disabled:opacity-50"
               disabled={!canProcess || isProcessing || isSubmitting}
               onClick={handleProcess}
             >
@@ -566,7 +566,7 @@ const VideoUpscalerTool: React.FC = () => {
                 ) : isProcessing ? (
                   <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
                     <div className="relative">
-                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-purple-500 animate-spin" />
+                      <div className="w-14 h-14 rounded-full border-4 border-white/10 border-t-slate-500 animate-spin" />
                       <Sparkles className="absolute inset-0 m-auto w-6 h-6 text-gray-400" />
                     </div>
                     <div className="text-center">
@@ -588,7 +588,7 @@ const VideoUpscalerTool: React.FC = () => {
                     {/* Progress bar */}
                     <div className="w-36 h-1.5 bg-white/5 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-gradient-to-r from-purple-500 to-fuchsia-500 transition-all duration-300"
+                        className="h-full bg-gradient-to-r from-slate-500 to-slate-400 transition-all duration-300"
                         style={{ width: `${progress}%` }}
                       />
                     </div>

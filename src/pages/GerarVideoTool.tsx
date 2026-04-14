@@ -800,7 +800,7 @@ const GerarVideoTool = () => {
                     onClick={handleGenerate}
                     disabled={isGenerating || isSubmitting || !prompt.trim() || (generationMode === 'with_frames' && !framesReady)}
                     size="sm"
-                    className="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
+                    className="bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-500 hover:to-slate-400 text-white font-semibold text-xs disabled:opacity-50 rounded-lg px-3 h-9 min-w-0 shrink-0"
                   >
                     {isGenerating ? (
                       <>
