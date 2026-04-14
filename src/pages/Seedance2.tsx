@@ -889,13 +889,13 @@ export default function Seedance2() {
                   <select
                     value={ratio}
                     onChange={(e) => setRatio(e.target.value as Ratio)}
-                    className="hidden sm:block rounded-lg border border-border bg-black px-2 py-1 text-[11px] text-foreground outline-none hover:border-border cursor-pointer [&>option]:bg-black [&>option]:text-white"
+                    className="hidden sm:block rounded-lg border border-border bg-card px-2 py-1 text-[11px] text-foreground outline-none hover:border-border cursor-pointer [&>option]:bg-popover [&>option]:text-popover-foreground"
                   >
                     {RATIOS.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
                   </select>
                   <button
                     onClick={() => setShowRatioModal(true)}
-                    className="sm:hidden rounded-lg border border-border bg-black px-2 py-1 text-[11px] text-foreground"
+                    className="sm:hidden rounded-lg border border-border bg-card px-2 py-1 text-[11px] text-foreground"
                   >
                     {RATIOS.find((r) => r.value === ratio)?.label || ratio}
                   </button>

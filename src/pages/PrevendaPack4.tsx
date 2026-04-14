@@ -75,7 +75,7 @@ const PrevendaPack4 = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-black">
+    <div className="min-h-screen bg-background">
       <div 
         className="fixed bottom-0 left-0 right-0 h-80 z-50 pointer-events-none md:hidden transition-opacity duration-300" 
         style={{
