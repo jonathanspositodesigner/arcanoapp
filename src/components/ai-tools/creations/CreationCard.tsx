@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Download, Clock, Image as ImageIcon, Video, AlertCircle, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Download, Clock, Image as ImageIcon, Video, AlertCircle, Trash2, Wand2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
