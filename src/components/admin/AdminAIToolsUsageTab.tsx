@@ -550,8 +550,8 @@ const AdminAIToolsUsageTab = () => {
     };
   }, [usageRecords]);
 
-  // BUG 1 FIX: Calculate revenue from individual records, not from summary total_credits
-  const receitaCalculada = useMemo(() => {
+  // Per-page revenue for per-row display only
+  const receitaPaginaCalculada = useMemo(() => {
     let totalReceita = 0;
     for (const record of usageRecords) {
       totalReceita += getRecordRevenueInternal(record);
@@ -567,10 +567,25 @@ const AdminAIToolsUsageTab = () => {
     return record.user_credit_cost * receitaPorCreditoAplicada;
   }
 
+  // ===== SUMMARY-LEVEL METRICS (all jobs in period, not just current page) =====
+  
+  // Error rate from summary totals
+  const errorRateTotal = summary && summary.total_jobs > 0
+    ? ((summary.failed_jobs / summary.total_jobs) * 100).toFixed(1)
+    : '0';
+  
+  // Revenue from summary: total_credits (non-failed) * receita por crédito
+  // Note: includes free/trial users but is accurate across ALL jobs
+  const receitaTotalResumo = summary
+    ? summary.total_credits * receitaPorCreditoAtual
+    : 0;
+  
+  // Cost: RH cost from summary
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
   const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
-  // Use per-record revenue calculation instead of inflated summary (BUG 1 FIX)
-  const lucroTotalResumo = receitaCalculada - custoTotalResumo;
+  
+  // Lucro: receita total - custo total (ambos do summary, mesmo escopo)
+  const lucroTotalResumo = receitaTotalResumo - custoTotalResumo;
 
   const formatDuration = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
@@ -820,7 +835,7 @@ const AdminAIToolsUsageTab = () => {
               <Activity className="h-8 w-8 text-red-500" />
               <div>
                 <p className="text-xs text-red-400">Taxa de Erro</p>
-                <p className="text-xl font-bold text-red-400">{errorAnalytics.errorRate}%</p>
+                <p className="text-xl font-bold text-red-400">{errorRateTotal}%</p>
               </div>
             </CardContent>
           </Card>
@@ -839,8 +854,8 @@ const AdminAIToolsUsageTab = () => {
             <CardContent className="p-4 flex items-center gap-3">
               <Users className="h-8 w-8 text-blue-500" />
               <div>
-                <p className="text-xs text-muted-foreground">Receita Usuários (R$)</p>
-                <p className="text-xl font-bold">{formatBRL(receitaCalculada)}</p>
+                <p className="text-xs text-muted-foreground">Receita Total (R$)</p>
+                <p className="text-xl font-bold">{formatBRL(receitaTotalResumo)}</p>
               </div>
             </CardContent>
           </Card>
