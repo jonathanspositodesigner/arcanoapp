@@ -58,6 +58,7 @@ const PoseChangerTool: React.FC = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);

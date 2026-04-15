@@ -58,6 +58,7 @@ const VesteAITool: React.FC = () => {
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const [clothingFile, setClothingFile] = useState<File | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
