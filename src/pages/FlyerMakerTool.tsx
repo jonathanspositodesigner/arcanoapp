@@ -50,6 +50,19 @@ const FlyerMakerTool: React.FC = () => {
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Flyer Maker', 100);
   
+  // Flyer Maker test credits
+  const [testCredits, setTestCredits] = useState(0);
+  
+  const fetchTestCredits = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase.rpc('get_flyer_test_credits', { _user_id: user.id });
+      if (!error && typeof data === 'number') setTestCredits(data);
+    } catch {}
+  }, [user?.id]);
+  
+  useEffect(() => { fetchTestCredits(); }, [fetchTestCredits]);
+  
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
   // Inputs
