@@ -605,6 +605,16 @@ const AdminAIToolsUsageTab = () => {
     for (const [toolName, count] of Object.entries(toolCompletedCounts)) {
       const apiCost = getApiCostFromSettings(toolName, aiToolSettingsMap);
       total += count * apiCost;
+      // Add estimated video API costs for video tools
+      if (VIDEO_TOOL_NAMES.has(toolName)) {
+        const avgVideoCostMap: Record<string, number> = {
+          "Gerar Vídeo": 0.504,      // average Veo 3.1 fast cost per job (~8s)
+          "MovieLed Maker": 0.294 * 8, // average gemini-lite cost
+          "Seedance 2.0": 0.424 * 8,   // average standard 480p i2v cost
+          "Video Upscaler": 0,
+        };
+        total += count * (avgVideoCostMap[toolName] || 0);
+      }
     }
     return total;
   }, [toolCompletedCounts, aiToolSettingsMap]);
@@ -874,7 +884,7 @@ const AdminAIToolsUsageTab = () => {
                 <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
                 <p className="text-xl font-bold">{formatBRL(custoTotalResumo)}</p>
                 <p className="text-[0.6rem] text-muted-foreground">
-                  RH: {formatBRL(custoRHResumo)} · API: {formatBRL(custoAPIResumo)}
+                  Infra: {formatBRL(custoRHResumo)} · API/Vídeo: {formatBRL(custoAPIResumo)}
                 </p>
               </div>
             </CardContent>
