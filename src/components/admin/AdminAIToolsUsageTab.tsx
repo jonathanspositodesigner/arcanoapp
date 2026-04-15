@@ -211,6 +211,7 @@ const AdminAIToolsUsageTab = () => {
   const [toolRegistry, setToolRegistry] = useState<ToolRegistryEntry[]>([]);
   const [usageRecords, setUsageRecords] = useState<UsageRecord[]>([]);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
+  const [toolCompletedCounts, setToolCompletedCounts] = useState<Record<string, number>>({});
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
