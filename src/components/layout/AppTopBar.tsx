@@ -136,7 +136,10 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
     <>
       {/* Top Bar - Desktop */}
       <header className="hidden lg:flex bg-background/80 backdrop-blur-lg border-b border-border px-6 py-3 items-center justify-between sticky top-0 z-50">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground p-1.5 rounded-md hover:bg-accent transition-colors">
+            <Home className="h-5 w-5" />
+          </button>
         </div>
         <div className="flex items-center gap-3">
           {user && (
