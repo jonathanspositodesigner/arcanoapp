@@ -633,6 +633,7 @@ const FlyerMakerTool: React.FC = () => {
 
   const handleNew = () => {
     setOutputImage(null);
+    setThumbnailImage(null);
     setRefinementHistory([]);
     setSelectedHistoryIndex(0);
     setRefineMode(false);
