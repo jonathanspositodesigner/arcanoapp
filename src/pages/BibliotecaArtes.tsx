@@ -1470,6 +1470,9 @@ const BibliotecaArtes = () => {
           })()}
         </DialogContent>
       </Dialog>
+          </div>
+          </div>
+        </div>
       </div>
     </>
   );
