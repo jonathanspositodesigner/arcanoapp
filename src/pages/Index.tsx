@@ -78,16 +78,21 @@ const Index = () => {
     setIsUpdating(true);
     toast.info("Atualizando app...");
     try {
+      // 1. Clear all caches
       if ("caches" in window) {
         const names = await caches.keys();
         await Promise.all(names.map(n => caches.delete(n)));
       }
-      await forcePwaUpdate();
-    } catch {
-      // fallback
+      // 2. Unregister service workers
+      if ("serviceWorker" in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+    } catch (e) {
+      console.warn("[handleManualUpdate] cleanup error:", e);
     }
-    // Always reload the page after clearing cache
-    window.location.replace(`/?v=${Date.now()}`);
+    // 3. Always force hard reload
+    window.location.href = `/?v=${Date.now()}`;
   };
 
   const { t } = useTranslation('index');
