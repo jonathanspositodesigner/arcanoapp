@@ -630,8 +630,8 @@ const GeradorPersonagemTool: React.FC = () => {
 
       {isProcessing && (
         <div className="bg-amber-500/20 border-b border-amber-500/30 px-4 py-2 flex items-center justify-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-amber-400" />
-          <span className="text-xs text-amber-200">Não feche esta página durante o processamento</span>
+          <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+          <span className="text-xs text-amber-700 dark:text-amber-200">Não feche esta página durante o processamento</span>
         </div>
       )}
 

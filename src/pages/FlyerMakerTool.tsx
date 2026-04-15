@@ -616,8 +616,8 @@ const FlyerMakerTool: React.FC = () => {
       <div className="h-full lg:overflow-hidden overflow-y-auto flex flex-col">
         {isProcessing && (
           <div className="bg-amber-500/20 border-b border-amber-500/50 px-4 py-2 flex items-center justify-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-amber-400" />
-            <span className="text-xs text-amber-200">Não feche esta página durante o processamento</span>
+            <AlertTriangle className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+            <span className="text-xs text-amber-700 dark:text-amber-200">Não feche esta página durante o processamento</span>
           </div>
         )}
 
@@ -858,8 +858,8 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="flex flex-col items-center p-8">
                       <div className="relative w-16 h-16 mb-4">
                         <div className="absolute inset-0 rounded-full border-4 border-border"></div>
-                        <div className="absolute inset-0 rounded-full border-4 border-t-blue-400 animate-spin"></div>
-                        <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-blue-400" />
+                        <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin"></div>
+                        <Wand2 className="absolute inset-0 m-auto w-6 h-6 text-primary" />
                       </div>
                       <p className="text-foreground font-medium mb-1">Refinando imagem...</p>
                       <p className="text-xs text-muted-foreground animate-pulse">A IA está modificando sua imagem</p>
@@ -870,11 +870,11 @@ const FlyerMakerTool: React.FC = () => {
                         <div className="flex flex-col items-center">
                           <div className="relative w-16 h-16 mb-4">
                             <div className="absolute inset-0 rounded-full border-4 border-border"></div>
-                            <div className="absolute inset-0 rounded-full border-4 border-t-blue-500 animate-spin"></div>
+                            <div className="absolute inset-0 rounded-full border-4 border-t-primary animate-spin"></div>
                           </div>
                           <p className="text-foreground font-medium mb-1">{status === 'uploading' ? 'Enviando imagens...' : status === 'waiting' ? `Na fila: Posição ${queuePosition}` : 'Processando IA...'}</p>
                           <p className="text-xs text-muted-foreground animate-pulse">{queueMessages[queueMessageIndex].text}</p>
-                          <div className="w-48 h-1 bg-accent rounded-full mt-4 overflow-hidden"><div className="h-full bg-gradient-to-r from-blue-500 to-slate-400 transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
+                          <div className="w-48 h-1 bg-accent rounded-full mt-4 overflow-hidden"><div className="h-full bg-primary transition-all duration-300" style={{ width: `${progress}%` }}></div></div>
                         </div>
                       ) : (
                         <div className="flex flex-col items-center text-muted-foreground">
