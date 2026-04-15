@@ -784,7 +784,10 @@ const FlyerMakerTool: React.FC = () => {
                           <>
                             <Sparkles className="w-4 h-4 mr-2" />
                             Gerar Flyer
-                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3.5 h-3.5" /> {creditCost}</span>
+                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                              <Coins className="w-3.5 h-3.5" /> {creditCost}
+                              {testCredits > 0 && <span className="ml-1">(🧪 teste)</span>}
+                            </span>
                           </>
                         )}
                       </Button>
