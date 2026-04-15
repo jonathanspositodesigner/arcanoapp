@@ -304,13 +304,11 @@ async function handleRun(req: Request) {
     });
 
     if (creditError) {
-      // Refund test credits if normal credits fail
+      // Refund test credits if normal credits fail (test credits should not be lost)
       if (testCreditsUsed > 0) {
-        await supabase.from('flyer_maker_test_credits').update({ balance: supabase.rpc('get_flyer_test_credits', { _user_id: userId }) }).eq('user_id', userId);
-        // Direct increment is safer
-        await supabase.rpc('consume_flyer_test_credits', { _user_id: userId, _amount: -testCreditsUsed }).catch(() => {});
-        // Fallback: direct SQL via update
-        await supabase.from('flyer_maker_test_credits' as any).update({ balance: testCreditsUsed } as any).eq('user_id', userId).catch(() => {});
+        await supabase.from('flyer_maker_test_credits' as any)
+          .update({ balance: (await supabase.rpc('get_flyer_test_credits', { _user_id: userId })) + testCreditsUsed } as any)
+          .eq('user_id', userId).catch(() => {});
       }
       await logStepFailure(jobId, 'consume_credits', creditError.message);
       return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
@@ -319,9 +317,12 @@ async function handleRun(req: Request) {
     }
 
     if (!creditResult?.length || !creditResult[0].success) {
-      // Refund test credits
+      // Refund test credits (insufficient normal credits)
       if (testCreditsUsed > 0) {
-        await supabase.from('flyer_maker_test_credits' as any).update({ balance: testCreditsUsed } as any).eq('user_id', userId).catch(() => {});
+        const currentBal = await supabase.rpc('get_flyer_test_credits', { _user_id: userId });
+        await supabase.from('flyer_maker_test_credits' as any)
+          .update({ balance: (currentBal || 0) + testCreditsUsed } as any)
+          .eq('user_id', userId).catch(() => {});
       }
       const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
       await logStepFailure(jobId, 'consume_credits', errorMsg);
