@@ -491,7 +491,7 @@ const FlyerMakerTool: React.FC = () => {
       return;
     }
 
-    const REFINE_COST = 30;
+    const REFINE_COST = 100;
 
     // Check active job
     const activeCheck = await checkActiveJob(user.id);
