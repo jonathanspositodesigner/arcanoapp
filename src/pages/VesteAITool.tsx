@@ -336,6 +336,7 @@ const VesteAITool: React.FC = () => {
     setStatus('uploading');
     setProgress(0);
     setOutputImage(null);
+    setThumbnailImage(null);
 
     try {
       // Step 1: Compress and upload person image FIRST (before creating job)
@@ -479,6 +480,7 @@ const VesteAITool: React.FC = () => {
     setClothingImage(null);
     setClothingFile(null);
     setOutputImage(null);
+    setThumbnailImage(null);
     setStatus('idle');
     setProgress(0);
     setZoomLevel(1);
