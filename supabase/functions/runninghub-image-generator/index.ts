@@ -299,11 +299,29 @@ async function handleRun(req: Request) {
   const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
-  // BYOK jobs have creditCost=0, Unlimited users also have creditCost=0 — skip validation
-  if (!isByok && creditCost !== 0 && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
-    return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // ========== SERVER-SIDE CREDIT COST ENFORCEMENT ==========
+  // Minimum costs per source — client cannot send less than these values
+  const MIN_COSTS: Record<string, number> = {
+    'arcano_cloner_refine': 100,
+    'flyer_maker_refine': 100,
+    'cinema_studio_photo': 100,
+    'legacy_proxy': 100,
+    'standard': 100,
+  };
+  const minCost = MIN_COSTS[source] ?? 100;
+
+  // Enforce: if client sent less than minimum (and not BYOK/Unlimited), override to minimum
+  let enforcedCreditCost = creditCost;
+  if (!isByok && creditCost !== 0) {
+    if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+      return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (creditCost < minCost) {
+      console.warn(`[ImageGenerator] Client sent creditCost=${creditCost}, enforcing minimum=${minCost} for source=${source}`);
+      enforcedCreditCost = minCost;
+    }
   }
 
   // Validate image URLs are from Supabase storage
@@ -388,11 +406,11 @@ async function handleRun(req: Request) {
   if (isByok) {
     console.log(`[ImageGenerator] BYOK mode — skipping platform credit consumption for user ${verifiedUserId}`);
     await logStep(jobId, 'byok_skip_credits');
-  } else if (creditCost === 0) {
+  } else if (enforcedCreditCost === 0) {
     console.log(`[ImageGenerator] Unlimited user — skipping credit consumption for user ${verifiedUserId}`);
     await logStep(jobId, 'unlimited_skip_credits');
   } else {
-    await logStep(jobId, 'consuming_credits', { amount: creditCost });
+    await logStep(jobId, 'consuming_credits', { amount: enforcedCreditCost });
     
     // Determine credit description based on source
     let creditDescription = 'Gerar Imagem';
@@ -401,7 +419,7 @@ async function handleRun(req: Request) {
 
     const { data: creditResult, error: creditError } = await supabase.rpc(
       'consume_upscaler_credits',
-      { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
+      { _user_id: verifiedUserId, _amount: enforcedCreditCost, _description: creditDescription }
     );
 
     if (creditError) {
@@ -434,7 +452,7 @@ async function handleRun(req: Request) {
 
   await supabase.from(TABLE_NAME).update({
     credits_charged: true,
-    user_credit_cost: creditCost,
+    user_credit_cost: enforcedCreditCost,
     input_urls: imageUrls,
     job_payload: {
       prompt: prompt.trim(),
@@ -477,7 +495,7 @@ async function handleRun(req: Request) {
     
     try {
       if (!isByok) {
-        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: enforcedCreditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
       }
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: !isByok, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch {
