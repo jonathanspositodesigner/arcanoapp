@@ -47,10 +47,10 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
       {/* Sidebar */}
       <aside className={`
-        fixed lg:static inset-y-0 left-0 z-40
-        w-64 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-sidebar-background border-r border-border p-4 flex flex-col
+        fixed lg:static inset-y-0 left-0 z-[60]
+        w-64 ${fullScreen ? 'lg:h-full lg:min-h-0 lg:self-stretch' : 'min-h-screen'} bg-background lg:bg-sidebar-background border-r border-border p-4 flex flex-col
         transform transition-transform duration-300 ease-in-out
-        lg:pt-4
+        pt-16 lg:pt-4
         ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
 
