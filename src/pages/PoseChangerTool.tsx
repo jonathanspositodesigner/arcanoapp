@@ -124,6 +124,7 @@ const PoseChangerTool: React.FC = () => {
 
       if (update.status === 'completed' && update.outputUrl) {
         setOutputImage(update.outputUrl);
+        if (update.thumbnailUrl) setThumbnailImage(update.thumbnailUrl);
         setStatus('completed');
         setProgress(100);
         refetchCredits();
