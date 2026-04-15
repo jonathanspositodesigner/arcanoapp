@@ -1590,7 +1590,7 @@ async function startJobOnRunningHub(
         const refFiles = p.referenceFileNames || [];
         const imageNodes = ['58', '147', '148', '149', '62', '150'];
         nodeInfoList = [
-          { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
+          { nodeId: "151", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
           { nodeId: "135", fieldName: "text", fieldValue: p.prompt || job.prompt || '' },
         ];
         for (let i = 0; i < imageNodes.length; i++) {
