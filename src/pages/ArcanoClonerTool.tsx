@@ -52,7 +52,7 @@ const ArcanoClonerTool: React.FC = () => {
   const { user, isPremium } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   const { getCreditCost } = useAIToolSettings();
-  const creditCost = getCreditCost('Arcano Cloner', 80);
+  const creditCost = getCreditCost('Arcano Cloner', 100);
   const isMobile = useIsMobile();
   const [showMobileConfig, setShowMobileConfig] = useState(false);
   

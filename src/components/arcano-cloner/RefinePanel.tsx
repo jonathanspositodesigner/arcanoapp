@@ -17,7 +17,7 @@ interface RefinePanelProps {
   loadingLabel?: string;
 }
 
-const REFINE_COST = 30;
+const REFINE_COST = 100;
 
 const RefinePanel: React.FC<RefinePanelProps> = ({
   prompt,

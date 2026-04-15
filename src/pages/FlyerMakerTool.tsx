@@ -48,7 +48,7 @@ const FlyerMakerTool: React.FC = () => {
   const { user } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, refetch: refetchCredits, checkBalance } = useCredits();
   const { getCreditCost } = useAIToolSettings();
-  const creditCost = getCreditCost('Flyer Maker', 80);
+  const creditCost = getCreditCost('Flyer Maker', 100);
   
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
