@@ -106,6 +106,16 @@ const BibliotecaArtes = () => {
     getExpiredPackInfo,
     logout
   } = usePremiumArtesStatus();
+  const { user: topBarUser, isPremium: topBarIsPremium, planType: topBarPlanType, logout: topBarLogout } = usePremiumStatus();
+  const [topBarProfile, setTopBarProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!topBarUser) return;
+      const { data } = await supabase.from('profiles').select('name, phone').eq('id', topBarUser.id).single();
+      if (data) setTopBarProfile(data);
+    };
+    fetchProfile();
+  }, [topBarUser]);
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     const checkAdmin = async () => {
