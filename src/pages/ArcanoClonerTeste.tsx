@@ -221,7 +221,7 @@ const ArcanoClonerTeste = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
                 sem prompt, sem complicação
               </span>
             </h1>
@@ -298,7 +298,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
                 Gere suas fotos{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem gastar com ensaios</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">sem gastar com ensaios</span>
              </h2>
             <p className="text-purple-300 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
@@ -406,7 +406,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">
               Tudo feito com um clique,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem prompt!</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">sem prompt!</span>
             </h2>
             <p className="text-purple-300 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner

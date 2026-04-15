@@ -22,7 +22,7 @@ export const LandingTrialSignupSection = () => {
           </div>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground mb-3">
             Teste{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
               grátis agora mesmo
             </span>
           </h2>
