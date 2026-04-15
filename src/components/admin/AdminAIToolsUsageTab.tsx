@@ -596,9 +596,20 @@ const AdminAIToolsUsageTab = () => {
     ? summary.total_credits * receitaPorCreditoAtual
     : 0;
   
-  // Cost: RH cost from summary
+  // Cost: RH cost + API cost (per-tool completed counts * api_cost from settings)
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
+  const custoRHResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
+  
+  const custoAPIResumo = useMemo(() => {
+    let total = 0;
+    for (const [toolName, count] of Object.entries(toolCompletedCounts)) {
+      const apiCost = getApiCostFromSettings(toolName, aiToolSettingsMap);
+      total += count * apiCost;
+    }
+    return total;
+  }, [toolCompletedCounts, aiToolSettingsMap]);
+  
+  const custoTotalResumo = custoRHResumo + custoAPIResumo;
   
   // Lucro: receita total - custo total (ambos do summary, mesmo escopo)
   const lucroTotalResumo = receitaTotalResumo - custoTotalResumo;
