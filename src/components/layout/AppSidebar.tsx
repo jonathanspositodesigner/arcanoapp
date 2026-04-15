@@ -43,7 +43,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
   return (
     <>
       {/* Overlay */}
-      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
+      {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-[55]" onClick={() => setSidebarOpen(false)} />}
 
       {/* Sidebar */}
       <aside className={`
