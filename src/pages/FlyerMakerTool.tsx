@@ -228,10 +228,12 @@ const FlyerMakerTool: React.FC = () => {
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'flyer_maker_jobs',
-    onRecovery: useCallback((result) => {
+    onRecovery: useCallback(async (result) => {
       if (result.outputUrl) {
         setOutputImage(result.outputUrl);
-        if (result.thumbnailUrl) setThumbnailImage(result.thumbnailUrl);
+        // Fetch thumbnail as fallback
+        const { data } = await supabase.from('flyer_maker_jobs').select('thumbnail_url').eq('id', result.jobId).single();
+        if (data?.thumbnail_url) setThumbnailImage(data.thumbnail_url);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado recuperado!');
