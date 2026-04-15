@@ -151,12 +151,14 @@ const VesteAITool: React.FC = () => {
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'veste_ai_jobs',
-    onRecovery: useCallback((result) => {
+    onRecovery: useCallback(async (result) => {
       if (result.outputUrl) {
         setPersonImage(result.personImageUrl || null);
         setClothingImage(result.clothingImageUrl || null);
         setOutputImage(result.outputUrl);
         setJobId(result.jobId);
+        const { data } = await supabase.from('veste_ai_jobs').select('thumbnail_url').eq('id', result.jobId).single();
+        if (data?.thumbnail_url) setThumbnailImage(data.thumbnail_url);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado carregado!');

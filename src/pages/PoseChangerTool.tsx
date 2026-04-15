@@ -151,12 +151,14 @@ const PoseChangerTool: React.FC = () => {
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'pose_changer_jobs',
-    onRecovery: useCallback((result) => {
+    onRecovery: useCallback(async (result) => {
       if (result.outputUrl) {
         setPersonImage(result.personImageUrl || null);
         setReferenceImage(result.referenceImageUrl || null);
         setOutputImage(result.outputUrl);
         setJobId(result.jobId);
+        const { data } = await supabase.from('pose_changer_jobs').select('thumbnail_url').eq('id', result.jobId).single();
+        if (data?.thumbnail_url) setThumbnailImage(data.thumbnail_url);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado carregado!');
