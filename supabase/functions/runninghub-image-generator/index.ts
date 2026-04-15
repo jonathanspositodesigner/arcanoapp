@@ -8,7 +8,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * Gera imagens via RunningHub workflow (WebApp ID 2036803905421582337)
  * 
  * Nodes do Workflow:
- * - Node 145: Aspect Ratio (aspectRatio)
+ * - Node 151: Aspect Ratio (aspectRatio)
  * - Node 135: Prompt (text)
  * - Node 58:  Referência 1 (image)
  * - Node 147: Referência 2 (image)
