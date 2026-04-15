@@ -585,9 +585,18 @@ serve(async (req) => {
 
       // 3. Processar de acordo com o tipo do produto
       if (product.type === 'pack' && product.pack_slug) {
+        const accessType = product.access_type || 'vitalicio'
+        let expiresAt: string | null = null
+        if (accessType === '6_meses') {
+          expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
+        } else if (accessType === '1_ano') {
+          expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        }
+        const hasBonusAccess = accessType !== '6_meses'
+
         const { data: existingPurchase } = await supabase
           .from('user_pack_purchases')
-          .select('id')
+          .select('id, access_type, expires_at')
           .eq('user_id', userId)
           .eq('pack_slug', product.pack_slug)
           .eq('is_active', true)
@@ -597,15 +606,43 @@ serve(async (req) => {
           await supabase.from('user_pack_purchases').insert({
             user_id: userId,
             pack_slug: product.pack_slug,
-            access_type: product.access_type || 'vitalicio',
-            has_bonus_access: true,
-            expires_at: null,
+            access_type: accessType,
+            has_bonus_access: hasBonusAccess,
+            expires_at: expiresAt,
             product_name: product.title,
             platform: 'mercadopago'
           })
-          console.log(`   ├─ ✅ Acesso concedido: ${product.pack_slug} (${product.access_type})`)
+          console.log(`   ├─ ✅ Acesso concedido: ${product.pack_slug} (${accessType})`)
         } else {
-          console.log(`   ├─ ℹ️ Acesso já existente: ${product.pack_slug}`)
+          const ACCESS_RANK: Record<string, number> = { '6_meses': 1, '1_ano': 2, 'vitalicio': 3 }
+          const existingRank = ACCESS_RANK[existingPurchase.access_type] || 0
+          const newRank = ACCESS_RANK[accessType] || 0
+
+          if (newRank > existingRank) {
+            await supabase.from('user_pack_purchases').update({
+              access_type: accessType,
+              has_bonus_access: hasBonusAccess,
+              expires_at: expiresAt,
+              product_name: product.title,
+              platform: 'mercadopago',
+              purchased_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', existingPurchase.id)
+            console.log(`   ├─ ✅ Acesso ATUALIZADO: ${product.pack_slug} (${existingPurchase.access_type} → ${accessType})`)
+          } else if (newRank === existingRank && existingPurchase.expires_at) {
+            const currentExpiry = new Date(existingPurchase.expires_at)
+            const newExpiry = expiresAt ? new Date(Math.max(currentExpiry.getTime(), new Date(expiresAt).getTime())) : null
+            await supabase.from('user_pack_purchases').update({
+              expires_at: newExpiry?.toISOString() || null,
+              product_name: product.title,
+              platform: 'mercadopago',
+              purchased_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', existingPurchase.id)
+            console.log(`   ├─ ✅ Acesso RENOVADO: ${product.pack_slug} (${accessType}, expira: ${newExpiry?.toISOString() || 'nunca'})`)
+          } else {
+            console.log(`   ├─ ℹ️ Acesso já existente e superior/igual: ${product.pack_slug} (${existingPurchase.access_type})`)
+          }
         }
 
         // Bundle: conceder packs extras para produtos combo
