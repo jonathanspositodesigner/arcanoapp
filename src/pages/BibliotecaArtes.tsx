@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import AppTopBar from "@/components/layout/AppTopBar";
 
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
