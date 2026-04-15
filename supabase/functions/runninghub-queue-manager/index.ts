@@ -1544,7 +1544,7 @@ async function startJobOnRunningHub(
         { nodeId: "7", fieldName: "text", fieldValue: p.title || job.title || '' },
         { nodeId: "9", fieldName: "text", fieldValue: p.footerPromo || job.footer_promo || '' },
         { nodeId: "103", fieldName: "text", fieldValue: p.address || job.address || '' },
-        { nodeId: "134", fieldName: "aspectRatio", fieldValue: p.imageSize || job.image_size || '3:4' },
+        { nodeId: "153", fieldName: "aspectRatio", fieldValue: p.imageSize || job.image_size || '9:16' },
         { nodeId: "111", fieldName: "value", fieldValue: String(p.creativity ?? job.creativity ?? 0) },
       );
       break;

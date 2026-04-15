@@ -17,7 +17,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * - Node 7: Título (text)
  * - Node 9: Promoção de rodapé (text)
  * - Node 103: Endereço (text)
- * - Node 134: Tamanho/aspectRatio (aspectRatio)
+ * - Node 153: Tamanho/aspectRatio (aspectRatio)
  * - Node 111: Criatividade da IA (value 0-5)
  * 
  * Endpoints:
