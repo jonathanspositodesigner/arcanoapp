@@ -648,6 +648,12 @@ const FlyerMakerTool: React.FC = () => {
                 <div>
                   <h1 className="text-xl font-bold text-foreground">Flyer Maker</h1>
                   <p className="text-xs text-muted-foreground mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
+                  {testCredits > 0 && (
+                    <div className="mt-2 flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-3 py-1.5">
+                      <span className="text-xs">🧪</span>
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{testCredits} créditos de teste</span>
+                    </div>
+                  )}
                 </div>
 
                 {!refineMode ? (
