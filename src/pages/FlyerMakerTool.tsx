@@ -170,7 +170,7 @@ const FlyerMakerTool: React.FC = () => {
         setStatus('processing');
         setQueuePosition(0);
       }
-    }, [endSubmit, playNotificationSound, refetchCredits]),
+    }, [endSubmit, playNotificationSound, refetchCredits, fetchTestCredits]),
     onGlobalStatusChange: updateJobStatus,
   });
 
