@@ -451,6 +451,10 @@ const FlyerMakerTool: React.FC = () => {
 
       if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
 
+      // Atualizar saldo de créditos teste imediatamente após consumo
+      fetchTestCredits();
+      refetchCredits();
+
       if (runResult.code === 'INSUFFICIENT_CREDITS') {
         setStatus('idle');
         setNoCreditsReason('insufficient');
