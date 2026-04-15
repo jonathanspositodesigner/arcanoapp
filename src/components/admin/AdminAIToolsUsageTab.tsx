@@ -26,6 +26,7 @@ import { ptBR } from "date-fns/locale";
 import { ZoomableBeforeAfter } from "@/components/admin/ZoomableBeforeAfter";
 import { FullscreenModal } from "@/components/upscaler/FullscreenModal";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 
 interface UsageRecord {
   id: string;
@@ -103,11 +104,33 @@ const RECEITA_POR_CREDITO_HISTORICA = 0.007;
 const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
 const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial"]);
 
-// API cost map: display tool name → fixed API cost in BRL
-const API_COST_MAP: Record<string, number> = {
-  "Arcano Cloner": 0.18,
+const API_COST_FALLBACK_MAP: Record<string, number> = {
+  "Arcano Cloner": 0.36,
   "Gerador Avatar": 0.18,
-  "Gerar Imagem - Nano Banana": 0.18,
+  "Gerar Imagem - Nano Banana": 0.36,
+};
+
+const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
+  "Arcano Cloner": ["Arcano Cloner"],
+  "Gerador Avatar": ["Gerador Avatar"],
+  "Gerar Imagem - Nano Banana": ["gerar_imagem_nano2", "gerar_imagem"],
+  "Gerar Imagem - Flux 2": ["gerar_imagem", "gerar_imagem_nano2"],
+};
+
+const getApiCostFromSettings = (
+  toolName: string,
+  settingsMap: Record<string, { has_api_cost: boolean; api_cost: number }>
+) => {
+  const settingKeys = API_COST_SETTING_KEY_MAP[toolName] ?? [toolName];
+
+  for (const key of settingKeys) {
+    const setting = settingsMap[key];
+    if (setting?.has_api_cost) {
+      return setting.api_cost;
+    }
+  }
+
+  return API_COST_FALLBACK_MAP[toolName] ?? 0;
 };
 
 const VIDEO_COST_PER_SECOND: Record<string, number> = {
@@ -184,6 +207,7 @@ const STATUS_FILTERS = [
 const VIDEO_TOOL_NAMES = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0", "Video Upscaler"]);
 
 const AdminAIToolsUsageTab = () => {
+  const { settingsMap: aiToolSettingsMap } = useAIToolSettings();
   const [toolRegistry, setToolRegistry] = useState<ToolRegistryEntry[]>([]);
   const [usageRecords, setUsageRecords] = useState<UsageRecord[]>([]);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
@@ -1001,7 +1025,7 @@ const AdminAIToolsUsageTab = () => {
                       {(() => {
                         const isFailed = record.status === 'failed';
                         const rhCostBRL = isFailed ? 0 : record.rh_cost * CUSTO_POR_RH_COIN;
-                        const apiCost = API_COST_MAP[record.tool_name] || 0;
+                        const apiCost = getApiCostFromSettings(record.tool_name, aiToolSettingsMap);
                         const videoCost = isFailed ? 0 : getVideoCostBRL(record);
                         const totalCost = isFailed ? 0 : rhCostBRL + (record.status === 'completed' ? apiCost : 0) + videoCost;
                         const receita = getRecordRevenue(record);
