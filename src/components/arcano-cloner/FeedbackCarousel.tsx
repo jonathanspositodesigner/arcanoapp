@@ -202,7 +202,7 @@ const MobileFeedbackCarousel = () => {
         >
           {feedbacks.map((fb, index) => (
             <div key={`mobile-${fb.name}-${index}`} className="min-w-full px-2">
-              <div className="bg-accent border border-border rounded-2xl p-5 flex flex-col gap-3">
+              <div className="bg-white border border-gray-200 rounded-2xl p-5 flex flex-col gap-3">
                 <div className="flex items-center gap-3">
                   <img
                     src={fb.photo}
@@ -211,15 +211,15 @@ const MobileFeedbackCarousel = () => {
                     loading="lazy"
                   />
                   <div>
-                    <p className="text-foreground font-semibold text-sm">{fb.name}</p>
+                    <p className="text-black font-semibold text-sm">{fb.name}</p>
                     <div className="flex gap-0.5">
                       {Array.from({ length: 5 }).map((_, i) => (
-                        <Star key={i} className="w-3 h-3 fill-gray-400 text-muted-foreground" />
+                        <Star key={i} className="w-3 h-3 fill-yellow-400 text-yellow-400" />
                       ))}
                     </div>
                   </div>
                 </div>
-                <p className="text-muted-foreground text-sm leading-relaxed">"{fb.text}"</p>
+                <p className="text-gray-700 text-sm leading-relaxed">"{fb.text}"</p>
               </div>
             </div>
           ))}
