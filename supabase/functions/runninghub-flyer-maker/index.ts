@@ -331,7 +331,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Mark credits as charged
+  // Mark credits as charged (store test_credits_used for refund logic)
   await supabase.from(JOB_TABLE).update({
     credits_charged: true,
     user_credit_cost: creditCost,
@@ -339,6 +339,11 @@ async function handleRun(req: Request) {
     artist_photo_file_names: artistFileNames,
     logo_file_name: logoFileName,
     image_size: imageSize,
+    job_payload: {
+      ...(await supabase.from(JOB_TABLE).select('job_payload').eq('id', jobId).maybeSingle()).data?.job_payload as any,
+      test_credits_used: testCreditsUsed,
+      normal_credits_charged: normalCreditsToCharge,
+    },
   }).eq('id', jobId);
 
   // Save job_payload for queue manager
@@ -373,7 +378,10 @@ async function handleRun(req: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[FlyerMaker] QM call failed:`, errorMessage);
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      // Only refund normal credits (test credits are never refunded)
+      if (normalCreditsToCharge > 0) {
+        await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: normalCreditsToCharge, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      }
       await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch { await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
