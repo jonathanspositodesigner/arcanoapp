@@ -24,6 +24,7 @@ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
@@ -89,6 +90,7 @@ const FlyerMakerTool: React.FC = () => {
 
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
@@ -154,6 +156,7 @@ const FlyerMakerTool: React.FC = () => {
       console.log('[FlyerMaker] Status update:', update);
       if (update.status === 'completed' && update.outputUrl) {
         setOutputImage(update.outputUrl);
+        if (update.thumbnailUrl) setThumbnailImage(update.thumbnailUrl);
         setStatus('completed');
         setProgress(100);
         endSubmit();
@@ -228,6 +231,7 @@ const FlyerMakerTool: React.FC = () => {
     onRecovery: useCallback((result) => {
       if (result.outputUrl) {
         setOutputImage(result.outputUrl);
+        if (result.thumbnailUrl) setThumbnailImage(result.thumbnailUrl);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado recuperado!');
@@ -380,6 +384,7 @@ const FlyerMakerTool: React.FC = () => {
     setStatus('uploading');
     setProgress(0);
     setOutputImage(null);
+    setThumbnailImage(null);
     setDebugErrorMessage(null);
 
     try {
@@ -884,7 +889,7 @@ const FlyerMakerTool: React.FC = () => {
                         wrapperStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
-                        <img src={outputImage} alt="Resultado" className="max-w-full max-h-full object-contain" />
+                        <ResilientImage src={outputImage} originalSrc={thumbnailImage || undefined} alt="Resultado" className="max-w-full max-h-full object-contain" maxRetries={4} compressOnFailure={true} locale="pt" objectFit="contain" />
                       </TransformComponent>
                     </TransformWrapper>
                   ) : isRefining ? (
