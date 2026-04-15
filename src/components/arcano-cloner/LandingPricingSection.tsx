@@ -49,20 +49,20 @@ const StatsBar = () => {
         </div>
         <div className="flex items-center justify-center gap-8 w-full">
           <div className="flex flex-col items-center gap-0.5">
-            <Image className="w-5 h-5 text-muted-foreground mb-1" />
+            <Image className="w-5 h-5 text-purple-300 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-foreground font-bold text-base sm:text-lg">{animatedImages.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-muted-foreground text-lg font-bold">+</span>
+              <span className="text-purple-300 text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
+            <span className="text-[10px] sm:text-xs text-purple-300 uppercase tracking-wider font-medium text-center">Imagens Geradas</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
-            <Video className="w-5 h-5 text-muted-foreground mb-1" />
+            <Video className="w-5 h-5 text-purple-300 mb-1" />
             <div className="flex items-center gap-1">
               <span className="text-foreground font-bold text-base sm:text-lg">{animatedVideos.displayValue.toLocaleString('pt-BR')}</span>
-              <span className="text-muted-foreground text-lg font-bold">+</span>
+              <span className="text-purple-300 text-lg font-bold">+</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
+            <span className="text-[10px] sm:text-xs text-purple-300 uppercase tracking-wider font-medium text-center">Vídeos Gerados</span>
           </div>
           <div className="flex flex-col items-center gap-0.5">
             <Award className="w-5 h-5 text-yellow-500 mb-1" />
@@ -70,7 +70,7 @@ const StatsBar = () => {
               <span className="text-foreground font-bold text-base sm:text-lg">{animatedSatisfaction.displayValue}</span>
               <span className="text-yellow-500 text-lg font-bold">%</span>
             </div>
-            <span className="text-[10px] sm:text-xs text-muted-foreground uppercase tracking-wider font-medium text-center">Satisfação</span>
+            <span className="text-[10px] sm:text-xs text-purple-300 uppercase tracking-wider font-medium text-center">Satisfação</span>
           </div>
         </div>
       </div>
@@ -160,10 +160,10 @@ const LandingPricingSection = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
             Comece agora mesmo a gerar suas próprias{" "}
-            <span className="text-muted-foreground">fotos profissionais!</span>
+            <span className="text-purple-300">fotos profissionais!</span>
           </h2>
-          <p className="text-muted-foreground text-center text-sm mb-8 max-w-xl mx-auto">
-            Sem <strong className="text-muted-foreground">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
+          <p className="text-purple-300 text-center text-sm mb-8 max-w-xl mx-auto">
+            Sem <strong className="text-purple-300">prompts complexos! Sem dificuldade!</strong> Escolha o melhor pacote para você iniciar
           </p>
         </AnimatedSection>
 
@@ -201,7 +201,7 @@ const LandingPricingSection = () => {
                   ) : plan.hasCountdown ? (
                     <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
-                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-muted-foreground" />
+                    <Rocket className="w-8 h-8 lg:w-10 lg:h-10 text-purple-300" />
                   )}
                 </div>
 
@@ -212,7 +212,7 @@ const LandingPricingSection = () => {
                 {/* Price */}
                 <div className="text-center mb-5 lg:mb-6">
                   <div className="flex items-baseline justify-center gap-0.5">
-                    <span className="text-muted-foreground text-base lg:text-lg">R$</span>
+                    <span className="text-purple-300 text-base lg:text-lg">R$</span>
                     <span className="text-4xl lg:text-5xl font-bold text-foreground">{plan.price}</span>
                   </div>
                 </div>
@@ -230,7 +230,7 @@ const LandingPricingSection = () => {
                   Comprar agora
                 </Button>
                 {plan.tagline && (
-                  <p className="text-[10px] lg:text-[11px] text-muted-foreground text-center mb-2 italic">{plan.tagline}</p>
+                  <p className="text-[10px] lg:text-[11px] text-purple-300 text-center mb-2 italic">{plan.tagline}</p>
                 )}
 
                 {/* Images badge (highlighted) */}
@@ -247,11 +247,11 @@ const LandingPricingSection = () => {
                   {plan.features.map((f, i) => (
                     <li key={i} className="flex items-start gap-2 text-xs lg:text-sm">
                       {f.included ? (
-                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-muted-foreground shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-purple-300 shrink-0 mt-0.5" />
                       ) : (
                         <X className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-orange-500 shrink-0 mt-0.5" />
                       )}
-                      <span className={f.included ? "text-muted-foreground" : "text-orange-500"}>{f.text}</span>
+                      <span className={f.included ? "text-purple-300" : "text-orange-500"}>{f.text}</span>
                     </li>
                   ))}
                 </ul>
@@ -263,32 +263,32 @@ const LandingPricingSection = () => {
         {/* Acesso Imediato + Trust Badges */}
         <div className="mt-12 text-center">
           <h3 className="font-space-grotesk font-extrabold text-3xl md:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">
-            ACESSO <span className="text-muted-foreground">IMEDIATO</span>
+            ACESSO <span className="text-purple-300">IMEDIATO</span>
           </h3>
           <div className="max-w-4xl mx-auto rounded-xl border border-border bg-white/[0.02] px-4 sm:px-8 py-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-5 sm:gap-4">
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0" />
+              <ShieldCheck className="w-5 h-5 text-purple-300 shrink-0" />
               <div className="text-left">
                 <p className="text-foreground text-sm font-semibold leading-tight">Pagamento seguro</p>
-                <p className="text-muted-foreground text-xs">transmissão criptografada SSL</p>
+                <p className="text-purple-300 text-xs">transmissão criptografada SSL</p>
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-accent" />
             <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Zap className="w-5 h-5 text-muted-foreground shrink-0" />
+              <Zap className="w-5 h-5 text-purple-300 shrink-0" />
               <div className="text-left">
                 <p className="text-foreground text-sm font-semibold leading-tight">Pagamento instantâneo</p>
-                <p className="text-muted-foreground text-xs">Os pontos chegam instantaneamente.</p>
+                <p className="text-purple-300 text-xs">Os pontos chegam instantaneamente.</p>
               </div>
             </div>
             <div className="hidden sm:block w-px h-8 bg-accent" />
             <div className="block sm:hidden w-full h-px bg-accent" />
             <div className="flex items-center gap-3 w-full sm:w-auto">
-              <Headset className="w-5 h-5 text-muted-foreground shrink-0" />
+              <Headset className="w-5 h-5 text-purple-300 shrink-0" />
               <div className="text-left">
                 <p className="text-foreground text-sm font-semibold leading-tight">Suporte 24/7</p>
-                <p className="text-muted-foreground text-xs">estamos aqui para ajudar</p>
+                <p className="text-purple-300 text-xs">estamos aqui para ajudar</p>
               </div>
             </div>
           </div>

@@ -114,9 +114,9 @@ const DesktopFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-4">
             O que nossos{" "}
-            <span className="text-muted-foreground">usuários</span> dizem
+            <span className="text-purple-300">usuários</span> dizem
           </h2>
-          <p className="text-muted-foreground text-center mb-12 max-w-xl mx-auto">
+          <p className="text-purple-300 text-center mb-12 max-w-xl mx-auto">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
           </p>
         </AnimatedSection>
@@ -183,9 +183,9 @@ const MobileFeedbackCarousel = () => {
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-space-grotesk font-bold text-2xl text-foreground text-center mb-4">
             O que nossos{" "}
-            <span className="text-muted-foreground">usuários</span> dizem
+            <span className="text-purple-300">usuários</span> dizem
           </h2>
-          <p className="text-muted-foreground text-center mb-8 text-sm">
+          <p className="text-purple-300 text-center mb-8 text-sm">
             Feedbacks reais de quem já usa a ferramenta no dia a dia
           </p>
         </AnimatedSection>
