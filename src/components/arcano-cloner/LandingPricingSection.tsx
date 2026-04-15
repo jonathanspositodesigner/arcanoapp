@@ -197,7 +197,7 @@ const LandingPricingSection = () => {
                 {/* Plan Icon */}
                 <div className="flex justify-center mb-3 lg:mb-5">
                   {plan.bestSeller ? (
-                    <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-lime-400" />
+                    <Crown className="w-8 h-8 lg:w-10 lg:h-10 text-purple-400" />
                   ) : plan.hasCountdown ? (
                     <Flame className="w-8 h-8 lg:w-10 lg:h-10 text-slate-400" />
                   ) : (
