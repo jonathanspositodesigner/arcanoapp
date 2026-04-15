@@ -148,7 +148,7 @@ const ClonerDemoAnimation: React.FC = () => {
               step === i
                 ? 'bg-gradient-to-br from-purple-500 to-purple-500 text-white shadow-lg shadow-primary/10 scale-110'
                 : step > i
-                ? 'bg-accent text-muted-foreground border border-border'
+                ? 'bg-accent text-purple-300 border border-border'
                 : 'bg-accent text-accent-foreground/30 border border-border'
             )}>
               {step > i ? <Check className="w-4 h-4" /> : i + 1}
@@ -223,8 +223,8 @@ const ClonerDemoAnimation: React.FC = () => {
                      {/* Skeleton representation when empty */}
                      {!faceVisible && (
                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                         <Upload className="w-7 h-7 text-muted-foreground" />
-                         <span className="text-[10px] text-muted-foreground/50 font-medium">Sua Foto</span>
+                         <Upload className="w-7 h-7 text-purple-300" />
+                         <span className="text-[10px] text-purple-300/50 font-medium">Sua Foto</span>
                        </div>
                      )}
                      {/* Skeleton filled state */}
@@ -250,8 +250,8 @@ const ClonerDemoAnimation: React.FC = () => {
                            </div>
                          </div>
                          <div className="bg-accent px-2 py-1 flex items-center gap-1">
-                           <Check className="w-3 h-3 text-muted-foreground" />
-                           <span className="text-[9px] text-muted-foreground font-medium">Sua Foto</span>
+                           <Check className="w-3 h-3 text-purple-300" />
+                           <span className="text-[9px] text-purple-300 font-medium">Sua Foto</span>
                          </div>
                        </div>
                      )}
@@ -268,8 +268,8 @@ const ClonerDemoAnimation: React.FC = () => {
                    <div className="aspect-square bg-accent relative">
                      {!refVisible && step !== 1 && (
                        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-                         <Image className="w-7 h-7 text-muted-foreground" />
-                         <span className="text-[10px] text-muted-foreground/50 font-medium">Referência</span>
+                         <Image className="w-7 h-7 text-purple-300" />
+                         <span className="text-[10px] text-purple-300/50 font-medium">Referência</span>
                        </div>
                      )}
                      {/* Library grid skeleton simulation on step 1 */}
@@ -313,8 +313,8 @@ const ClonerDemoAnimation: React.FC = () => {
                            </div>
                          </div>
                          <div className="bg-accent px-2 py-1 flex items-center gap-1">
-                           <Check className="w-3 h-3 text-muted-foreground" />
-                           <span className="text-[9px] text-muted-foreground font-medium">Referência</span>
+                           <Check className="w-3 h-3 text-purple-300" />
+                           <span className="text-[9px] text-purple-300 font-medium">Referência</span>
                          </div>
                        </div>
                      )}
@@ -329,8 +329,8 @@ const ClonerDemoAnimation: React.FC = () => {
                   ? 'border-border/50 shadow-md shadow-primary/5'
                   : 'border-border',
               )}>
-                <p className="text-[10px] font-semibold text-muted-foreground mb-2 flex items-center gap-1.5">
-                  <RectangleVertical className="w-3 h-3 text-muted-foreground" />
+                <p className="text-[10px] font-semibold text-purple-300 mb-2 flex items-center gap-1.5">
+                  <RectangleVertical className="w-3 h-3 text-purple-300" />
                   Proporção
                 </p>
                 <div className="grid grid-cols-4 gap-1.5">
@@ -347,10 +347,10 @@ const ClonerDemoAnimation: React.FC = () => {
                          'flex flex-col items-center justify-center gap-0.5 py-2 px-1 rounded-lg border text-center transition-all duration-300',
                          selectedRatio === opt.value
                            ? 'bg-gradient-to-r from-purple-600 to-purple-500 border-border text-white scale-105'
-                           : 'bg-accent border-border text-muted-foreground'
+                           : 'bg-accent border-border text-purple-300'
                        )}
                      >
-                       <span className={selectedRatio === opt.value ? 'text-foreground' : 'text-muted-foreground'}>
+                       <span className={selectedRatio === opt.value ? 'text-foreground' : 'text-purple-300'}>
                          {opt.icon}
                        </span>
                        <span className="text-[8px] font-medium leading-tight">{opt.label}</span>
@@ -363,11 +363,11 @@ const ClonerDemoAnimation: React.FC = () => {
               {/* Creativity slider placeholder */}
               <div className="bg-accent border border-border rounded-lg p-2.5">
                 <div className="flex items-center justify-between mb-1.5">
-                  <p className="text-[10px] font-semibold text-muted-foreground flex items-center gap-1">
-                    <Zap className="w-3 h-3 text-muted-foreground" />
+                  <p className="text-[10px] font-semibold text-purple-300 flex items-center gap-1">
+                    <Zap className="w-3 h-3 text-purple-300" />
                     Criatividade
                   </p>
-                  <span className="text-[9px] text-muted-foreground font-bold">50%</span>
+                  <span className="text-[9px] text-purple-300 font-bold">50%</span>
                 </div>
                 <div className="h-1.5 bg-accent rounded-full overflow-hidden">
                   <div className="h-full w-1/2 bg-gradient-to-r from-purple-500 to-purple-400 rounded-full" />
@@ -395,8 +395,8 @@ const ClonerDemoAnimation: React.FC = () => {
                 step === 3 && buttonClicked ? 'opacity-100' : 'opacity-0'
               )}>
                 <div className="flex items-center justify-between mb-1">
-                  <span className="text-[10px] text-muted-foreground">Gerando sua imagem...</span>
-                  <span className="text-[10px] text-muted-foreground font-bold">{Math.round(loadingProgress)}%</span>
+                  <span className="text-[10px] text-purple-300">Gerando sua imagem...</span>
+                  <span className="text-[10px] text-purple-300 font-bold">{Math.round(loadingProgress)}%</span>
                 </div>
                 <div className="h-1.5 bg-accent rounded-full overflow-hidden">
                   <div
@@ -411,8 +411,8 @@ const ClonerDemoAnimation: React.FC = () => {
             <div className="md:col-span-2">
               <div className="relative rounded-xl overflow-hidden border-2 border-border opacity-30">
                 <div className="aspect-square bg-accent flex flex-col items-center justify-center gap-2">
-                  <Sparkles className="w-8 h-8 text-muted-foreground/30" />
-                  <span className="text-[10px] text-muted-foreground/30">Resultado</span>
+                  <Sparkles className="w-8 h-8 text-purple-300/30" />
+                  <span className="text-[10px] text-purple-300/30">Resultado</span>
                 </div>
               </div>
             </div>
@@ -434,7 +434,7 @@ const ClonerDemoAnimation: React.FC = () => {
             {['✦','✦','✦','✦','✦','✦'].map((s, i) => (
               <span
                 key={i}
-                className="absolute text-muted-foreground animate-pulse pointer-events-none select-none"
+                className="absolute text-purple-300 animate-pulse pointer-events-none select-none"
                 style={{
                   fontSize: `${9 + i * 2}px`,
                   top: `${[10, 75, 18, 82, 5, 88][i]}%`,
@@ -468,7 +468,7 @@ const ClonerDemoAnimation: React.FC = () => {
 
             {/* Title */}
             <h3 className="text-foreground font-bold text-lg mb-1">Imagem gerada!</h3>
-            <p className="text-muted-foreground text-xs mb-5">Sem prompt. Sem complicação.</p>
+            <p className="text-purple-300 text-xs mb-5">Sem prompt. Sem complicação.</p>
 
             {/* Stats row */}
             <div className="flex gap-3 mb-6">
@@ -479,7 +479,7 @@ const ClonerDemoAnimation: React.FC = () => {
               ].map((stat) => (
                 <div key={stat.label} className="flex flex-col items-center gap-0.5 bg-accent border border-border rounded-xl px-4 py-2">
                   <span className="text-base">{stat.icon}</span>
-                  <span className="text-[10px] text-muted-foreground font-bold">{stat.label}</span>
+                  <span className="text-[10px] text-purple-300 font-bold">{stat.label}</span>
                 </div>
               ))}
             </div>
@@ -491,7 +491,7 @@ const ClonerDemoAnimation: React.FC = () => {
             </div>
 
             {/* Footer text */}
-            <p className="mt-4 text-[11px] text-muted-foreground">⚡ Gerado em ~15 segundos</p>
+            <p className="mt-4 text-[11px] text-purple-300">⚡ Gerado em ~15 segundos</p>
           </div>
         </div>
       </div>
@@ -500,9 +500,9 @@ const ClonerDemoAnimation: React.FC = () => {
       <div className="mt-6 text-center min-h-[32px]">
         <p className={cn(
           'text-sm md:text-base font-medium transition-all duration-500',
-          'text-muted-foreground'
+          'text-purple-300'
         )}>
-          <span className="text-muted-foreground font-bold">Passo {step + 1} de 4</span>
+          <span className="text-purple-300 font-bold">Passo {step + 1} de 4</span>
           {' — '}
           <span>{stepLabels[step].emoji} {stepLabels[step].text}</span>
         </p>

@@ -61,7 +61,7 @@ const CountUp = ({ target, duration = 2000 }: { target: number; duration?: numbe
       <span className="font-space-grotesk font-bold text-6xl md:text-8xl text-transparent bg-clip-text bg-gradient-to-b from-white to-white/40">
         {count}
       </span>
-      <span className="text-muted-foreground text-3xl md:text-4xl font-bold">+</span>
+      <span className="text-purple-300 text-3xl md:text-4xl font-bold">+</span>
     </div>
   );
 };
@@ -221,32 +221,32 @@ const ArcanoClonerTeste = () => {
               <br className="hidden md:block" />
               profissionais com IA{" "}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
                 sem prompt, sem complicação
               </span>
             </h1>
 
             {/* Subtitle */}
             <FadeIn duration={700}>
-              <p className="text-sm md:text-base text-muted-foreground mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
+              <p className="text-sm md:text-base text-purple-300 mb-6 md:mb-8 max-w-lg leading-relaxed mx-auto">
                 Basta subir sua foto e escolher a referência.{" "}
-                <span className="text-muted-foreground font-semibold">Resultado pronto em segundos.</span>
+                <span className="text-purple-300 font-semibold">Resultado pronto em segundos.</span>
               </p>
             </FadeIn>
 
             {/* Trust badges */}
             <FadeIn duration={700}>
               <div className="flex flex-wrap justify-center items-center gap-3 md:gap-0 md:divide-x md:divide-white/10">
-                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
-                  <Sparkles className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center gap-1.5 text-purple-300 text-xs px-3 py-1">
+                  <Sparkles className="h-3.5 w-3.5 text-purple-300" />
                   <span>Sem prompt</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
-                  <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center gap-1.5 text-purple-300 text-xs px-3 py-1">
+                  <Clock className="h-3.5 w-3.5 text-purple-300" />
                   <span>Pronto em segundos</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-muted-foreground text-xs px-3 py-1">
-                  <MousePointerClick className="h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center gap-1.5 text-purple-300 text-xs px-3 py-1">
+                  <MousePointerClick className="h-3.5 w-3.5 text-purple-300" />
                   <span>Fácil de usar</span>
                 </div>
               </div>
@@ -270,7 +270,7 @@ const ArcanoClonerTeste = () => {
               return (
                 <div key={index} className="bg-accent border border-border rounded-3xl p-6 md:p-8 text-center hover:border-border transition-all duration-300 flex flex-col items-center justify-center h-full">
                   <div className="w-12 h-12 rounded-2xl bg-accent0/10 border border-border flex items-center justify-center mb-4 shrink-0">
-                    <IconComp className="h-6 w-6 text-muted-foreground" />
+                    <IconComp className="h-6 w-6 text-purple-300" />
                   </div>
                   <p className="text-foreground text-base md:text-lg">{pain.text}</p>
                 </div>
@@ -279,11 +279,11 @@ const ArcanoClonerTeste = () => {
           </StaggeredAnimation>
           <AnimatedSection as="div" delay={400}>
             <div className="mt-10 md:mt-12 bg-gradient-to-r from-purple-500/10 to-purple-500/10 border border-border rounded-3xl p-8 text-center">
-              <Sparkles className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+              <Sparkles className="h-8 w-8 text-purple-300 mx-auto mb-4" />
               <p className="text-xl md:text-2xl text-foreground font-semibold">
                 Com o Arcano Cloner você resolve tudo isso
               </p>
-              <p className="text-muted-foreground mt-2">Sem estúdio. Sem fotógrafo. Sem prompt. Sem complicação.</p>
+              <p className="text-purple-300 mt-2">Sem estúdio. Sem fotógrafo. Sem prompt. Sem complicação.</p>
             </div>
           </AnimatedSection>
         </div>
@@ -298,9 +298,9 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
                 Gere suas fotos{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem gastar com ensaios</span>
+                <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">sem gastar com ensaios</span>
              </h2>
-            <p className="text-muted-foreground text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
+            <p className="text-purple-300 text-center text-sm mb-10">Todas as imagens abaixo foram feitas com o Arcano Cloner</p>
           </AnimatedSection>
 
           <Suspense fallback={<div className="min-h-[300px]" />}>
@@ -309,19 +309,19 @@ const ArcanoClonerTeste = () => {
 
           <div className="mt-10 flex flex-nowrap justify-center gap-2">
             <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
-              <Zap className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
+              <Zap className="h-3 w-3 text-purple-300 shrink-0" />
+              <span className="text-purple-300 text-[11px] font-medium whitespace-nowrap">Motor de IA</span>
             </div>
             <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
-              <MousePointerClick className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
+              <MousePointerClick className="h-3 w-3 text-purple-300 shrink-0" />
+              <span className="text-purple-300 text-[11px] font-medium whitespace-nowrap">Sem Prompt</span>
             </div>
             <div className="inline-flex items-center gap-1.5 bg-accent0/10 border border-border rounded-full px-3 py-1.5 shrink-0">
-              <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-              <span className="text-muted-foreground text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
+              <Clock className="h-3 w-3 text-purple-300 shrink-0" />
+              <span className="text-purple-300 text-[11px] font-medium whitespace-nowrap">Em Segundos</span>
             </div>
           </div>
-          <p className="text-muted-foreground text-center text-sm mt-4 max-w-xl mx-auto">
+          <p className="text-purple-300 text-center text-sm mt-4 max-w-xl mx-auto">
             Tecnologia de ponta que garante resultados fotorrealistas em poucos segundos. Qualidade profissional sem precisar de nenhum conhecimento técnico.
           </p>
         </div>
@@ -335,9 +335,9 @@ const ArcanoClonerTeste = () => {
             <AnimatedSection as="div" delay={100}>
               <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
                 O Arcano Cloner entrega tudo que você precisa{" "}
-                <span className="text-muted-foreground">na palma da mão.</span>
+                <span className="text-purple-300">na palma da mão.</span>
               </h2>
-              <p className="text-muted-foreground text-center text-sm mb-10 max-w-xl mx-auto">
+              <p className="text-purple-300 text-center text-sm mb-10 max-w-xl mx-auto">
                 Chega de ferramentas complexas que não entregam o que prometem e não funcionam no seu celular.
               </p>
             </AnimatedSection>
@@ -345,9 +345,9 @@ const ArcanoClonerTeste = () => {
             <div className="border border-border rounded-2xl overflow-hidden">
               {/* Header */}
               <div className="grid grid-cols-3 border-b border-border bg-white/[0.02]">
-                <div className="px-4 py-4 text-muted-foreground text-xs uppercase tracking-wider font-semibold">Recursos</div>
+                <div className="px-4 py-4 text-purple-300 text-xs uppercase tracking-wider font-semibold">Recursos</div>
                 <div className="px-4 py-4 text-white/40 text-xs uppercase tracking-wider text-center font-semibold">Outras IAs</div>
-                <div className="px-4 py-4 text-muted-foreground text-xs uppercase tracking-wider text-center font-semibold">Arcano Cloner</div>
+                <div className="px-4 py-4 text-purple-300 text-xs uppercase tracking-wider text-center font-semibold">Arcano Cloner</div>
               </div>
 
               {[
@@ -406,9 +406,9 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-3">
               Tudo feito com um clique,{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">sem prompt!</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">sem prompt!</span>
             </h2>
-            <p className="text-muted-foreground text-sm mb-10">
+            <p className="text-purple-300 text-sm mb-10">
               Resultados reais de clientes usando o Arcano Cloner
             </p>
           </AnimatedSection>
@@ -438,9 +438,9 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
               Simples assim.{" "}
-              <span className="text-muted-foreground">Sem prompt. Sem complicação.</span>
+              <span className="text-purple-300">Sem prompt. Sem complicação.</span>
             </h2>
-            <p className="text-muted-foreground text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
+            <p className="text-purple-300 text-center text-sm mb-12">4 passos e seu ensaio está pronto</p>
           </AnimatedSection>
 
           <Suspense fallback={<div className="min-h-[400px]" />}>
@@ -458,9 +458,9 @@ const ArcanoClonerTeste = () => {
         <div className="max-w-5xl mx-auto">
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
-              E tem <span className="text-muted-foreground">bônus</span> 🎁
+              E tem <span className="text-purple-300">bônus</span> 🎁
             </h2>
-            <p className="text-muted-foreground text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
+            <p className="text-purple-300 text-center text-sm mb-2">Ao adquirir o Arcano Cloner, você leva de bônus:</p>
           </AnimatedSection>
         </div>
       </AnimatedSection>
@@ -477,10 +477,10 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-3">
               Quem já está{" "}
-              <span className="text-muted-foreground">lucrando e se destacando</span>{" "}
+              <span className="text-purple-300">lucrando e se destacando</span>{" "}
               com o Arcano Cloner
             </h2>
-            <p className="text-muted-foreground text-center text-sm mb-12">
+            <p className="text-purple-300 text-center text-sm mb-12">
               Se você se encaixa em pelo menos um desses perfis, o Arcano Cloner foi feito pra você
             </p>
           </AnimatedSection>
@@ -498,10 +498,10 @@ const ArcanoClonerTeste = () => {
               return (
                 <div key={index} className="bg-accent border border-border rounded-3xl p-6 flex flex-col items-center text-center h-full">
                   <div className="w-14 h-14 rounded-2xl bg-accent0/10 flex items-center justify-center mb-4">
-                    <IconComp className="w-7 h-7 text-muted-foreground" />
+                    <IconComp className="w-7 h-7 text-purple-300" />
                   </div>
                   <h3 className="text-foreground font-semibold text-lg mb-2">{item.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
+                  <p className="text-purple-300 text-sm leading-relaxed">{item.text}</p>
                 </div>
               );
             })}
@@ -526,17 +526,17 @@ const ArcanoClonerTeste = () => {
         <AnimatedSection className="px-3 md:px-4 py-16 md:py-20" animation="fade">
           <div className="max-w-4xl mx-auto text-center mb-10">
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground mb-2">
-              Uma biblioteca completa de referências <span className="text-muted-foreground">para você gerar com um clique</span>
+              Uma biblioteca completa de referências <span className="text-purple-300">para você gerar com um clique</span>
             </h2>
 
             <div className="flex flex-col items-center mt-8 mb-2">
               <CountUp target={789} duration={2000} />
-              <p className="text-muted-foreground text-xs md:text-sm tracking-[0.2em] uppercase mt-1">Modelos Disponíveis</p>
+              <p className="text-purple-300 text-xs md:text-sm tracking-[0.2em] uppercase mt-1">Modelos Disponíveis</p>
             </div>
 
             <div className="inline-flex items-center gap-2 mt-4 px-4 py-1.5 rounded-full border border-border bg-accent">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span className="text-muted-foreground text-xs uppercase tracking-wider">Atualizado todos os dias</span>
+              <span className="text-purple-300 text-xs uppercase tracking-wider">Atualizado todos os dias</span>
             </div>
           </div>
 
@@ -598,7 +598,7 @@ const ArcanoClonerTeste = () => {
           <AnimatedSection as="div" delay={100}>
             <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl lg:text-4xl text-foreground text-center mb-12">
               Perguntas{" "}
-              <span className="text-muted-foreground">frequentes</span>
+              <span className="text-purple-300">frequentes</span>
             </h2>
           </AnimatedSection>
 
@@ -613,7 +613,7 @@ const ArcanoClonerTeste = () => {
                   <AccordionTrigger className="text-foreground text-left text-lg font-medium py-5 hover:no-underline">
                     {item.question}
                   </AccordionTrigger>
-                  <AccordionContent className="text-muted-foreground pb-5">
+                  <AccordionContent className="text-purple-300 pb-5">
                     {item.answer}
                   </AccordionContent>
                 </AccordionItem>

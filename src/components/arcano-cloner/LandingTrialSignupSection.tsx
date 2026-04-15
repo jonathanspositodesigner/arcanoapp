@@ -17,16 +17,16 @@ export const LandingTrialSignupSection = () => {
       <AnimatedSection className="max-w-lg mx-auto">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 bg-accent0/10 border border-border rounded-full px-4 py-1.5 mb-4">
-            <Gift className="w-4 h-4 text-muted-foreground" />
-            <span className="text-muted-foreground text-xs font-medium">Teste Grátis</span>
+            <Gift className="w-4 h-4 text-purple-300" />
+            <span className="text-purple-300 text-xs font-medium">Teste Grátis</span>
           </div>
           <h2 className="font-space-grotesk font-bold text-2xl md:text-3xl text-foreground mb-3">
             Teste{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-gray-400 to-gray-400">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
               grátis agora mesmo
             </span>
           </h2>
-          <p className="text-muted-foreground text-sm">
+          <p className="text-purple-300 text-sm">
             Experimente o Arcano Cloner e veja o poder da clonagem com IA
           </p>
         </div>
