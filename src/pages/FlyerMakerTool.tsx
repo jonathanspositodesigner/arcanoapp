@@ -24,6 +24,7 @@ import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
@@ -89,6 +90,7 @@ const FlyerMakerTool: React.FC = () => {
 
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
@@ -154,6 +156,7 @@ const FlyerMakerTool: React.FC = () => {
       console.log('[FlyerMaker] Status update:', update);
       if (update.status === 'completed' && update.outputUrl) {
         setOutputImage(update.outputUrl);
+        if (update.thumbnailUrl) setThumbnailImage(update.thumbnailUrl);
         setStatus('completed');
         setProgress(100);
         endSubmit();
@@ -225,9 +228,12 @@ const FlyerMakerTool: React.FC = () => {
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'flyer_maker_jobs',
-    onRecovery: useCallback((result) => {
+    onRecovery: useCallback(async (result) => {
       if (result.outputUrl) {
         setOutputImage(result.outputUrl);
+        // Fetch thumbnail as fallback
+        const { data } = await supabase.from('flyer_maker_jobs').select('thumbnail_url').eq('id', result.jobId).single();
+        if (data?.thumbnail_url) setThumbnailImage(data.thumbnail_url);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado recuperado!');
@@ -380,6 +386,7 @@ const FlyerMakerTool: React.FC = () => {
     setStatus('uploading');
     setProgress(0);
     setOutputImage(null);
+    setThumbnailImage(null);
     setDebugErrorMessage(null);
 
     try {
@@ -626,6 +633,7 @@ const FlyerMakerTool: React.FC = () => {
 
   const handleNew = () => {
     setOutputImage(null);
+    setThumbnailImage(null);
     setRefinementHistory([]);
     setSelectedHistoryIndex(0);
     setRefineMode(false);
@@ -884,7 +892,7 @@ const FlyerMakerTool: React.FC = () => {
                         wrapperStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                       >
-                        <img src={outputImage} alt="Resultado" className="max-w-full max-h-full object-contain" />
+                        <ResilientImage src={outputImage} originalSrc={thumbnailImage || undefined} alt="Resultado" className="max-w-full max-h-full object-contain" maxRetries={4} compressOnFailure={true} locale="pt" objectFit="contain" />
                       </TransformComponent>
                     </TransformWrapper>
                   ) : isRefining ? (
