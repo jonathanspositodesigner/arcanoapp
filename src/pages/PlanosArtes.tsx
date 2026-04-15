@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Check, Star, ArrowLeft, Gift, Clock, Percent, Bell, Loader2 } from "lucide-react";
@@ -77,7 +76,6 @@ const PlanosArtes = () => {
   const [selectedAccessType, setSelectedAccessType] = useState('vitalicio');
   const [arteCount, setArteCount] = useState<number | null>(null);
 
-  // Redirect to promo page if year-end promo is active
   useEffect(() => {
     if (!promoLoading && isPromoActive) {
       const redirectUrl = packSlug 
@@ -97,18 +95,13 @@ const PlanosArtes = () => {
   useEffect(() => {
     if (packSlug && packs.length > 0) {
       const pack = packs.find(p => p.slug === packSlug);
-      if (pack) {
-        setSelectedPack(pack);
-      }
+      if (pack) setSelectedPack(pack);
     }
   }, [packSlug, packs]);
 
   const checkNotificationEligibility = async () => {
     const localEligible = localStorage.getItem('push_discount_eligible') === 'true';
-    if (localEligible) {
-      setIsNotificationEligible(true);
-      return;
-    }
+    if (localEligible) { setIsNotificationEligible(true); return; }
     const storedEndpoint = localStorage.getItem('push_notification_endpoint');
     if (storedEndpoint) {
       const { data } = await supabase
@@ -137,9 +130,7 @@ const PlanosArtes = () => {
       .eq("is_visible", true)
       .order("display_order", { ascending: true });
 
-    if (!error && data) {
-      setPacks(data as Pack[]);
-    }
+    if (!error && data) setPacks(data as Pack[]);
     setLoading(false);
   };
 
@@ -169,12 +160,8 @@ const PlanosArtes = () => {
 
   const calculatePrice = (type: string) => {
     const original = getPrice(type);
-    if (isRenewal) {
-      return (original * (1 - RENEWAL_DISCOUNT)) / 100;
-    }
-    if (hasNotificationDiscount) {
-      return (original * (1 - notificationDiscountPercent / 100)) / 100;
-    }
+    if (isRenewal) return (original * (1 - RENEWAL_DISCOUNT)) / 100;
+    if (hasNotificationDiscount) return (original * (1 - notificationDiscountPercent / 100)) / 100;
     return original / 100;
   };
 
@@ -201,11 +188,7 @@ const PlanosArtes = () => {
 
   const getAccessOptions = () => {
     const artesLabel = arteCount ? `+${arteCount} artes profissionais` : 'Acesso completo ao pack';
-    const sharedFeatures = [
-      artesLabel,
-      'Editável PSD e Canva',
-      t('feature.unlimitedDownload'),
-    ];
+    const sharedFeatures = [artesLabel, 'Editável PSD e Canva', t('feature.unlimitedDownload')];
 
     const allOptions = [
       {
@@ -213,11 +196,7 @@ const PlanosArtes = () => {
         label: t('accessLifetime'),
         icon: Gift,
         buttonText: t('unlockLifetime'),
-        features: [
-          ...sharedFeatures,
-          t('feature.permanentAccess') || 'Acesso permanente',
-          t('feature.allFutureUpdates') || 'Todas as atualizações futuras',
-        ],
+        features: [...sharedFeatures, t('feature.permanentAccess') || 'Acesso permanente', t('feature.allFutureUpdates') || 'Todas as atualizações futuras'],
         hasBonus: true,
         highlighted: true
       },
@@ -226,11 +205,7 @@ const PlanosArtes = () => {
         label: t('access1Year'),
         icon: Star,
         buttonText: t('unlock1Year'),
-        features: [
-          ...sharedFeatures,
-          t('feature.access12Months'),
-          t('feature.premiumUpdates'),
-        ],
+        features: [...sharedFeatures, t('feature.access12Months'), t('feature.premiumUpdates')],
         hasBonus: true,
         highlighted: false
       },
@@ -239,10 +214,7 @@ const PlanosArtes = () => {
         label: t('access6Months'),
         icon: Clock,
         buttonText: t('unlock6Months'),
-        features: [
-          ...sharedFeatures,
-          t('feature.updates6Months'),
-        ],
+        features: [...sharedFeatures, t('feature.updates6Months')],
         hasBonus: false,
         highlighted: false
       }
@@ -250,7 +222,6 @@ const PlanosArtes = () => {
     return allOptions.filter(opt => isEnabled(opt.type));
   };
 
-  // Keep selectedAccessType in sync when pack changes + fetch arte count
   useEffect(() => {
     const opts = getAccessOptions();
     const vit = opts.find(o => o.type === 'vitalicio');
@@ -269,27 +240,16 @@ const PlanosArtes = () => {
 
   const handleSelectOption = (accessType: string) => {
     if (!selectedPack) return;
-
-    // Determine the correct MP slug
     let slug: string | undefined;
-
-    if (isRenewal) {
-      slug = MP_RENEWAL_SLUGS[selectedPack.slug]?.[accessType];
-    }
-
-    if (!slug) {
-      slug = MP_PACK_SLUGS[selectedPack.slug]?.[accessType];
-    }
-
-    if (slug) {
-      openCheckout(slug);
-    }
+    if (isRenewal) slug = MP_RENEWAL_SLUGS[selectedPack.slug]?.[accessType];
+    if (!slug) slug = MP_PACK_SLUGS[selectedPack.slug]?.[accessType];
+    if (slug) openCheckout(slug);
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-border"></div>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
     );
   }
@@ -298,33 +258,34 @@ const PlanosArtes = () => {
   const selectedOption = accessOptions.find(o => o.type === selectedAccessType) || accessOptions[0];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1a1a2e] via-[#16213e] to-[#0f0f1a] p-4">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-12">
+      <div className="max-w-2xl mx-auto">
+        {/* Back button */}
         <FadeIn delay={0}>
-          <Button
-            variant="ghost"
-            className="text-muted-foreground hover:text-foreground mb-6"
+          <button
+            className="flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
             onClick={() => navigate("/biblioteca-artes")}
           >
-            <ArrowLeft className="h-4 w-4 mr-2" />
+            <ArrowLeft className="h-4 w-4" />
             {t('backToLibrary')}
-          </Button>
+          </button>
         </FadeIn>
 
+        {/* Header */}
         <AnimatedSection animation="fade-up" className="text-center mb-8" as="div">
           {isRenewal && (
-            <Badge className="bg-gradient-to-r from-green-500 to-emerald-500 text-foreground text-lg px-4 py-2 mb-4">
-              <Percent className="h-5 w-5 mr-2" />
+            <Badge className="bg-green-500/20 text-green-400 border border-green-500/30 text-sm px-4 py-1.5 mb-4">
+              <Percent className="h-4 w-4 mr-2" />
               {t('renewal30Off')}
             </Badge>
           )}
           {hasNotificationDiscount && (
-            <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-lg px-4 py-2 mb-4 animate-pulse">
-              <Bell className="h-5 w-5 mr-2" />
+            <Badge className="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-sm px-4 py-1.5 mb-4 animate-pulse">
+              <Bell className="h-4 w-4 mr-2" />
               {notificationDiscountPercent}% OFF - {t('exclusiveDiscount')}
             </Badge>
           )}
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold text-foreground mb-2">
             {isRenewal 
               ? t('renewAccessTo', { pack: selectedPack?.name || "Pack" })
               : hasNotificationDiscount
@@ -334,7 +295,7 @@ const PlanosArtes = () => {
                   : t('choosePack')
             }
           </h1>
-          <p className="text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-muted-foreground text-sm">
             {isRenewal
               ? t('enjoy30Discount')
               : hasNotificationDiscount
@@ -346,45 +307,38 @@ const PlanosArtes = () => {
           </p>
         </AnimatedSection>
 
+        {/* Pack selection grid */}
         {!selectedPack && !isRenewal ? (
           <div className="space-y-8">
             {packItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">{t('packsOfArts')}</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <h2 className="text-lg font-bold text-foreground mb-4">{t('packsOfArts')}</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {[...packItems].sort((a, b) => a.slug === 'pack-arcano-vol-4' ? -1 : b.slug === 'pack-arcano-vol-4' ? 1 : 0).map((pack) => (
-                    <Card
+                    <button
                       key={pack.id}
-                      className={`bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative ${pack.slug === 'pack-arcano-vol-4' ? 'ring-2 ring-[#2d4a5e]/50' : ''}`}
+                      className={`relative bg-card border border-border rounded-xl p-3 text-left hover:border-[#EF672C]/50 hover:bg-card/80 transition-all ${pack.slug === 'pack-arcano-vol-4' ? 'border-[#EF672C]/40 ring-1 ring-[#EF672C]/20' : ''}`}
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.slug === 'pack-arcano-vol-4' && (
                         <div className="absolute top-2 left-2 z-10 flex flex-col gap-1">
-                          <Badge className="bg-primary text-foreground text-[10px] px-1.5 py-0.5">Novo</Badge>
-                          <Badge className="bg-amber-500/90 text-foreground text-[10px] px-1.5 py-0.5 leading-tight">Atualizando</Badge>
+                          <span className="bg-[#EF672C] text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Novo</span>
                         </div>
                       )}
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
-                          <Bell className="h-3 w-3" />
+                        <div className="absolute top-2 right-2 bg-amber-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded z-10">
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
                       )}
-                      <CardContent className="p-4">
-                        {pack.cover_url ? (
-                          <img
-                            src={pack.cover_url}
-                            alt={pack.name}
-                            className="w-full aspect-square object-cover rounded-lg mb-3"
-                          />
-                        ) : (
-                          <div className="w-full aspect-square bg-primary/30 rounded-lg mb-3 flex items-center justify-center">
-                            <Star className="h-8 w-8 text-[#2d4a5e]" />
-                          </div>
-                        )}
-                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
-                      </CardContent>
-                    </Card>
+                      {pack.cover_url ? (
+                        <img src={pack.cover_url} alt={pack.name} className="w-full aspect-square object-cover rounded-lg mb-2" />
+                      ) : (
+                        <div className="w-full aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center">
+                          <Star className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <h3 className="text-foreground font-medium text-sm text-center">{pack.name}</h3>
+                    </button>
                   ))}
                 </div>
               </div>
@@ -392,159 +346,164 @@ const PlanosArtes = () => {
 
             {cursoItems.length > 0 && (
               <div>
-                <h2 className="text-xl font-bold text-foreground mb-4">{t('courses')}</h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <h2 className="text-lg font-bold text-foreground mb-4">{t('courses')}</h2>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                   {cursoItems.map((pack) => (
-                    <Card
+                    <button
                       key={pack.id}
-                      className="bg-card/80 border-border/30 cursor-pointer hover:ring-2 hover:ring-[#2d4a5e] transition-all relative"
+                      className="relative bg-card border border-border rounded-xl p-3 text-left hover:border-[#EF672C]/50 hover:bg-card/80 transition-all"
                       onClick={() => setSelectedPack(pack)}
                     >
                       {pack.notification_discount_enabled && isNotificationEligible && (
-                        <div className="absolute top-2 right-2 bg-gradient-to-r from-amber-500 to-orange-500 text-foreground text-xs px-2 py-1 rounded-full flex items-center gap-1 z-10">
-                          <Bell className="h-3 w-3" />
+                        <div className="absolute top-2 right-2 bg-amber-500 text-black text-[10px] font-bold px-1.5 py-0.5 rounded z-10">
                           {pack.notification_discount_percent || 20}% OFF
                         </div>
                       )}
-                      <CardContent className="p-4">
-                        {pack.cover_url ? (
-                          <img
-                            src={pack.cover_url}
-                            alt={pack.name}
-                            className="w-full aspect-square object-cover rounded-lg mb-3"
-                          />
-                        ) : (
-                          <div className="w-full aspect-square bg-primary/30 rounded-lg mb-3 flex items-center justify-center">
-                            <Star className="h-8 w-8 text-[#2d4a5e]" />
-                          </div>
-                        )}
-                        <h3 className="text-foreground font-medium text-center">{pack.name}</h3>
-                      </CardContent>
-                    </Card>
+                      {pack.cover_url ? (
+                        <img src={pack.cover_url} alt={pack.name} className="w-full aspect-square object-cover rounded-lg mb-2" />
+                      ) : (
+                        <div className="w-full aspect-square bg-muted rounded-lg mb-2 flex items-center justify-center">
+                          <Star className="h-8 w-8 text-muted-foreground" />
+                        </div>
+                      )}
+                      <h3 className="text-foreground font-medium text-sm text-center">{pack.name}</h3>
+                    </button>
                   ))}
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <>
-            <div className="max-w-lg mx-auto">
-              <Card className="relative bg-card/80 border-border/30">
-                {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-foreground px-4 py-1 rounded-full text-sm font-medium text-center whitespace-nowrap">
+          /* Selected pack — purchase card */
+          <div className="max-w-md mx-auto">
+            <div className="relative bg-card border border-border rounded-2xl overflow-hidden">
+              {/* Best value badge */}
+              {selectedAccessType === 'vitalicio' && accessOptions.length > 1 && (
+                <div className="absolute -top-0 left-1/2 -translate-x-1/2 z-10">
+                  <span className="bg-[#EF672C] text-white px-4 py-1 rounded-b-lg text-xs font-bold">
                     {t('bestValue')}
-                  </div>
+                  </span>
+                </div>
+              )}
+
+              <div className="p-6 pt-8 text-center">
+                {/* Cover + name */}
+                {selectedPack?.cover_url && (
+                  <img
+                    src={selectedPack.cover_url}
+                    alt={selectedPack.name}
+                    className="w-20 h-20 object-cover rounded-xl border border-border mx-auto mb-3"
+                  />
                 )}
-                <CardHeader className="text-center pt-8">
-                  {selectedPack?.cover_url && (
-                    <img
-                      src={selectedPack.cover_url}
-                      alt={selectedPack.name}
-                      className="w-24 h-24 object-cover rounded-lg border-2 border-border/50 mx-auto mb-3"
-                    />
+                <h2 className="text-xl font-bold text-foreground">{selectedPack?.name}</h2>
+                {!isRenewal && (
+                  <button
+                    onClick={() => setSelectedPack(null)}
+                    className="text-muted-foreground hover:text-foreground text-xs underline underline-offset-2 transition-colors mt-1"
+                  >
+                    {t('buttons.chooseAnotherPack', { ns: 'library' })}
+                  </button>
+                )}
+
+                {/* Price */}
+                <div className="mt-5">
+                  {(isRenewal || hasNotificationDiscount) && (
+                    <div className="flex items-center justify-center gap-2 mb-1">
+                      <span className="text-muted-foreground line-through text-base">{formatOriginalPrice(selectedAccessType)}</span>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded ${isRenewal ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
+                        -{isRenewal ? '30' : notificationDiscountPercent}%
+                      </span>
+                    </div>
                   )}
-                  <CardTitle className="text-xl text-foreground">{selectedPack?.name}</CardTitle>
-                  {!isRenewal && (
-                    <button
-                      onClick={() => setSelectedPack(null)}
-                      className="text-white/40 hover:text-muted-foreground text-xs underline underline-offset-2 transition-colors mt-1"
-                    >
-                      {t('buttons.chooseAnotherPack', { ns: 'library' })}
-                    </button>
-                  )}
-                  <div className="mt-4">
-                    {(isRenewal || hasNotificationDiscount) && (
-                      <div className="flex items-center justify-center gap-2 mb-1">
-                        <span className="text-white/40 line-through text-lg">{formatOriginalPrice(selectedAccessType)}</span>
-                        <Badge className={`text-xs ${isRenewal ? 'bg-green-500/20 text-green-400' : 'bg-amber-500/20 text-amber-400'}`}>
-                          -{isRenewal ? '30' : notificationDiscountPercent}%
-                        </Badge>
-                      </div>
-                    )}
-                    <span className={`text-3xl font-bold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
-                      {formatPrice(calculatePrice(selectedAccessType))}
-                    </span>
-                    <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  {accessOptions.length > 1 && (
-                    <RadioGroup
-                      value={selectedAccessType}
-                      onValueChange={setSelectedAccessType}
-                      className="space-y-3 mb-6"
-                    >
-                      {accessOptions.map((option) => (
+                  <span className={`text-4xl font-black ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                    {formatPrice(calculatePrice(selectedAccessType))}
+                  </span>
+                  <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
+                </div>
+              </div>
+
+              {/* Access type selector */}
+              {accessOptions.length > 1 && (
+                <div className="px-6">
+                  <RadioGroup
+                    value={selectedAccessType}
+                    onValueChange={setSelectedAccessType}
+                    className="space-y-2 mb-5"
+                  >
+                    {accessOptions.map((option) => {
+                      const isSelected = selectedAccessType === option.type;
+                      return (
                         <label
                           key={option.type}
-                          className={`flex items-center justify-between gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
-                            selectedAccessType === option.type
-                              ? `border-border ${isRenewal ? 'bg-green-500/10' : hasNotificationDiscount ? 'bg-amber-500/10' : 'bg-primary/10'}`
-                              : 'border-border/30 hover:border-border/60'
+                          className={`flex items-center justify-between gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                            isSelected
+                              ? 'border-[#EF672C] bg-[#EF672C]/10'
+                              : 'border-border hover:border-border/80 hover:bg-muted/30'
                           }`}
                         >
                           <div className="flex items-center gap-3">
-                            <RadioGroupItem value={option.type} className="border-border text-[#2d4a5e]" />
-                            <span className="text-foreground font-medium">{option.label}</span>
+                            <RadioGroupItem value={option.type} className="border-muted-foreground data-[state=checked]:border-[#EF672C] data-[state=checked]:text-[#EF672C]" />
+                            <span className="text-foreground font-medium text-sm">{option.label}</span>
                           </div>
-                          <span className={`font-semibold ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-primary-foreground'}`}>
+                          <span className={`font-bold text-sm ${isSelected ? 'text-[#EF672C]' : 'text-muted-foreground'}`}>
                             {formatPrice(calculatePrice(option.type))}
                           </span>
                         </label>
-                      ))}
-                    </RadioGroup>
-                  )}
+                      );
+                    })}
+                  </RadioGroup>
+                </div>
+              )}
 
-                  {selectedOption && (
-                    <>
-                      <ul className="space-y-3 mb-6">
-                        {selectedOption.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-2 text-foreground">
-                            <Check className="h-4 w-4 text-[#2d4a5e] mt-0.5 shrink-0" />
-                            <span className="text-sm">{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                      <Button
-                        className={`w-full ${
-                          isRenewal
-                            ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-foreground font-bold shadow-lg shadow-green-500/30"
-                            : hasNotificationDiscount
-                              ? "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
-                              : "bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-foreground font-bold shadow-lg shadow-amber-500/30"
-                        }`}
-                        onClick={() => handleSelectOption(selectedAccessType)}
-                        disabled={isCheckoutSubmitting}
-                      >
-                        {isCheckoutSubmitting ? (
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        ) : hasNotificationDiscount ? (
-                          <Bell className="h-4 w-4 mr-2" />
-                        ) : (
-                          <Star className="h-4 w-4 mr-2" />
-                        )}
-                        {isRenewal 
-                          ? t('buttons.renewNow', { ns: 'library' }) 
-                          : hasNotificationDiscount 
-                            ? t('buttons.useMyDiscount', { ns: 'library' }) 
-                            : selectedOption.buttonText}
-                      </Button>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
+              {/* Features */}
+              {selectedOption && (
+                <div className="px-6 pb-6">
+                  <ul className="space-y-2.5 mb-6">
+                    {selectedOption.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-2.5">
+                        <Check className="h-4 w-4 text-[#EF672C] mt-0.5 shrink-0" />
+                        <span className="text-foreground text-sm">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* CTA button */}
+                  <Button
+                    className={`w-full py-3 font-bold text-sm rounded-xl transition-all ${
+                      isRenewal
+                        ? "bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white shadow-lg shadow-green-500/20"
+                        : "bg-gradient-to-r from-[#EF672C] to-[#f65928] hover:from-[#d95a25] hover:to-[#e04e20] text-white shadow-lg shadow-[#EF672C]/20"
+                    }`}
+                    onClick={() => handleSelectOption(selectedAccessType)}
+                    disabled={isCheckoutSubmitting}
+                  >
+                    {isCheckoutSubmitting ? (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    ) : hasNotificationDiscount ? (
+                      <Bell className="h-4 w-4 mr-2" />
+                    ) : (
+                      <Star className="h-4 w-4 mr-2" />
+                    )}
+                    {isRenewal 
+                      ? t('buttons.renewNow', { ns: 'library' }) 
+                      : hasNotificationDiscount 
+                        ? t('buttons.useMyDiscount', { ns: 'library' }) 
+                        : selectedOption.buttonText}
+                  </Button>
+                </div>
+              )}
             </div>
-          </>
+          </div>
         )}
 
+        {/* Already purchased link */}
         <div className="text-center mt-8">
-          <Button
-            variant="link"
-            className="text-[#2d4a5e] hover:text-[#3d5a6e]"
+          <button
+            className="text-muted-foreground hover:text-foreground text-sm underline underline-offset-2 transition-colors"
             onClick={() => navigate("/login-artes")}
           >
             {t('buttons.alreadyBoughtPack', { ns: 'library' })}
-          </Button>
+          </button>
         </div>
       </div>
 
