@@ -210,6 +210,9 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           <button onClick={onToggleSidebar} className="text-muted-foreground hover:text-foreground p-1">
             <Menu className="h-5 w-5" />
           </button>
+          <button onClick={() => navigate("/")} className="text-muted-foreground hover:text-foreground p-1">
+            <Home className="h-5 w-5" />
+          </button>
         </div>
         {!user && (
           <div className="flex items-center gap-2">
