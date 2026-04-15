@@ -362,8 +362,11 @@ const FlyerMakerTool: React.FC = () => {
       return;
     }
 
+    // Check combined balance (test credits + normal credits)
     const freshCredits = await checkBalance();
-    if (freshCredits < creditCost) {
+    await fetchTestCredits();
+    const totalAvailable = freshCredits + testCredits;
+    if (totalAvailable < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
