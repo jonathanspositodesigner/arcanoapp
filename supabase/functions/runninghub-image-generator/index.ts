@@ -299,11 +299,29 @@ async function handleRun(req: Request) {
   const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
-  // BYOK jobs have creditCost=0, Unlimited users also have creditCost=0 — skip validation
-  if (!isByok && creditCost !== 0 && (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500)) {
-    return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  // ========== SERVER-SIDE CREDIT COST ENFORCEMENT ==========
+  // Minimum costs per source — client cannot send less than these values
+  const MIN_COSTS: Record<string, number> = {
+    'arcano_cloner_refine': 100,
+    'flyer_maker_refine': 100,
+    'cinema_studio_photo': 100,
+    'legacy_proxy': 100,
+    'standard': 100,
+  };
+  const minCost = MIN_COSTS[source] ?? 100;
+
+  // Enforce: if client sent less than minimum (and not BYOK/Unlimited), override to minimum
+  let enforcedCreditCost = creditCost;
+  if (!isByok && creditCost !== 0) {
+    if (typeof creditCost !== 'number' || creditCost < 1 || creditCost > 500) {
+      return new Response(JSON.stringify({ error: 'Invalid credit cost', code: 'INVALID_CREDIT_COST' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    if (creditCost < minCost) {
+      console.warn(`[ImageGenerator] Client sent creditCost=${creditCost}, enforcing minimum=${minCost} for source=${source}`);
+      enforcedCreditCost = minCost;
+    }
   }
 
   // Validate image URLs are from Supabase storage
