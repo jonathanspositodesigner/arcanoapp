@@ -615,7 +615,7 @@ const BibliotecaArtes = () => {
 
         <div className="flex">
           {/* Overlay for mobile sidebar */}
-          {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
+          {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-[55]" onClick={() => setSidebarOpen(false)} />}
 
           {/* Desktop Sidebar */}
           <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:top-[57px] lg:bottom-0 bg-sidebar-background border-r border-border">
@@ -624,7 +624,7 @@ const BibliotecaArtes = () => {
 
           {/* Mobile Sidebar */}
           {sidebarOpen && (
-            <aside className="lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-sidebar-background border-r border-border">
+            <aside className="lg:hidden fixed inset-y-0 left-0 z-[60] w-64 bg-background border-r border-border pt-16">
               <InternalSidebarContent />
             </aside>
           )}
