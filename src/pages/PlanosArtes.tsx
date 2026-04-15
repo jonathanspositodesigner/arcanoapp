@@ -415,7 +415,7 @@ const PlanosArtes = () => {
                       </span>
                     </div>
                   )}
-                  <span className={`text-4xl font-black ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-white'}`}>
+                  <span className={`text-4xl font-black ${isRenewal ? 'text-green-400' : hasNotificationDiscount ? 'text-amber-400' : 'text-foreground'}`}>
                     {formatPrice(calculatePrice(selectedAccessType))}
                   </span>
                   <span className="text-muted-foreground text-sm block mt-1">{t('oneTimePayment')}</span>
