@@ -726,6 +726,90 @@ async function processHotmartWebhook(
       payload: { origin: payload?.data?.purchase?.origin || {} } // Manter origin para debug de UTMs
     }).eq('id', logId)
 
+    // ========== META CAPI PURCHASE ==========
+    // Disparar evento Purchase para o Pixel ES (vendas Hotmart são LATAM)
+    try {
+      const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+      const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
+      const tracking = purchase?.tracking
+      const purchaseOrigin = payload?.data?.purchase?.origin as any
+      
+      // Extrair fbclid do sck (Hotmart tracking) ou utm_data
+      let fbclid: string | null = null
+      let sckValue: string | null = null
+      
+      // Tentar extrair sck do origin (formato: src=...&sck=FBCLID)
+      if (purchaseOrigin) {
+        const originStr = typeof purchaseOrigin === 'string' ? purchaseOrigin : JSON.stringify(purchaseOrigin)
+        const sckMatch = originStr.match(/sck[=:]([^&"\s}]+)/)
+        if (sckMatch) {
+          sckValue = sckMatch[1]
+          fbclid = sckValue
+        }
+      }
+      
+      // Fallback: tracking object
+      if (!fbclid && tracking?.source_sck) {
+        fbclid = tracking.source_sck
+      }
+      
+      // Gerar fbc a partir do fbclid
+      let fbc: string | null = null
+      if (fbclid) {
+        fbc = `fb.1.${Date.now()}.${fbclid}`
+      }
+      
+      // Gerar fbp fallback
+      let fbp: string | null = null
+      if (fbclid) {
+        fbp = `fb.1.${Date.now()}.${Math.floor(Math.random() * 2147483647)}`
+      }
+      
+      // Valor da compra
+      const purchaseValue = purchase?.price?.value || purchase?.full_price?.value || 0
+      const purchaseCurrency = purchase?.price?.currency_code || 'USD'
+      
+      // event_time real do pagamento
+      const approvedDate = purchase?.approved_date || purchase?.order_date
+      const realEventTime = approvedDate ? Math.floor(new Date(approvedDate).getTime() / 1000) : undefined
+      
+      // UTM data
+      const utmData: Record<string, string> = {}
+      if (tracking?.utm_source) utmData.utm_source = tracking.utm_source
+      if (tracking?.utm_medium) utmData.utm_medium = tracking.utm_medium
+      if (tracking?.utm_campaign) utmData.utm_campaign = tracking.utm_campaign
+      if (tracking?.utm_content) utmData.utm_content = tracking.utm_content
+      if (tracking?.utm_term) utmData.utm_term = tracking.utm_term
+      if (fbclid) utmData.fbclid = fbclid
+      
+      const capiEventId = `purchase_hotmart_${transaction || crypto.randomUUID()}`
+      
+      const capiResponse = await fetch(`${supabaseUrl}/functions/v1/meta-capi-event`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${supabaseServiceKey}`,
+        },
+        body: JSON.stringify({
+          event_name: 'Purchase',
+          email,
+          value: Number(purchaseValue),
+          currency: purchaseCurrency,
+          utm_data: Object.keys(utmData).length > 0 ? utmData : null,
+          fbp,
+          fbc,
+          event_id: capiEventId,
+          event_source_url: 'https://arcanoapp.voxvisual.com.br/upscalerarcanov3-eshot',
+          event_time: realEventTime,
+          pixel_id: '1383797283173351', // Pixel ES para vendas LATAM
+        }),
+      })
+      
+      console.log(`   ├─ 📊 Meta CAPI Purchase (Hotmart→Pixel ES): ${capiResponse.ok ? '✅ sent' : `❌ ${capiResponse.status}`} | event_id: ${capiEventId} | value: ${purchaseCurrency} ${purchaseValue} | fbc: ${fbc ? '✅' : '❌'} | fbp: ${fbp ? '✅' : '❌'}`)
+    } catch (capiErr: any) {
+      console.warn(`   ├─ ⚠️ Meta CAPI Purchase (Hotmart) falhou (não-crítico): ${capiErr.message}`)
+    }
+
     // Enviar email de boas-vindas (em try/catch separado)
     // SKIP email for Upscaler Arcano (vitalício) - requested by admin
     const isUpscalerArcano = mapping.packSlug === 'upscaller-arcano'
