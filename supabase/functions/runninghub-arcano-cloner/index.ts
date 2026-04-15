@@ -406,8 +406,8 @@ async function handleRun(req: Request) {
     });
   }
 
-  // Validate aspect ratio - must match workflow node 145 allowed values
-  const validAspectRatios = ['auto', '1:1', '2:3', '3:2', '3:4', '4:3', '4:5', '5:4', '9:16', '16:9', '21:9'];
+  // Validate aspect ratio - must match workflow node 148 allowed values
+  const validAspectRatios = ['auto', '1:1', '1:4', '1:8', '2:3', '3:2', '3:4', '4:1', '4:3', '4:5', '5:4', '8:1', '9:16', '16:9', '21:9'];
   const finalAspectRatio = validAspectRatios.includes(aspectRatio) ? aspectRatio : '4:3';
 
   // Validate URLs are from Supabase storage

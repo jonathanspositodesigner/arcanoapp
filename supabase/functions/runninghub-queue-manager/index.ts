@@ -1495,7 +1495,7 @@ async function startJobOnRunningHub(
         { nodeId: "62", fieldName: "image", fieldValue: p.referenceFileName || job.reference_file_name },
         { nodeId: "133", fieldName: "value", fieldValue: String(p.creativity ?? job.creativity ?? 0) },
         { nodeId: "135", fieldName: "text", fieldValue: p.customPrompt || job.custom_prompt || '' },
-        { nodeId: "145", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '1:1' },
+        { nodeId: "148", fieldName: "aspectRatio", fieldValue: p.aspectRatio || job.aspect_ratio || '4:3' },
       ];
       break;
     }
