@@ -792,25 +792,24 @@ serve(async (req) => {
 
       // 3. Processar produto
       if (product.type === 'pack' && product.pack_slug) {
+        const accessType = product.access_type || 'vitalicio'
+        let expiresAt: string | null = null
+        if (accessType === '6_meses') {
+          expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
+        } else if (accessType === '1_ano') {
+          expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
+        }
+        const hasBonusAccess = accessType !== '6_meses'
+
         const { data: existingPurchase } = await supabase
           .from('user_pack_purchases')
-          .select('id')
+          .select('id, access_type, expires_at')
           .eq('user_id', userId)
           .eq('pack_slug', product.pack_slug)
           .eq('is_active', true)
           .maybeSingle()
 
         if (!existingPurchase) {
-          // Calcular expires_at e has_bonus_access baseado no access_type
-          const accessType = product.access_type || 'vitalicio'
-          let expiresAt: string | null = null
-          if (accessType === '6_meses') {
-            expiresAt = new Date(Date.now() + 180 * 24 * 60 * 60 * 1000).toISOString()
-          } else if (accessType === '1_ano') {
-            expiresAt = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString()
-          }
-          const hasBonusAccess = accessType !== '6_meses' // 1 ano e vitalício têm bônus
-
           await supabase.from('user_pack_purchases').insert({
             user_id: userId,
             pack_slug: product.pack_slug,
@@ -820,9 +819,40 @@ serve(async (req) => {
             product_name: product.title,
             platform: 'pagarme'
           })
-          console.log(`   ├─ ✅ Acesso concedido: ${product.pack_slug} (${product.access_type})`)
+          console.log(`   ├─ ✅ Acesso concedido: ${product.pack_slug} (${accessType})`)
         } else {
-          console.log(`   ├─ ℹ️ Acesso já existente: ${product.pack_slug}`)
+          // UPGRADE: always update if renewal/upgrade (e.g. 1_ano → vitalicio, or extend expiry)
+          const ACCESS_RANK: Record<string, number> = { '6_meses': 1, '1_ano': 2, 'vitalicio': 3 }
+          const existingRank = ACCESS_RANK[existingPurchase.access_type] || 0
+          const newRank = ACCESS_RANK[accessType] || 0
+
+          if (newRank > existingRank) {
+            // Upgrade access type
+            await supabase.from('user_pack_purchases').update({
+              access_type: accessType,
+              has_bonus_access: hasBonusAccess,
+              expires_at: expiresAt,
+              product_name: product.title,
+              platform: 'pagarme',
+              purchased_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', existingPurchase.id)
+            console.log(`   ├─ ✅ Acesso ATUALIZADO: ${product.pack_slug} (${existingPurchase.access_type} → ${accessType})`)
+          } else if (newRank === existingRank && existingPurchase.expires_at) {
+            // Same tier but has expiry — extend or renew
+            const currentExpiry = new Date(existingPurchase.expires_at)
+            const newExpiry = expiresAt ? new Date(Math.max(currentExpiry.getTime(), new Date(expiresAt).getTime())) : null
+            await supabase.from('user_pack_purchases').update({
+              expires_at: newExpiry?.toISOString() || null,
+              product_name: product.title,
+              platform: 'pagarme',
+              purchased_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', existingPurchase.id)
+            console.log(`   ├─ ✅ Acesso RENOVADO: ${product.pack_slug} (${accessType}, expira: ${newExpiry?.toISOString() || 'nunca'})`)
+          } else {
+            console.log(`   ├─ ℹ️ Acesso já existente e superior/igual: ${product.pack_slug} (${existingPurchase.access_type})`)
+          }
         }
 
         // Bundle: conceder packs extras para produtos do tipo bundle
