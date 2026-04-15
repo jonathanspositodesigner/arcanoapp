@@ -1,0 +1,1 @@
+UPDATE upscaler_credits SET lifetime_balance = lifetime_balance + 200 WHERE user_id = '61597c56-6d48-44d3-b236-5cb9cffcf995'
