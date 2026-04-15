@@ -53,12 +53,16 @@ const FlyerMakerTool: React.FC = () => {
   // Flyer Maker test credits
   const [testCredits, setTestCredits] = useState(0);
   
-  const fetchTestCredits = useCallback(async () => {
-    if (!user?.id) return;
+  const fetchTestCredits = useCallback(async (): Promise<number> => {
+    if (!user?.id) return 0;
     try {
       const { data, error } = await supabase.rpc('get_flyer_test_credits', { _user_id: user.id });
-      if (!error && typeof data === 'number') setTestCredits(data);
+      if (!error && typeof data === 'number') {
+        setTestCredits(data);
+        return data;
+      }
     } catch {}
+    return 0;
   }, [user?.id]);
   
   useEffect(() => { fetchTestCredits(); }, [fetchTestCredits]);
@@ -364,8 +368,8 @@ const FlyerMakerTool: React.FC = () => {
 
     // Check combined balance (test credits + normal credits)
     const freshCredits = await checkBalance();
-    await fetchTestCredits();
-    const totalAvailable = freshCredits + testCredits;
+    const freshTestCredits = await fetchTestCredits();
+    const totalAvailable = freshCredits + freshTestCredits;
     if (totalAvailable < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
@@ -450,6 +454,10 @@ const FlyerMakerTool: React.FC = () => {
       });
 
       if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
+
+      // Atualizar saldo de créditos teste imediatamente após consumo
+      fetchTestCredits();
+      refetchCredits();
 
       if (runResult.code === 'INSUFFICIENT_CREDITS') {
         setStatus('idle');
