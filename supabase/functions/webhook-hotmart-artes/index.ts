@@ -571,13 +571,13 @@ async function processHotmartWebhook(
     }
     
     if (!mapping) {
-      console.log(`   ├─ [${requestId}] ⚠️ Usando mapeamento padrão: Upscaler Arcano (vitalício)`)
-      mapping = {
-        packSlug: 'upscaller-arcano',
-        accessType: 'vitalicio',
-        hasBonusAccess: true,
-        isFerramentaIA: true
-      }
+      console.log(`   ├─ [${requestId}] ⏭️ Produto Hotmart sem mapeamento local (${productId || 'sem-id'}) - ignorando para não liberar acesso indevido nesta plataforma`)
+      console.log(`   └─ [${requestId}] Referência de slugs externos: upscaler-arcano-starter-es, upscaler-arcano-pro-es, upscaler-arcano-ultimate-es, upscaler-arcano-v3-es`)
+      await supabase.from('webhook_logs').update({
+        result: 'ignored',
+        error_message: `unmapped_hotmart_product:${productId || 'unknown'}`
+      }).eq('id', logId)
+      return
     }
 
     console.log(`\n🎯 [${requestId}] MAPEAMENTO:`)
