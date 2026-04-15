@@ -154,7 +154,7 @@ const FlyerMakerTool: React.FC = () => {
         setProgress(100);
         endSubmit();
         playNotificationSound();
-        refetchCredits();
+        refetchCredits(); fetchTestCredits();
         toast.success('Flyer gerado com sucesso!');
       } else if (update.status === 'failed' || update.status === 'cancelled') {
         setStatus('error');
