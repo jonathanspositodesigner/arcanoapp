@@ -406,28 +406,76 @@ export default function Seedance2() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data, error } = await supabase.functions.invoke("seedance-generate", {
-        body: {
-          model,
-          prompt: finalPrompt,
-          duration: parseInt(duration),
-          quality,
-          aspectRatio: ratio === "auto" ? undefined : ratio,
-          generateAudio,
-          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages] : undefined,
-          videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
-          audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
-          jobId: jobData.id,
-          creditCost,
-        },
-        headers: { Authorization: `Bearer ${session.access_token}` },
-      });
+      // Retry edge function invocation up to 2 times on network/gateway errors
+      let data: any = null;
+      let error: any = null;
+      const MAX_INVOKE_RETRIES = 2;
 
-      // Extract real error message - supabase.functions.invoke puts response body in error.context
-      const realError = data?.error || (error?.context ? await error.context.json?.().catch(() => null) : null)?.error || error?.message || "API error";
+      for (let attempt = 0; attempt <= MAX_INVOKE_RETRIES; attempt++) {
+        const result = await supabase.functions.invoke("seedance-generate", {
+          body: {
+            model,
+            prompt: finalPrompt,
+            duration: parseInt(duration),
+            quality,
+            aspectRatio: ratio === "auto" ? undefined : ratio,
+            generateAudio,
+            imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages] : undefined,
+            videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
+            audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
+            jobId: jobData.id,
+            creditCost,
+          },
+          headers: { Authorization: `Bearer ${session.access_token}` },
+        });
+
+        data = result.data;
+        error = result.error;
+
+        // If success or a known business error (not network), don't retry
+        if (data?.success || data?.error) break;
+
+        // Retry on network/gateway errors
+        const isNetworkError = !data && error && (
+          error.message?.includes('non-2xx') ||
+          error.message?.includes('Failed to fetch') ||
+          error.message?.includes('NetworkError') ||
+          error.message?.includes('FunctionsFetchError')
+        );
+
+        if (isNetworkError && attempt < MAX_INVOKE_RETRIES) {
+          console.warn(`[Seedance2] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+        break;
+      }
+
+      // Extract real error message
+      let realError = data?.error || error?.message || "Erro desconhecido";
+      if (!data && error?.context) {
+        try {
+          const ctx = typeof error.context.json === 'function' ? await error.context.json() : null;
+          if (ctx?.error) realError = ctx.error;
+        } catch (_) { /* ignore */ }
+      }
+
+      // Map technical errors to user-friendly messages
+      const ERROR_MESSAGES: Record<string, string> = {
+        'Service busy': 'Servidores ocupados. Tente novamente em alguns minutos.',
+        'Allocating resources': 'Servidores ocupados. Tente novamente em alguns minutos.',
+        'photorealistic people': 'Imagem com pessoas reais não é suportada. Use estilo ilustração ou cartoon.',
+        'Créditos insuficientes': 'Créditos insuficientes. Adquira mais créditos para continuar.',
+        'Invalid token': 'Sessão expirada. Faça login novamente.',
+        'non-2xx': 'Erro de conexão com o servidor. Tente novamente.',
+      };
+
+      const friendlyError = Object.entries(ERROR_MESSAGES).find(([key]) => 
+        realError.toLowerCase().includes(key.toLowerCase())
+      )?.[1] || realError;
+
       if (error || !data?.success) {
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: realError } : g));
-        // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: friendlyError } : g));
         await supabase.from("seedance_jobs").update({
           status: "failed",
           error_message: realError,
