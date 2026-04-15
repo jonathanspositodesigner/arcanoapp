@@ -201,7 +201,7 @@ const ArcanoClonerTeste = () => {
           <div className="mt-auto flex flex-col items-center">
             {/* Social proof badge */}
             <FadeIn duration={600}>
-              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-border rounded-full px-4 py-2 mb-5 md:mb-6">
+              <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-purple-500/50 rounded-full px-4 py-2 mb-5 md:mb-6">
                 <div className="flex -space-x-2">
                   <img src="/images/social-proof-1.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
                   <img src="/images/social-proof-2.webp" alt="" width="24" height="24" decoding="async" className="w-6 h-6 rounded-full border-2 border-[#0f0a15] object-cover" />
