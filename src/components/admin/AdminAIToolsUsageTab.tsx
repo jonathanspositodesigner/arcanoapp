@@ -873,6 +873,9 @@ const AdminAIToolsUsageTab = () => {
               <div>
                 <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
                 <p className="text-xl font-bold">{formatBRL(custoTotalResumo)}</p>
+                <p className="text-[0.6rem] text-muted-foreground">
+                  RH: {formatBRL(custoRHResumo)} · API: {formatBRL(custoAPIResumo)}
+                </p>
               </div>
             </CardContent>
           </Card>
