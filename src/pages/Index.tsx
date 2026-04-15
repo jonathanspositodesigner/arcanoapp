@@ -84,8 +84,10 @@ const Index = () => {
       }
       await forcePwaUpdate();
     } catch {
-      window.location.replace(`/?v=${Date.now()}`);
+      // fallback
     }
+    // Always reload the page after clearing cache
+    window.location.replace(`/?v=${Date.now()}`);
   };
 
   const { t } = useTranslation('index');
