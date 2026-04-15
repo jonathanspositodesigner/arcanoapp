@@ -406,11 +406,11 @@ async function handleRun(req: Request) {
   if (isByok) {
     console.log(`[ImageGenerator] BYOK mode — skipping platform credit consumption for user ${verifiedUserId}`);
     await logStep(jobId, 'byok_skip_credits');
-  } else if (creditCost === 0) {
+  } else if (enforcedCreditCost === 0) {
     console.log(`[ImageGenerator] Unlimited user — skipping credit consumption for user ${verifiedUserId}`);
     await logStep(jobId, 'unlimited_skip_credits');
   } else {
-    await logStep(jobId, 'consuming_credits', { amount: creditCost });
+    await logStep(jobId, 'consuming_credits', { amount: enforcedCreditCost });
     
     // Determine credit description based on source
     let creditDescription = 'Gerar Imagem';
@@ -419,7 +419,7 @@ async function handleRun(req: Request) {
 
     const { data: creditResult, error: creditError } = await supabase.rpc(
       'consume_upscaler_credits',
-      { _user_id: verifiedUserId, _amount: creditCost, _description: creditDescription }
+      { _user_id: verifiedUserId, _amount: enforcedCreditCost, _description: creditDescription }
     );
 
     if (creditError) {
@@ -452,7 +452,7 @@ async function handleRun(req: Request) {
 
   await supabase.from(TABLE_NAME).update({
     credits_charged: true,
-    user_credit_cost: creditCost,
+    user_credit_cost: enforcedCreditCost,
     input_urls: imageUrls,
     job_payload: {
       prompt: prompt.trim(),
@@ -495,7 +495,7 @@ async function handleRun(req: Request) {
     
     try {
       if (!isByok) {
-        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: creditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
+        await supabase.rpc('refund_upscaler_credits', { _user_id: verifiedUserId, _amount: enforcedCreditCost, _description: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 100)}` });
       }
       await supabase.from(TABLE_NAME).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: !isByok, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch {
