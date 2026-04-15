@@ -167,7 +167,7 @@ const ArcanoClonerTeste = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk">
+    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] font-space-grotesk dark">
 
       {/* ==================== HERO ==================== */}
       <section className="relative h-screen w-full overflow-hidden">
