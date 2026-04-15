@@ -277,28 +277,62 @@ async function handleRun(req: Request) {
     });
   }
 
-  // ========== CONSUME CREDITS ==========
+  // ========== CONSUME CREDITS (TEST CREDITS FIRST) ==========
   await logStep(jobId, 'consuming_credits', { amount: creditCost });
-  const { data: creditResult, error: creditError } = await supabase.rpc('consume_upscaler_credits', {
-    _user_id: userId, _amount: creditCost, _description: 'Flyer Maker'
-  });
 
-  if (creditError) {
-    await logStepFailure(jobId, 'consume_credits', creditError.message);
-    return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
-      status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  // 1. Try test credits first
+  let testCreditsUsed = 0;
+  let normalCreditsToCharge = creditCost;
+
+  try {
+    const { data: testResult, error: testError } = await supabase.rpc('consume_flyer_test_credits', {
+      _user_id: userId, _amount: creditCost
     });
+    if (!testError && testResult && testResult.length > 0) {
+      testCreditsUsed = testResult[0].test_used || 0;
+      normalCreditsToCharge = testResult[0].remaining || creditCost;
+      console.log(`[FlyerMaker] Test credits used: ${testCreditsUsed}, normal to charge: ${normalCreditsToCharge}`);
+    }
+  } catch (e) {
+    console.warn('[FlyerMaker] Test credits check failed (non-blocking):', e);
   }
 
-  if (!creditResult?.length || !creditResult[0].success) {
-    const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-    await logStepFailure(jobId, 'consume_credits', errorMsg);
-    return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+  // 2. Charge normal credits for the remaining amount
+  if (normalCreditsToCharge > 0) {
+    const { data: creditResult, error: creditError } = await supabase.rpc('consume_upscaler_credits', {
+      _user_id: userId, _amount: normalCreditsToCharge, _description: `Flyer Maker${testCreditsUsed > 0 ? ` (${testCreditsUsed} teste)` : ''}`
     });
+
+    if (creditError) {
+      // Refund test credits if normal credits fail (test credits should not be lost)
+      if (testCreditsUsed > 0) {
+        await supabase.from('flyer_maker_test_credits' as any)
+          .update({ balance: (await supabase.rpc('get_flyer_test_credits', { _user_id: userId })) + testCreditsUsed } as any)
+          .eq('user_id', userId).catch(() => {});
+      }
+      await logStepFailure(jobId, 'consume_credits', creditError.message);
+      return new Response(JSON.stringify({ error: 'Erro ao processar créditos', code: 'CREDIT_ERROR' }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (!creditResult?.length || !creditResult[0].success) {
+      // Refund test credits (insufficient normal credits)
+      if (testCreditsUsed > 0) {
+        const currentBal = await supabase.rpc('get_flyer_test_credits', { _user_id: userId });
+        await supabase.from('flyer_maker_test_credits' as any)
+          .update({ balance: (currentBal || 0) + testCreditsUsed } as any)
+          .eq('user_id', userId).catch(() => {});
+      }
+      const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
+      await logStepFailure(jobId, 'consume_credits', errorMsg);
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
-  // Mark credits as charged
+  // Mark credits as charged (store test_credits_used for refund logic)
   await supabase.from(JOB_TABLE).update({
     credits_charged: true,
     user_credit_cost: creditCost,
@@ -306,6 +340,11 @@ async function handleRun(req: Request) {
     artist_photo_file_names: artistFileNames,
     logo_file_name: logoFileName,
     image_size: imageSize,
+    job_payload: {
+      ...(await supabase.from(JOB_TABLE).select('job_payload').eq('id', jobId).maybeSingle()).data?.job_payload as any,
+      test_credits_used: testCreditsUsed,
+      normal_credits_charged: normalCreditsToCharge,
+    },
   }).eq('id', jobId);
 
   // Save job_payload for queue manager
@@ -340,7 +379,10 @@ async function handleRun(req: Request) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     console.error(`[FlyerMaker] QM call failed:`, errorMessage);
     try {
-      await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: creditCost, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      // Only refund normal credits (test credits are never refunded)
+      if (normalCreditsToCharge > 0) {
+        await supabase.rpc('refund_upscaler_credits', { _user_id: userId, _amount: normalCreditsToCharge, _description: `QM_EXCEPTION: ${errorMessage.slice(0, 100)}` });
+      }
       await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION_REFUNDED: ${errorMessage.slice(0, 200)}`, credits_refunded: true, completed_at: new Date().toISOString() }).eq('id', jobId);
     } catch { await supabase.from(JOB_TABLE).update({ status: 'failed', error_message: `QM_EXCEPTION: ${errorMessage.slice(0, 200)}`, completed_at: new Date().toISOString() }).eq('id', jobId); }
     return new Response(JSON.stringify({ error: errorMessage, code: 'RUN_EXCEPTION', refunded: true }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });

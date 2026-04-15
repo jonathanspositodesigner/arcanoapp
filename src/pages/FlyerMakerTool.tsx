@@ -50,6 +50,19 @@ const FlyerMakerTool: React.FC = () => {
   const { getCreditCost } = useAIToolSettings();
   const creditCost = getCreditCost('Flyer Maker', 100);
   
+  // Flyer Maker test credits
+  const [testCredits, setTestCredits] = useState(0);
+  
+  const fetchTestCredits = useCallback(async () => {
+    if (!user?.id) return;
+    try {
+      const { data, error } = await supabase.rpc('get_flyer_test_credits', { _user_id: user.id });
+      if (!error && typeof data === 'number') setTestCredits(data);
+    } catch {}
+  }, [user?.id]);
+  
+  useEffect(() => { fetchTestCredits(); }, [fetchTestCredits]);
+  
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
   // Inputs
@@ -141,14 +154,14 @@ const FlyerMakerTool: React.FC = () => {
         setProgress(100);
         endSubmit();
         playNotificationSound();
-        refetchCredits();
+        refetchCredits(); fetchTestCredits();
         toast.success('Flyer gerado com sucesso!');
       } else if (update.status === 'failed' || update.status === 'cancelled') {
         setStatus('error');
         const friendlyError = getAIErrorMessage(update.errorMessage);
         setDebugErrorMessage(update.errorMessage);
         endSubmit();
-        refetchCredits();
+        refetchCredits(); fetchTestCredits();
         toast.error(friendlyError.message);
       } else if (update.status === 'queued') {
         setStatus('waiting');
@@ -157,7 +170,7 @@ const FlyerMakerTool: React.FC = () => {
         setStatus('processing');
         setQueuePosition(0);
       }
-    }, [endSubmit, playNotificationSound, refetchCredits]),
+    }, [endSubmit, playNotificationSound, refetchCredits, fetchTestCredits]),
     onGlobalStatusChange: updateJobStatus,
   });
 
@@ -349,8 +362,11 @@ const FlyerMakerTool: React.FC = () => {
       return;
     }
 
+    // Check combined balance (test credits + normal credits)
     const freshCredits = await checkBalance();
-    if (freshCredits < creditCost) {
+    await fetchTestCredits();
+    const totalAvailable = freshCredits + testCredits;
+    if (totalAvailable < creditCost) {
       setNoCreditsReason('insufficient');
       setShowNoCreditsModal(true);
       endSubmit();
@@ -632,6 +648,12 @@ const FlyerMakerTool: React.FC = () => {
                 <div>
                   <h1 className="text-xl font-bold text-foreground">Flyer Maker</h1>
                   <p className="text-xs text-muted-foreground mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
+                  {testCredits > 0 && (
+                    <div className="mt-2 flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-3 py-1.5">
+                      <span className="text-xs">🧪</span>
+                      <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{testCredits} créditos de teste</span>
+                    </div>
+                  )}
                 </div>
 
                 {!refineMode ? (
@@ -762,7 +784,10 @@ const FlyerMakerTool: React.FC = () => {
                           <>
                             <Sparkles className="w-4 h-4 mr-2" />
                             Gerar Flyer
-                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90"><Coins className="w-3.5 h-3.5" /> {creditCost}</span>
+                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                              <Coins className="w-3.5 h-3.5" /> {creditCost}
+                              {testCredits > 0 && <span className="ml-1">(🧪 teste)</span>}
+                            </span>
                           </>
                         )}
                       </Button>

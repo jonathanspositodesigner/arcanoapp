@@ -2204,6 +2204,36 @@ export type Database = {
         }
         Relationships: []
       }
+      flyer_maker_test_credits: {
+        Row: {
+          balance: number
+          created_at: string
+          granted_amount: number
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          balance?: number
+          created_at?: string
+          granted_amount?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          balance?: number
+          created_at?: string
+          granted_amount?: number
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       google_api_config: {
         Row: {
           id: string
@@ -5470,6 +5500,13 @@ export type Database = {
       cleanup_stale_pose_changer_jobs: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
       cleanup_stale_veste_ai_jobs: { Args: never; Returns: undefined }
+      consume_flyer_test_credits: {
+        Args: { _amount: number; _user_id: string }
+        Returns: {
+          remaining: number
+          test_used: number
+        }[]
+      }
       consume_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {
@@ -5701,6 +5738,7 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      get_flyer_test_credits: { Args: { _user_id: string }; Returns: number }
       get_mp_dashboard_orders: {
         Args: { _end: string; _start: string }
         Returns: {
