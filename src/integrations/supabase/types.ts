@@ -5514,6 +5514,18 @@ export type Database = {
           users_expired: number
         }[]
       }
+      get_ai_tools_completed_by_tool: {
+        Args: {
+          p_end_date?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          completed_count: number
+          tool_name: string
+        }[]
+      }
       get_ai_tools_cost_averages: {
         Args: never
         Returns: {

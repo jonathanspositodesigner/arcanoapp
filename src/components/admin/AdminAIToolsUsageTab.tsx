@@ -211,6 +211,7 @@ const AdminAIToolsUsageTab = () => {
   const [toolRegistry, setToolRegistry] = useState<ToolRegistryEntry[]>([]);
   const [usageRecords, setUsageRecords] = useState<UsageRecord[]>([]);
   const [summary, setSummary] = useState<UsageSummary | null>(null);
+  const [toolCompletedCounts, setToolCompletedCounts] = useState<Record<string, number>>({});
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -485,16 +486,31 @@ const AdminAIToolsUsageTab = () => {
       if (countError) throw countError;
       setTotalCount(countData || 0);
 
-      // Fetch summary (v2 with status filter)
-      const { data: summaryData, error: summaryError } = await supabase.rpc('get_ai_tools_usage_summary_v2' as any, {
-        p_start_date: start?.toISOString() || null,
-        p_end_date: end?.toISOString() || null,
-        p_tool_filter: toolFilterParam,
-        p_status_filter: statusFilterParam
-      });
+      // Fetch summary and per-tool completed counts in parallel
+      const [summaryRes, toolCountsRes] = await Promise.all([
+        supabase.rpc('get_ai_tools_usage_summary_v2' as any, {
+          p_start_date: start?.toISOString() || null,
+          p_end_date: end?.toISOString() || null,
+          p_tool_filter: toolFilterParam,
+          p_status_filter: statusFilterParam
+        }),
+        supabase.rpc('get_ai_tools_completed_by_tool' as any, {
+          p_start_date: start?.toISOString() || null,
+          p_end_date: end?.toISOString() || null,
+          p_tool_filter: toolFilterParam,
+          p_status_filter: statusFilterParam
+        })
+      ]);
 
-      if (summaryError) throw summaryError;
-      setSummary(summaryData?.[0] || null);
+      if (summaryRes.error) throw summaryRes.error;
+      setSummary(summaryRes.data?.[0] || null);
+
+      // Build per-tool completed counts map
+      const countsMap: Record<string, number> = {};
+      for (const row of (toolCountsRes.data || []) as any[]) {
+        countsMap[row.tool_name] = Number(row.completed_count) || 0;
+      }
+      setToolCompletedCounts(countsMap);
 
     } catch (error) {
       console.error("Error fetching AI tools usage:", error);
@@ -580,9 +596,20 @@ const AdminAIToolsUsageTab = () => {
     ? summary.total_credits * receitaPorCreditoAtual
     : 0;
   
-  // Cost: RH cost from summary
+  // Cost: RH cost + API cost (per-tool completed counts * api_cost from settings)
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
-  const custoTotalResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
+  const custoRHResumo = summary ? summary.total_rh_cost * CUSTO_POR_RH_COIN : 0;
+  
+  const custoAPIResumo = useMemo(() => {
+    let total = 0;
+    for (const [toolName, count] of Object.entries(toolCompletedCounts)) {
+      const apiCost = getApiCostFromSettings(toolName, aiToolSettingsMap);
+      total += count * apiCost;
+    }
+    return total;
+  }, [toolCompletedCounts, aiToolSettingsMap]);
+  
+  const custoTotalResumo = custoRHResumo + custoAPIResumo;
   
   // Lucro: receita total - custo total (ambos do summary, mesmo escopo)
   const lucroTotalResumo = receitaTotalResumo - custoTotalResumo;
@@ -846,6 +873,9 @@ const AdminAIToolsUsageTab = () => {
               <div>
                 <p className="text-xs text-muted-foreground">Custo Total (R$)</p>
                 <p className="text-xl font-bold">{formatBRL(custoTotalResumo)}</p>
+                <p className="text-[0.6rem] text-muted-foreground">
+                  RH: {formatBRL(custoRHResumo)} · API: {formatBRL(custoAPIResumo)}
+                </p>
               </div>
             </CardContent>
           </Card>
