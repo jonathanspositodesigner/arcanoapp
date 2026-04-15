@@ -4,6 +4,13 @@ import { RefreshCw, X } from 'lucide-react';
 const NewVersionBanner = () => {
   const [showBanner, setShowBanner] = useState(false);
 
+  const openForceUpdatePage = (source: string) => {
+    const nextUrl = new URL('/force-update', window.location.origin);
+    nextUrl.searchParams.set('from', source);
+    nextUrl.searchParams.set('returnTo', `${window.location.pathname}${window.location.search}`);
+    window.location.assign(nextUrl.toString());
+  };
+
   useEffect(() => {
     if (!('serviceWorker' in navigator)) return;
 
@@ -64,37 +71,26 @@ const NewVersionBanner = () => {
     };
   }, []);
 
-  const handleUpdate = async () => {
-    try {
-      const reg = await navigator.serviceWorker.getRegistration();
-      if (reg?.waiting) {
-        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-      }
-      // Clear caches
-      if ('caches' in window) {
-        const names = await caches.keys();
-        await Promise.allSettled(names.map(n => caches.delete(n)));
-      }
-    } catch {}
-    // Force reload regardless
-    window.location.replace(`/?v=${Date.now()}`);
+  const handleUpdate = () => {
+    setShowBanner(false);
+    openForceUpdatePage('new-version-banner');
   };
 
   if (!showBanner) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] bg-gradient-to-r from-purple-600 to-purple-500 text-white px-4 py-2.5 flex items-center justify-center gap-3 shadow-lg animate-in slide-in-from-top duration-300">
+    <div className="fixed top-0 left-0 right-0 z-[9999] bg-primary text-primary-foreground px-4 py-2.5 flex items-center justify-center gap-3 shadow-lg animate-in slide-in-from-top duration-300">
       <RefreshCw className="h-4 w-4 animate-spin-slow" />
       <span className="text-sm font-medium">Nova versão disponível!</span>
       <button
         onClick={handleUpdate}
-        className="px-3 py-1 rounded-full bg-white text-purple-700 text-xs font-bold hover:bg-white/90 transition-colors"
+        className="px-3 py-1 rounded-full bg-background text-foreground text-xs font-bold hover:bg-background/90 transition-colors"
       >
         Atualizar agora
       </button>
       <button
         onClick={() => setShowBanner(false)}
-        className="ml-1 p-0.5 rounded-full hover:bg-white/20 transition-colors"
+        className="ml-1 p-0.5 rounded-full hover:bg-primary-foreground/20 transition-colors"
         aria-label="Fechar"
       >
         <X className="h-3.5 w-3.5" />
