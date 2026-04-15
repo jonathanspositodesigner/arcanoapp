@@ -2,6 +2,23 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, subDays, subMonths, startOfYear } from "date-fns";
 
+// Constants for API cost calculation (mirror from AdminAIToolsUsageTab)
+const CUSTO_POR_RH_COIN = 0.002;
+
+const API_COST_FALLBACK_MAP: Record<string, number> = {
+  "Arcano Cloner": 0.36,
+  "Gerador Avatar": 0.18,
+  "Gerar Imagem - Nano Banana": 0.36,
+};
+
+const VIDEO_AVG_COST_MAP: Record<string, number> = {
+  "Gerar Vídeo": 0.504,
+  "MovieLed Maker": 2.352,
+  "Seedance 2.0": 3.392,
+};
+
+const VIDEO_TOOL_NAMES = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0", "Video Upscaler"]);
+
 export type PeriodPreset =
   | "today" | "yesterday" | "7d" | "15d" | "30d"
   | "3m" | "6m" | "1y" | "year" | "all" | "custom";
