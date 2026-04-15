@@ -144,6 +144,18 @@ const FlyerMakerTool: React.FC = () => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
 
+  // Auto-open refine mode when coming from "Modificar" in My Creations
+  useEffect(() => {
+    const state = location.state as { refineImageUrl?: string } | null;
+    if (state?.refineImageUrl) {
+      setOutputImage(state.refineImageUrl);
+      setStatus('completed');
+      setRefineMode(true);
+      // Clear the state so refresh doesn't re-trigger
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
+
   
 
   useQueueSessionCleanup(sessionIdRef.current, status);
