@@ -22,6 +22,7 @@ import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from 
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
+import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
@@ -57,6 +58,7 @@ const PoseChangerTool: React.FC = () => {
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
+  const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
@@ -122,6 +124,7 @@ const PoseChangerTool: React.FC = () => {
 
       if (update.status === 'completed' && update.outputUrl) {
         setOutputImage(update.outputUrl);
+        if (update.thumbnailUrl) setThumbnailImage(update.thumbnailUrl);
         setStatus('completed');
         setProgress(100);
         refetchCredits();
@@ -148,12 +151,14 @@ const PoseChangerTool: React.FC = () => {
   useNotificationTokenRecovery({
     userId: user?.id,
     toolTable: 'pose_changer_jobs',
-    onRecovery: useCallback((result) => {
+    onRecovery: useCallback(async (result) => {
       if (result.outputUrl) {
         setPersonImage(result.personImageUrl || null);
         setReferenceImage(result.referenceImageUrl || null);
         setOutputImage(result.outputUrl);
         setJobId(result.jobId);
+        const { data } = await supabase.from('pose_changer_jobs').select('thumbnail_url').eq('id', result.jobId).single();
+        if (data?.thumbnail_url) setThumbnailImage(data.thumbnail_url);
         setStatus('completed');
         setProgress(100);
         toast.success('Resultado carregado!');
@@ -331,6 +336,7 @@ const PoseChangerTool: React.FC = () => {
     setStatus('uploading');
     setProgress(0);
     setOutputImage(null);
+    setThumbnailImage(null);
 
     try {
       // Step 1: Compress and upload person image FIRST (before creating job)
@@ -474,6 +480,7 @@ const PoseChangerTool: React.FC = () => {
     setReferenceImage(null);
     setReferenceFile(null);
     setOutputImage(null);
+    setThumbnailImage(null);
     setStatus('idle');
     setProgress(0);
     setZoomLevel(1);
@@ -666,11 +673,15 @@ const PoseChangerTool: React.FC = () => {
                           wrapperStyle={{ width: '100%', height: '100%' }}
                           contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          <img
+                          <ResilientImage
                             src={outputImage}
+                            originalSrc={thumbnailImage || undefined}
                             alt="Resultado"
                             className="w-full h-full object-contain"
-                            draggable={false}
+                            maxRetries={4}
+                            compressOnFailure={true}
+                            locale="pt"
+                            objectFit="contain"
                           />
                         </TransformComponent>
                       </div>
