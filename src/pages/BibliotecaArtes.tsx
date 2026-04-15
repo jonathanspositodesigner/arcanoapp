@@ -1471,8 +1471,6 @@ const BibliotecaArtes = () => {
         </DialogContent>
       </Dialog>
 
-            </div>{/* max-w-7xl */}
-          </div>{/* p-4 */}
         </div>{/* flex-1 lg:pl-64 */}
         </div>{/* flex */}
       </div>{/* min-h-screen */}
