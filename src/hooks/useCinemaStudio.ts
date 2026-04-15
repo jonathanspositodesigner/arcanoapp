@@ -775,22 +775,42 @@ export function useCinemaStudio() {
       setJobId(job.id);
       setProgress(40);
 
-      const { data: response, error: fnError } = await supabase.functions.invoke('seedance-generate', {
-        body: {
-          model: selectedModel,
-          prompt: finalPrompt,
-          imageUrls: uploadedImageUrls,
-          videoUrls: [],
-          audioUrls: [],
-          duration: settings.duration,
-          quality: settings.quality,
-          aspectRatio: settings.aspectRatio,
-          generateAudio: settings.generateAudio,
-          jobId: job.id,
-        },
-      });
+      // Retry edge function invocation on network/gateway errors
+      let response: any = null;
+      let fnError: any = null;
+      for (let attempt = 0; attempt <= 2; attempt++) {
+        const result = await supabase.functions.invoke('seedance-generate', {
+          body: {
+            model: selectedModel,
+            prompt: finalPrompt,
+            imageUrls: uploadedImageUrls,
+            videoUrls: [],
+            audioUrls: [],
+            duration: settings.duration,
+            quality: settings.quality,
+            aspectRatio: settings.aspectRatio,
+            generateAudio: settings.generateAudio,
+            jobId: job.id,
+          },
+        });
+        response = result.data;
+        fnError = result.error;
+        if (response?.success || response?.error) break;
+        const isNetworkErr = !response && fnError && (
+          fnError.message?.includes('non-2xx') || fnError.message?.includes('Failed to fetch')
+        );
+        if (isNetworkErr && attempt < 2) {
+          console.warn(`[CinemaStudio] seedance-generate retry ${attempt + 1}/2`);
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+        break;
+      }
 
-      if (fnError) throw new Error('Erro na função: ' + fnError.message);
+      if (fnError && !response?.success) {
+        const errDetail = response?.error || fnError.message || 'Erro desconhecido';
+        throw new Error(errDetail.includes('Service busy') ? 'Servidores ocupados. Tente novamente em alguns minutos.' : errDetail);
+      }
       if (!response?.success) throw new Error(response?.error || 'Erro desconhecido');
 
       setTaskId(response.taskId);

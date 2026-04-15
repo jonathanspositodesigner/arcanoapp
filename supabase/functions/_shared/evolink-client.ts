@@ -162,32 +162,60 @@ export async function evolinkGenerate(
     imageCount: params.imageUrls?.length || 0,
   }));
 
-  try {
-    const response = await fetchWithRetry(
-      `${EVOLINK_BASE_URL}/videos/generations`,
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
+  // Retry loop for "Service busy" / 503 responses from Evolink
+  const MAX_BUSY_RETRIES = 3;
+  const BUSY_DELAYS = [5000, 10000, 20000];
+
+  for (let busyAttempt = 0; busyAttempt <= MAX_BUSY_RETRIES; busyAttempt++) {
+    try {
+      const response = await fetchWithRetry(
+        `${EVOLINK_BASE_URL}/videos/generations`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
         },
-        body: JSON.stringify(payload),
-      },
-      'Evolink Generate'
-    );
+        'Evolink Generate'
+      );
 
-    const data = await response.json();
-    console.log(`[EvolinkClient] Generate response:`, JSON.stringify(data));
+      const data = await response.json();
+      console.log(`[EvolinkClient] Generate response:`, JSON.stringify(data));
 
-    if (!response.ok || !data.id) {
-      const errMsg = data.error?.message || data.error?.code || data.error || `Evolink API error: ${response.status}`;
-      return { success: false, error: typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg) };
+      if (!response.ok || !data.id) {
+        const errMsg = data.error?.message || data.error?.code || data.error || `Evolink API error: ${response.status}`;
+        const errStr = typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg);
+
+        // Detect "Service busy" and retry
+        const isBusy = errStr.toLowerCase().includes('service busy') || 
+                       errStr.toLowerCase().includes('allocating resources') ||
+                       response.status === 503;
+        
+        if (isBusy && busyAttempt < MAX_BUSY_RETRIES) {
+          const delay = BUSY_DELAYS[busyAttempt] + Math.random() * 3000;
+          console.warn(`[EvolinkClient] Service busy, retry ${busyAttempt + 1}/${MAX_BUSY_RETRIES} in ${Math.round(delay)}ms`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+
+        return { success: false, error: errStr };
+      }
+
+      return { success: true, taskId: data.id };
+    } catch (error: any) {
+      if (busyAttempt < MAX_BUSY_RETRIES) {
+        const delay = BUSY_DELAYS[busyAttempt];
+        console.warn(`[EvolinkClient] Generate error: ${error.message}, retry ${busyAttempt + 1}/${MAX_BUSY_RETRIES}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return { success: false, error: error.message || 'Evolink API call failed' };
     }
-
-    return { success: true, taskId: data.id };
-  } catch (error: any) {
-    return { success: false, error: error.message || 'Evolink API call failed' };
   }
+
+  return { success: false, error: 'Evolink API: all busy retries exhausted' };
 }
 
 /**
