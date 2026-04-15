@@ -59,6 +59,7 @@ export function useSalesDashboard() {
   const [metaLandingPageViews, setMetaLandingPageViews] = useState(0);
   const [metaInitiatedCheckouts, setMetaInitiatedCheckouts] = useState(0);
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
+  const [apiCosts, setApiCosts] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { start, end } = useMemo(
