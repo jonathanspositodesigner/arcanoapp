@@ -15,7 +15,6 @@ import { usePackAccess } from "@/hooks/usePackAccess";
 import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
-import { forcePwaUpdate } from "@/utils/forcePwaUpdate";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
@@ -65,6 +64,21 @@ const Index = () => {
   
   const [isUpdating, setIsUpdating] = useState(false);
 
+  const triggerHardReload = () => {
+    const nextUrl = new URL(window.location.href);
+    nextUrl.searchParams.set("v", Date.now().toString());
+    window.location.replace(nextUrl.toString());
+  };
+
+  const runWithTimeout = async (task: () => Promise<void>, timeoutMs = 900) => {
+    await Promise.race([
+      task(),
+      new Promise<void>((resolve) => {
+        window.setTimeout(resolve, timeoutMs);
+      }),
+    ]);
+  };
+
   // Service worker update check (non-blocking, no reload)
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -75,24 +89,44 @@ const Index = () => {
   }, []);
 
   const handleManualUpdate = async () => {
+    if (isUpdating) return;
+
     setIsUpdating(true);
     toast.info("Atualizando app...");
+
+    const fallbackReloadId = window.setTimeout(() => {
+      console.warn("[handleManualUpdate] Fallback reload triggered");
+      triggerHardReload();
+    }, 1500);
+
     try {
-      // 1. Clear all caches
+      const cleanupTasks: Promise<void>[] = [];
+
       if ("caches" in window) {
-        const names = await caches.keys();
-        await Promise.all(names.map(n => caches.delete(n)));
+        cleanupTasks.push(
+          runWithTimeout(async () => {
+            const names = await caches.keys();
+            await Promise.allSettled(names.map((name) => caches.delete(name)));
+          })
+        );
       }
-      // 2. Unregister service workers
+
       if ("serviceWorker" in navigator) {
-        const regs = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(regs.map(r => r.unregister()));
+        cleanupTasks.push(
+          runWithTimeout(async () => {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.allSettled(regs.map((registration) => registration.unregister()));
+          })
+        );
       }
+
+      await Promise.allSettled(cleanupTasks);
     } catch (e) {
       console.warn("[handleManualUpdate] cleanup error:", e);
+    } finally {
+      window.clearTimeout(fallbackReloadId);
+      triggerHardReload();
     }
-    // 3. Always force hard reload
-    window.location.href = `/?v=${Date.now()}`;
   };
 
   const { t } = useTranslation('index');
