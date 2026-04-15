@@ -6,6 +6,34 @@ const ForceUpdate = () => {
   const [step, setStep] = useState<string>('Iniciando...');
 
   useEffect(() => {
+    const runWithTimeout = async (label: string, task: () => Promise<void>, timeoutMs = 1800) => {
+      let timeoutId: number | undefined;
+
+      await Promise.race([
+        task(),
+        new Promise<void>((resolve) => {
+          timeoutId = window.setTimeout(() => {
+            console.warn(`[ForceUpdate] ${label} timed out after ${timeoutMs}ms`);
+            resolve();
+          }, timeoutMs);
+        }),
+      ]).finally(() => {
+        if (timeoutId) {
+          window.clearTimeout(timeoutId);
+        }
+      });
+    };
+
+    const buildRedirectUrl = () => {
+      const currentUrl = new URL(window.location.href);
+      const returnTo = currentUrl.searchParams.get('returnTo') || '/';
+      const redirectUrl = new URL(returnTo, window.location.origin);
+      redirectUrl.searchParams.set('_force', Date.now().toString());
+      redirectUrl.searchParams.set('_nocache', '1');
+      redirectUrl.searchParams.set('_v', Math.random().toString(36).substring(7));
+      return redirectUrl.toString();
+    };
+
     const forceCleanAndReload = async () => {
       try {
         console.log('[ForceUpdate] Starting aggressive force update process...');
@@ -25,39 +53,45 @@ const ForceUpdate = () => {
         setStep('Deletando caches...');
         console.log('[ForceUpdate] Step 2: Deleting caches...');
         if ('caches' in window) {
-          const cacheNames = await caches.keys();
-          console.log('[ForceUpdate] Found caches:', cacheNames);
-          await Promise.all(cacheNames.map(async (name) => {
-            const deleted = await caches.delete(name);
-            console.log(`[ForceUpdate] Cache "${name}" deleted:`, deleted);
-          }));
-          console.log('[ForceUpdate] All caches deleted');
+          await runWithTimeout('Cache cleanup', async () => {
+            const cacheNames = await caches.keys();
+            console.log('[ForceUpdate] Found caches:', cacheNames);
+            await Promise.allSettled(cacheNames.map(async (name) => {
+              const deleted = await caches.delete(name);
+              console.log(`[ForceUpdate] Cache "${name}" deleted:`, deleted);
+            }));
+
+            const remainingCaches = await caches.keys();
+            console.log('[ForceUpdate] Remaining caches after delete:', remainingCaches);
+          });
         }
 
         // Step 3: Force skipWaiting on any waiting SW, then unregister ALL
         setStep('Removendo Service Workers...');
         console.log('[ForceUpdate] Step 3: Handling Service Workers...');
         if ('serviceWorker' in navigator) {
-          const registrations = await navigator.serviceWorker.getRegistrations();
-          console.log('[ForceUpdate] Found SW registrations:', registrations.length);
-          
-          for (const registration of registrations) {
-            // If there's a waiting SW, tell it to skip waiting
-            if (registration.waiting) {
-              console.log('[ForceUpdate] Sending SKIP_WAITING to waiting SW');
-              registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-            }
+          await runWithTimeout('Service worker cleanup', async () => {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            console.log('[ForceUpdate] Found SW registrations:', registrations.length);
             
-            // Also try the active SW
-            if (registration.active) {
-              console.log('[ForceUpdate] Sending SKIP_WAITING to active SW');
-              registration.active.postMessage({ type: 'SKIP_WAITING' });
+            for (const registration of registrations) {
+              if (registration.waiting) {
+                console.log('[ForceUpdate] Sending SKIP_WAITING to waiting SW');
+                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+              }
+              
+              if (registration.active) {
+                console.log('[ForceUpdate] Sending SKIP_WAITING to active SW');
+                registration.active.postMessage({ type: 'SKIP_WAITING' });
+              }
+              
+              const unregistered = await registration.unregister();
+              console.log('[ForceUpdate] Unregistered SW:', registration.scope, unregistered);
             }
-            
-            // Unregister
-            const unregistered = await registration.unregister();
-            console.log('[ForceUpdate] Unregistered SW:', registration.scope, unregistered);
-          }
+
+            const remainingRegistrations = await navigator.serviceWorker.getRegistrations();
+            console.log('[ForceUpdate] Remaining SW registrations:', remainingRegistrations.length);
+          });
         }
 
         // Step 4: Wait for cleanup to propagate
@@ -69,13 +103,15 @@ const ForceUpdate = () => {
         setStep('Baixando versão nova...');
         console.log('[ForceUpdate] Step 5: Fetching fresh version...');
         try {
-          await fetch('/', { 
-            cache: 'no-store',
-            headers: { 
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
-            }
+          await runWithTimeout('Fresh fetch', async () => {
+            await fetch('/', { 
+              cache: 'no-store',
+              headers: { 
+                'Cache-Control': 'no-cache, no-store, must-revalidate',
+                'Pragma': 'no-cache',
+                'Expires': '0'
+              }
+            });
           });
           console.log('[ForceUpdate] Fresh fetch completed');
         } catch (e) {
@@ -89,13 +125,11 @@ const ForceUpdate = () => {
 
         // Step 7: Redirect with extreme cache busting
         await new Promise(r => setTimeout(r, 500));
+
+        const redirectUrl = buildRedirectUrl();
+        console.log('[ForceUpdate] Redirecting to:', redirectUrl);
         
-        // Use location.replace to prevent back button issues
-        // Add multiple cache-busting params
-        const bustParams = `?_force=${Date.now()}&_nocache=1&_v=${Math.random().toString(36).substring(7)}`;
-        console.log('[ForceUpdate] Redirecting to:', '/' + bustParams);
-        
-        window.location.replace('/' + bustParams);
+        window.location.replace(redirectUrl);
 
       } catch (error) {
         console.error('[ForceUpdate] Error during force update:', error);

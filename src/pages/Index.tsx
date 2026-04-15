@@ -64,19 +64,11 @@ const Index = () => {
   
   const [isUpdating, setIsUpdating] = useState(false);
 
-  const triggerHardReload = () => {
-    const nextUrl = new URL(window.location.href);
-    nextUrl.searchParams.set("v", Date.now().toString());
-    window.location.replace(nextUrl.toString());
-  };
-
-  const runWithTimeout = async (task: () => Promise<void>, timeoutMs = 900) => {
-    await Promise.race([
-      task(),
-      new Promise<void>((resolve) => {
-        window.setTimeout(resolve, timeoutMs);
-      }),
-    ]);
+  const openForceUpdatePage = (source: string) => {
+    const nextUrl = new URL('/force-update', window.location.origin);
+    nextUrl.searchParams.set('from', source);
+    nextUrl.searchParams.set('returnTo', `${window.location.pathname}${window.location.search}`);
+    window.location.assign(nextUrl.toString());
   };
 
   // Service worker update check (non-blocking, no reload)
@@ -92,41 +84,8 @@ const Index = () => {
     if (isUpdating) return;
 
     setIsUpdating(true);
-    toast.info("Atualizando app...");
-
-    const fallbackReloadId = window.setTimeout(() => {
-      console.warn("[handleManualUpdate] Fallback reload triggered");
-      triggerHardReload();
-    }, 1500);
-
-    try {
-      const cleanupTasks: Promise<void>[] = [];
-
-      if ("caches" in window) {
-        cleanupTasks.push(
-          runWithTimeout(async () => {
-            const names = await caches.keys();
-            await Promise.allSettled(names.map((name) => caches.delete(name)));
-          })
-        );
-      }
-
-      if ("serviceWorker" in navigator) {
-        cleanupTasks.push(
-          runWithTimeout(async () => {
-            const regs = await navigator.serviceWorker.getRegistrations();
-            await Promise.allSettled(regs.map((registration) => registration.unregister()));
-          })
-        );
-      }
-
-      await Promise.allSettled(cleanupTasks);
-    } catch (e) {
-      console.warn("[handleManualUpdate] cleanup error:", e);
-    } finally {
-      window.clearTimeout(fallbackReloadId);
-      triggerHardReload();
-    }
+    toast.info("Limpando cache do app...");
+    openForceUpdatePage('manual-button');
   };
 
   const { t } = useTranslation('index');
