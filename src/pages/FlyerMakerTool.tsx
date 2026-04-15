@@ -161,7 +161,7 @@ const FlyerMakerTool: React.FC = () => {
         const friendlyError = getAIErrorMessage(update.errorMessage);
         setDebugErrorMessage(update.errorMessage);
         endSubmit();
-        refetchCredits();
+        refetchCredits(); fetchTestCredits();
         toast.error(friendlyError.message);
       } else if (update.status === 'queued') {
         setStatus('waiting');
