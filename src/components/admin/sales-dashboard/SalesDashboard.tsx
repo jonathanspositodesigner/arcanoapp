@@ -41,7 +41,7 @@ export default function SalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    platformFees, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
+    platformFees, apiCosts, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch,
   } = useSalesDashboard();
 
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -147,7 +147,7 @@ export default function SalesDashboard() {
       </div>
 
       {/* Primary KPIs */}
-      <SalesDashboardKPIs revenue={revenue} adSpend={adSpend} platformFees={platformFees} isLoading={isLoading} approved={approved} />
+      <SalesDashboardKPIs revenue={revenue} adSpend={adSpend} platformFees={platformFees} apiCosts={apiCosts} isLoading={isLoading} approved={approved} />
 
       {/* Secondary KPIs */}
       <SalesDashboardSecondaryKPIs

@@ -2,6 +2,23 @@ import { useState, useEffect, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfDay, endOfDay, subDays, subMonths, startOfYear } from "date-fns";
 
+// Constants for API cost calculation (mirror from AdminAIToolsUsageTab)
+const CUSTO_POR_RH_COIN = 0.002;
+
+const API_COST_FALLBACK_MAP: Record<string, number> = {
+  "Arcano Cloner": 0.36,
+  "Gerador Avatar": 0.18,
+  "Gerar Imagem - Nano Banana": 0.36,
+};
+
+const VIDEO_AVG_COST_MAP: Record<string, number> = {
+  "Gerar Vídeo": 0.504,
+  "MovieLed Maker": 2.352,
+  "Seedance 2.0": 3.392,
+};
+
+const VIDEO_TOOL_NAMES = new Set(["Gerar Vídeo", "MovieLed Maker", "Seedance 2.0", "Video Upscaler"]);
+
 export type PeriodPreset =
   | "today" | "yesterday" | "7d" | "15d" | "30d"
   | "3m" | "6m" | "1y" | "year" | "all" | "custom";
@@ -59,6 +76,7 @@ export function useSalesDashboard() {
   const [metaLandingPageViews, setMetaLandingPageViews] = useState(0);
   const [metaInitiatedCheckouts, setMetaInitiatedCheckouts] = useState(0);
   const [abandonedCheckouts, setAbandonedCheckouts] = useState(0);
+  const [apiCosts, setApiCosts] = useState(0);
   const [refreshKey, setRefreshKey] = useState(0);
 
   const { start, end } = useMemo(
@@ -135,6 +153,53 @@ export function useSalesDashboard() {
         .lt("created_at", end.toISOString());
 
       setAbandonedCheckouts(icCount || 0);
+
+      // Fetch AI API costs for the period
+      try {
+        // 1. Get RH cost summary
+        const { data: summaryData } = await supabase.rpc("get_ai_tools_usage_summary" as any, {
+          p_start_date: start.toISOString(),
+          p_end_date: end.toISOString(),
+        });
+        const summary = Array.isArray(summaryData) ? summaryData[0] : summaryData;
+        const rhCostBRL = summary ? Number(summary.total_rh_cost || 0) * CUSTO_POR_RH_COIN : 0;
+
+        // 2. Get completed counts by tool for API costs
+        const { data: toolCounts } = await supabase.rpc("get_ai_tools_completed_by_tool" as any, {
+          p_start_date: start.toISOString(),
+          p_end_date: end.toISOString(),
+        });
+
+        // 3. Get API cost settings
+        const { data: settingsData } = await supabase
+          .from("ai_tool_settings" as any)
+          .select("tool_name, has_api_cost, api_cost");
+
+        const settingsMap: Record<string, { has_api_cost: boolean; api_cost: number }> = {};
+        for (const s of (settingsData || []) as any[]) {
+          settingsMap[s.tool_name] = { has_api_cost: s.has_api_cost, api_cost: s.api_cost };
+        }
+
+        // 4. Calculate API + video costs
+        let apiTotal = 0;
+        for (const row of (toolCounts || []) as any[]) {
+          const toolName = row.tool_name as string;
+          const count = Number(row.completed_count || 0);
+          // API cost from settings
+          const setting = settingsMap[toolName];
+          const apiCost = setting?.has_api_cost ? setting.api_cost : (API_COST_FALLBACK_MAP[toolName] ?? 0);
+          apiTotal += count * apiCost;
+          // Video estimated costs
+          if (VIDEO_TOOL_NAMES.has(toolName)) {
+            apiTotal += count * (VIDEO_AVG_COST_MAP[toolName] || 0);
+          }
+        }
+
+        setApiCosts(rhCostBRL + apiTotal);
+      } catch (apiErr) {
+        console.error("API costs fetch error:", apiErr);
+        setApiCosts(0);
+      }
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
@@ -205,6 +270,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    platformFees, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
+    platformFees, apiCosts, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
   };
 }
