@@ -67,6 +67,12 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   
   const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
   const isVideo = creation.media_type === 'video';
+  const isFlyerMaker = creation.tool_name === 'Flyer Maker';
+
+  const handleModify = () => {
+    const imageUrl = creation.thumbnail_url || creation.output_url;
+    navigate('/flyer-maker', { state: { refineImageUrl: imageUrl } });
+  };
   
   // Função para obter URL de preview via proxy quando necessário
   const getProxiedUrl = (url: string): string => {
@@ -162,6 +168,18 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
           </Badge>
           
           <div className="flex gap-1">
+            {isFlyerMaker && !isVideo && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleModify}
+                className="h-7 text-xs bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
+                title="Modificar"
+              >
+                <Wand2 className="w-3 h-3 mr-1" />
+                Modificar
+              </Button>
+            )}
             <Button
               variant="outline"
               size="sm"
