@@ -289,8 +289,8 @@ async function handleRun(req: Request) {
       _user_id: userId, _amount: creditCost
     });
     if (!testError && testResult && testResult.length > 0) {
-      testCreditsUsed = testResult[0].test_used || 0;
-      normalCreditsToCharge = testResult[0].remaining || creditCost;
+      testCreditsUsed = testResult[0].test_used ?? 0;
+      normalCreditsToCharge = testResult[0].remaining ?? creditCost;
       console.log(`[FlyerMaker] Test credits used: ${testCreditsUsed}, normal to charge: ${normalCreditsToCharge}`);
     }
   } catch (e) {
