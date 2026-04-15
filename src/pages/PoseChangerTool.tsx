@@ -673,11 +673,15 @@ const PoseChangerTool: React.FC = () => {
                           wrapperStyle={{ width: '100%', height: '100%' }}
                           contentStyle={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         >
-                          <img
+                          <ResilientImage
                             src={outputImage}
+                            originalSrc={thumbnailImage || undefined}
                             alt="Resultado"
                             className="w-full h-full object-contain"
-                            draggable={false}
+                            maxRetries={4}
+                            compressOnFailure={true}
+                            locale="pt"
+                            objectFit="contain"
                           />
                         </TransformComponent>
                       </div>

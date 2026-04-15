@@ -672,10 +672,15 @@ const VesteAITool: React.FC = () => {
                           wrapperClass="!w-full !h-full"
                           contentClass="!w-full !h-full flex items-center justify-center"
                         >
-                          <img
+                          <ResilientImage
                             src={outputImage}
+                            originalSrc={thumbnailImage || undefined}
                             alt="Resultado"
                             className="max-w-full max-h-full object-contain"
+                            maxRetries={4}
+                            compressOnFailure={true}
+                            locale="pt"
+                            objectFit="contain"
                           />
                         </TransformComponent>
                       </div>
