@@ -17,6 +17,7 @@ import "./lib/i18n"; // Initialize i18n
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ForceUpdateModal from "./components/ForceUpdateModal";
+import NewVersionBanner from "./components/NewVersionBanner";
 
 // Lazy-loaded pages - loaded on demand
 const Promptverso = lazy(() => import("./pages/Promptverso"));
@@ -211,7 +212,8 @@ const AppContent = () => {
       <Toaster />
       <Sonner />
       <ForceUpdateModal />
-       
+      <NewVersionBanner />
+
       <FloatingToolsNav />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>

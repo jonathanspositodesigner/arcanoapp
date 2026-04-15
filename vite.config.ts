@@ -54,7 +54,7 @@ export default defineConfig(({ mode }) => ({
         clientsClaim: true, // Allow new SW to take control immediately
         skipWaiting: false, // Manual control via SKIP_WAITING message
         cleanupOutdatedCaches: true,
-        cacheId: "arcanoapp-v5.4.0",
+      cacheId: "arcanoapp-v5.5.0",
         navigateFallback: "/index.html",
         navigateFallbackDenylist: [/^\/api/, /^\/supabase/],
         runtimeCaching: [
@@ -73,7 +73,7 @@ export default defineConfig(({ mode }) => ({
             urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/i,
             handler: "CacheFirst",
             options: {
-            cacheName: "arcanoapp-images-v5.4.0",
+            cacheName: "arcanoapp-images-v5.5.0",
               expiration: {
                 maxEntries: 150,
                 maxAgeSeconds: 60 * 60 * 24 * 50, // 50 dias
