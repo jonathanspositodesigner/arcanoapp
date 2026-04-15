@@ -270,6 +270,6 @@ export function useSalesDashboard() {
     customEnd, setCustomEnd,
     orders, approved, pending, refunded,
     revenue, refundedTotal, pendingTotal,
-    platformFees, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
+    platformFees, apiCosts, pageViews, adSpend, metaClicks, metaLandingPageViews, metaInitiatedCheckouts, abandonedCheckouts, isLoading, refetch: fetchData,
   };
 }
