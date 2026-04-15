@@ -11,6 +11,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
+import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import AppTopBar from "@/components/layout/AppTopBar";
 
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
 import LazyVideo from "@/components/LazyVideo";
@@ -104,6 +106,16 @@ const BibliotecaArtes = () => {
     getExpiredPackInfo,
     logout
   } = usePremiumArtesStatus();
+  const { user: topBarUser, isPremium: topBarIsPremium, planType: topBarPlanType, logout: topBarLogout } = usePremiumStatus();
+  const [topBarProfile, setTopBarProfile] = useState<{ name?: string; phone?: string } | null>(null);
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!topBarUser) return;
+      const { data } = await supabase.from('profiles').select('name, phone').eq('id', topBarUser.id).single();
+      if (data) setTopBarProfile(data);
+    };
+    fetchProfile();
+  }, [topBarUser]);
   const [isAdmin, setIsAdmin] = useState(false);
   useEffect(() => {
     const checkAdmin = async () => {
@@ -590,102 +602,38 @@ const BibliotecaArtes = () => {
       {/* Promo Natal Banner */}
       <PromoNatalBanner />
 
-      <div className={`min-h-screen bg-background flex ${isPromoActive ? 'pt-11' : ''}`}>
-        {/* Overlay for mobile sidebar */}
-        {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
+      <div className={`min-h-screen bg-background ${isPromoActive ? 'pt-11' : ''}`}>
+        {/* Top Bar - same as BibliotecaPrompts */}
+        <AppTopBar
+          user={topBarUser}
+          isPremium={topBarIsPremium}
+          planType={topBarPlanType}
+          userProfile={topBarProfile}
+          onLogout={topBarLogout}
+          onToggleSidebar={() => setSidebarOpen(prev => !prev)}
+        />
 
-        {/* Desktop Sidebar */}
-        <aside className={`hidden lg:flex lg:w-64 lg:flex-col lg:fixed bg-sidebar-background border-r border-border ${isPromoActive ? 'top-11 bottom-0' : 'inset-y-0'}`}>
-          <InternalSidebarContent />
-        </aside>
+        <div className="flex">
+          {/* Overlay for mobile sidebar */}
+          {sidebarOpen && <div className="lg:hidden fixed inset-0 bg-muted/70 z-40" onClick={() => setSidebarOpen(false)} />}
 
-        {/* Mobile Sidebar */}
-        {sidebarOpen && (
-          <aside className="lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-sidebar-background border-r border-border">
+          {/* Desktop Sidebar */}
+          <aside className="hidden lg:flex lg:w-64 lg:flex-col lg:fixed lg:top-[57px] lg:bottom-0 bg-sidebar-background border-r border-border">
             <InternalSidebarContent />
           </aside>
-        )}
 
-        {/* Main Content Area */}
-        <div className="flex-1 lg:pl-64">
-          {/* Top Bar - Desktop */}
-          <header className={`hidden lg:flex bg-card border-b border-border px-6 py-3 items-center justify-between sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
-            <div className="flex items-center gap-3">
-              <Button onClick={() => navigate("/")} variant="ghost" size="sm">
-                <Home className="h-4 w-4 mr-2" />
-                Home
-              </Button>
-              {!user && <>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} variant="ghost" size="sm">
-                  <LogIn className="h-4 w-4 mr-2" />
-                  {t('buttons.login')}
-                </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white"}>
-                  <Star className="h-3 w-3 mr-2" fill="currentColor" />
-                  {isPromoActive ? t('buttons.buyWith50Off') : t('buttons.buyPack')}
-                </Button>
-              </>}
-              {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white">
-                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {userPacks.length} {userPacks.length === 1 ? 'Pack' : 'Packs'}
-                </Badge>}
-                {hasBonusAccess && <Badge variant="secondary" className="bg-emerald-500/20 text-emerald-400">
-                  <Gift className="h-3 w-3 mr-1" />
-                  {t('sidebar.bonus')}
-                </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} variant="ghost" size="sm">
-                  <Settings className="h-4 w-4 mr-2" />
-                  {t('buttons.myProfile')}
-                </Button>
-                <Button onClick={logout} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {t('buttons.logout')}
-                </Button>
-              </>}
-            </div>
-          </header>
+          {/* Mobile Sidebar */}
+          {sidebarOpen && (
+            <aside className="lg:hidden fixed inset-y-0 left-0 z-40 w-64 bg-sidebar-background border-r border-border">
+              <InternalSidebarContent />
+            </aside>
+          )}
 
-          {/* Top Bar - Mobile/Tablet */}
-          <header className={`lg:hidden bg-card border-b border-border px-4 py-3 flex items-center justify-between sticky z-10 ${isPromoActive ? 'top-11' : 'top-0'}`}>
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" className="p-1.5" onClick={() => setSidebarOpen(true)}>
-                <Menu className="h-5 w-5" />
-              </Button>
-              <button onClick={() => navigate("/")} className="text-foreground hover:text-foreground p-1">
-                <Home className="h-5 w-5" />
-              </button>
-              <img alt="ArcanoApp" onClick={() => navigate('/')} src="/lovable-uploads/1cac2857-c174-4597-98d6-7b2fa2011a9d.png" className="h-8" />
-            </div>
-            <div className="flex items-center gap-2">
-              {!user && <>
-                <Button onClick={() => navigate("/login-artes?redirect=/biblioteca-artes")} size="sm" variant="ghost" className="text-xs">
-                  <LogIn className="h-4 w-4 mr-1" />
-                  {t('buttons.login')}
-                </Button>
-                <Button onClick={() => navigate(isPromoActive ? "/promos-natal" : "/planos-artes")} size="sm" className={isPromoActive ? "bg-gradient-to-r from-red-600 to-red-500 hover:opacity-90 text-white text-xs animate-pulse" : "bg-gradient-to-r from-yellow-500 to-orange-500 hover:opacity-90 text-white text-xs"}>
-                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {isPromoActive ? t('badges.off50') : t('buttons.buyPack')}
-                </Button>
-              </>}
-              {user && <>
-                {userPacks.length > 0 && <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs">
-                  <Star className="h-3 w-3 mr-1" fill="currentColor" />
-                  {userPacks.length} Pack{userPacks.length > 1 ? 's' : ''}
-                </Badge>}
-                <Button onClick={() => navigate("/perfil-artes")} size="sm" variant="ghost" className="p-1.5">
-                  <Settings className="h-4 w-4" />
-                </Button>
-                <Button onClick={logout} size="sm" variant="ghost" className="p-1.5">
-                  <LogOut className="h-4 w-4" />
-                </Button>
-              </>}
-            </div>
-          </header>
-
-          {/* Main Content */}
-          <div className="p-4 lg:p-6">
-            <div className="max-w-7xl mx-auto">
+          {/* Main Content Area */}
+          <div className="flex-1 lg:pl-64">
+            {/* Main Content */}
+            <div className="p-4 lg:p-6">
+              <div className="max-w-7xl mx-auto">
 
             <div className="mb-6">
               <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
@@ -1519,10 +1467,12 @@ const BibliotecaArtes = () => {
                     </Button>
                   </div>}
               </div>;
-          })()}
+           })()}
         </DialogContent>
       </Dialog>
-      </div>
+
+        </div>{/* flex */}
+      </div>{/* min-h-screen */}
     </>
   );
 };
