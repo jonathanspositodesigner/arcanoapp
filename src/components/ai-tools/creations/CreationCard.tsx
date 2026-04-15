@@ -62,6 +62,7 @@ function formatDate(dateString: string): string {
 const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const navigate = useNavigate();
   const { download, isDownloading } = useResilientDownload();
   
   const { text: timeText, urgency } = formatTimeRemaining(creation.expires_at);
