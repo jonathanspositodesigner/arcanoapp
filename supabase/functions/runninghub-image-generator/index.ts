@@ -167,6 +167,50 @@ async function fetchWithRetry(
   throw new Error(`${context} failed - unexpected retry loop exit`);
 }
 
+// Resilient image download with retries (handles 502/504/520/Cloudflare/timeout/network)
+async function fetchImageWithRetry(
+  url: string,
+  context: string,
+  maxRetries: number = 3
+): Promise<Response> {
+  const retryableStatuses = [408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524];
+  const delays = [2000, 5000, 10000];
+
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (response.ok) return response;
+
+      if (retryableStatuses.includes(response.status) && attempt < maxRetries - 1) {
+        await response.text(); // consume body
+        const delay = delays[attempt] || 2000;
+        console.warn(`[ImageGenerator] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      // Non-retryable or final attempt
+      return response;
+    } catch (err) {
+      lastError = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (attempt < maxRetries - 1) {
+        const delay = delays[attempt] || 2000;
+        console.warn(`[ImageGenerator] ${context} network error (${msg}), retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(`${context} failed after ${maxRetries} retries`);
+}
+
 function getClientIP(req: Request): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') || 'unknown';
@@ -356,47 +400,83 @@ async function handleRun(req: Request) {
 
   const uploadedFileNames: string[] = [];
 
+  // Helper: process a single ref image (download + upload to RunningHub).
+  // Returns the RunningHub fileName on success; throws on failure.
+  async function processOneRefImage(imgUrl: string, idx: number): Promise<string> {
+    await logStep(jobId, `downloading_ref_image_${idx + 1}`);
+    const imgResponse = await fetchImageWithRetry(imgUrl, `Download ref image ${idx + 1}`);
+    if (!imgResponse.ok) {
+      // After internal retries, still failing
+      throw new Error(`download_failed_${imgResponse.status}`);
+    }
+
+    const imgBlob = await imgResponse.blob();
+    const imgName = imgUrl.split('/').pop() || `ref_${idx + 1}.png`;
+
+    const formData = new FormData();
+    formData.append('apiKey', RUNNINGHUB_API_KEY);
+    formData.append('fileType', 'image');
+    formData.append('file', imgBlob, imgName);
+
+    await logStep(jobId, `uploading_ref_image_${idx + 1}`);
+    const uploadResponse = await fetchWithRetry(
+      'https://www.runninghub.ai/task/openapi/upload',
+      { method: 'POST', body: formData },
+      `Ref image ${idx + 1} upload`
+    );
+
+    const uploadData = await safeParseResponse(uploadResponse, `Ref upload ${idx + 1}`);
+    if (uploadData.code !== 0) {
+      throw new Error(`upload_rejected: ${uploadData.msg || 'Unknown'}`);
+    }
+    return uploadData.data.fileName;
+  }
+
   try {
     for (let i = 0; i < imageUrls.length; i++) {
       const imgUrl = imageUrls[i];
-      await logStep(jobId, `downloading_ref_image_${i + 1}`);
-      
-      const imgResponse = await fetch(imgUrl);
-      if (!imgResponse.ok) throw new Error(`Failed to download ref image ${i + 1} (${imgResponse.status})`);
-      
-      const imgBlob = await imgResponse.blob();
-      const imgName = imgUrl.split('/').pop() || `ref_${i + 1}.png`;
-      
-      const formData = new FormData();
-      formData.append('apiKey', RUNNINGHUB_API_KEY);
-      formData.append('fileType', 'image');
-      formData.append('file', imgBlob, imgName);
-      
-      await logStep(jobId, `uploading_ref_image_${i + 1}`);
-      
-      const uploadResponse = await fetchWithRetry(
-        'https://www.runninghub.ai/task/openapi/upload',
-        { method: 'POST', body: formData },
-        `Ref image ${i + 1} upload`
-      );
-      
-      const uploadData = await safeParseResponse(uploadResponse, `Ref upload ${i + 1}`);
-      if (uploadData.code !== 0) throw new Error(`Ref image ${i + 1} upload failed: ${uploadData.msg || 'Unknown'}`);
-      
-      uploadedFileNames.push(uploadData.data.fileName);
-      console.log(`[ImageGenerator] Ref image ${i + 1} uploaded: ${uploadData.data.fileName}`);
+
+      // Outer retry loop: full download+upload cycle, in case RunningHub
+      // intermittently returns 500 on upload OR Storage returns 5xx on download.
+      const MAX_CYCLE_RETRIES = 2;
+      let lastErr: unknown = null;
+      let fileName: string | null = null;
+
+      for (let cycle = 0; cycle <= MAX_CYCLE_RETRIES; cycle++) {
+        try {
+          fileName = await processOneRefImage(imgUrl, i);
+          break;
+        } catch (err) {
+          lastErr = err;
+          const msg = err instanceof Error ? err.message : String(err);
+          console.warn(`[ImageGenerator] Cycle ${cycle + 1}/${MAX_CYCLE_RETRIES + 1} failed for ref ${i + 1}: ${msg}`);
+          if (cycle < MAX_CYCLE_RETRIES) {
+            await new Promise(r => setTimeout(r, 3000 + cycle * 3000));
+          }
+        }
+      }
+
+      if (!fileName) {
+        const technical = lastErr instanceof Error ? lastErr.message : 'unknown';
+        // User-friendly error message (PT-BR), technical details in step_history/logs
+        const friendly = `Falha temporária ao processar a imagem de referência ${i + 1}. Por favor, tente novamente em alguns segundos. (${technical})`;
+        throw new Error(friendly);
+      }
+
+      uploadedFileNames.push(fileName);
+      console.log(`[ImageGenerator] Ref image ${i + 1} uploaded: ${fileName}`);
     }
   } catch (error: unknown) {
-    const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
+    const errorMsg = error instanceof Error ? error.message : 'Falha ao transferir imagens de referência';
     console.error('[ImageGenerator] Image transfer error:', error);
     await logStepFailure(jobId, 'image_transfer', errorMsg);
-    
+
     await supabase.from(TABLE_NAME).update({
       status: 'failed',
-      error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 200)}`,
+      error_message: `IMAGE_TRANSFER_ERROR: ${errorMsg.slice(0, 250)}`,
       completed_at: new Date().toISOString()
     }).eq('id', jobId);
-    
+
     return new Response(JSON.stringify({ error: errorMsg, code: 'IMAGE_TRANSFER_ERROR' }), {
       status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
