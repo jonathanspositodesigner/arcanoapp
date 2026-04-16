@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
-import { ShieldCheck, Infinity, Rocket, Flame, Crown } from "lucide-react";
+import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
