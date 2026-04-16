@@ -135,27 +135,92 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
 });
 V3StickyBar.displayName = "V3StickyBar";
 
-/* ─── 30-min Countdown (ES page) ─── */
+/* ─── 4-Day Rolling Countdown ─── */
+function get4DayRemaining() {
+  const CYCLE_MS = 4 * 24 * 60 * 60 * 1000;
+  // Epoch anchor: April 16 2026 00:00 UTC (today)
+  const anchor = new Date("2026-04-16T00:00:00Z").getTime();
+  const now = Date.now();
+  const elapsed = (now - anchor) % CYCLE_MS;
+  return CYCLE_MS - elapsed;
+}
+
 export const V3PromoCountdown = memo(() => {
-  const ref = useRef<HTMLDivElement>(null);
+  const dRef = useRef<HTMLSpanElement>(null);
+  const hRef = useRef<HTMLSpanElement>(null);
+  const mRef = useRef<HTMLSpanElement>(null);
+  const sRef = useRef<HTMLSpanElement>(null);
+
   useEffect(() => {
-    let count = 30 * 60;
-    const interval = setInterval(() => {
-      if (count <= 0) { clearInterval(interval); return; }
-      count--;
-      const m = Math.floor(count / 60);
-      const s = count % 60;
-      if (ref.current) ref.current.textContent = `00:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-    }, 1000);
+    const tick = () => {
+      const rem = get4DayRemaining();
+      const totalSec = Math.floor(rem / 1000);
+      const d = Math.floor(totalSec / 86400);
+      const h = Math.floor((totalSec % 86400) / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (dRef.current) dRef.current.textContent = String(d).padStart(2, "0");
+      if (hRef.current) hRef.current.textContent = String(h).padStart(2, "0");
+      if (mRef.current) mRef.current.textContent = String(m).padStart(2, "0");
+      if (sRef.current) sRef.current.textContent = String(s).padStart(2, "0");
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  const boxStyle: React.CSSProperties = {
+    display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+    background: "rgba(245,200,66,0.08)", border: "1px solid rgba(245,200,66,0.2)",
+    borderRadius: 10, padding: "8px 10px", minWidth: 52,
+  };
+  const numStyle: React.CSSProperties = {
+    fontSize: 26, fontWeight: 800, color: "#F5C842",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontVariantNumeric: "tabular-nums", lineHeight: 1,
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.45)",
+    textTransform: "uppercase", letterSpacing: 1,
+  };
+  const sepStyle: React.CSSProperties = {
+    fontSize: 22, fontWeight: 800, color: "rgba(245,200,66,0.4)", alignSelf: "center", paddingBottom: 12,
+  };
+
   return (
-    <div ref={ref} style={{ fontSize: 28, fontWeight: 800, color: "#F5C842", fontFamily: "'Plus Jakarta Sans', sans-serif", letterSpacing: 2, fontVariantNumeric: "tabular-nums" }}>
-      00:30:00
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={boxStyle}><span ref={dRef} style={numStyle}>--</span><span style={labelStyle}>Días</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={hRef} style={numStyle}>--</span><span style={labelStyle}>Hrs</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={mRef} style={numStyle}>--</span><span style={labelStyle}>Min</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={sRef} style={numStyle}>--</span><span style={labelStyle}>Seg</span></div>
     </div>
   );
 });
 V3PromoCountdown.displayName = "V3PromoCountdown";
+
+/* ─── 4-Day Compact Countdown (for sticky bar) ─── */
+export const V3PromoCountdownCompact = memo(() => {
+  const ref = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const tick = () => {
+      const rem = get4DayRemaining();
+      const totalSec = Math.floor(rem / 1000);
+      const d = Math.floor(totalSec / 86400);
+      const h = Math.floor((totalSec % 86400) / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (ref.current) ref.current.textContent = `${d}d ${String(h).padStart(2,"0")}:${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+  return <span ref={ref} style={{ fontVariantNumeric: "tabular-nums" }}>--</span>;
+});
+V3PromoCountdownCompact.displayName = "V3PromoCountdownCompact";
 
 /* ─── Gallery Before/After Slider (DOM-only, no React state) ─── */
 interface GalleryItemData { before: string; after: string; label: string; desc: string; badge?: string }
