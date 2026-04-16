@@ -153,6 +153,42 @@ const realResults = [
   }
 ];
 
+/* ── Eshot Sticky Promo Bar ── */
+const EshotStickyPromoBar = memo(({ scrollToPrice }: { scrollToPrice: () => void }) => {
+  const [visible, setVisible] = useState(false);
+  const countRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => setVisible(window.scrollY > 300);
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    let count = 30 * 60;
+    const interval = setInterval(() => {
+      if (count <= 0) { clearInterval(interval); return; }
+      count--;
+      const m = Math.floor(count / 60);
+      const s = count % 60;
+      if (countRef.current) countRef.current.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className={`eshot-sticky-bar ${visible ? "visible" : ""}`}>
+      <div className="eshot-sticky-bar-text">
+        <span>🔥</span>
+        <span>50% OFF · Termina en:</span>
+        <span ref={countRef} className="eshot-sticky-bar-countdown">30:00</span>
+      </div>
+      <button className="eshot-sticky-bar-btn" onClick={scrollToPrice}>Obtener →</button>
+    </div>
+  );
+});
+EshotStickyPromoBar.displayName = "EshotStickyPromoBar";
+
 const UpscalerArcanoV3 = () => {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
