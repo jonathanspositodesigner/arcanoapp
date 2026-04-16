@@ -89,10 +89,14 @@ const IALibraryManager = () => {
       const sourceIds = (itemData || []).map((i) => i.source_id);
       let sourcesById: Record<string, any> = {};
       if (sourceIds.length > 0) {
-        const { data: sources } = await supabase
+        const selectCols = meta.sourceTable === "admin_prompts"
+          ? "id, title, image_url, thumbnail_url"
+          : "id, title, image_url";
+        const { data: sources, error: srcErr } = await supabase
           .from(meta.sourceTable)
-          .select("id, title, image_url, thumbnail_url")
+          .select(selectCols)
           .in("id", sourceIds);
+        if (srcErr) console.error("Source load error:", srcErr);
         sourcesById = Object.fromEntries((sources || []).map((s: any) => [s.id, s]));
       }
 
