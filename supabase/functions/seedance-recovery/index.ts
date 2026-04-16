@@ -47,8 +47,8 @@ serve(async (req) => {
       }
       if (j.status === "timeout_recovery") return true;
       if (j.status === "running" && j.task_id) {
-        const twentyFiveMinAgo = new Date(Date.now() - 25 * 60 * 1000).toISOString();
-        return j.created_at && j.created_at < twentyFiveMinAgo;
+        const tenMinAgo = new Date(Date.now() - 10 * 60 * 1000).toISOString();
+        return j.created_at && j.created_at < tenMinAgo;
       }
       return false;
     });
