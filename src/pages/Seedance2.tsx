@@ -404,7 +404,14 @@ export default function Seedance2() {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing" } : g));
 
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) return;
+      if (!session) {
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Sessão expirada. Faça login novamente." } : g));
+        await supabase.from("seedance_jobs").update({
+          status: "failed",
+          error_message: "Sessão expirada - token ausente",
+        }).eq("id", jobData.id);
+        return;
+      }
 
       // Retry edge function invocation up to 2 times on network/gateway errors
       let data: any = null;
