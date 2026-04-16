@@ -32,6 +32,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   const [characters, setCharacters] = useState<SavedCharacter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const latestSelectionRef = useRef<string | null>(null);
 
   const fetchCharacters = useCallback(async () => {
