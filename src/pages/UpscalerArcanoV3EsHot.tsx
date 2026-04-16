@@ -5,7 +5,7 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 
 const HOTMART_LINKS: Record<string, string> = {
-  'vitalicio': 'https://pay.hotmart.com/T105269427K',
+  'vitalicio': 'https://pay.hotmart.com/T105269427K?off=2pqwe2ay',
 };
 
 function redirectToHotmart(plan: string) {
