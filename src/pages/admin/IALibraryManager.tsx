@@ -197,12 +197,30 @@ const IALibraryManager = () => {
       const selectCols = meta.sourceTable === "admin_prompts"
         ? "id, title, image_url, thumbnail_url"
         : "id, title, image_url";
-      let q = supabase.from(meta.sourceTable).select(selectCols).order("created_at", { ascending: false }).limit(2000);
+      let q = supabase
+        .from(meta.sourceTable)
+        .select(selectCols)
+        .order("created_at", { ascending: false })
+        .limit(2000);
       if (meta.sourceCategory) q = q.eq("category", meta.sourceCategory);
+
       const { data: src, error } = await q;
-      if (error) { console.error("Add modal load error:", error); toast.error("Erro: " + error.message); }
-      const existing = new Set(items.map((i) => i.source_id));
-      setAddAvailable((src || []).filter((s: any) => !existing.has(s.id)));
+      if (error) {
+        console.error("Add modal load error:", error);
+        toast.error("Erro: " + error.message);
+        setAddAvailable([]);
+        return;
+      }
+
+      const existingBySourceId = new Map(items.map((item) => [item.source_id, item]));
+      setAddAvailable(
+        (src || []).map((source: any) => ({
+          ...source,
+          alreadyInLibrary: existingBySourceId.has(source.id),
+          currentCategoryId: existingBySourceId.get(source.id)?.category_id ?? null,
+          currentVisibility: existingBySourceId.get(source.id)?.is_visible ?? false,
+        }))
+      );
     } finally {
       setAddLoading(false);
     }
@@ -210,16 +228,23 @@ const IALibraryManager = () => {
 
   const confirmAdd = async () => {
     if (selectedToAdd.size === 0) return;
-    const rows = Array.from(selectedToAdd).map((sid) => ({
+
+    const rows = Array.from(selectedToAdd).map((sid, index) => ({
       tool_slug: toolSlug,
       source_table: meta.sourceTable,
       source_id: sid,
       category_id: meta.hasCategories ? (addCategoryId || null) : null,
       is_visible: true,
+      display_order: items.length + index,
     }));
-    const { error } = await supabase.from("ai_tool_library_items").insert(rows);
+
+    const { error } = await supabase
+      .from("ai_tool_library_items")
+      .upsert(rows, { onConflict: "tool_slug,source_id" });
+
     if (error) return toast.error(error.message);
-    toast.success(`${rows.length} item(ns) adicionado(s)`);
+
+    toast.success(`${rows.length} item(ns) atualizado(s)`);
     setAddOpen(false);
     loadAll();
   };
