@@ -284,7 +284,7 @@ const PlanosUpscalerArcano69ES = () => {
   ];
 
   return (
-    <div className="dark min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] text-white">
+    <div className="dark w-full overflow-x-hidden bg-[#0d0a18] text-white">
 
       {/* Se já tem acesso */}
       {hasAccess ? (
