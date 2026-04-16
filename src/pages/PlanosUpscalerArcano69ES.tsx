@@ -628,12 +628,12 @@ const PlanosUpscalerArcano69ES = () => {
                     <AccordionItem 
                       key={index} 
                       value={`item-${index}`}
-                      className="bg-purple-900/40 border border-purple-500/30 rounded-2xl px-6 data-[state=open]:border-purple-500/30"
+                      className="border border-[#2d1a4f] rounded-2xl overflow-hidden bg-[#1a1030] data-[state=open]:border-purple-500/40"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-white text-left text-sm md:text-base font-medium px-5 py-4 hover:no-underline hover:bg-[#1e1438]">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-purple-200/80 pb-5">
+                      <AccordionContent className="text-gray-300 text-sm leading-relaxed bg-[#160e28] px-5 pb-4 pt-2">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
