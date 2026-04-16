@@ -394,7 +394,6 @@ const UpscalerArcanoV3 = () => {
             <button className="eshot-hero-btn" onClick={() => redirectToHotmart('vitalicio')}>
               Obtener Vitalicio — $9,90 →
             </button>
-            <div className="eshot-hero-trust">✓ Acceso inmediato · ✓ Garantía 7 días</div>
           </div>
 
           <div className="v3-hero-micro">
