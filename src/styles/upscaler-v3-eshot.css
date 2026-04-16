@@ -19,6 +19,9 @@
 .eshot-page section[style*="padding: 100px"] {
   background-color: #06060F;
 }
+.eshot-page .v3-stats-row {
+  margin-bottom: 20px;
+}
 
 /* 2. Hero CTA */
 .eshot-hero-cta {
