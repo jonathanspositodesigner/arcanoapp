@@ -367,8 +367,7 @@ const UpscalerArcanoV3 = () => {
             {isMobile ? (
               <>Rápido. Simple. Resultado profesional en 60 segundos.</>
             ) : (
-              <>El Upscaler Arcano transforma cualquier imagen en calidad 4K con IA.<br />
-              Rápido. Simple. Resultado profesional en 60 segundos.</>
+              <>El Upscaler Arcano transforma cualquier imagen en calidad 4K con IA. Rápido. Simple. Resultado profesional en 60 segundos.</>
             )}
           </p>
 
