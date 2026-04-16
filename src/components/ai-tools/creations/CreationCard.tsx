@@ -153,6 +153,19 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
             {isVideo ? 'Vídeo' : 'Imagem'}
           </Badge>
         </div>
+
+        {/* Quick download button (top-right overlay) */}
+        {!imageError && (
+          <button
+            onClick={handleDownload}
+            disabled={isDownloading}
+            title="Baixar"
+            aria-label="Baixar"
+            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition-all disabled:opacity-50"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        )}
       </div>
       
       {/* Info Section */}
