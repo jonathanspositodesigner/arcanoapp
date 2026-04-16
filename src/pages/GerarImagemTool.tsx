@@ -632,10 +632,10 @@ const GerarImagemTool = () => {
               <button onClick={resetJobState} className="text-xs text-muted-foreground hover:text-muted-foreground underline">Tentar novamente</button>
             </div>
           ) : (
-            <div className="flex flex-col items-center gap-3 text-slate-400/60">
-              <Sparkles className="h-12 w-12" />
-              <p className="text-sm text-center">Digite um prompt e clique em Gerar</p>
-              <p className="text-xs text-slate-400/40 text-center">
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <Sparkles className="h-12 w-12 opacity-50" />
+              <p className="text-sm text-center text-foreground font-medium">Digite um prompt e clique em Gerar</p>
+              <p className="text-xs text-center text-muted-foreground/70">
                 Arraste imagens aqui ou cole com Ctrl+V para adicionar referências
               </p>
             </div>
