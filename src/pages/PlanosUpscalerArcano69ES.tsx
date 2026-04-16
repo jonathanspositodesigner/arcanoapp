@@ -354,6 +354,16 @@ const PlanosUpscalerArcano69ES = () => {
                 </p>
               </FadeIn>
 
+              {/* CTA inline */}
+              <FadeIn delay={500} duration={600}>
+                <button
+                  onClick={scrollToPricing}
+                  className="bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl px-8 py-3.5 transition-colors shadow-lg shadow-purple-900/40"
+                >
+                  Ver planes 🔥
+                </button>
+              </FadeIn>
+
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
                 <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
@@ -362,7 +372,7 @@ const PlanosUpscalerArcano69ES = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-purple-900/20">
+          <AnimatedSection className="px-3 md:px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
