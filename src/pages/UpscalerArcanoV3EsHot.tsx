@@ -5,9 +5,6 @@ import { appendUtmToUrl } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 
 const HOTMART_LINKS: Record<string, string> = {
-  'starter': 'https://pay.hotmart.com/T105271055V',
-  'pro': 'https://pay.hotmart.com/K105336548M',
-  'ultimate': 'https://pay.hotmart.com/C105336648I',
   'vitalicio': 'https://pay.hotmart.com/T105269427K',
 };
 
