@@ -218,6 +218,17 @@ const UpscalerArcanoV3 = () => {
     autoRef.current = true;
   }, [setSliderDOM]);
 
+  // Fix white gaps: force dark bg on body for this page only
+  useEffect(() => {
+    const prev = document.body.style.backgroundColor;
+    document.body.style.backgroundColor = '#06060F';
+    document.documentElement.style.backgroundColor = '#06060F';
+    return () => {
+      document.body.style.backgroundColor = prev;
+      document.documentElement.style.backgroundColor = '';
+    };
+  }, []);
+
   // Scroll reveal observer — watches for dynamically added .v3-reveal elements (V3LazySection)
   useEffect(() => {
     const io = new IntersectionObserver(
