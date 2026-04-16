@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
