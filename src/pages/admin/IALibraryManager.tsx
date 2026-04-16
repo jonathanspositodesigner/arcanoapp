@@ -197,12 +197,30 @@ const IALibraryManager = () => {
       const selectCols = meta.sourceTable === "admin_prompts"
         ? "id, title, image_url, thumbnail_url"
         : "id, title, image_url";
-      let q = supabase.from(meta.sourceTable).select(selectCols).order("created_at", { ascending: false }).limit(2000);
+      let q = supabase
+        .from(meta.sourceTable)
+        .select(selectCols)
+        .order("created_at", { ascending: false })
+        .limit(2000);
       if (meta.sourceCategory) q = q.eq("category", meta.sourceCategory);
+
       const { data: src, error } = await q;
-      if (error) { console.error("Add modal load error:", error); toast.error("Erro: " + error.message); }
-      const existing = new Set(items.map((i) => i.source_id));
-      setAddAvailable((src || []).filter((s: any) => !existing.has(s.id)));
+      if (error) {
+        console.error("Add modal load error:", error);
+        toast.error("Erro: " + error.message);
+        setAddAvailable([]);
+        return;
+      }
+
+      const existingBySourceId = new Map(items.map((item) => [item.source_id, item]));
+      setAddAvailable(
+        (src || []).map((source: any) => ({
+          ...source,
+          alreadyInLibrary: existingBySourceId.has(source.id),
+          currentCategoryId: existingBySourceId.get(source.id)?.category_id ?? null,
+          currentVisibility: existingBySourceId.get(source.id)?.is_visible ?? false,
+        }))
+      );
     } finally {
       setAddLoading(false);
     }
@@ -210,16 +228,23 @@ const IALibraryManager = () => {
 
   const confirmAdd = async () => {
     if (selectedToAdd.size === 0) return;
-    const rows = Array.from(selectedToAdd).map((sid) => ({
+
+    const rows = Array.from(selectedToAdd).map((sid, index) => ({
       tool_slug: toolSlug,
       source_table: meta.sourceTable,
       source_id: sid,
       category_id: meta.hasCategories ? (addCategoryId || null) : null,
       is_visible: true,
+      display_order: items.length + index,
     }));
-    const { error } = await supabase.from("ai_tool_library_items").insert(rows);
+
+    const { error } = await supabase
+      .from("ai_tool_library_items")
+      .upsert(rows, { onConflict: "tool_slug,source_id" });
+
     if (error) return toast.error(error.message);
-    toast.success(`${rows.length} item(ns) adicionado(s)`);
+
+    toast.success(`${rows.length} item(ns) atualizado(s)`);
     setAddOpen(false);
     loadAll();
   };
@@ -379,16 +404,21 @@ const IALibraryManager = () => {
                           if (selected) ns.delete(src.id); else ns.add(src.id);
                           setSelectedToAdd(ns);
                         }}
-                        className={`relative aspect-[3/4] rounded-md overflow-hidden border-2 transition-all ${selected ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"}`}
+                        className={`relative aspect-[3/4] rounded-md overflow-hidden border-2 transition-all text-left ${selected ? "border-primary ring-2 ring-primary/30" : src.alreadyInLibrary ? "border-accent hover:border-primary/50" : "border-border hover:border-primary/50"}`}
                       >
-                        <img src={src.thumbnail_url || src.image_url} alt={src.title} loading="lazy" className="w-full h-full object-cover" />
+                        <img src={src.thumbnail_url || src.image_url} alt={src.title || "Item sem título"} loading="lazy" className="w-full h-full object-cover" />
                         {selected && (
                           <div className="absolute top-1 right-1 bg-primary rounded-full p-1">
                             <Check className="h-3 w-3 text-primary-foreground" />
                           </div>
                         )}
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1">
-                          <p className="text-[9px] text-white line-clamp-2">{src.title}</p>
+                        {src.alreadyInLibrary && !selected && (
+                          <div className="absolute top-1 right-1 rounded-full bg-accent px-2 py-0.5">
+                            <span className="text-[9px] font-medium text-accent-foreground">Na biblioteca</span>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                          <p className="text-[10px] text-white line-clamp-2 font-medium">{src.title || "Sem título"}</p>
                         </div>
                       </button>
                     );
