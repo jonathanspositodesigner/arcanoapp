@@ -404,16 +404,21 @@ const IALibraryManager = () => {
                           if (selected) ns.delete(src.id); else ns.add(src.id);
                           setSelectedToAdd(ns);
                         }}
-                        className={`relative aspect-[3/4] rounded-md overflow-hidden border-2 transition-all ${selected ? "border-primary ring-2 ring-primary/30" : "border-border hover:border-primary/50"}`}
+                        className={`relative aspect-[3/4] rounded-md overflow-hidden border-2 transition-all text-left ${selected ? "border-primary ring-2 ring-primary/30" : src.alreadyInLibrary ? "border-accent hover:border-primary/50" : "border-border hover:border-primary/50"}`}
                       >
-                        <img src={src.thumbnail_url || src.image_url} alt={src.title} loading="lazy" className="w-full h-full object-cover" />
+                        <img src={src.thumbnail_url || src.image_url} alt={src.title || "Item sem título"} loading="lazy" className="w-full h-full object-cover" />
                         {selected && (
                           <div className="absolute top-1 right-1 bg-primary rounded-full p-1">
                             <Check className="h-3 w-3 text-primary-foreground" />
                           </div>
                         )}
-                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-1">
-                          <p className="text-[9px] text-white line-clamp-2">{src.title}</p>
+                        {src.alreadyInLibrary && !selected && (
+                          <div className="absolute top-1 right-1 rounded-full bg-accent px-2 py-0.5">
+                            <span className="text-[9px] font-medium text-accent-foreground">Na biblioteca</span>
+                          </div>
+                        )}
+                        <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2">
+                          <p className="text-[10px] text-white line-clamp-2 font-medium">{src.title || "Sem título"}</p>
                         </div>
                       </button>
                     );
