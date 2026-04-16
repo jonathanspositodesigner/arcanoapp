@@ -167,6 +167,50 @@ async function fetchWithRetry(
   throw new Error(`${context} failed - unexpected retry loop exit`);
 }
 
+// Resilient image download with retries (handles 502/504/520/Cloudflare/timeout/network)
+async function fetchImageWithRetry(
+  url: string,
+  context: string,
+  maxRetries: number = 3
+): Promise<Response> {
+  const retryableStatuses = [408, 425, 429, 500, 502, 503, 504, 520, 521, 522, 523, 524];
+  const delays = [2000, 5000, 10000];
+
+  let lastError: unknown = null;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 25000);
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeout);
+
+      if (response.ok) return response;
+
+      if (retryableStatuses.includes(response.status) && attempt < maxRetries - 1) {
+        await response.text(); // consume body
+        const delay = delays[attempt] || 2000;
+        console.warn(`[ImageGenerator] ${context} got ${response.status}, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      // Non-retryable or final attempt
+      return response;
+    } catch (err) {
+      lastError = err;
+      const msg = err instanceof Error ? err.message : String(err);
+      if (attempt < maxRetries - 1) {
+        const delay = delays[attempt] || 2000;
+        console.warn(`[ImageGenerator] ${context} network error (${msg}), retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error(`${context} failed after ${maxRetries} retries`);
+}
+
 function getClientIP(req: Request): string {
   return req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     req.headers.get('x-real-ip') || 'unknown';
