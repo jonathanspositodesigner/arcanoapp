@@ -602,33 +602,39 @@ const UpscalerArcanoV3 = () => {
             </div>
 
             {/* Desktop: pricing + guarantee side by side | Mobile: stacked */}
-            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 24, justifyContent: "center", alignItems: "stretch", maxWidth: 820, margin: "0 auto" }}>
+            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 24, justifyContent: "center", alignItems: isMobile ? "center" : "stretch", maxWidth: 860, margin: "0 auto" }}>
               {/* ILIMITADO CARD */}
-              <div className="v3-plan v3-plan-lifetime v3-reveal" style={{ flex: 1, maxWidth: isMobile ? "100%" : 420 }}>
+              <div className="v3-plan v3-plan-lifetime v3-reveal" style={{ flex: 1, maxWidth: isMobile ? 400 : 420, textAlign: "center" }}>
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Infinity size={32} style={{ color: "#f5c842" }} />
                 </div>
-                <div className="v3-plan-name">Ilimitado</div>
-                <div className="v3-plan-tagline">Acceso permanente a todo</div>
+                <div className="v3-plan-name" style={{ textAlign: "center" }}>Ilimitado</div>
+                <div className="v3-plan-tagline" style={{ textAlign: "center" }}>Acceso permanente a todo</div>
 
-                {/* 50% OFF badge */}
+                {/* 50% OFF badge - pulsing */}
                 <div style={{
-                  display: "inline-flex", alignItems: "center", gap: 6,
-                  background: "linear-gradient(135deg, #ef4444, #f97316)", color: "#fff",
-                  fontWeight: 800, fontSize: 13, padding: "6px 14px", borderRadius: 20,
-                  margin: "0 auto 8px", letterSpacing: 0.5,
+                  display: "flex", justifyContent: "center", margin: "8px 0",
                 }}>
-                  🔥 50% OFF
+                  <div style={{
+                    display: "inline-flex", alignItems: "center", gap: 6,
+                    background: "linear-gradient(135deg, #ef4444, #f97316)", color: "#fff",
+                    fontWeight: 800, fontSize: 13, padding: "6px 14px", borderRadius: 20,
+                    letterSpacing: 0.5, animation: "v3Blink 1.5s infinite",
+                  }}>
+                    🔥 50% OFF
+                  </div>
                 </div>
 
-                <div className="v3-plan-price">
+                <div className="v3-plan-price" style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
                   <div style={{ fontSize: 14, color: "var(--muted2)", textDecoration: "line-through", marginBottom: 2 }}>
                     $19,90
                   </div>
-                  <span className="currency">$</span>
-                  <span className="amount">9</span>
-                  <span className="cents">,90</span>
+                  <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
+                    <span className="currency">$</span>
+                    <span className="amount">9</span>
+                    <span className="cents">,90</span>
+                  </div>
                   <span className="period">pagás una vez · usás para siempre</span>
                 </div>
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => redirectToHotmart('vitalicio')}>Obtener Vitalicio →</button>
@@ -640,40 +646,36 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
               </div>
 
-              {/* GUARANTEE CARD - side by side on desktop */}
-              <div style={{
-                flex: 1, maxWidth: isMobile ? "100%" : 380,
-                display: "flex", flexDirection: "column", justifyContent: "center",
+              {/* GUARANTEE CARD - same height as pricing card */}
+              <div className="v3-plan v3-reveal" style={{
+                flex: 1, maxWidth: isMobile ? 400 : 420,
+                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                textAlign: "center",
+                background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,212,255,0.04))",
+                border: "1px solid rgba(0,229,160,0.25)",
               }}>
                 <div style={{
-                  background: "linear-gradient(135deg, rgba(0,229,160,0.06), rgba(0,212,255,0.04))",
-                  border: "1px solid rgba(0,229,160,0.2)",
-                  borderRadius: 20, padding: isMobile ? "28px 20px" : "40px 32px",
-                  textAlign: "center",
+                  width: 72, height: 72, borderRadius: "50%",
+                  background: "rgba(0,229,160,0.1)", border: "2px solid rgba(0,229,160,0.3)",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  margin: "0 auto 24px",
                 }}>
-                  <div style={{
-                    width: 64, height: 64, borderRadius: "50%",
-                    background: "rgba(0,229,160,0.1)", border: "2px solid rgba(0,229,160,0.3)",
-                    display: "flex", alignItems: "center", justifyContent: "center",
-                    margin: "0 auto 20px",
-                  }}>
-                    <ShieldCheck size={32} strokeWidth={1.8} style={{ color: "#00e5a0" }} />
-                  </div>
-                  <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 8 }}>
-                    Garantía de 7 días
-                  </div>
-                  <div style={{ fontSize: 14, color: "var(--muted2)", lineHeight: 1.6, marginBottom: 16 }}>
-                    Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.
-                  </div>
-                  <span style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    background: "rgba(0,229,160,0.1)", border: "1px solid rgba(0,229,160,0.25)",
-                    color: "#00e5a0", fontSize: 12, fontWeight: 700,
-                    padding: "6px 16px", borderRadius: 20, letterSpacing: 0.5,
-                  }}>
-                    ✓ RIESGO CERO
-                  </span>
+                  <ShieldCheck size={36} strokeWidth={1.8} style={{ color: "#00e5a0" }} />
                 </div>
+                <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 12 }}>
+                  Garantía de 7 días
+                </div>
+                <div style={{ fontSize: 15, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 20, maxWidth: 320 }}>
+                  Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.
+                </div>
+                <span style={{
+                  display: "inline-flex", alignItems: "center", gap: 6,
+                  background: "rgba(0,229,160,0.1)", border: "1px solid rgba(0,229,160,0.25)",
+                  color: "#00e5a0", fontSize: 13, fontWeight: 700,
+                  padding: "8px 20px", borderRadius: 20, letterSpacing: 0.5,
+                }}>
+                  ✓ RIESGO CERO
+                </span>
               </div>
             </div>
 
