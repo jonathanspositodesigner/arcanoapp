@@ -1,0 +1,224 @@
+/* ═══ ESHOT-ONLY styles — scoped to .eshot-page ═══ */
+
+/* 1. Fix white gaps: force dark bg on html/body when this page is mounted */
+.eshot-page {
+  background: #06060F !important;
+}
+/* Sections that might expose white bg */
+.eshot-page .v3-gallery,
+.eshot-page .v3-proof,
+.eshot-page .v3-real-results,
+.eshot-page .v3-audience,
+.eshot-page .v3-features,
+.eshot-page .v3-pricing,
+.eshot-page .v3-faq,
+.eshot-page .v3-final-cta {
+  background-color: #06060F;
+}
+/* How it works section (inline style wrapper) */
+.eshot-page section[style*="padding: 100px"] {
+  background-color: #06060F;
+}
+
+/* 2. Hero CTA */
+.eshot-hero-cta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin: 28px 0 8px;
+}
+.eshot-hero-btn {
+  min-width: 280px;
+  padding: 16px 36px;
+  font-size: 17px;
+  font-weight: 800;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: #0d0d1c;
+  background: linear-gradient(135deg, #F5C842, #FFD86B);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: box-shadow 0.3s, transform 0.15s;
+  letter-spacing: 0.3px;
+}
+.eshot-hero-btn:hover {
+  box-shadow: 0 0 28px rgba(245, 200, 66, 0.45);
+  transform: translateY(-1px);
+}
+.eshot-hero-trust {
+  font-size: 13px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+
+/* 3. Sticky promo bar */
+.eshot-sticky-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 44px;
+  z-index: 1001;
+  background: rgba(26, 26, 46, 0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  font-size: 13px;
+  color: #fff;
+  transform: translateY(-100%);
+  transition: transform 0.35s ease;
+  backdrop-filter: blur(8px);
+}
+.eshot-sticky-bar.visible {
+  transform: translateY(0);
+}
+.eshot-sticky-bar-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.eshot-sticky-bar-countdown {
+  color: #F5C842;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+}
+.eshot-sticky-bar-btn {
+  padding: 5px 16px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #0d0d1c;
+  background: linear-gradient(135deg, #F5C842, #FFD86B);
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: box-shadow 0.2s;
+}
+.eshot-sticky-bar-btn:hover {
+  box-shadow: 0 0 12px rgba(245, 200, 66, 0.4);
+}
+
+/* 4. Pricing discount badge */
+.eshot-discount-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #E24B4A, #f97316);
+  color: #fff;
+  font-weight: 800;
+  font-size: 14px;
+  padding: 8px 20px;
+  border-radius: 24px;
+  letter-spacing: 0.5px;
+  margin: 12px auto;
+  animation: eshot-badge-pulse 1.5s ease-in-out infinite;
+}
+@keyframes eshot-badge-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+.eshot-price-old {
+  font-size: 16px;
+  color: var(--muted);
+  text-decoration: line-through;
+  opacity: 0.5;
+  margin-bottom: 4px;
+}
+.eshot-price-big {
+  font-size: 52px !important;
+}
+.eshot-price-big-cents {
+  font-size: 28px !important;
+}
+
+/* 5. Pricing stack layout */
+.eshot-pricing-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  max-width: 480px;
+  margin: 0 auto;
+}
+.eshot-plan-card {
+  width: 100%;
+  max-width: 480px !important;
+  text-align: center;
+}
+.eshot-guarantee-card {
+  width: 100%;
+  max-width: 480px !important;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,212,255,0.04)) !important;
+  border: 1px solid rgba(0,229,160,0.25) !important;
+}
+
+/* Trust row */
+.eshot-trust-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+.eshot-trust-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted2);
+  font-weight: 500;
+}
+.eshot-trust-item span:first-child {
+  font-size: 15px;
+}
+
+/* 6. Testimonial avatars - scoped to eshot */
+.eshot-page .v3-testimonial {
+  position: relative;
+}
+.eshot-avatar-circle {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .eshot-sticky-bar {
+    gap: 8px;
+    padding: 0 12px;
+    font-size: 11px;
+  }
+  .eshot-sticky-bar-text span:first-child {
+    display: none;
+  }
+  .eshot-hero-btn {
+    min-width: 240px;
+    font-size: 15px;
+    padding: 14px 28px;
+  }
+  .eshot-trust-row {
+    gap: 12px;
+  }
+  .eshot-trust-item {
+    font-size: 11px;
+  }
+}

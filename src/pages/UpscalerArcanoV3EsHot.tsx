@@ -112,9 +112,9 @@ const audienceCards = [
 ];
 
 const testimonials = [
-  { text: '"Un cliente me mandó una foto horrible a las 6pm con entrega para las 9pm. En 3 minutos Arcano resolvió lo que me llevaría 2 horas en Photoshop."', name: "Carlos M.", role: "Diseñador Gráfico · Buenos Aires", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)" },
-  { text: '"Soy fotógrafo y uso el lote del V3 siempre. Proceso la sesión entera mientras edito el segundo set. Ahorro literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Ciudad de México", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)" },
-  { text: '"Mis imágenes de campaña de lanzamiento quedaron profesionales de verdad. Las ventas subieron 40% después de que empecé a usarlas en las landing pages."', name: "Ana Luiza F.", role: "Infoproductora · Bogotá", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)" },
+  { text: '"Un cliente me mandó una foto horrible a las 6pm con entrega para las 9pm. En 3 minutos Arcano resolvió lo que me llevaría 2 horas en Photoshop."', name: "Carlos M.", role: "Diseñador Gráfico · Buenos Aires", avatar: "C", gradient: "linear-gradient(135deg,#00D4FF,#7B2FFF)", initial: "C", initialBg: "#7B2FFF" },
+  { text: '"Soy fotógrafo y uso el lote del V3 siempre. Proceso la sesión entera mientras edito el segundo set. Ahorro literalmente horas por semana."', name: "Rafael T.", role: "Fotógrafo · Ciudad de México", avatar: "R", gradient: "linear-gradient(135deg,#F5C842,#FF6B35)", initial: "R", initialBg: "#FF6B35" },
+  { text: '"Mis imágenes de campaña de lanzamiento quedaron profesionales de verdad. Las ventas subieron 40% después de que empecé a usarlas en las landing pages."', name: "Ana Luiza F.", role: "Infoproductora · Bogotá", avatar: "A", gradient: "linear-gradient(135deg,#00E5A0,#0099CC)", initial: "A", initialBg: "#0099CC" },
 ];
 
 const faqs = [
@@ -304,7 +304,9 @@ const UpscalerArcanoV3 = () => {
 
   return (
     <>
-      <main className="v3-page">
+      <main className="v3-page eshot-page">
+        {/* ESHOT STICKY PROMO BAR */}
+        <EshotStickyPromoBar scrollToPrice={scrollToPrice} />
         {/* SOCIAL POPUP - isolated component */}
         <V3SocialPopup people={SOCIAL_PEOPLE_ES} times={SOCIAL_TIMES_ES} purchaseText="acaba de comprar" />
 
@@ -338,6 +340,14 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-stat-num">60<span>s</span></div>
               <div className="v3-stat-label">Modo Turbo V3</div>
             </div>
+          </div>
+
+          {/* HERO CTA */}
+          <div className="eshot-hero-cta">
+            <button className="eshot-hero-btn" onClick={() => redirectToHotmart('vitalicio')}>
+              Obtener Vitalicio — $9,90 →
+            </button>
+            <div className="eshot-hero-trust">✓ Acceso inmediato · ✓ Garantía 7 días</div>
           </div>
 
           <div className="v3-hero-micro">
@@ -600,10 +610,10 @@ const UpscalerArcanoV3 = () => {
               </div>
             </div>
 
-            {/* Desktop: pricing + guarantee side by side | Mobile: stacked */}
-            <div style={{ display: "flex", flexDirection: isMobile ? "column" : "row", gap: 24, justifyContent: "center", alignItems: isMobile ? "center" : "stretch", maxWidth: 860, margin: "0 auto" }}>
+            {/* Single column pricing layout */}
+            <div className="eshot-pricing-stack">
               {/* ILIMITADO CARD */}
-              <div className="v3-plan v3-plan-lifetime v3-reveal" style={{ flex: 1, maxWidth: isMobile ? 400 : 420, textAlign: "center" }}>
+              <div className="v3-plan v3-plan-lifetime v3-reveal eshot-plan-card">
                 <div className="v3-plan-popular v3-plan-popular-gold">♾ Vitalicio</div>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
                   <Infinity size={32} style={{ color: "#f5c842" }} />
@@ -611,28 +621,17 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-name" style={{ textAlign: "center" }}>Ilimitado</div>
                 <div className="v3-plan-tagline" style={{ textAlign: "center" }}>Acceso permanente a todo</div>
 
-                {/* 50% OFF badge - pulsing */}
-                <div style={{
-                  display: "flex", justifyContent: "center", margin: "8px 0",
-                }}>
-                  <div style={{
-                    display: "inline-flex", alignItems: "center", gap: 6,
-                    background: "linear-gradient(135deg, #ef4444, #f97316)", color: "#fff",
-                    fontWeight: 800, fontSize: 13, padding: "6px 14px", borderRadius: 20,
-                    letterSpacing: 0.5, animation: "v3Blink 1.5s infinite",
-                  }}>
-                    🔥 50% OFF
-                  </div>
+                {/* 50% OFF badge - big and pulsing */}
+                <div className="eshot-discount-badge">
+                  🔥 50% OFF — OFERTA LIMITADA
                 </div>
 
                 <div className="v3-plan-price" style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                  <div style={{ fontSize: 14, color: "var(--muted2)", textDecoration: "line-through", marginBottom: 2 }}>
-                    $19,90
-                  </div>
+                  <div className="eshot-price-old">$19,90</div>
                   <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center" }}>
                     <span className="currency">$</span>
-                    <span className="amount">9</span>
-                    <span className="cents">,90</span>
+                    <span className="amount eshot-price-big">9</span>
+                    <span className="cents eshot-price-big-cents">,90</span>
                   </div>
                   <span className="period">pagás una vez · usás para siempre</span>
                 </div>
@@ -645,14 +644,15 @@ const UpscalerArcanoV3 = () => {
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las actualizaciones futuras</div>
               </div>
 
-              {/* GUARANTEE CARD - same height as pricing card */}
-              <div className="v3-plan v3-reveal" style={{
-                flex: 1, maxWidth: isMobile ? 400 : 420,
-                display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-                textAlign: "center",
-                background: "linear-gradient(135deg, rgba(0,229,160,0.08), rgba(0,212,255,0.04))",
-                border: "1px solid rgba(0,229,160,0.25)",
-              }}>
+              {/* TRUST ICONS */}
+              <div className="eshot-trust-row">
+                <div className="eshot-trust-item"><span>⚡</span> Acceso inmediato</div>
+                <div className="eshot-trust-item"><span>💬</span> Soporte 24/7</div>
+                <div className="eshot-trust-item"><span>🔒</span> Pago seguro · Hotmart</div>
+              </div>
+
+              {/* GUARANTEE CARD - below CTA, full width */}
+              <div className="v3-plan v3-reveal eshot-guarantee-card">
                 <div style={{
                   width: 72, height: 72, borderRadius: "50%",
                   background: "rgba(0,229,160,0.1)", border: "2px solid rgba(0,229,160,0.3)",
@@ -664,7 +664,7 @@ const UpscalerArcanoV3 = () => {
                 <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 12 }}>
                   Garantía de 7 días
                 </div>
-                <div style={{ fontSize: 15, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 20, maxWidth: 320 }}>
+                <div style={{ fontSize: 15, color: "var(--muted2)", lineHeight: 1.7, marginBottom: 20, maxWidth: 480 }}>
                   Si no te gusta el resultado, te devolvemos el 100% de tu dinero. Sin preguntas, sin burocracia. Es confianza total en lo que entregamos.
                 </div>
                 <span style={{
@@ -675,22 +675,6 @@ const UpscalerArcanoV3 = () => {
                 }}>
                   ✓ RIESGO CERO
                 </span>
-              </div>
-            </div>
-
-            {/* TRUST ROW */}
-            <div className="v3-trust-badges-row">
-              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.1s" }}>
-                <span className="v3-trust-badge-icon">⚡</span>
-                <span>Acceso inmediato</span>
-              </div>
-              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.25s" }}>
-                <span className="v3-trust-badge-icon">💬</span>
-                <span>Soporte 24/7</span>
-              </div>
-              <div className="v3-trust-badge v3-trust-anim" style={{ animationDelay: "0.4s" }}>
-                <span className="v3-trust-badge-icon">🔒</span>
-                <span>Pago seguro · Hotmart</span>
               </div>
             </div>
           </div>
