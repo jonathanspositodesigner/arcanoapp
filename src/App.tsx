@@ -49,6 +49,8 @@ const PromptsCustosIA = lazy(() => import("./pages/admin/PromptsCustosIA"));
 const PromptsMotoresIA = lazy(() => import("./pages/admin/PromptsMotoresIA"));
 const PromptsRentabilidade = lazy(() => import("./pages/admin/PromptsRentabilidade"));
 const PromptsTopIndicadores = lazy(() => import("./pages/admin/PromptsTopIndicadores"));
+const IALibrariesHub = lazy(() => import("./pages/admin/IALibrariesHub"));
+const IALibraryManager = lazy(() => import("./pages/admin/IALibraryManager"));
 const AdminCommunityReview = lazy(() => import("./pages/AdminCommunityReview"));
 const AdminArtesReview = lazy(() => import("./pages/AdminArtesReview"));
 const AdminManageImages = lazy(() => import("./pages/AdminManageImages"));
@@ -250,6 +252,8 @@ const AppContent = () => {
           <Route path="/admin-prompts/motores-ia" element={<PromptsMotoresIA />} />
           <Route path="/admin-prompts/rentabilidade" element={<PromptsRentabilidade />} />
           <Route path="/admin-prompts/top-indicadores" element={<PromptsTopIndicadores />} />
+          <Route path="/admin-ia-libraries" element={<IALibrariesHub />} />
+          <Route path="/admin-ia-libraries/:toolSlug" element={<IALibraryManager />} />
           <Route path="/admin-upload" element={<AdminUpload />} />
           <Route path="/admin-upload-artes" element={<AdminUploadArtes />} />
           <Route path="/admin-upload-artes-musicos" element={<AdminUploadArtesMusicos />} />

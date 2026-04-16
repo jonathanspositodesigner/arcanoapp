@@ -62,15 +62,8 @@ const IALibraryManager = () => {
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editCatName, setEditCatName] = useState("");
 
-  if (!meta) {
-    return (
-      <AdminLayoutPlatform platform="prompts">
-        <div>Ferramenta inválida</div>
-      </AdminLayoutPlatform>
-    );
-  }
-
   const loadAll = useCallback(async () => {
+    if (!meta) return;
     setLoading(true);
     try {
       // Load categories
@@ -122,6 +115,14 @@ const IALibraryManager = () => {
   useEffect(() => {
     loadAll();
   }, [loadAll]);
+
+  if (!meta) {
+    return (
+      <AdminLayoutPlatform platform="prompts">
+        <div>Ferramenta inválida</div>
+      </AdminLayoutPlatform>
+    );
+  }
 
   // ----- Category CRUD -----
   const createCategory = async () => {
