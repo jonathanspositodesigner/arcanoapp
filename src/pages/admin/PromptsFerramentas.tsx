@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { 
   Upload, CheckCircle, Settings, LayoutDashboard, 
-  FolderOpen, Inbox, Tag, ShieldCheck,
+  FolderOpen, Inbox, Tag, ShieldCheck, Sparkles,
   GripVertical, LayoutGrid, RotateCcw
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -224,6 +224,25 @@ const PromptsFerramentas = () => {
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie as categorias</p>
+            </div>
+          </Card>
+
+          <Card 
+            className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative"
+            onClick={() => !isReordering && navigate('/admin-ia-libraries')}
+            {...getDragProps("ia-libraries")}
+          >
+            {isReordering && (
+              <div className="absolute top-2 right-2 z-10 p-1 bg-primary/20 rounded-md">
+                <GripVertical className="h-4 w-4 text-primary" />
+              </div>
+            )}
+            <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
+              <div className="p-2 sm:p-4 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full">
+                <Sparkles className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+              </div>
+              <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Ferramentas de IA</h2>
+              <p className="text-muted-foreground hidden sm:block">Bibliotecas internas das IAs</p>
             </div>
           </Card>
 
