@@ -210,7 +210,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
                     <button
                       type="button"
                       disabled={disabled || deletingId === char.id}
-                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
                       onClick={(e) => handleDeleteCharacter(e, char.id)}
                     >
                       {deletingId === char.id ? (
