@@ -93,7 +93,8 @@
 .eshot-sticky-bar-btn {
   padding: 5px 16px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
+  font-family: 'Plus Jakarta Sans', sans-serif;
   color: #0d0d1c;
   background: linear-gradient(135deg, #F5C842, #FFD86B);
   border: none;
