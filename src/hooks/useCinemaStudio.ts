@@ -503,15 +503,46 @@ export function useCinemaStudio() {
     },
   });
 
+  const getValidAccessToken = useCallback(async (): Promise<string> => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.access_token) return sessionData.session.access_token;
+
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session?.access_token) {
+      throw new Error('Sessão expirada. Faça login novamente.');
+    }
+
+    return refreshed.session.access_token;
+  }, []);
+
   // ━━━ VIDEO MODE: Polling ━━━
   const startPolling = useCallback((tId: string, jId: string, creditsToCharge: number) => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     pollIntervalRef.current = window.setInterval(async () => {
       try {
+        const accessToken = await getValidAccessToken();
         const { data, error } = await supabase.functions.invoke('seedance-poll', {
           body: { taskId: tId, jobId: jId, creditsToCharge },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
-        if (error) return;
+
+        if (error) {
+          const errMsg = error.message || 'Erro ao consultar geração';
+          if (errMsg.includes('Invalid token') || errMsg.includes('JWT') || errMsg.includes('401')) {
+            clearInterval(pollIntervalRef.current!);
+            pollIntervalRef.current = null;
+            setStatus('error');
+            setErrorMessage('Sessão expirada. Faça login novamente para acompanhar a geração.');
+            updateJobStatus('failed');
+            toast.error('Sessão expirada. Faça login novamente.');
+            endSubmit();
+            generatingSceneIdRef.current = null;
+            generatingSceneStateRef.current = null;
+            setGeneratingMode(null);
+          }
+          return;
+        }
+
         if (data.status === 'completed' && data.outputUrl) {
           clearInterval(pollIntervalRef.current!);
           pollIntervalRef.current = null;
@@ -521,7 +552,6 @@ export function useCinemaStudio() {
           updateJobStatus('completed');
           refetchCredits();
           toast.success('Geração concluída!');
-          // Save to the scene that started the generation
           const targetScene = generatingSceneIdRef.current;
           if (targetScene) {
             const generatedSceneState = generatingSceneStateRef.current;
@@ -553,9 +583,25 @@ export function useCinemaStudio() {
         } else if (data.progress) {
           setProgress(prev => Math.max(prev, data.progress));
         }
-      } catch (err) { console.error('[CinemaStudio] Poll error:', err); }
+      } catch (err: any) {
+        if (err?.message?.includes('Sessão expirada')) {
+          clearInterval(pollIntervalRef.current!);
+          pollIntervalRef.current = null;
+          setStatus('error');
+          setErrorMessage('Sessão expirada. Faça login novamente para acompanhar a geração.');
+          updateJobStatus('failed');
+          toast.error('Sessão expirada. Faça login novamente.');
+          endSubmit();
+          generatingSceneIdRef.current = null;
+          generatingSceneStateRef.current = null;
+          setGeneratingMode(null);
+          return;
+        }
+
+        console.error('[CinemaStudio] Poll error:', err);
+      }
     }, 5000);
-  }, [endSubmit, refetchCredits, updateJobStatus]);
+  }, [endSubmit, getValidAccessToken, refetchCredits, updateJobStatus]);
 
   // ━━━ Generate ━━━
   const handleGenerate = async () => {
@@ -608,10 +654,8 @@ export function useCinemaStudio() {
     };
 
     try {
-      // Collect and optimize all reference images
       const uploadedUrls: string[] = [];
 
-      // 1. User reference images (files to upload)
       for (let i = 0; i < referenceImages.length; i++) {
         toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
         const optimized = await optimizeForAI(referenceImages[i]);
@@ -621,15 +665,12 @@ export function useCinemaStudio() {
         setProgress(5 + Math.round((i + 1) / Math.max(referenceImages.length, 1) * 10));
       }
 
-      // 1b. Restored reference URLs (already uploaded, from saved scenes)
       referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedUrls.push(url));
 
-      // 2. Character images (already hosted in cinema-assets)
       selectedCharacters.forEach(char => {
         if (char.image_url) uploadedUrls.push(char.image_url);
       });
 
-      // 3. Scenario image (already hosted in cinema-assets)
       if (selectedScenario?.image_url) {
         uploadedUrls.push(selectedScenario.image_url);
       }
@@ -637,7 +678,6 @@ export function useCinemaStudio() {
       generatingRefUrlsRef.current = uniqueUrls(uploadedUrls);
       setProgress(20);
 
-      // Create job in image_generator_jobs (exact same as GerarImagemTool)
       const { jobId: newJobId, error: createError } = await createJob('image_generator', user!.id, sessionIdRef.current, {
         prompt: assembledPrompt,
         aspect_ratio: settings.aspectRatio,
@@ -653,7 +693,6 @@ export function useCinemaStudio() {
       registerJob(newJobId, 'image_generator', 'pending');
       setProgress(30);
 
-      // Start job via edge function (exact same as GerarImagemTool)
       const result = await startJob('image_generator', newJobId, {
         referenceImageUrls: uploadedUrls,
         aspectRatio: settings.aspectRatio,
@@ -685,7 +724,6 @@ export function useCinemaStudio() {
       }
 
       setStatus('processing');
-      // useJobStatusSync handles the rest automatically
 
     } catch (error: any) {
       console.error('[CinemaStudio Photo] Error:', error);
@@ -708,7 +746,7 @@ export function useCinemaStudio() {
     }
   };
 
-  // ━━━ VIDEO: Generate via Seedance (existing flow, untouched) ━━━
+  // ━━━ VIDEO: Generate via Seedance (hardened flow) ━━━
   const handleGenerateVideo = async () => {
     setErrorMessage(null);
     setStatus('uploading');
@@ -721,7 +759,11 @@ export function useCinemaStudio() {
       selectedScenario: selectedScenario ? { ...selectedScenario } : null,
     };
 
+    let createdJobId: string | null = null;
+
     try {
+      await getValidAccessToken();
+
       const timestamp = Date.now();
       const folder = `seedance/${user!.id}/${timestamp}`;
       const uploadedImageUrls: string[] = [];
@@ -735,10 +777,8 @@ export function useCinemaStudio() {
         }
       }
 
-      // Restored reference URLs (already uploaded, from saved scenes)
       referenceImagePreviews.filter(url => !url.startsWith('blob:')).forEach(url => uploadedImageUrls.push(url));
 
-      // Add character and scenario image URLs (already hosted)
       selectedCharacters.forEach(char => {
         if (char.image_url) uploadedImageUrls.push(char.image_url);
       });
@@ -747,7 +787,6 @@ export function useCinemaStudio() {
       generatingRefUrlsRef.current = uniqueUrls(uploadedImageUrls);
       setProgress(30);
 
-      // Translate prompt to Chinese for better Seedance efficiency
       toast.info('Traduzindo prompt para chinês...');
       const finalPrompt = await translatePromptToChinese(assembledPrompt);
       console.log('[CinemaStudio] Original prompt:', assembledPrompt.substring(0, 100));
@@ -766,19 +805,20 @@ export function useCinemaStudio() {
           aspect_ratio: settings.aspectRatio,
           generate_audio: settings.generateAudio,
           input_image_urls: uploadedImageUrls.length > 0 ? uploadedImageUrls : null,
-          status: 'pending',
+          status: 'queued',
         })
         .select()
         .single();
 
       if (jobError || !job) throw new Error('Erro ao criar job: ' + (jobError?.message || 'Unknown'));
+      createdJobId = job.id;
       setJobId(job.id);
       setProgress(40);
 
-      // Retry edge function invocation on network/gateway errors
       let response: any = null;
       let fnError: any = null;
       for (let attempt = 0; attempt <= 2; attempt++) {
+        const accessToken = await getValidAccessToken();
         const result = await supabase.functions.invoke('seedance-generate', {
           body: {
             model: selectedModel,
@@ -792,12 +832,15 @@ export function useCinemaStudio() {
             generateAudio: settings.generateAudio,
             jobId: job.id,
           },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
         response = result.data;
         fnError = result.error;
         if (response?.success || response?.error) break;
         const isNetworkErr = !response && fnError && (
-          fnError.message?.includes('non-2xx') || fnError.message?.includes('Failed to fetch')
+          fnError.message?.includes('non-2xx') ||
+          fnError.message?.includes('Failed to fetch') ||
+          fnError.message?.includes('FunctionsFetchError')
         );
         if (isNetworkErr && attempt < 2) {
           console.warn(`[CinemaStudio] seedance-generate retry ${attempt + 1}/2`);
@@ -822,7 +865,15 @@ export function useCinemaStudio() {
       console.error('[CinemaStudio] Error:', error);
       setStatus('error');
       setErrorMessage(error.message || 'Erro desconhecido');
-      toast.error('Erro ao gerar');
+      toast.error(error.message || 'Erro ao gerar');
+      if (createdJobId) {
+        try {
+          await supabase.from('seedance_jobs').update({
+            status: 'failed',
+            error_message: error.message || 'Client-side error',
+          }).eq('id', createdJobId);
+        } catch (_) {}
+      }
       endSubmit();
       generatingSceneIdRef.current = null;
       generatingSceneStateRef.current = null;
