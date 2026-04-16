@@ -65,7 +65,7 @@ export const SocialProofSectionES = ({ onZoomClick, isMobile = false }: SocialPr
       <div className="max-w-4xl mx-auto">
         <AnimatedSection as="div" delay={100}>
           <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-foreground text-center mb-2 tracking-wide leading-tight px-2">
-            {t('tools:upscaler.socialProof.title')} <span className="text-muted-foreground">{t('tools:upscaler.socialProof.result')}</span>
+            {t('tools:upscaler.socialProof.title')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-purple-400 to-violet-500 drop-shadow-[0_0_18px_rgba(192,132,252,0.45)]">{t('tools:upscaler.socialProof.result')}</span>
             <span className="block sm:inline"> {t('tools:upscaler.socialProof.subtitle')}</span>
           </h2>
           <p className="text-muted-foreground text-center text-base sm:text-lg mb-8 md:mb-12 px-4">
