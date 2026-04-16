@@ -255,7 +255,7 @@ const PlanosUpscalerArcano69ES = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510]">
+    <div className="dark min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] text-foreground">
 
       {/* Se já tem acesso */}
       {hasAccess ? (
@@ -511,7 +511,7 @@ const PlanosUpscalerArcano69ES = () => {
                   </div>
 
                   {/* Alerta de urgência */}
-                  <div className="bg-accent0/10 border border-border rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
+                  <div className="bg-accent/10 border border-border rounded-xl md:rounded-2xl p-2.5 md:p-3 mb-5 md:mb-6">
                     <div className="flex items-center justify-center gap-2 text-muted-foreground text-xs md:text-sm">
                       <Clock className="h-3.5 w-3.5 md:h-4 md:w-4" />
                       <span className="font-medium">{t('tools:upscaler.finalCTA.limitedOffer')}</span>
