@@ -19,7 +19,7 @@ const IALibrariesHub = () => {
       <div>
         <div className="flex items-center gap-3 mb-2">
           <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-lg">
-            <Sparkles className="h-6 w-6 text-foreground" />
+            <Sparkles className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold text-foreground">Gerenciar Ferramentas de IA</h1>
@@ -36,7 +36,7 @@ const IALibrariesHub = () => {
             >
               <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                 <div className={`p-2 sm:p-4 bg-gradient-to-r ${tool.color} rounded-full`}>
-                  <tool.icon className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                  <tool.icon className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                 </div>
                 <h2 className="text-xs sm:text-2xl font-bold text-foreground">{tool.name}</h2>
                 <p className="text-muted-foreground hidden sm:block text-sm">{tool.desc}</p>
