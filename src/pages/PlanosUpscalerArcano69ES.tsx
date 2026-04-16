@@ -47,6 +47,25 @@ const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: 
   </Button>
 );
 
+// Sticky CTA fixa no rodapé
+const StickyCtaBar = ({ visible, onClick, priceLabel, oldPriceLabel }: { visible: boolean; onClick: () => void; priceLabel: string; oldPriceLabel: string }) => (
+  <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${visible ? "translate-y-0" : "translate-y-full"}`}>
+    <div className="bg-[#1a0f2e] border-t border-[#3b1f6b] px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_24px_rgba(120,60,220,0.25)]">
+      <div className="min-w-0">
+        <p className="text-white font-bold text-sm leading-tight">Acceso Vitalicio</p>
+        <p className="text-xs">
+          <span className="line-through text-gray-500 mr-1">{oldPriceLabel}</span>
+          <span className="text-green-400 font-semibold">{priceLabel}</span>
+          <span className="text-gray-400"> — pago único</span>
+        </p>
+      </div>
+      <button onClick={onClick} className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap shadow-lg shadow-purple-900/40">
+        Quiero ahora 🔥
+      </button>
+    </div>
+  </div>
+);
+
 const PlanosUpscalerArcano69ES = () => {
   const navigate = useNavigate();
   const { t: tOriginal } = useTranslation();
@@ -58,6 +77,16 @@ const PlanosUpscalerArcano69ES = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
+  const [showSticky, setShowSticky] = useState(false);
+
+  // Sticky CTA visibility
+  useEffect(() => {
+    const fn = () => setShowSticky(window.scrollY > 500);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  const scrollToPricing = () => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
 
   // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
