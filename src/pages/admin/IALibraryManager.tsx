@@ -66,7 +66,6 @@ const IALibraryManager = () => {
     if (!meta) return;
     setLoading(true);
     try {
-      // Load categories
       let cats: Category[] = [];
       if (meta.hasCategories) {
         const { data: catData } = await supabase
@@ -78,7 +77,6 @@ const IALibraryManager = () => {
         setCategories(cats);
       }
 
-      // Load library items
       const { data: itemData } = await supabase
         .from("ai_tool_library_items")
         .select("*")
@@ -86,18 +84,29 @@ const IALibraryManager = () => {
         .order("display_order", { ascending: true })
         .order("created_at", { ascending: false });
 
-      const sourceIds = (itemData || []).map((i) => i.source_id);
+      const sourceIds = Array.from(new Set((itemData || []).map((i) => i.source_id)));
       let sourcesById: Record<string, any> = {};
       if (sourceIds.length > 0) {
         const selectCols = meta.sourceTable === "admin_prompts"
           ? "id, title, image_url, thumbnail_url"
           : "id, title, image_url";
-        const { data: sources, error: srcErr } = await supabase
-          .from(meta.sourceTable)
-          .select(selectCols)
-          .in("id", sourceIds);
-        if (srcErr) console.error("Source load error:", srcErr);
-        sourcesById = Object.fromEntries((sources || []).map((s: any) => [s.id, s]));
+        const chunkSize = 150;
+        const sourceChunks: any[] = [];
+
+        for (let i = 0; i < sourceIds.length; i += chunkSize) {
+          const chunk = sourceIds.slice(i, i + chunkSize);
+          const { data: sources, error: srcErr } = await supabase
+            .from(meta.sourceTable)
+            .select(selectCols)
+            .in("id", chunk);
+          if (srcErr) {
+            console.error("Source load error:", srcErr);
+            continue;
+          }
+          sourceChunks.push(...(sources || []));
+        }
+
+        sourcesById = Object.fromEntries(sourceChunks.map((s: any) => [s.id, s]));
       }
 
       const enriched: LibraryItem[] = (itemData || []).map((it) => ({
@@ -192,6 +201,7 @@ const IALibraryManager = () => {
     setAddOpen(true);
     setAddLoading(true);
     setSelectedToAdd(new Set());
+    setAddSearch("");
     setAddCategoryId(meta.hasCategories ? (categories[0]?.id || "") : "");
     try {
       const selectCols = meta.sourceTable === "admin_prompts"
