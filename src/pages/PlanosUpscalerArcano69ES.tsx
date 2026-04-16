@@ -467,7 +467,7 @@ const PlanosUpscalerArcano69ES = () => {
                 <CardContent className="p-5 md:p-8 text-center">
                   {/* Badge de desconto - 24% OFF para LATAM */}
                   <Badge className="bg-gradient-to-r from-green-500 to-emerald-600 text-white border-0 rounded-full px-4 md:px-6 py-1.5 md:py-2 text-sm md:text-lg font-bold mb-4 md:mb-6">
-                    🔥 20% OFF
+                    🔥 50% OFF
                   </Badge>
 
                   {isPremium && (
