@@ -442,7 +442,7 @@ const PlanosUpscalerArcano69ES = () => {
           </Suspense>
 
           {/* PARA QUEM É */}
-          <AnimatedSection className="px-4 py-20 bg-purple-900/20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0a0716]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -471,7 +471,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* COMO FUNCIONA */}
-          <AnimatedSection className="px-4 py-20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -508,7 +508,7 @@ const PlanosUpscalerArcano69ES = () => {
           <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-purple-900/20" animation="scale">
+          <AnimatedSection id="pricing" className="px-3 md:px-4 py-14 md:py-20 w-full bg-[#0a0716]" animation="scale">
             <div className="max-w-lg mx-auto">
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-purple-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-primary/5">
                 <CardContent className="p-5 md:p-8 text-center">
@@ -586,7 +586,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
-          <AnimatedSection className="px-4 py-20 bg-purple-900/20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -614,7 +614,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* FAQ SECTION */}
-          <AnimatedSection className="px-4 py-20">
+          <AnimatedSection className="px-4 py-14 md:py-20 pb-28 md:pb-24 w-full bg-[#0d0a18]">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
