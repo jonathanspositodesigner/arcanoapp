@@ -105,6 +105,7 @@ export const AnimatedSection = ({
   return (
     <Component
       ref={ref}
+      id={id}
       className={`transition-all ease-out ${className} ${blurClass} ${
         isVisible 
           ? 'opacity-100 translate-y-0 translate-x-0 scale-100 rotate-0' 
