@@ -287,7 +287,7 @@ const PlanosUpscalerArcano69ES = () => {
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
                   {t('tools:upscaler.hero.title1')}{' '}
-                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-white">
+                  <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-purple-400 to-violet-500 drop-shadow-[0_0_18px_rgba(192,132,252,0.45)]">
                     {t('tools:upscaler.hero.title2')}
                   </span>
                 </h1>
@@ -399,7 +399,7 @@ const PlanosUpscalerArcano69ES = () => {
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
-                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 to-white">{t('tools:upscaler.targetAudience.titlePart2')}</span>
+                  {t('tools:upscaler.targetAudience.titlePart1')} <span className="text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-400 via-purple-400 to-violet-500 drop-shadow-[0_0_18px_rgba(192,132,252,0.45)]">{t('tools:upscaler.targetAudience.titlePart2')}</span>
                 </h2>
               </AnimatedSection>
               
