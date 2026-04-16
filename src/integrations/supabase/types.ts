@@ -465,6 +465,80 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_tool_library_categories: {
+        Row: {
+          created_at: string
+          display_order: number
+          id: string
+          name: string
+          slug: string
+          tool_slug: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name: string
+          slug: string
+          tool_slug: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          display_order?: number
+          id?: string
+          name?: string
+          slug?: string
+          tool_slug?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_tool_library_items: {
+        Row: {
+          category_id: string | null
+          created_at: string
+          display_order: number
+          id: string
+          is_visible: boolean
+          source_id: string
+          source_table: string
+          tool_slug: string
+          updated_at: string
+        }
+        Insert: {
+          category_id?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          source_id: string
+          source_table: string
+          tool_slug: string
+          updated_at?: string
+        }
+        Update: {
+          category_id?: string | null
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_visible?: boolean
+          source_id?: string
+          source_table?: string
+          tool_slug?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_tool_library_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tool_library_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_tool_registry: {
         Row: {
           badge_color: string | null
