@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { ShieldCheck, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
+import "@/styles/upscaler-v3-eshot.css";
 import { appendUtmToUrl } from "@/lib/utmUtils";
 import { getMetaCookies } from "@/lib/metaCookies";
 
