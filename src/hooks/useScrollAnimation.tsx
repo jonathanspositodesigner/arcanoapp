@@ -73,6 +73,7 @@ interface AnimatedSectionProps {
   delay?: number;
   duration?: number;
   as?: 'section' | 'div' | 'article' | 'header' | 'footer' | 'main' | 'aside' | 'nav';
+  id?: string;
 }
 
 export const AnimatedSection = ({
@@ -82,6 +83,7 @@ export const AnimatedSection = ({
   delay = 0,
   duration = 700,
   as: Component = 'section',
+  id,
 }: AnimatedSectionProps) => {
   const { ref, isVisible } = useScrollAnimation({ threshold: 0.1 });
 
@@ -103,6 +105,7 @@ export const AnimatedSection = ({
   return (
     <Component
       ref={ref}
+      id={id}
       className={`transition-all ease-out ${className} ${blurClass} ${
         isVisible 
           ? 'opacity-100 translate-y-0 translate-x-0 scale-100 rotate-0' 

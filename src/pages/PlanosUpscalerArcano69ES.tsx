@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool } from "lucide-react";
+import { Check, ArrowRight, Sparkles, Crown, Zap, ImagePlus, Infinity, Camera, Palette, Music, Upload, Download, Wand2, Shield, Clock, CreditCard, MessageCircle, User, Rocket, PenTool, Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { AnimatedSection, AnimatedElement, StaggeredAnimation, ScrollIndicator, FadeIn } from "@/hooks/useScrollAnimation";
@@ -47,6 +47,25 @@ const CTAButton = ({ onClick, isPremium, t }: { onClick: () => void; isPremium: 
   </Button>
 );
 
+// Sticky CTA fixa no rodapé
+const StickyCtaBar = ({ visible, onClick, priceLabel, oldPriceLabel }: { visible: boolean; onClick: () => void; priceLabel: string; oldPriceLabel: string }) => (
+  <div className={`fixed bottom-0 left-0 right-0 z-50 transition-transform duration-300 ${visible ? "translate-y-0" : "translate-y-full"}`}>
+    <div className="bg-[#1a0f2e] border-t border-[#3b1f6b] px-4 py-3 flex items-center justify-between gap-3 shadow-[0_-4px_24px_rgba(120,60,220,0.25)]">
+      <div className="min-w-0">
+        <p className="text-white font-bold text-sm leading-tight">Acceso Vitalicio</p>
+        <p className="text-xs">
+          <span className="line-through text-gray-500 mr-1">{oldPriceLabel}</span>
+          <span className="text-green-400 font-semibold">{priceLabel}</span>
+          <span className="text-gray-400"> — pago único</span>
+        </p>
+      </div>
+      <button onClick={onClick} className="bg-purple-600 hover:bg-purple-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl transition-colors whitespace-nowrap shadow-lg shadow-purple-900/40">
+        Quiero ahora 🔥
+      </button>
+    </div>
+  </div>
+);
+
 const PlanosUpscalerArcano69ES = () => {
   const navigate = useNavigate();
   const { t: tOriginal } = useTranslation();
@@ -58,6 +77,16 @@ const PlanosUpscalerArcano69ES = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [modalImages, setModalImages] = useState<{ before: string; after: string } | null>(null);
   const [heroRevealed, setHeroRevealed] = useState(false);
+  const [showSticky, setShowSticky] = useState(false);
+
+  // Sticky CTA visibility
+  useEffect(() => {
+    const fn = () => setShowSticky(window.scrollY > 500);
+    window.addEventListener("scroll", fn, { passive: true });
+    return () => window.removeEventListener("scroll", fn);
+  }, []);
+
+  const scrollToPricing = () => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" });
 
   // Preload: Mobile loads preview + antes/depois mobile, Desktop loads high-res versions
   useImagesPreload(
@@ -255,7 +284,7 @@ const PlanosUpscalerArcano69ES = () => {
   ];
 
   return (
-    <div className="dark min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] text-white">
+    <div className="dark w-full overflow-x-hidden bg-[#0d0a18] text-white">
 
       {/* Se já tem acesso */}
       {hasAccess ? (
@@ -281,8 +310,16 @@ const PlanosUpscalerArcano69ES = () => {
       ) : (
         <>
           {/* HERO SECTION - Renderiza imediatamente para LCP */}
-          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
+          <section className="px-3 md:px-4 py-14 md:py-20 w-full bg-gradient-to-b from-[#120a22] to-[#0d0a18]">
             <div className="flex flex-col items-center text-center">
+              {/* Badge superior */}
+              <FadeIn delay={0} duration={500}>
+                <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-700/40 rounded-full px-4 py-1.5 text-purple-200 text-xs mb-5">
+                  <Star className="h-3.5 w-3.5 text-purple-300" />
+                  Upscaler Arcano — Motor IA Exclusivo
+                </div>
+              </FadeIn>
+
               {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
@@ -317,6 +354,16 @@ const PlanosUpscalerArcano69ES = () => {
                 </p>
               </FadeIn>
 
+              {/* CTA inline */}
+              <FadeIn delay={500} duration={600}>
+                <button
+                  onClick={scrollToPricing}
+                  className="bg-purple-600 hover:bg-purple-500 text-white font-bold rounded-xl px-8 py-3.5 transition-colors shadow-lg shadow-purple-900/40"
+                >
+                  Ver planes 🔥
+                </button>
+              </FadeIn>
+
               {/* Scroll Indicator */}
               <FadeIn delay={800} duration={700}>
                 <ScrollIndicator className="mt-12 hidden md:flex" text={t('tools:upscaler.scrollMore')} />
@@ -325,7 +372,7 @@ const PlanosUpscalerArcano69ES = () => {
           </section>
 
           {/* SEÇÃO DA DOR */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-purple-900/20">
+          <AnimatedSection className="px-3 md:px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection as="div" className="text-center" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-8 md:mb-12 tracking-wide">
@@ -390,12 +437,14 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
-          <Suspense fallback={<SectionSkeleton height="600px" />}>
-            <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
-          </Suspense>
+          <div className="w-full bg-[#0a0716]">
+            <Suspense fallback={<SectionSkeleton height="600px" />}>
+              <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
+            </Suspense>
+          </div>
 
           {/* PARA QUEM É */}
-          <AnimatedSection className="px-4 py-20 bg-purple-900/20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0a0716]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -424,7 +473,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* COMO FUNCIONA */}
-          <AnimatedSection className="px-4 py-20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -458,10 +507,12 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
-          <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
+          <div className="w-full bg-[#0d0a18]">
+            <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
+          </div>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
-          <AnimatedSection className="px-3 md:px-4 py-16 md:py-20 bg-purple-900/20" animation="scale">
+          <AnimatedSection id="pricing" className="px-3 md:px-4 py-14 md:py-20 w-full bg-[#0a0716]" animation="scale">
             <div className="max-w-lg mx-auto">
               <Card className="bg-gradient-to-br from-[#1a0f25] to-[#150a1a] border-2 border-purple-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-primary/5">
                 <CardContent className="p-5 md:p-8 text-center">
@@ -539,7 +590,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* BENEFÍCIOS (O QUE FAZ) */}
-          <AnimatedSection className="px-4 py-20 bg-purple-900/20">
+          <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0d0a18]">
             <div className="max-w-4xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -567,7 +618,7 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* FAQ SECTION */}
-          <AnimatedSection className="px-4 py-20">
+          <AnimatedSection className="px-4 py-14 md:py-20 pb-28 md:pb-24 w-full bg-[#0d0a18]">
             <div className="max-w-2xl mx-auto">
               <AnimatedSection as="div" delay={100}>
                 <h2 className="font-bebas text-3xl md:text-4xl lg:text-5xl text-white text-center mb-12 tracking-wide">
@@ -581,12 +632,12 @@ const PlanosUpscalerArcano69ES = () => {
                     <AccordionItem 
                       key={index} 
                       value={`item-${index}`}
-                      className="bg-purple-900/40 border border-purple-500/30 rounded-2xl px-6 data-[state=open]:border-purple-500/30"
+                      className="border border-[#2d1a4f] rounded-2xl overflow-hidden bg-[#1a1030] data-[state=open]:border-purple-500/40"
                     >
-                      <AccordionTrigger className="text-white text-left text-lg font-medium py-5 hover:no-underline">
+                      <AccordionTrigger className="text-white text-left text-sm md:text-base font-medium px-5 py-4 hover:no-underline hover:bg-[#1e1438]">
                         {item.question}
                       </AccordionTrigger>
-                      <AccordionContent className="text-purple-200/80 pb-5">
+                      <AccordionContent className="text-gray-300 text-sm leading-relaxed bg-[#160e28] px-5 pb-4 pt-2">
                         {item.answer}
                       </AccordionContent>
                     </AccordionItem>
@@ -607,6 +658,16 @@ const PlanosUpscalerArcano69ES = () => {
           beforeImage={modalImages.before}
           afterImage={modalImages.after}
           locale="es"
+        />
+      )}
+
+      {/* Sticky CTA */}
+      {!hasAccess && (
+        <StickyCtaBar
+          visible={showSticky}
+          onClick={scrollToPricing}
+          priceLabel={formatPrice(price)}
+          oldPriceLabel={formatPrice(originalPrice)}
         />
       )}
     </div>
