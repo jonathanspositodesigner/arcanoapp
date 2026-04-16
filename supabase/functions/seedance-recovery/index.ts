@@ -140,9 +140,9 @@ serve(async (req) => {
           failed++;
         } else {
           // Still processing - check if it's been too long (> 30 min total = give up)
-          const thirtyMinAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString();
-          if (job.created_at && job.created_at < thirtyMinAgo) {
-            console.log(`[seedance-recovery] ⏰ Job ${job.id} exceeded 30 min total, marking failed`);
+          const twentyMinAgo = new Date(Date.now() - 20 * 60 * 1000).toISOString();
+          if (job.created_at && job.created_at < twentyMinAgo) {
+            console.log(`[seedance-recovery] ⏰ Job ${job.id} exceeded 20 min total, marking failed`);
             await supabase.from("seedance_jobs").update({
               status: "failed",
               error_message: "Timeout definitivo - geração não completou em 30 minutos",
