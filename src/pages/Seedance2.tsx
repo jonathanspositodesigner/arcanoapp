@@ -375,9 +375,15 @@ export default function Seedance2() {
     if (hasActiveJob) return false;
     if (!prompt.trim()) return false;
     if (mode === "startend" && !startImage) return false;
-    if (mode === "startend" && !startImage) return false;
+    if (mode === "startend" && !endImage) return false;
+    if (mode === "multiref") {
+      const selectedCharacterRefs = selectedCharacters
+        .map((c) => (c as any).reference_image_url || c.image_url)
+        .filter(Boolean);
+      if (selectedCharacterRefs.length + refImages.length === 0) return false;
+    }
     return true;
-  }, [prompt, mode, startImage, refImages, selectedCharacters, hasActiveJob]);
+  }, [prompt, mode, startImage, endImage, refImages, selectedCharacters, hasActiveJob]);
 
   const handleGenerate = useCallback(async () => {
     if (!canGenerate() || !user) return;
@@ -386,6 +392,17 @@ export default function Seedance2() {
     const genId = crypto.randomUUID();
 
     let finalPrompt = prompt.trim();
+    const referenceImageUrls = mode === "startend"
+      ? ([startImage, endImage].filter(Boolean) as string[])
+      : mode === "multiref"
+        ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages]
+        : [];
+
+    if (mode === "multiref" && referenceImageUrls.length === 0) {
+      setGenerations((prev) => prev.filter((g) => g.id !== genId));
+      return;
+    }
+
     if (selectedCharacters.length > 0) {
       const genderPrefixes = selectedCharacters
         .filter(c => c.gender)
@@ -419,7 +436,7 @@ export default function Seedance2() {
           input_image_urls: mode === "startend"
             ? ([startImage, endImage].filter(Boolean) as string[])
             : mode === "multiref"
-              ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages]
+              ? referenceImageUrls
               : undefined,
           input_video_urls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           input_audio_urls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
@@ -449,7 +466,7 @@ export default function Seedance2() {
             quality,
             aspectRatio: ratio === "auto" ? undefined : ratio,
             generateAudio,
-            imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? [...selectedCharacters.map(c => (c as any).reference_image_url || c.image_url).filter(Boolean), ...refImages] : undefined,
+            imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? referenceImageUrls : undefined,
             videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
             audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
             jobId: jobData.id,

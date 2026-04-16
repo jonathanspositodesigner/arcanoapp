@@ -90,6 +90,34 @@ serve(async (req) => {
       });
     }
 
+    const normalizedImageUrls = Array.isArray(imageUrls) ? imageUrls.filter(Boolean) : [];
+    const normalizedVideoUrls = Array.isArray(videoUrls) ? videoUrls.filter(Boolean) : [];
+    const normalizedAudioUrls = Array.isArray(audioUrls) ? audioUrls.filter(Boolean) : [];
+    const isReferenceToVideo = model.includes("reference-to-video");
+    const isImageToVideo = model.includes("image-to-video");
+
+    if (isReferenceToVideo && normalizedImageUrls.length === 0) {
+      await supabase.from("seedance_jobs").update({
+        status: "failed",
+        error_message: "Reference-to-video requires at least one reference image",
+      }).eq("id", jobId);
+
+      return new Response(JSON.stringify({ success: false, error: "Adicione ao menos uma imagem de referência." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (isImageToVideo && normalizedImageUrls.length === 0) {
+      await supabase.from("seedance_jobs").update({
+        status: "failed",
+        error_message: "Image-to-video requires at least one input image",
+      }).eq("id", jobId);
+
+      return new Response(JSON.stringify({ success: false, error: "Adicione a imagem inicial para gerar o vídeo." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // SERVER-SIDE cost calculation — never trust client
     const parsedDuration = parseInt(duration) || 5;
     const parsedQuality = (quality === "720p" || quality === "480p") ? quality : "480p";
@@ -218,9 +246,9 @@ serve(async (req) => {
       quality: parsedQuality,
       aspectRatio: aspectRatio || "16:9",
       generateAudio: generateAudio !== false,
-      imageUrls: model.includes("image-to-video") || model.includes("reference-to-video") ? imageUrls : undefined,
-      videoUrls: model.includes("reference-to-video") ? videoUrls : undefined,
-      audioUrls: model.includes("reference-to-video") ? audioUrls : undefined,
+      imageUrls: isImageToVideo || isReferenceToVideo ? normalizedImageUrls : undefined,
+      videoUrls: isReferenceToVideo ? normalizedVideoUrls : undefined,
+      audioUrls: isReferenceToVideo ? normalizedAudioUrls : undefined,
     });
 
     if (!result.success) {
