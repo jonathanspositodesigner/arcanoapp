@@ -152,7 +152,7 @@ const PlanosUpscalerArcano69ES = () => {
       (window as any).fbq('trackSingle', ES_PIXEL_ID, 'InitiateCheckout', {
         content_name: 'Upscaler Arcano ES',
         content_category: 'Ferramentas IA',
-        value: 7.90,
+        value: 9.90,
         currency: 'USD'
       });
     }
