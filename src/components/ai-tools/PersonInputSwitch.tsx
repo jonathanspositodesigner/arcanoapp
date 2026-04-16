@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Upload, Plus, Loader2 } from 'lucide-react';
+import { Users, Upload, Plus, Loader2, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 
 interface SavedCharacter {
@@ -31,6 +32,7 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
   const [characters, setCharacters] = useState<SavedCharacter[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedCharacterId, setSelectedCharacterId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const latestSelectionRef = useRef<string | null>(null);
 
   const fetchCharacters = useCallback(async () => {
@@ -79,6 +81,29 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
       console.error('[PersonInputSwitch] Error fetching character image:', error);
       if (latestSelectionRef.current !== char.id) return;
       onImageChange(char.image_url);
+    }
+  };
+
+  const handleDeleteCharacter = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeletingId(id);
+    try {
+      const { error } = await supabase
+        .from('saved_characters' as any)
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setCharacters(prev => prev.filter(c => c.id !== id));
+      if (selectedCharacterId === id) {
+        setSelectedCharacterId(null);
+        onImageChange(null);
+      }
+      toast.success('Avatar removido');
+    } catch (error) {
+      console.error('[PersonInputSwitch] Delete error:', error);
+      toast.error('Erro ao remover avatar');
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -149,38 +174,52 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
             <>
               <div className="grid grid-cols-3 gap-1.5 max-h-[180px] overflow-y-auto">
                 {characters.map((char) => (
-                  <button
-                    key={char.id}
-                    type="button"
-                    disabled={disabled}
-                    className={cn(
-                      'relative aspect-square rounded-md overflow-hidden border-2 transition-all',
-                      selectedCharacterId === char.id
-                        ? 'border-border ring-1 ring-white/20'
-                        : 'border-border hover:border-border'
-                    )}
-                    onClick={() => handleSelectCharacter(char)}
-                  >
-                    <img
-                      src={char.image_url}
-                      alt={char.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        const target = e.currentTarget;
-                        target.style.display = 'none';
-                        const parent = target.parentElement;
-                        if (parent && !parent.querySelector('.avatar-fallback')) {
-                          const fallback = document.createElement('div');
-                          fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-accent text-muted-foreground text-[8px] text-center p-0.5';
-                          fallback.textContent = char.name;
-                          parent.appendChild(fallback);
-                        }
-                      }}
-                    />
-                    <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-0.5">
-                      <p className="text-[8px] text-foreground truncate">{char.name}</p>
-                    </div>
-                  </button>
+                  <div key={char.id} className="relative group">
+                    <button
+                      type="button"
+                      disabled={disabled || deletingId === char.id}
+                      className={cn(
+                        'relative aspect-square rounded-md overflow-hidden border-2 transition-all w-full',
+                        selectedCharacterId === char.id
+                          ? 'border-primary ring-2 ring-primary/40'
+                          : 'border-border hover:border-muted-foreground'
+                      )}
+                      onClick={() => handleSelectCharacter(char)}
+                    >
+                      <img
+                        src={char.image_url}
+                        alt={char.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.currentTarget;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent && !parent.querySelector('.avatar-fallback')) {
+                            const fallback = document.createElement('div');
+                            fallback.className = 'avatar-fallback w-full h-full flex items-center justify-center bg-accent text-muted-foreground text-[8px] text-center p-0.5';
+                            fallback.textContent = char.name;
+                            parent.appendChild(fallback);
+                          }
+                        }}
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent px-1 py-0.5">
+                        <p className="text-[8px] text-foreground truncate">{char.name}</p>
+                      </div>
+                    </button>
+                    {/* Delete button */}
+                    <button
+                      type="button"
+                      disabled={disabled || deletingId === char.id}
+                      className="absolute top-0.5 right-0.5 w-5 h-5 rounded-full bg-destructive/90 text-white flex items-center justify-center opacity-70 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity z-10"
+                      onClick={(e) => handleDeleteCharacter(e, char.id)}
+                    >
+                      {deletingId === char.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3 h-3" />
+                      )}
+                    </button>
+                  </div>
                 ))}
               </div>
               <Button
