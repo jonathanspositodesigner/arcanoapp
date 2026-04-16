@@ -157,7 +157,7 @@ const PlanosUpscalerArcano69ES = () => {
       });
     }
     
-    window.open(appendUtmToUrl("https://pay.hotmart.com/R103906553W?off=9o6c47no"), "_blank");
+    window.open(appendUtmToUrl("https://pay.hotmart.com/T105269427K?off=2pqwe2ay&bid=1776379993265"), "_blank");
   };
 
   const hasAccess = hasAccessToPack(TOOL_SLUG);
@@ -165,10 +165,10 @@ const PlanosUpscalerArcano69ES = () => {
   // Loading state removido do Hero para otimizar LCP
   // O loading agora é usado apenas nas seções que dependem dos dados (preço)
 
-  // Preço em centavos de dólar para LATAM: $7.90 (790 centavos)
-  const price = 790;
-  const originalPrice = 990; // $9.90 riscado
-  const installmentPrice = Math.ceil(price / 3); // ~$2.64
+  // Preço em centavos de dólar para LATAM: $9.90 (990 centavos)
+  const price = 990;
+  const originalPrice = 1990; // $19.90 riscado
+  const installmentPrice = Math.ceil(price / 3); // ~$3.30
 
   // Currency conversion
   const conversion = useCurrencyConversion(price / 100);
