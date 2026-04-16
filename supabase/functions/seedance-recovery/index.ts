@@ -145,7 +145,7 @@ serve(async (req) => {
             console.log(`[seedance-recovery] ⏰ Job ${job.id} exceeded 20 min total, marking failed`);
             await supabase.from("seedance_jobs").update({
               status: "failed",
-              error_message: "Timeout definitivo - geração não completou em 30 minutos",
+              error_message: "Timeout definitivo - geração não completou em 20 minutos",
             }).eq("id", job.id);
             failed++;
           } else {
