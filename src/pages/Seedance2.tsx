@@ -282,31 +282,51 @@ export default function Seedance2() {
     setMode(newMode);
   }, [mode, libraryVideoRefs]);
 
+  const getValidAccessToken = useCallback(async (): Promise<string> => {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (sessionData.session?.access_token) return sessionData.session.access_token;
+
+    const { data: refreshed, error: refreshError } = await supabase.auth.refreshSession();
+    if (refreshError || !refreshed.session?.access_token) {
+      throw new Error("Sessão expirada. Faça login novamente.");
+    }
+
+    return refreshed.session.access_token;
+  }, []);
+
   const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
     let count = 0;
     const timer = setInterval(async () => {
       count += 1;
 
-      // 180 polls * 5s = 15 minutes timeout (Seedance can take a while)
       if (count > 180) {
         clearInterval(timer);
         delete pollTimers.current[genId];
         setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout - geração demorou demais" } : g));
-        // Mark job for background recovery - system will check again in 10 min
         supabase.from("seedance_jobs").update({ status: "timeout_recovery" }).eq("id", jobId);
         return;
       }
 
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        if (!session) return;
-
+        const accessToken = await getValidAccessToken();
         const { data, error } = await supabase.functions.invoke("seedance-poll", {
           body: { taskId, jobId },
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
 
-        if (error) return;
+        if (error) {
+          const errMsg = error.message || "Erro ao consultar geração";
+          if (errMsg.includes("Invalid token") || errMsg.includes("JWT") || errMsg.includes("401")) {
+            clearInterval(timer);
+            delete pollTimers.current[genId];
+            setGenerations((prev) => prev.map((g) => g.id === genId ? {
+              ...g,
+              status: "failed",
+              error: "Sessão expirada. Faça login novamente para acompanhar a geração."
+            } : g));
+          }
+          return;
+        }
 
         if (data?.status === "completed") {
           clearInterval(timer);
@@ -319,12 +339,24 @@ export default function Seedance2() {
         } else {
           setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, pollCount: count } : g));
         }
-      } catch {
+      } catch (pollError: any) {
+        if (pollError?.message?.includes("Sessão expirada")) {
+          clearInterval(timer);
+          delete pollTimers.current[genId];
+          setGenerations((prev) => prev.map((g) => g.id === genId ? {
+            ...g,
+            status: "failed",
+            error: "Sessão expirada. Faça login novamente para acompanhar a geração."
+          } : g));
+          return;
+        }
+
+        console.error("[Seedance2] Poll error:", pollError);
       }
     }, 5000);
 
     pollTimers.current[genId] = timer;
-  }, []);
+  }, [getValidAccessToken]);
 
   // Resume polling for active jobs loaded on page init
   useEffect(() => {
@@ -353,13 +385,12 @@ export default function Seedance2() {
     const model = MODEL_MAP[`${mode}-${speed}`];
     const genId = crypto.randomUUID();
 
-    // Build prompt with gender prefix from selected characters
     let finalPrompt = prompt.trim();
     if (selectedCharacters.length > 0) {
       const genderPrefixes = selectedCharacters
         .filter(c => c.gender)
-        .map(c => c.gender === 'male' 
-          ? 'The main subject is a man, male person.' 
+        .map(c => c.gender === 'male'
+          ? 'The main subject is a man, male person.'
           : 'The main subject is a woman, female person.'
         );
       if (genderPrefixes.length > 0) {
@@ -373,6 +404,8 @@ export default function Seedance2() {
 
     let createdJobId: string | null = null;
     try {
+      const accessToken = await getValidAccessToken();
+
       const { data: jobData, error: insertError } = await supabase
         .from("seedance_jobs")
         .insert({
@@ -403,17 +436,6 @@ export default function Seedance2() {
       createdJobId = jobData.id;
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing" } : g));
 
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Sessão expirada. Faça login novamente." } : g));
-        await supabase.from("seedance_jobs").update({
-          status: "failed",
-          error_message: "Sessão expirada - token ausente",
-        }).eq("id", jobData.id);
-        return;
-      }
-
-      // Retry edge function invocation up to 2 times on network/gateway errors
       let data: any = null;
       let error: any = null;
       const MAX_INVOKE_RETRIES = 2;
@@ -433,16 +455,14 @@ export default function Seedance2() {
             jobId: jobData.id,
             creditCost,
           },
-          headers: { Authorization: `Bearer ${session.access_token}` },
+          headers: { Authorization: `Bearer ${accessToken}` },
         });
 
         data = result.data;
         error = result.error;
 
-        // If success or a known business error (not network), don't retry
         if (data?.success || data?.error) break;
 
-        // Retry on network/gateway errors
         const isNetworkError = !data && error && (
           error.message?.includes('non-2xx') ||
           error.message?.includes('Failed to fetch') ||
@@ -458,7 +478,6 @@ export default function Seedance2() {
         break;
       }
 
-      // Extract real error message
       let realError = data?.error || error?.message || "Erro desconhecido";
       if (!data && error?.context) {
         try {
@@ -467,7 +486,6 @@ export default function Seedance2() {
         } catch (_) { /* ignore */ }
       }
 
-      // Map technical errors to user-friendly messages
       const ERROR_MESSAGES: Record<string, string> = {
         'Service busy': 'Servidores ocupados. Tente novamente em alguns minutos.',
         'Allocating resources': 'Servidores ocupados. Tente novamente em alguns minutos.',
@@ -477,7 +495,7 @@ export default function Seedance2() {
         'non-2xx': 'Erro de conexão com o servidor. Tente novamente.',
       };
 
-      const friendlyError = Object.entries(ERROR_MESSAGES).find(([key]) => 
+      const friendlyError = Object.entries(ERROR_MESSAGES).find(([key]) =>
         realError.toLowerCase().includes(key.toLowerCase())
       )?.[1] || realError;
 
@@ -494,7 +512,6 @@ export default function Seedance2() {
       startPolling(genId, data.taskId, jobData.id);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
-      // CRITICAL: Update DB too so job doesn't stay stuck as "queued"
       if (createdJobId) {
         await supabase.from("seedance_jobs").update({
           status: "failed",
@@ -502,7 +519,7 @@ export default function Seedance2() {
         }).eq("id", createdJobId);
       }
     }
-  }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, selectedCharacters, user, canGenerate, startPolling]);
+  }, [prompt, mode, speed, ratio, quality, duration, generateAudio, startImage, endImage, refImages, refVideos, refAudios, selectedCharacters, user, canGenerate, creditCost, getValidAccessToken, startPolling]);
 
   const handleDownloadVideo = useCallback((videoUrl: string, videoPrompt: string) => {
     const filename = `seedance-${videoPrompt.slice(0, 30).replace(/[^a-zA-Z0-9]/g, '_')}-${Date.now()}.mp4`;

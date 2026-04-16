@@ -25,11 +25,11 @@ serve(async (req) => {
 
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Find jobs in "timeout_recovery", stuck "running", OR orphaned "queued" status
+    // Find jobs in timeout recovery, running, or orphaned queued/pending state
     const { data: recoveryJobs, error: queryError } = await supabase
       .from("seedance_jobs")
       .select("id, task_id, user_id, credits_charged, status, created_at")
-      .or("status.eq.timeout_recovery,status.eq.running,status.eq.queued")
+      .or("status.eq.timeout_recovery,status.eq.running,status.eq.queued,status.eq.pending")
       .order("created_at", { ascending: true })
       .limit(20);
 
@@ -41,13 +41,11 @@ serve(async (req) => {
     }
 
     const eligibleJobs = recoveryJobs.filter(j => {
-      // Orphaned "queued" jobs (no task_id, stuck > 3 minutes = edge function never ran)
-      if (j.status === "queued") {
+      if (j.status === "queued" || j.status === "pending") {
         const threeMinAgo = new Date(Date.now() - 3 * 60 * 1000).toISOString();
         return j.created_at && j.created_at < threeMinAgo;
       }
-      if (j.status === "timeout_recovery") return true; // always check these
-      // For "running" jobs with task_id, only if stuck > 25 min (safety net)
+      if (j.status === "timeout_recovery") return true;
       if (j.status === "running" && j.task_id) {
         const twentyFiveMinAgo = new Date(Date.now() - 25 * 60 * 1000).toISOString();
         return j.created_at && j.created_at < twentyFiveMinAgo;
@@ -67,11 +65,10 @@ serve(async (req) => {
 
     for (const job of eligibleJobs) {
       try {
-        // Handle orphaned "queued" jobs (edge function never ran)
-        if (job.status === "queued" && !job.task_id) {
-          console.log(`[seedance-recovery] 🧹 Cleaning orphaned queued job ${job.id} (stuck since ${job.created_at})`);
-          
-          // Refund credits if they were charged
+        // Handle orphaned queued/pending jobs (edge function never ran or failed before task_id)
+        if ((job.status === "queued" || job.status === "pending") && !job.task_id) {
+          console.log(`[seedance-recovery] 🧹 Cleaning orphaned ${job.status} job ${job.id} (stuck since ${job.created_at})`);
+
           const chargedAmount = job.credits_charged || 0;
           if (chargedAmount > 0) {
             await supabase.rpc("add_upscaler_credits", {
@@ -81,7 +78,7 @@ serve(async (req) => {
             });
             console.log(`[seedance-recovery] Refunded ${chargedAmount} credits to user ${job.user_id}`);
           }
-          
+
           await supabase.from("seedance_jobs").update({
             status: "failed",
             error_message: "Job não foi processado - tente novamente",
