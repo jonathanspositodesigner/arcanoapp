@@ -656,6 +656,16 @@ const PlanosUpscalerArcano69ES = () => {
           locale="es"
         />
       )}
+
+      {/* Sticky CTA */}
+      {!hasAccess && (
+        <StickyCtaBar
+          visible={showSticky}
+          onClick={scrollToPricing}
+          priceLabel={formatPrice(price)}
+          oldPriceLabel={formatPrice(originalPrice)}
+        />
+      )}
     </div>
   );
 };
