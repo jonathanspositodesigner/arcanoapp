@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { Users, Upload, Plus, Loader2 } from 'lucide-react';
+import { Users, Upload, Plus, Loader2, Trash2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import ImageUploadCard from '@/components/pose-changer/ImageUploadCard';
 
 interface SavedCharacter {
