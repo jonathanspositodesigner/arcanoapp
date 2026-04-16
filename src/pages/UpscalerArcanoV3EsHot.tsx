@@ -117,14 +117,12 @@ const testimonials = [
 ];
 
 const faqs = [
-  { q: "¿Cuál es la diferencia entre los planes con créditos y el plan Vitalicio?", a: "Los planes Starter, Pro y Ultimate incluyen una cantidad fija de créditos para usar en el Upscaler Arcano. El plan Vitalicio es un pago único que te da acceso ilimitado para siempre — sin créditos, sin límites, sin mensualidad." },
-  { q: "¿Tengo que pagar mensualidad?", a: "No. Ninguno de nuestros planes cobra mensualidad. Los planes con créditos son un pago único por un paquete de créditos. El plan Vitalicio también es un pago único con uso ilimitado para siempre." },
-  { q: "¿Qué pasa cuando se me acaban los créditos?", a: "Si elegiste un plan con créditos (Starter, Pro o Ultimate), podés comprar un nuevo paquete en cualquier momento. Si preferís no preocuparte por créditos, el plan Vitalicio te da uso ilimitado sin restricciones." },
+  { q: "¿Qué incluye el plan Vitalicio?", a: "Es un pago único que te da acceso ilimitado para siempre — sin límites de uso, sin mensualidad. Pagás una vez y usás para siempre." },
+  { q: "¿Tengo que pagar mensualidad?", a: "No. El plan Vitalicio es un pago único. No hay suscripción, no hay cobros recurrentes. Acceso ilimitado de por vida." },
   { q: "¿Funciona con cualquier tipo de imagen?", a: "Sí. Fotos de sesión, logos, renders 3D, fotos antiguas, imágenes generadas por IA, comida, productos — Arcano procesa cualquier tipo de imagen." },
   { q: "¿Cuánto tiempo tarda en procesar?", a: "Con el Modo Turbo del V3, menos de 60 segundos por imagen. En lote, procesás hasta 10 imágenes en paralelo al mismo tiempo." },
   { q: "¿Qué es el Modo Turbo? ¿Es igual al resultado normal?", a: "El Modo Turbo es exclusivo del V3 y entrega el mismo motor de IA, misma calidad 4K, pero en menos de 1 minuto — hasta 10x más rápido que el procesamiento estándar." },
   { q: "¿Hay que instalar algún programa?", a: "No. El Upscaler Arcano es 100% online. Accedé directo desde el navegador, sin instalar nada, desde cualquier computadora." },
-  { q: "¿Puedo hacer upgrade del plan con créditos al Vitalicio?", a: "¡Sí! Podés comprar el plan Vitalicio en cualquier momento y pasar a tener uso ilimitado. Los créditos que ya tengas seguirán disponibles además del acceso ilimitado." },
 ];
 
 const realResults = [
@@ -639,7 +637,7 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => redirectToHotmart('vitalicio')}>Obtener Vitalicio →</button>
                 <div className="v3-plan-divider" />
-                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin créditos</strong></div>
+                <div className="v3-plan-feature"><span className="check">✓</span> <strong style={{ color: "var(--white)" }}>Uso ilimitado · sin límites</strong></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> Todas las herramientas</div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Modo Turbo V3</span></div>
                 <div className="v3-plan-feature"><span className="check">✓</span> <span className="special">Upscale en Lote V3</span></div>
