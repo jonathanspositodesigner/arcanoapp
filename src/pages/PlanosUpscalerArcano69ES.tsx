@@ -507,7 +507,9 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* PROVA SOCIAL - Lazy loaded with Intersection Observer */}
-          <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
+          <div className="w-full bg-[#0d0a18]">
+            <LazySocialProofWrapper locale="es" onZoomClick={openModal} isMobile={isMobile} />
+          </div>
 
           {/* SEÇÃO DE PREÇO E CTA - Com Card */}
           <AnimatedSection id="pricing" className="px-3 md:px-4 py-14 md:py-20 w-full bg-[#0a0716]" animation="scale">
