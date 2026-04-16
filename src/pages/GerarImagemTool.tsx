@@ -547,7 +547,7 @@ const GerarImagemTool = () => {
 
   return (
     <AppLayout>
-      <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col">
         {/* Header */}
         <div className="sticky top-0 z-10 bg-background/90 backdrop-blur-md border-b border-border px-4 py-3">
           <div className="flex items-center justify-between max-w-4xl mx-auto">
