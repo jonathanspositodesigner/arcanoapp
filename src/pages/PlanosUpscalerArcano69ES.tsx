@@ -310,8 +310,16 @@ const PlanosUpscalerArcano69ES = () => {
       ) : (
         <>
           {/* HERO SECTION - Renderiza imediatamente para LCP */}
-          <section className="px-3 md:px-4 py-10 md:py-20 w-full">
+          <section className="px-3 md:px-4 py-14 md:py-20 w-full bg-gradient-to-b from-[#120a22] to-[#0d0a18]">
             <div className="flex flex-col items-center text-center">
+              {/* Badge superior */}
+              <FadeIn delay={0} duration={500}>
+                <div className="inline-flex items-center gap-2 bg-purple-900/30 border border-purple-700/40 rounded-full px-4 py-1.5 text-purple-200 text-xs mb-5">
+                  <Star className="h-3.5 w-3.5 text-purple-300" />
+                  Upscaler Arcano — Motor IA Exclusivo
+                </div>
+              </FadeIn>
+
               {/* H1 sem FadeIn para ser visível imediatamente (LCP) */}
               <div className="w-full max-w-[95vw] md:max-w-[60vw]">
                 <h1 className="font-bebas text-4xl md:text-5xl lg:text-6xl xl:text-7xl text-white mb-4 md:mb-6 leading-tight tracking-wide">
