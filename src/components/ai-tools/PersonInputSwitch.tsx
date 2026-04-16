@@ -84,6 +84,29 @@ const PersonInputSwitch: React.FC<PersonInputSwitchProps> = ({
     }
   };
 
+  const handleDeleteCharacter = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setDeletingId(id);
+    try {
+      const { error } = await supabase
+        .from('saved_characters' as any)
+        .delete()
+        .eq('id', id);
+      if (error) throw error;
+      setCharacters(prev => prev.filter(c => c.id !== id));
+      if (selectedCharacterId === id) {
+        setSelectedCharacterId(null);
+        onImageChange(null);
+      }
+      toast.success('Avatar removido');
+    } catch (error) {
+      console.error('[PersonInputSwitch] Delete error:', error);
+      toast.error('Erro ao remover avatar');
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   const handleModeChange = (newMode: 'character' | 'photo') => {
     if (newMode === mode) return;
     setMode(newMode);
