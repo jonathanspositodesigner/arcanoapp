@@ -156,7 +156,6 @@ const realResults = [
 /* ── Eshot Sticky Promo Bar ── */
 const EshotStickyPromoBar = memo(({ scrollToPrice }: { scrollToPrice: () => void }) => {
   const [visible, setVisible] = useState(false);
-  const countRef = useRef<HTMLSpanElement>(null);
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 300);
