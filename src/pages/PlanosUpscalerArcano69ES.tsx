@@ -437,9 +437,11 @@ const PlanosUpscalerArcano69ES = () => {
           </AnimatedSection>
 
           {/* SEÇÃO ANTES/DEPOIS - Lazy loaded */}
-          <Suspense fallback={<SectionSkeleton height="600px" />}>
-            <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
-          </Suspense>
+          <div className="w-full bg-[#0a0716]">
+            <Suspense fallback={<SectionSkeleton height="600px" />}>
+              <BeforeAfterGalleryES onZoomClick={openModal} isMobile={isMobile} />
+            </Suspense>
+          </div>
 
           {/* PARA QUEM É */}
           <AnimatedSection className="px-4 py-14 md:py-20 w-full bg-[#0a0716]">
