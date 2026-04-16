@@ -397,7 +397,7 @@ const UpscalerArcanoV3 = () => {
 
           <div className="v3-hero-micro">
             <span className="dot" />
-            Acceso inmediato · Resultado en 60s · Calidad 4K
+            Acceso inmediato · Resultado en 60s · 7 días de garantía
           </div>
 
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
