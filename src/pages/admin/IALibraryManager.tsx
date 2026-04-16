@@ -194,9 +194,13 @@ const IALibraryManager = () => {
     setSelectedToAdd(new Set());
     setAddCategoryId(meta.hasCategories ? (categories[0]?.id || "") : "");
     try {
-      let q = supabase.from(meta.sourceTable).select("id, title, image_url, thumbnail_url").order("created_at", { ascending: false }).limit(2000);
+      const selectCols = meta.sourceTable === "admin_prompts"
+        ? "id, title, image_url, thumbnail_url"
+        : "id, title, image_url";
+      let q = supabase.from(meta.sourceTable).select(selectCols).order("created_at", { ascending: false }).limit(2000);
       if (meta.sourceCategory) q = q.eq("category", meta.sourceCategory);
-      const { data: src } = await q;
+      const { data: src, error } = await q;
+      if (error) { console.error("Add modal load error:", error); toast.error("Erro: " + error.message); }
       const existing = new Set(items.map((i) => i.source_id));
       setAddAvailable((src || []).filter((s: any) => !existing.has(s.id)));
     } finally {
