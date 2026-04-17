@@ -829,7 +829,14 @@
   .v3-cta-group { margin-bottom: 32px; }
 
   .v3-before-after { height: auto; aspect-ratio: 3/4; border-radius: 14px; }
-  .v3-drag-circle { width: 36px; height: 36px; font-size: 14px; }
+  /* Larger hit area for the slider handle on mobile (>= 44px) */
+  .v3-drag-handle { width: 44px; background: transparent; }
+  .v3-drag-handle::before {
+    content: ''; position: absolute; top: 0; bottom: 0; left: 50%;
+    transform: translateX(-50%); width: 2px; background: var(--white);
+    pointer-events: none;
+  }
+  .v3-drag-circle { width: 44px; height: 44px; font-size: 14px; }
 
   .v3-social-popup {
     top: 12px; bottom: auto; left: 12px; right: 12px; max-width: none;
