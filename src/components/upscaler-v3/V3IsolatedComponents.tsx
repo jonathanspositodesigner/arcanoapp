@@ -446,3 +446,44 @@ export const V3LazySection = memo(({ children, minHeight = 400 }: { children: Re
   );
 });
 V3LazySection.displayName = "V3LazySection";
+
+/* ─── Social Proof Strip (real platform users) ─── */
+import { supabase } from "@/integrations/supabase/client";
+
+export const V3SocialProofStrip = memo(() => {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("get_platform_stats");
+        if (cancelled) return;
+        const stats = (data ?? {}) as { total_users?: number };
+        if (typeof stats.total_users === "number" && stats.total_users > 0) {
+          setCount(stats.total_users);
+        }
+      } catch {
+        /* fail silently — fallback used */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const display = count !== null
+    ? `Mais de ${count.toLocaleString("pt-BR")} criadores brasileiros já usam`
+    : "Mais de 1.000+ criadores brasileiros já usam";
+
+  return (
+    <div className="v3-social-proof-strip">
+      <div className="v3-social-proof-headline">{display}</div>
+      <div className="v3-social-proof-items">
+        <span><span aria-hidden="true">✓</span> Resultado em segundos</span>
+        <span><span aria-hidden="true">✓</span> Sem instalar nada</span>
+        <span><span aria-hidden="true">✓</span> Funciona no celular</span>
+      </div>
+    </div>
+  );
+});
+V3SocialProofStrip.displayName = "V3SocialProofStrip";
+V3LazySection.displayName = "V3LazySection";
