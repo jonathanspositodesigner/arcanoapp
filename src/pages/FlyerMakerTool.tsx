@@ -838,6 +838,7 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
+  // "Nova" — keep inputs filled, only clear the result/refine state
   const handleNew = () => {
     setOutputImage(null);
     setThumbnailImage(null);
@@ -847,8 +848,33 @@ const FlyerMakerTool: React.FC = () => {
     setRefinePrompt('');
     setRefineJobId(null);
     setIsRefining(false);
+    setJobId(null);
+    setProgress(0);
+    setQueuePosition(0);
+    setDebugErrorMessage(null);
     setStatus('idle');
-    // Reset agenda states
+  };
+
+  // Full reset — clears every input. Triggered by the discreet "Resetar" button.
+  const handleReset = () => {
+    handleNew();
+    // Evento inputs
+    if (referenceImage) URL.revokeObjectURL(referenceImage);
+    setReferenceImage(null);
+    setReferenceFile(null);
+    artistPhotos.forEach(p => { try { URL.revokeObjectURL(p.url); } catch {} });
+    setArtistPhotos([]);
+    if (logoImage) URL.revokeObjectURL(logoImage);
+    setLogoImage(null);
+    setLogoFile(null);
+    setDateTimeLocation('');
+    setTitle('');
+    setAddress('');
+    setArtistNames('');
+    setFooterPromo('');
+    setImageSize('3:4');
+    setCreativity(0);
+    // Agenda inputs
     if (agendaArtistPhoto) URL.revokeObjectURL(agendaArtistPhoto);
     setAgendaArtistPhoto(null);
     setAgendaArtistFile(null);
@@ -879,7 +905,17 @@ const FlyerMakerTool: React.FC = () => {
               >
                 {/* Title */}
                 <div>
-                  <h1 className="text-xl font-bold text-foreground">Flyer Maker</h1>
+                  <div className="flex items-start justify-between gap-2">
+                    <h1 className="text-xl font-bold text-foreground">Flyer Maker</h1>
+                    <button
+                      onClick={handleReset}
+                      disabled={isProcessing}
+                      title="Limpar todos os campos"
+                      className="text-[10px] text-muted-foreground/70 hover:text-foreground transition-colors flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <RefreshCw className="w-3 h-3" /> Resetar
+                    </button>
+                  </div>
                   <p className="text-xs text-muted-foreground mt-1">Crie flyers profissionais a partir de uma referência e seus dados.</p>
                   {testCredits > 0 && (
                     <div className="mt-2 flex items-center gap-1.5 bg-amber-500/15 border border-amber-500/30 rounded-lg px-3 py-1.5">
