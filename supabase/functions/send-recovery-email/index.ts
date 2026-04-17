@@ -6,6 +6,11 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const FROM_NAME = "Arcano App";
+const FROM_EMAIL = "contato@voxvisual.com.br";
+const RESEND_FROM = `${FROM_NAME} <${FROM_EMAIL}>`;
+const RECOVERY_SUBJECT = "🔐 Crie sua senha - Primeiro Acesso";
+
 async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
   return await Promise.race([
     promise,
@@ -13,7 +18,6 @@ async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): P
   ]);
 }
 
-// SendPulse OAuth2 token cache
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
 async function getSendPulseToken(): Promise<string> {
@@ -88,6 +92,92 @@ function buildRecoveryEmailHtml(recoveryLink: string): string {
 </html>`;
 }
 
+async function sendViaResend(toEmail: string, htmlContent: string) {
+  const resendApiKey = Deno.env.get("RESEND_API_KEY");
+  if (!resendApiKey) {
+    throw new Error("Configuração Resend indisponível");
+  }
+
+  const response = await withTimeout(fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${resendApiKey}`,
+    },
+    body: JSON.stringify({
+      from: RESEND_FROM,
+      to: [toEmail],
+      subject: RECOVERY_SUBJECT,
+      html: htmlContent,
+    }),
+  }), 10000, "resend_send_email");
+
+  const responseText = await response.text();
+  console.log(`[send-recovery-email] Resend response: ${response.status} - ${responseText}`);
+
+  if (!response.ok) {
+    throw new Error(responseText || `Resend error: ${response.status}`);
+  }
+
+  return { provider: "resend" };
+}
+
+async function sendViaSendPulse(toEmail: string, htmlContent: string) {
+  const token = await getSendPulseToken();
+  const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
+
+  const emailPayload = {
+    email: {
+      html: htmlBase64,
+      text: "",
+      subject: RECOVERY_SUBJECT,
+      from: { name: FROM_NAME, email: FROM_EMAIL },
+      to: [{ name: toEmail, email: toEmail }],
+    },
+  };
+
+  const response = await withTimeout(fetch("https://api.sendpulse.com/smtp/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(emailPayload),
+  }), 10000, "sendpulse_send_email");
+
+  const responseText = await response.text();
+  console.log(`[send-recovery-email] SendPulse response: ${response.status} - ${responseText}`);
+
+  if (!response.ok) {
+    throw new Error(responseText || `SendPulse error: ${response.status}`);
+  }
+
+  return { provider: "sendpulse" };
+}
+
+async function deliverRecoveryEmail(toEmail: string, recoveryLink: string) {
+  const htmlContent = buildRecoveryEmailHtml(recoveryLink);
+  const attempts = [
+    () => sendViaResend(toEmail, htmlContent),
+    () => sendViaSendPulse(toEmail, htmlContent),
+  ];
+
+  let lastError: unknown = null;
+
+  for (const attempt of attempts) {
+    try {
+      const result = await attempt();
+      console.log(`[send-recovery-email] Delivery succeeded via ${result.provider} for ${toEmail}`);
+      return result;
+    } catch (error) {
+      lastError = error;
+      console.error("[send-recovery-email] Delivery attempt failed:", error);
+    }
+  }
+
+  throw lastError instanceof Error ? lastError : new Error("Erro ao enviar email de recuperação");
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -106,16 +196,11 @@ serve(async (req) => {
     const normalizedEmail = email.trim().toLowerCase();
     console.log(`[send-recovery-email] Generating recovery link for: ${normalizedEmail}`);
 
-    if (!Deno.env.get("SENDPULSE_CLIENT_ID") || !Deno.env.get("SENDPULSE_CLIENT_SECRET")) {
-      throw new Error("Configuração de email indisponível");
-    }
-
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
     );
 
-    // Check blacklist
     const { data: blacklisted } = await supabaseAdmin
       .from("blacklisted_emails")
       .select("id")
@@ -130,7 +215,6 @@ serve(async (req) => {
       );
     }
 
-    // Generate recovery link via admin API
     const { data: linkData, error: linkError } = await withTimeout(supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: normalizedEmail,
@@ -156,13 +240,10 @@ serve(async (req) => {
       );
     }
 
-    // Extract token_hash from the action_link to build a safe URL
-    // Gmail/Outlook prefetch bots consume /verify links, so we redirect to the app page instead
     const actionUrl = new URL(actionLink);
     const tokenHash = actionUrl.searchParams.get("token") || actionUrl.searchParams.get("token_hash");
     const type = actionUrl.searchParams.get("type") || "recovery";
 
-    // Build safe recovery link pointing to the app's reset page
     const baseRedirectUrl = redirect_url || "https://arcanoapp.voxvisual.com.br/reset-password";
     const safeUrl = new URL(baseRedirectUrl);
     if (tokenHash) {
@@ -171,43 +252,12 @@ serve(async (req) => {
     safeUrl.searchParams.set("type", type);
     const recoveryLink = safeUrl.toString();
 
-    console.log(`[send-recovery-email] Safe recovery link generated (token_hash flow)`);
+    console.log("[send-recovery-email] Safe recovery link generated (token_hash flow)");
 
-    // Build email HTML
-    const htmlContent = buildRecoveryEmailHtml(recoveryLink);
-
-    // Send via SendPulse
-    const token = await getSendPulseToken();
-    const htmlBase64 = btoa(unescape(encodeURIComponent(htmlContent)));
-
-    const emailPayload = {
-      email: {
-        html: htmlBase64,
-        text: "",
-        subject: "🔐 Crie sua senha - Primeiro Acesso",
-        from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
-        to: [{ name: normalizedEmail, email: normalizedEmail }],
-      },
-    };
-
-    const sendResponse = await withTimeout(fetch("https://api.sendpulse.com/smtp/emails", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(emailPayload),
-    }), 10000, "sendpulse_send_email");
-
-    const sendResult = await sendResponse.text();
-    console.log(`[send-recovery-email] SendPulse response: ${sendResponse.status} - ${sendResult}`);
-
-    if (!sendResponse.ok) {
-      throw new Error(sendResult || `Email provider error: ${sendResponse.status}`);
-    }
+    const delivery = await deliverRecoveryEmail(normalizedEmail, recoveryLink);
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, provider: delivery.provider }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error: any) {
