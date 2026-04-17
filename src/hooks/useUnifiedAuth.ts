@@ -89,7 +89,8 @@ const defaultT = (key: string) => {
   return messages[key] || key;
 };
 
-const withTimeout = <T,>(promise: Promise<T>, ms: number, label: string): Promise<T> => {
+const withTimeout = <T,>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> => {
+  const promise = Promise.resolve(promiseLike);
   return Promise.race([
     promise,
     new Promise<T>((_, reject) => {
@@ -168,7 +169,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
 
       for (let attempt = 1; attempt <= 2; attempt++) {
         try {
-          const { data, error } = await withTimeout(
+          const { data, error } = await withTimeout<{ data: any; error: any }>(
             supabase.rpc('check_profile_exists', { check_email: normalizedEmail }),
             6000,
             'check_profile_exists'
@@ -250,7 +251,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         let autoLoginError: unknown = null;
 
         try {
-          const { error } = await withTimeout(
+          const { error } = await withTimeout<{ data: any; error: any }>(
             supabase.auth.signInWithPassword({
               email: normalizedEmail,
               password: normalizedEmail,
@@ -289,7 +290,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         let autoLoginError: unknown = null;
 
         try {
-          const { error } = await withTimeout(
+          const { error } = await withTimeout<{ data: any; error: any }>(
             supabase.auth.signInWithPassword({
               email: normalizedEmail,
               password: normalizedEmail,
@@ -349,7 +350,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const { data, error } = await withTimeout(
+      const { data, error } = await withTimeout<{ data: any; error: any }>(
         supabase.auth.signInWithPassword({
           email: state.verifiedEmail,
           password,
@@ -390,12 +391,14 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       let profile: { password_changed?: boolean | null; email_verified?: boolean | null; created_at?: string | null } | null = null;
 
       try {
-        const { data: profileData, error: profileError } = await withTimeout(
-          supabase
-            .from('profiles')
-            .select('password_changed, email_verified, created_at')
-            .eq('id', data.user.id)
-            .maybeSingle(),
+        const { data: profileData, error: profileError } = await withTimeout<{ data: typeof profile; error: any }>(
+          Promise.resolve(
+            supabase
+              .from('profiles')
+              .select('password_changed, email_verified, created_at')
+              .eq('id', data.user.id)
+              .maybeSingle()
+          ),
           6000,
           'load_profile'
         );
