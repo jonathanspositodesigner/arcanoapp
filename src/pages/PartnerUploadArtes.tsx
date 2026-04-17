@@ -57,13 +57,24 @@ const PartnerUploadArtes = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [flyerSubcategories, setFlyerSubcategories] = useState<FlyerSubcategory[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
     fetchCategories();
+    fetchFlyerSubcategories();
     fetchPacks();
   }, []);
+
+  const fetchFlyerSubcategories = async () => {
+    const { data } = await supabase
+      .from('ai_tool_library_categories')
+      .select('id, name, slug')
+      .eq('tool_slug', 'flyer_maker')
+      .order('display_order', { ascending: true });
+    setFlyerSubcategories(data || []);
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
