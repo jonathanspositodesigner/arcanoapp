@@ -62,7 +62,7 @@ const ArtesMusicosFerramentas = () => {
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full">
-                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
               <p className="text-muted-foreground hidden sm:block">Faça upload de novas artes</p>
@@ -75,7 +75,7 @@ const ArtesMusicosFerramentas = () => {
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições</p>
@@ -88,7 +88,7 @@ const ArtesMusicosFerramentas = () => {
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Edite ou exclua artes publicadas</p>
@@ -101,7 +101,7 @@ const ArtesMusicosFerramentas = () => {
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
-                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
               <p className="text-muted-foreground hidden sm:block">Configure packs e preços</p>
@@ -114,7 +114,7 @@ const ArtesMusicosFerramentas = () => {
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
-                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Clientes</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie clientes e acessos</p>
@@ -127,7 +127,7 @@ const ArtesMusicosFerramentas = () => {
           >
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie categorias de artes</p>
@@ -140,7 +140,7 @@ const ArtesMusicosFerramentas = () => {
             </Badge>
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-rose-500 rounded-full">
-                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Banners</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie banners promocionais</p>

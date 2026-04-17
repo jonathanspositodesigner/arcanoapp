@@ -124,7 +124,7 @@ const ArtesEventosMarketing = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-yellow-500 to-amber-600 rounded-full">
-                <Bell className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Bell className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Notificações Push</h2>
               <p className="text-muted-foreground hidden sm:block">Envie notificações para o app</p>

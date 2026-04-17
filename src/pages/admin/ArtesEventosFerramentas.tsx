@@ -144,7 +144,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
               <p className="text-muted-foreground hidden sm:block">Faça upload de novas artes</p>
@@ -163,7 +163,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições</p>
@@ -182,7 +182,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Artes</h2>
               <p className="text-muted-foreground hidden sm:block">Edite ou exclua artes publicadas</p>
@@ -201,7 +201,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
-                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
               <p className="text-muted-foreground hidden sm:block">Configure packs e preços</p>
@@ -220,7 +220,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
-                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Users className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Clientes</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie clientes e acessos</p>
@@ -239,7 +239,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Handshake className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Parceiros</h2>
               <p className="text-muted-foreground hidden sm:block">Cadastre e gerencie parceiros</p>
@@ -258,7 +258,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie categorias de artes</p>
@@ -277,7 +277,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-rose-500 rounded-full">
-                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Image className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Banners</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie banners promocionais</p>
@@ -296,7 +296,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-cyan-500 rounded-full">
-                <UserPlus className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <UserPlus className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Importar</h2>
               <p className="text-muted-foreground hidden sm:block">Importar clientes via CSV</p>
@@ -315,7 +315,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-emerald-500 rounded-full">
-                <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Promoções</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie promoções e combos</p>
@@ -334,7 +334,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-accent0 rounded-full">
-                <FileSearch className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <FileSearch className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Webhook Logs</h2>
               <p className="text-muted-foreground hidden sm:block">Monitore webhooks recebidos</p>
@@ -353,7 +353,7 @@ const ArtesEventosFerramentas = () => {
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
               <div className="p-2 sm:p-4 bg-red-500 rounded-full">
-                <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Blacklist</h2>
               <p className="text-muted-foreground hidden sm:block">Gerencie emails bloqueados</p>
