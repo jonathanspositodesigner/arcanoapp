@@ -16,6 +16,14 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
+  const fallbackToNativeRecovery = async (normalizedEmail: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+
+    if (error) throw error;
+  };
+
   const getRecoveryErrorMessage = (data?: { success?: boolean; error?: string } | null, error?: { message?: string } | null) => {
     return data?.error || error?.message || t('errors.sendRecoveryEmailError');
   };
@@ -25,11 +33,14 @@ const ForgotPassword = () => {
     setIsLoading(true);
 
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const { data, error } = await supabase.functions.invoke('send-recovery-email', {
-        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password` }
+        body: { email: normalizedEmail, redirect_url: `${window.location.origin}/reset-password` }
       });
 
-      if (error || (data && !data.success)) throw new Error(getRecoveryErrorMessage(data, error));
+      if (error || (data && !data.success)) {
+        await fallbackToNativeRecovery(normalizedEmail);
+      }
 
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));
