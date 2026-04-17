@@ -123,7 +123,7 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const micro = microcopy ?? "Acesso liberado · Cancele quando quiser";
+  const micro = microcopy ?? "Cancele quando quiser";
 
   return (
     <div className={`v3-sticky-cta ${visible ? "visible" : ""}`}>
