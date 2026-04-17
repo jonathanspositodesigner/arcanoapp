@@ -472,6 +472,7 @@ export type Database = {
           id: string
           name: string
           slug: string
+          thumbnail_url: string | null
           tool_slug: string
           updated_at: string
         }
@@ -481,6 +482,7 @@ export type Database = {
           id?: string
           name: string
           slug: string
+          thumbnail_url?: string | null
           tool_slug: string
           updated_at?: string
         }
@@ -490,6 +492,7 @@ export type Database = {
           id?: string
           name?: string
           slug?: string
+          thumbnail_url?: string | null
           tool_slug?: string
           updated_at?: string
         }
