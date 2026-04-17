@@ -141,7 +141,10 @@ const UpscalerArcanoV3 = () => {
   useGeoRedirect("/upscalerarcanov3-es");
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth <= 600;
+  });
   const heroSlides = isMobile ? heroSlidesMobile : heroSlidesDesktop;
   const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
   
