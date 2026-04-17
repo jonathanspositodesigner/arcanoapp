@@ -138,12 +138,80 @@ V3StickyBar.displayName = "V3StickyBar";
 /* ─── 4-Day Rolling Countdown ─── */
 function get4DayRemaining() {
   const CYCLE_MS = 4 * 24 * 60 * 60 * 1000;
-  // Epoch anchor: April 16 2026 00:00 UTC (today)
-  const anchor = new Date("2026-04-16T00:00:00Z").getTime();
+  // Anchor persisted per-browser on first visit; rolls every 4 days from that anchor
+  let anchor: number;
+  try {
+    const stored = typeof window !== "undefined" ? localStorage.getItem("v3_promo_anchor") : null;
+    if (stored) {
+      anchor = parseInt(stored, 10);
+    } else {
+      anchor = Date.now();
+      if (typeof window !== "undefined") localStorage.setItem("v3_promo_anchor", String(anchor));
+    }
+  } catch {
+    anchor = Date.now();
+  }
   const now = Date.now();
   const elapsed = (now - anchor) % CYCLE_MS;
   return CYCLE_MS - elapsed;
 }
+
+/* ─── PT version of the promo countdown (Dias/Hrs/Min/Seg in Portuguese) ─── */
+export const V3PromoCountdownPT = memo(() => {
+  const dRef = useRef<HTMLSpanElement>(null);
+  const hRef = useRef<HTMLSpanElement>(null);
+  const mRef = useRef<HTMLSpanElement>(null);
+  const sRef = useRef<HTMLSpanElement>(null);
+
+  useEffect(() => {
+    const tick = () => {
+      const rem = get4DayRemaining();
+      const totalSec = Math.floor(rem / 1000);
+      const d = Math.floor(totalSec / 86400);
+      const h = Math.floor((totalSec % 86400) / 3600);
+      const m = Math.floor((totalSec % 3600) / 60);
+      const s = totalSec % 60;
+      if (dRef.current) dRef.current.textContent = String(d).padStart(2, "0");
+      if (hRef.current) hRef.current.textContent = String(h).padStart(2, "0");
+      if (mRef.current) mRef.current.textContent = String(m).padStart(2, "0");
+      if (sRef.current) sRef.current.textContent = String(s).padStart(2, "0");
+    };
+    tick();
+    const interval = setInterval(tick, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const boxStyle: React.CSSProperties = {
+    display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+    background: "rgba(245,200,66,0.1)", border: "1px solid rgba(245,200,66,0.25)",
+    borderRadius: 8, padding: "6px 8px", minWidth: 44,
+  };
+  const numStyle: React.CSSProperties = {
+    fontSize: 20, fontWeight: 800, color: "#F5C842",
+    fontFamily: "'Plus Jakarta Sans', sans-serif",
+    fontVariantNumeric: "tabular-nums", lineHeight: 1,
+  };
+  const labelStyle: React.CSSProperties = {
+    fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.5)",
+    textTransform: "uppercase", letterSpacing: 1,
+  };
+  const sepStyle: React.CSSProperties = {
+    fontSize: 18, fontWeight: 800, color: "rgba(245,200,66,0.4)", alignSelf: "center", paddingBottom: 10,
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12, marginBottom: 4 }}>
+      <div style={boxStyle}><span ref={dRef} style={numStyle}>--</span><span style={labelStyle}>Dias</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={hRef} style={numStyle}>--</span><span style={labelStyle}>Hrs</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={mRef} style={numStyle}>--</span><span style={labelStyle}>Min</span></div>
+      <span style={sepStyle}>:</span>
+      <div style={boxStyle}><span ref={sRef} style={numStyle}>--</span><span style={labelStyle}>Seg</span></div>
+    </div>
+  );
+});
+V3PromoCountdownPT.displayName = "V3PromoCountdownPT";
 
 export const V3PromoCountdown = memo(() => {
   const dRef = useRef<HTMLSpanElement>(null);
