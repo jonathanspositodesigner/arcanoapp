@@ -15,6 +15,14 @@ const ForgotPasswordArtesMusicos = () => {
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
+  const fallbackToNativeRecovery = async (normalizedEmail: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+      redirectTo: `${window.location.origin}/reset-password-artes-musicos`,
+    });
+
+    if (error) throw error;
+  };
+
   const getRecoveryErrorMessage = (data?: { success?: boolean; error?: string } | null, error?: { message?: string } | null) => {
     return data?.error || error?.message || t('errors.sendRecoveryEmailError');
   };
@@ -23,10 +31,13 @@ const ForgotPasswordArtesMusicos = () => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      const normalizedEmail = email.trim().toLowerCase();
       const { data, error } = await supabase.functions.invoke('send-recovery-email', {
-        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password-artes-musicos` }
+        body: { email: normalizedEmail, redirect_url: `${window.location.origin}/reset-password-artes-musicos` }
       });
-      if (error || (data && !data.success)) { toast.error(getRecoveryErrorMessage(data, error)); return; }
+      if (error || (data && !data.success)) {
+        await fallbackToNativeRecovery(normalizedEmail);
+      }
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));
     } catch (error) { toast.error(error instanceof Error ? error.message : t('errors.sendRecoveryEmailError')); } finally { setIsLoading(false); }
