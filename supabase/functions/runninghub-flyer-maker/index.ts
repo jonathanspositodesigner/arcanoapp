@@ -36,7 +36,9 @@ const RUNNINGHUB_API_KEY = (
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const WEBAPP_ID = '2025656642724962305';
+const WEBAPP_ID_EVENTO = '2025656642724962305';
+const WEBAPP_ID_AGENDA = '2044904569490120705';
+const WEBAPP_ID = WEBAPP_ID_EVENTO; // legacy alias used in logs
 const JOB_TABLE = 'flyer_maker_jobs';
 
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
@@ -200,6 +202,8 @@ async function handleRun(req: Request) {
     dateTimeLocation, title, address, artistNames, footerPromo,
     imageSize, creativity
   } = body;
+  const flyerSubType: 'evento' | 'agenda' = body.flyerSubType === 'agenda' ? 'agenda' : 'evento';
+  const webappId = flyerSubType === 'agenda' ? WEBAPP_ID_AGENDA : WEBAPP_ID_EVENTO;
 
   // ========== JWT AUTH VERIFICATION ==========
   const authHeader = req.headers.get('Authorization');
@@ -217,11 +221,16 @@ async function handleRun(req: Request) {
     });
   }
   const userId = authUser.id;
-  console.log(`[FlyerMaker] JWT verified - userId: ${userId}`);
+  console.log(`[FlyerMaker] JWT verified - userId: ${userId}, subType: ${flyerSubType}, webappId: ${webappId}`);
 
-  // Validate required fields
-  if (!jobId || !referenceImageUrl || !artistPhotoUrls?.length || !logoUrl) {
+  // Validate required fields (logo is only required for 'evento' subtype)
+  if (!jobId || !referenceImageUrl || !artistPhotoUrls?.length) {
     return new Response(JSON.stringify({ error: 'Missing required fields', code: 'MISSING_PARAMS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (flyerSubType !== 'agenda' && !logoUrl) {
+    return new Response(JSON.stringify({ error: 'Missing logo', code: 'MISSING_PARAMS' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -234,7 +243,8 @@ async function handleRun(req: Request) {
 
   // Validate URLs from Supabase storage
   const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
-  const allImageUrls = [referenceImageUrl, ...artistPhotoUrls, logoUrl];
+  const allImageUrls = [referenceImageUrl, ...artistPhotoUrls];
+  if (logoUrl) allImageUrls.push(logoUrl);
   for (const imageUrl of allImageUrls) {
     try {
       const urlObj = new URL(imageUrl);
@@ -257,7 +267,7 @@ async function handleRun(req: Request) {
   // ========== UPLOAD ALL IMAGES TO RUNNINGHUB ==========
   let referenceFileName: string;
   const artistFileNames: string[] = [];
-  let logoFileName: string;
+  let logoFileName: string | null = null;
 
   try {
     referenceFileName = await uploadImageToRunningHub(referenceImageUrl, 'reference', jobId);
@@ -267,7 +277,9 @@ async function handleRun(req: Request) {
       artistFileNames.push(fn);
     }
 
-    logoFileName = await uploadImageToRunningHub(logoUrl, 'logo', jobId);
+    if (logoUrl) {
+      logoFileName = await uploadImageToRunningHub(logoUrl, 'logo', jobId);
+    }
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
     await logStepFailure(jobId, 'image_transfer', errorMsg);
@@ -332,7 +344,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Mark credits as charged (store test_credits_used for refund logic)
+  // Mark credits as charged + persist file names (job_payload is set in the next update)
   await supabase.from(JOB_TABLE).update({
     credits_charged: true,
     user_credit_cost: creditCost,
@@ -340,31 +352,42 @@ async function handleRun(req: Request) {
     artist_photo_file_names: artistFileNames,
     logo_file_name: logoFileName,
     image_size: imageSize,
-    job_payload: {
-      ...(await supabase.from(JOB_TABLE).select('job_payload').eq('id', jobId).maybeSingle()).data?.job_payload as any,
-      test_credits_used: testCreditsUsed,
-      normal_credits_charged: normalCreditsToCharge,
-    },
   }).eq('id', jobId);
 
   // Save job_payload for queue manager
+  const agendaNodeInfoList = flyerSubType === 'agenda' ? [
+    { nodeId: '1', fieldName: 'image', fieldValue: referenceFileName, description: 'FLYER REFERENCIA' },
+    { nodeId: '11', fieldName: 'image', fieldValue: artistFileNames[0], description: 'SUA FOTO' },
+    { nodeId: '7', fieldName: 'text', fieldValue: title || 'TITULO: AGENDA MENSAL', description: 'TITULO' },
+    { nodeId: '10', fieldName: 'text', fieldValue: artistNames || 'NOMES DOS ARTISTAS:', description: 'NOME DO ARTISTA' },
+    { nodeId: '140', fieldName: 'text', fieldValue: dateTimeLocation || '', description: 'DATAS' },
+    { nodeId: '9', fieldName: 'text', fieldValue: footerPromo || 'PROMOÇÃO DE RODAPÉ:', description: 'INFORMAÇÃO ADICIONAL' },
+    { nodeId: '107', fieldName: 'value', fieldValue: String(creativity ?? 4), description: 'CRIATIVIDADE DA IA' },
+    { nodeId: '190', fieldName: 'aspectRatio', fieldValue: imageSize || '9:16', description: 'TAMANHO DA IMAGEM' },
+  ] : null;
+
   await supabase.from(JOB_TABLE).update({
     job_payload: {
+      flyerSubType,
+      webappId,
+      ...(agendaNodeInfoList ? { nodeInfoList: agendaNodeInfoList } : {}),
       referenceFileName, artistFileNames, logoFileName,
       dateTimeLocation: dateTimeLocation || '', title: title || '',
       address: address || '', artistNames: artistNames || '',
       footerPromo: footerPromo || '', imageSize: imageSize || '3:4',
       creativity: creativity ?? 0,
+      test_credits_used: testCreditsUsed,
+      normal_credits_charged: normalCreditsToCharge,
     }
   }).eq('id', jobId);
 
   // ========== DELEGATE TO QUEUE MANAGER ==========
   try {
-    await logStep(jobId, 'delegating_to_queue');
+    await logStep(jobId, 'delegating_to_queue', { flyerSubType, webappId });
     const qmResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-      body: JSON.stringify({ table: JOB_TABLE, jobId }),
+      body: JSON.stringify({ table: JOB_TABLE, jobId, webappId }),
     });
     const qmResult = await qmResponse.json();
 

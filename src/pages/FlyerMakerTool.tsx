@@ -93,6 +93,18 @@ const FlyerMakerTool: React.FC = () => {
   const [imageSize, setImageSize] = useState<'3:4' | '9:16'>('3:4');
   const [creativity, setCreativity] = useState(0);
 
+  // === Agenda-specific states ===
+  const [agendaArtistPhoto, setAgendaArtistPhoto] = useState<string | null>(null);
+  const [agendaArtistFile, setAgendaArtistFile] = useState<File | null>(null);
+  const [agendaTitle, setAgendaTitle] = useState('');
+  const [agendaArtistName, setAgendaArtistName] = useState('');
+  const [agendaFooter, setAgendaFooter] = useState('');
+  const [agendaCreativity, setAgendaCreativity] = useState(0);
+  const [agendaImageSize, setAgendaImageSize] = useState<'3:4' | '9:16'>('9:16');
+  const [agendaDates, setAgendaDates] = useState<Array<{ dia: string; local: string; cidade: string }>>([
+    { dia: '', local: '', cidade: '' }
+  ]);
+
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
@@ -144,6 +156,7 @@ const FlyerMakerTool: React.FC = () => {
   refinementHistoryRef.current = refinementHistory;
 
   const canProcess = referenceImage && artistPhotos.length > 0 && logoImage && status === 'idle';
+  const canProcessAgenda = !!(referenceImage && agendaArtistPhoto && agendaTitle.trim() && agendaArtistName.trim() && agendaDates.length > 0 && agendaDates[0].dia.trim() && agendaDates[0].local.trim()) && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
 
   useEffect(() => {
@@ -532,6 +545,164 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
+  const handleProcessAgenda = async () => {
+    if (!startSubmit()) return;
+
+    if (!referenceImage || !agendaArtistPhoto || !agendaTitle.trim() || !agendaArtistName.trim()) {
+      toast.error('Preencha todos os campos obrigatórios');
+      endSubmit();
+      return;
+    }
+
+    const validDates = agendaDates.filter(d => d.dia.trim() && d.local.trim());
+    if (validDates.length === 0) {
+      toast.error('Adicione pelo menos uma data com dia e local');
+      endSubmit();
+      return;
+    }
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
+    const freshCredits = await checkBalance();
+    const freshTestCredits = await fetchTestCredits();
+    const totalAvailable = freshCredits + freshTestCredits;
+    if (totalAvailable < creditCost) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+    setThumbnailImage(null);
+    setDebugErrorMessage(null);
+
+    let localJobId: string | null = null;
+
+    try {
+      setProgress(10);
+      let referenceUrl = referenceImage;
+      if (referenceFile) {
+        const compressed = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressed, 'agenda-reference');
+      }
+
+      setProgress(25);
+      let artistUrl = agendaArtistPhoto;
+      if (agendaArtistFile) {
+        const compressed = await compressImage(agendaArtistFile);
+        artistUrl = await uploadToStorage(compressed, 'agenda-artist');
+      }
+
+      const datesString = validDates
+        .map((d, i) => {
+          const base = `DATA${i + 1}: ${d.dia.trim()}, ${d.local.trim()}`;
+          return d.cidade.trim() ? `${base} - ${d.cidade.trim()}` : base;
+        })
+        .join('\n');
+
+      setProgress(35);
+      const { data: job, error: jobError } = await supabase
+        .from('flyer_maker_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          reference_image_url: referenceUrl,
+          artist_photo_urls: [artistUrl],
+          logo_url: null,
+          artist_count: 1,
+          date_time_location: datesString,
+          title: agendaTitle.trim(),
+          address: '',
+          artist_names: agendaArtistName.trim(),
+          footer_promo: agendaFooter.trim(),
+          image_size: agendaImageSize,
+          creativity: agendaCreativity,
+          job_payload: { flyerSubType: 'agenda' }
+        } as any)
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Falha ao criar job');
+
+      localJobId = job.id;
+      setJobId(job.id);
+      registerJob(job.id, 'Flyer Maker', 'pending');
+
+      setProgress(50);
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-flyer-maker/run', {
+        body: {
+          jobId: job.id,
+          userId: user.id,
+          creditCost,
+          flyerSubType: 'agenda',
+          referenceImageUrl: referenceUrl,
+          artistPhotoUrls: [artistUrl],
+          logoUrl: null,
+          dateTimeLocation: datesString,
+          title: agendaTitle.trim() ? `TITULO: ${agendaTitle.trim()}` : '',
+          address: '',
+          artistNames: agendaArtistName.trim() ? `NOMES DOS ARTISTAS: ${agendaArtistName.trim()}` : '',
+          footerPromo: agendaFooter.trim() ? `PROMOÇÃO DE RODAPÉ: ${agendaFooter.trim()}` : 'PROMOÇÃO DE RODAPÉ:',
+          imageSize: agendaImageSize,
+          creativity: agendaCreativity
+        },
+      });
+
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
+
+      fetchTestCredits();
+      refetchCredits();
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      if (runResult?.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(60);
+      }
+    } catch (error: any) {
+      console.error('[FlyerMaker Agenda] Process error:', error);
+      if (localJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localJobId, 'flyer_maker', error.message || 'Erro desconhecido');
+      }
+      setStatus('error');
+      setDebugErrorMessage(error.message);
+      toast.error(error.message);
+      endSubmit();
+    }
+  };
+
   const handleCancelQueue = async () => {
     if (!jobId) return;
     try {
@@ -677,6 +848,16 @@ const FlyerMakerTool: React.FC = () => {
     setRefineJobId(null);
     setIsRefining(false);
     setStatus('idle');
+    // Reset agenda states
+    if (agendaArtistPhoto) URL.revokeObjectURL(agendaArtistPhoto);
+    setAgendaArtistPhoto(null);
+    setAgendaArtistFile(null);
+    setAgendaTitle('');
+    setAgendaArtistName('');
+    setAgendaFooter('');
+    setAgendaCreativity(0);
+    setAgendaImageSize('9:16');
+    setAgendaDates([{ dia: '', local: '', cidade: '' }]);
   };
 
   return (
@@ -731,6 +912,243 @@ const FlyerMakerTool: React.FC = () => {
                       ))}
                     </div>
                   </div>
+                ) : flyerType === 'agenda' ? (
+                  <>
+                    <button
+                      onClick={() => setFlyerType(null)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors -mb-1 self-start"
+                      disabled={isProcessing}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
+                    </button>
+
+                    <ReferenceImageCard
+                      image={referenceImage}
+                      onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }}
+                      onOpenLibrary={() => setShowPhotoLibrary(true)}
+                      disabled={isProcessing}
+                      title="Agenda de Referência"
+                      emptyLabel="Escolher da biblioteca"
+                      emptySubLabel="Ou envie sua agenda"
+                    />
+
+                    {/* Foto do Artista */}
+                    <div className="border border-border rounded-xl p-4 bg-muted/50">
+                      <span className="text-sm font-medium text-foreground mb-2 block">Foto do Artista</span>
+                      {agendaArtistPhoto ? (
+                        <div className="relative aspect-[3/4] rounded-lg overflow-hidden group max-w-[120px]">
+                          <img src={agendaArtistPhoto} alt="" className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => {
+                              if (agendaArtistPhoto) URL.revokeObjectURL(agendaArtistPhoto);
+                              setAgendaArtistPhoto(null);
+                              setAgendaArtistFile(null);
+                            }}
+                            className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity"
+                            disabled={isProcessing}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className={`aspect-[3/4] max-w-[120px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input
+                            type="file"
+                            accept={IMAGE_ACCEPT}
+                            className="hidden"
+                            onChange={async (e) => {
+                              const rawFile = e.target.files?.[0];
+                              e.target.value = '';
+                              if (!rawFile) return;
+                              if (!isAcceptedImage(rawFile)) {
+                                toast.error('Selecione uma imagem válida');
+                                return;
+                              }
+                              try {
+                                const file = await ensureBrowserCompatibleImage(rawFile);
+                                setAgendaArtistPhoto(URL.createObjectURL(file));
+                                setAgendaArtistFile(file);
+                              } catch (err) {
+                                toast.error(err instanceof Error ? err.message : 'Erro ao processar imagem');
+                              }
+                            }}
+                            disabled={isProcessing}
+                          />
+                          <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+                          <span className="text-[10px] text-muted-foreground">Enviar foto</span>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Campos de texto */}
+                    <div className="space-y-2.5">
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Título da Agenda:</span>
+                        <Input placeholder="AGENDA MENSAL" value={agendaTitle} onChange={e => setAgendaTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Nome do Artista:</span>
+                        <Input placeholder="ANA CASTELA" value={agendaArtistName} onChange={e => setAgendaArtistName(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção (opcional):</span>
+                        <Input placeholder="SHOWS PARTICULARES: (99) 99999-9999" value={agendaFooter} onChange={e => setAgendaFooter(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                    </div>
+
+                    {/* Datas */}
+                    <div className="border border-border rounded-xl p-4 bg-muted/50">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-sm font-medium text-foreground">Datas da Agenda</span>
+                        <span className="text-[10px] text-muted-foreground">{agendaDates.length}/20</span>
+                      </div>
+
+                      <div className="space-y-3">
+                        {agendaDates.map((date, index) => (
+                          <div key={index} className="relative border border-border rounded-lg p-3 bg-background">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                                Data {index + 1}
+                              </span>
+                              {agendaDates.length > 1 && (
+                                <button
+                                  onClick={() => setAgendaDates(prev => prev.filter((_, i) => i !== index))}
+                                  className="text-muted-foreground hover:text-destructive transition-colors"
+                                  disabled={isProcessing}
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              )}
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="col-span-2">
+                                <Input
+                                  placeholder="15 DE ABRIL"
+                                  value={date.dia}
+                                  onChange={e => {
+                                    const updated = [...agendaDates];
+                                    updated[index] = { ...updated[index], dia: e.target.value.toUpperCase() };
+                                    setAgendaDates(updated);
+                                  }}
+                                  disabled={isProcessing}
+                                  className="bg-muted border-border text-foreground text-xs h-8 uppercase placeholder:text-muted-foreground"
+                                />
+                                <span className="text-[9px] text-muted-foreground mt-0.5 block">Dia *</span>
+                              </div>
+                              <div>
+                                <Input
+                                  placeholder="BAR DO JOÃO"
+                                  value={date.local}
+                                  onChange={e => {
+                                    const updated = [...agendaDates];
+                                    updated[index] = { ...updated[index], local: e.target.value.toUpperCase() };
+                                    setAgendaDates(updated);
+                                  }}
+                                  disabled={isProcessing}
+                                  className="bg-muted border-border text-foreground text-xs h-8 uppercase placeholder:text-muted-foreground"
+                                />
+                                <span className="text-[9px] text-muted-foreground mt-0.5 block">Local *</span>
+                              </div>
+                              <div>
+                                <Input
+                                  placeholder="ÁGUAS VERMELHAS"
+                                  value={date.cidade}
+                                  onChange={e => {
+                                    const updated = [...agendaDates];
+                                    updated[index] = { ...updated[index], cidade: e.target.value.toUpperCase() };
+                                    setAgendaDates(updated);
+                                  }}
+                                  disabled={isProcessing}
+                                  className="bg-muted border-border text-foreground text-xs h-8 uppercase placeholder:text-muted-foreground"
+                                />
+                                <span className="text-[9px] text-muted-foreground mt-0.5 block">Cidade</span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      {agendaDates.length < 20 && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setAgendaDates(prev => [...prev, { dia: '', local: '', cidade: '' }])}
+                          disabled={isProcessing}
+                          className="w-full mt-3 text-xs border-dashed"
+                        >
+                          <Plus className="w-3.5 h-3.5 mr-1.5" />
+                          Adicionar data ({agendaDates.length}/20)
+                        </Button>
+                      )}
+                    </div>
+
+                    {/* Tamanho */}
+                    <div>
+                      <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
+                      <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
+                        <button onClick={() => setAgendaImageSize('3:4')} className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${agendaImageSize === '3:4' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} disabled={isProcessing}>
+                          Feed (3:4)
+                        </button>
+                        <button onClick={() => setAgendaImageSize('9:16')} className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${agendaImageSize === '9:16' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} disabled={isProcessing}>
+                          Stories (9:16)
+                        </button>
+                      </div>
+                    </div>
+
+                    <CreativitySlider value={agendaCreativity} onChange={setAgendaCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
+
+                    {/* Generate Button */}
+                    {!isProcessing && status !== 'completed' && (
+                      <Button
+                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl shadow-lg disabled:opacity-50"
+                        disabled={!canProcessAgenda || isSubmitting}
+                        onClick={handleProcessAgenda}
+                      >
+                        {isSubmitting ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando...</>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Gerar Agenda
+                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                              <Coins className="w-3.5 h-3.5" /> {creditCost}
+                              {testCredits > 0 && <span className="ml-1">(🧪 teste)</span>}
+                            </span>
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Completed Actions */}
+                    {status === 'completed' && (
+                      <div className="space-y-2">
+                        <Button
+                          className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                          onClick={() => download({ url: outputImage!, filename: `agenda-${Date.now()}.png` })}
+                        >
+                          <Download className="w-4 h-4 mr-2" /> Baixar HD
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={handleNew}>
+                            <RefreshCw className="w-4 h-4 mr-2" /> Nova
+                          </Button>
+                          <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={() => setRefineMode(true)}>
+                            <Wand2 className="w-4 h-4 mr-2" /> Alterar
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {status === 'waiting' && (
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/100/10 rounded-xl"
+                        onClick={handleCancelQueue}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" /> Sair da Fila
+                      </Button>
+                    )}
+                  </>
                 ) : flyerType !== 'evento' ? (
                   <div className="flex-1 flex flex-col">
                     <button

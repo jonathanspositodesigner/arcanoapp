@@ -1525,6 +1525,13 @@ async function startJobOnRunningHub(
     }
 
     case 'flyer_maker_jobs': {
+      // Agenda subtype: use pre-built nodeInfoList + alternate webappId from job_payload
+      if (p.flyerSubType === 'agenda' && Array.isArray(p.nodeInfoList) && p.webappId) {
+        webappId = p.webappId;
+        nodeInfoList = p.nodeInfoList;
+        break;
+      }
+
       webappId = WEBAPP_IDS.flyer_maker_jobs;
       const artistFiles = p.artistFileNames || (job.artist_photo_file_names as string[]) || [];
       const firstArtist = artistFiles[0] || '';
