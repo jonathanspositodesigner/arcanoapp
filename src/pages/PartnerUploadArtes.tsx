@@ -226,7 +226,7 @@ const PartnerUploadArtes = () => {
   };
 
   const allFieldsFilled = mediaFiles.every(
-    (media) => media.title.trim() && media.category && media.pack && media.canvaLink.trim()
+    (media) => media.title.trim() && media.category && media.flyerSubcategory && media.pack && media.canvaLink.trim()
   );
 
   const formatTitle = (title: string) => {
@@ -257,6 +257,7 @@ const PartnerUploadArtes = () => {
             partner_id: partnerId,
             title: formatTitle(media.title),
             category: media.category,
+            flyer_subcategory: media.flyerSubcategory || null,
             pack: media.pack,
             description: media.description || null,
             image_url: publicUrl,
