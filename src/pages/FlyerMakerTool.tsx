@@ -753,7 +753,17 @@ const FlyerMakerTool: React.FC = () => {
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
                     </button>
+                    {!refineMode ? (
                   <>
+                    <ReferenceImageCard 
+                      image={referenceImage} 
+                      onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
+                      onOpenLibrary={() => setShowPhotoLibrary(true)} 
+                      disabled={isProcessing}
+                      title="Flyer de Referência"
+                      emptyLabel="Escolher da biblioteca"
+                      emptySubLabel="Ou envie seu flyer"
+                    />XXXDUPMARK
                     <ReferenceImageCard 
                       image={referenceImage} 
                       onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
