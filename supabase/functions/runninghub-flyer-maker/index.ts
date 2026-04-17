@@ -344,7 +344,7 @@ async function handleRun(req: Request) {
     }
   }
 
-  // Mark credits as charged (store test_credits_used for refund logic)
+  // Mark credits as charged + persist file names (job_payload is set in the next update)
   await supabase.from(JOB_TABLE).update({
     credits_charged: true,
     user_credit_cost: creditCost,
@@ -352,11 +352,6 @@ async function handleRun(req: Request) {
     artist_photo_file_names: artistFileNames,
     logo_file_name: logoFileName,
     image_size: imageSize,
-    job_payload: {
-      ...(await supabase.from(JOB_TABLE).select('job_payload').eq('id', jobId).maybeSingle()).data?.job_payload as any,
-      test_credits_used: testCreditsUsed,
-      normal_credits_charged: normalCreditsToCharge,
-    },
   }).eq('id', jobId);
 
   // Save job_payload for queue manager
