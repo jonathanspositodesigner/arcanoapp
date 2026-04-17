@@ -267,7 +267,7 @@ async function handleRun(req: Request) {
   // ========== UPLOAD ALL IMAGES TO RUNNINGHUB ==========
   let referenceFileName: string;
   const artistFileNames: string[] = [];
-  let logoFileName: string;
+  let logoFileName: string | null = null;
 
   try {
     referenceFileName = await uploadImageToRunningHub(referenceImageUrl, 'reference', jobId);
@@ -277,7 +277,9 @@ async function handleRun(req: Request) {
       artistFileNames.push(fn);
     }
 
-    logoFileName = await uploadImageToRunningHub(logoUrl, 'logo', jobId);
+    if (logoUrl) {
+      logoFileName = await uploadImageToRunningHub(logoUrl, 'logo', jobId);
+    }
   } catch (error: unknown) {
     const errorMsg = error instanceof Error ? error.message : 'Image transfer failed';
     await logStepFailure(jobId, 'image_transfer', errorMsg);
