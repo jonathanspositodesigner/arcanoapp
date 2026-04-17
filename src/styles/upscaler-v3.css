@@ -651,9 +651,10 @@
 }
 .v3-final-cta::before {
   content: ''; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  width: 600px; height: 600px;
+  width: 600px; height: 600px; pointer-events: none;
   background: radial-gradient(ellipse, rgba(0,212,255,0.08) 0%, transparent 70%);
 }
+.v3-final-cta > * { position: relative; z-index: 1; }
 .v3-final-cta h2 {
   font-size: clamp(36px, 5vw, 64px); font-weight: 800; letter-spacing: -2px;
   line-height: 1.1; margin-bottom: 16px; position: relative;
