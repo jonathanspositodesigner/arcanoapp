@@ -37,12 +37,9 @@ import turboBgImage from "@/assets/upscaler-v3-turbo-bg.webp";
 // ── Static data hoisted outside component ──
 const heroSlidesDesktop = [
   { before: upscalerHeroAntes, after: upscalerHeroDepois },
-  { before: galleryBefore2, after: galleryAfter2 },
-  { before: galleryBefore3, after: galleryAfter3 },
 ];
 const heroSlidesMobile = [
   { before: heroMobileAntes, after: heroMobileDepois },
-  { before: galleryBefore2, after: galleryAfter2 },
   { before: galleryBefore3, after: galleryAfter3 },
 ];
 
