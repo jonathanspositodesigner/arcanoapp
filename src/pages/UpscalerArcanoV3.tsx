@@ -342,7 +342,8 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div className="v3-stats-row">
+          <p className="v3-hero-sub" style={{ textAlign: "center", marginTop: 24 }}>Simples, Rápido e Fácil de usar com o resultado impecável.</p>
+
             <div>
               <div className="v3-stat-num">+3.2<span>mil</span></div>
               <div className="v3-stat-label">Profissionais ativos</div>
