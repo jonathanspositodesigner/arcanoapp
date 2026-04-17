@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage } from "@/components/SecureMedia";
 import { generateThumbnailFromUrl, optimizeAndUploadThumbnail } from '@/hooks/useVideoThumbnail';
+import { fetchFotosSubcategories, getCurrentSubcategorySlug, syncFotoToAllTools, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 // Format title: first letter uppercase, rest lowercase
 const formatTitle = (title: string): string => {
@@ -78,6 +79,8 @@ const AdminManageImages = () => {
   const [editBonusClicks, setEditBonusClicks] = useState(0);
   const [editGender, setEditGender] = useState<string | null>(null);
   const [editTags, setEditTags] = useState<string[]>([]);
+  const [editSubcategorySlug, setEditSubcategorySlug] = useState<string | null>(null);
+  const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [newMediaFile, setNewMediaFile] = useState<File | null>(null);
   const [newMediaPreview, setNewMediaPreview] = useState<string>("");
