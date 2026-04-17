@@ -3865,6 +3865,7 @@ export type Database = {
           recovery_email: string | null
           runninghub_bonus_claimed: boolean | null
           updated_at: string | null
+          warranty_waivers: Json
         }
         Insert: {
           address_city?: string | null
@@ -3886,6 +3887,7 @@ export type Database = {
           recovery_email?: string | null
           runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
+          warranty_waivers?: Json
         }
         Update: {
           address_city?: string | null
@@ -3907,6 +3909,7 @@ export type Database = {
           recovery_email?: string | null
           runninghub_bonus_claimed?: boolean | null
           updated_at?: string | null
+          warranty_waivers?: Json
         }
         Relationships: []
       }
@@ -5907,6 +5910,14 @@ export type Database = {
           pack_slug: string
         }[]
       }
+      get_warranty_waiver_emails: {
+        Args: never
+        Returns: {
+          email: string
+          last_waived_at: string
+          waivers: Json
+        }[]
+      }
       has_bonus_access: { Args: { _user_id: string }; Returns: boolean }
       has_pack_access: {
         Args: { _pack_slug: string; _user_id: string }
@@ -5947,6 +5958,10 @@ export type Database = {
         Returns: {
           updated_count: number
         }[]
+      }
+      record_warranty_waiver: {
+        Args: { _tool_slug: string; _version_slug?: string }
+        Returns: boolean
       }
       refund_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }

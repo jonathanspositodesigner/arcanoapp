@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import RenewalEmailsMonitoring from "./RenewalEmailsMonitoring";
 import { format } from "date-fns";
@@ -80,6 +80,8 @@ const SalesManagementContent = () => {
   const [emailStatuses, setEmailStatuses] = useState<Map<string, EmailLogStatus>>(new Map());
   const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
   const [platformFilter, setPlatformFilter] = useState("all");
+  // Map<email, { count, lastWaivedAt, waivers }>
+  const [waiverMap, setWaiverMap] = useState<Map<string, { count: number; lastWaivedAt: string | null; waivers: any[] }>>(new Map());
 
   const dateRange = useMemo(() => {
     const now = new Date();
@@ -210,6 +212,26 @@ const SalesManagementContent = () => {
     };
 
     fetchSales();
+
+    // Fetch warranty waivers (admin-only RPC)
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_warranty_waiver_emails" as any);
+        if (error || !data) return;
+        const map = new Map<string, { count: number; lastWaivedAt: string | null; waivers: any[] }>();
+        for (const row of data as any[]) {
+          const waivers = Array.isArray(row.waivers) ? row.waivers : [];
+          map.set(String(row.email).toLowerCase(), {
+            count: waivers.length,
+            lastWaivedAt: row.last_waived_at ?? null,
+            waivers,
+          });
+        }
+        setWaiverMap(map);
+      } catch (err) {
+        console.error("[SalesManagement] Falha ao buscar waivers:", err);
+      }
+    })();
   }, [dateRange, fetchEmailStatuses]);
 
   const handleResendEmail = async (sale: SaleRecord, e: React.MouseEvent) => {
@@ -537,6 +559,7 @@ const SalesManagementContent = () => {
                     <th className="text-center py-2 px-3 font-medium">Status</th>
                     <th className="text-center py-2 px-3 font-medium">📧</th>
                     <th className="text-center py-2 px-3 font-medium">📱</th>
+                    <th className="text-center py-2 px-3 font-medium">⚠️</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -593,6 +616,32 @@ const SalesManagementContent = () => {
                             </TooltipProvider>
                           ) : null}
                         </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {(() => {
+                            const w = waiverMap.get(sale.user_email?.toLowerCase());
+                            if (!w) return <span className="text-muted-foreground/30">—</span>;
+                            return (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <ShieldOff className="h-4 w-4 text-yellow-500 inline-block" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="font-semibold">Abriu mão da garantia ({w.count}x)</p>
+                                    {w.lastWaivedAt && (
+                                      <p className="text-xs">Último: {formatDate(w.lastWaivedAt)}</p>
+                                    )}
+                                    {w.waivers.slice(0, 3).map((wv: any, i: number) => (
+                                      <p key={i} className="text-xs text-muted-foreground">
+                                        {wv.tool_slug}{wv.version_slug ? ` / ${wv.version_slug}` : ''}
+                                      </p>
+                                    ))}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
+                        </td>
                       </tr>
                     );
                   })}
@@ -620,6 +669,9 @@ const SalesManagementContent = () => {
                           <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
                             📱
                           </span>
+                        )}
+                        {waiverMap.has(sale.user_email?.toLowerCase()) && (
+                          <ShieldOff className="h-4 w-4 text-yellow-500" aria-label="Abriu mão da garantia" />
                         )}
                         <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                       </div>

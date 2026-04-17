@@ -5,16 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Play, ExternalLink, Lock, Unlock, AlertTriangle, ChevronRight, Check, CheckCircle2, Circle, Trophy, ArrowLeft } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -22,6 +12,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
 import AppLayout from "@/components/layout/AppLayout";
+import WarrantyWaiverModal from "@/components/lessons/WarrantyWaiverModal";
 
 interface TutorialLesson {
   title: string;
@@ -227,26 +218,30 @@ const ToolVersionLessons = () => {
     return t('toolLessons.watchToUnlock');
   }, [progressCount, isToolUnlocked, t]);
 
-  // Handle lesson click - just select, don't mark as watched
-  const handleLessonClick = (index: number) => {
-    setSelectedLesson(index);
+  // Helper: persist watched lessons to localStorage
+  const persistWatched = (next: number[]) => {
+    setWatchedLessons(next);
+    localStorage.setItem(
+      `watched_lessons_${toolSlug}_${versionSlug}`,
+      JSON.stringify(next),
+    );
   };
 
-  // Toggle watched status for a lesson
-  const toggleWatchedStatus = (lessonNum: number) => {
-    let updated: number[];
-    if (watchedLessons.includes(lessonNum)) {
-      // Unmark as watched
-      updated = watchedLessons.filter(n => n !== lessonNum);
-    } else {
-      // Mark as watched
-      updated = [...watchedLessons, lessonNum];
+  // Handle lesson click - select and auto-mark as watched
+  const handleLessonClick = (index: number) => {
+    setSelectedLesson(index);
+    const lessonNum = index + 1;
+    if (!watchedLessons.includes(lessonNum)) {
+      persistWatched([...watchedLessons, lessonNum]);
     }
-    setWatchedLessons(updated);
-    localStorage.setItem(
-      `watched_lessons_${toolSlug}_${versionSlug}`, 
-      JSON.stringify(updated)
-    );
+  };
+
+  // Toggle watched status for a lesson (manual button)
+  const toggleWatchedStatus = (lessonNum: number) => {
+    const updated = watchedLessons.includes(lessonNum)
+      ? watchedLessons.filter((n) => n !== lessonNum)
+      : [...watchedLessons, lessonNum];
+    persistWatched(updated);
   };
 
   // Check if button is a tool access button (should show warning modal)
@@ -713,38 +708,15 @@ const ToolVersionLessons = () => {
         </div>
       )}
 
-      {/* Warning Modal - Tool Access */}
-        <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
-          <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md left-1/2 -translate-x-1/2">
-          <AlertDialogHeader>
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                <AlertTriangle className="h-8 w-8 text-yellow-500" />
-              </div>
-            </div>
-            <AlertDialogTitle className="text-center text-xl">
-              {t('toolLessons.warningModalTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-base">
-              {t('toolLessons.warningModalDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
-            <AlertDialogCancel 
-              onClick={handleContinueWatching}
-              className="flex-1 bg-secondary hover:bg-secondary text-foreground border-0 order-1 sm:order-1"
-            >
-              {t('toolLessons.continueWatching')}
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmOpen}
-              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 order-2 sm:order-2"
-            >
-              {t('toolLessons.assumeRisk')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Warning Modal - Tool Access (com termo de waiver) */}
+      <WarrantyWaiverModal
+        open={showWarningModal}
+        onOpenChange={setShowWarningModal}
+        toolSlug={toolSlug ?? ""}
+        versionSlug={versionSlug}
+        onConfirm={handleConfirmOpen}
+        onCancel={handleContinueWatching}
+      />
     </Wrapper>
   );
 };
