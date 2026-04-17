@@ -454,10 +454,12 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       const pendingReferral = localStorage.getItem('referral_code');
       if (pendingReferral && data.user) {
         console.log('[UnifiedAuth] Found pending referral on login:', pendingReferral);
-        void supabase.rpc('process_referral', {
+        void Promise.resolve(
+          supabase.rpc('process_referral', {
             p_referred_user_id: data.user.id,
             p_referral_code: pendingReferral,
           })
+        )
           .then(({ data: refResult, error: refError }) => {
             console.log('[UnifiedAuth] Login referral result:', refResult, 'error:', refError);
             if (!refError) {
