@@ -104,9 +104,11 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         category: a.category,
         category_id: catById.get(a.id) ?? null,
       }));
-      // Preserva ordem de display_order da biblioteca
-      const orderById = new Map((libItems || []).map((i, idx) => [i.source_id, idx]));
-      merged.sort((a, b) => (orderById.get(a.id) ?? 0) - (orderById.get(b.id) ?? 0));
+      // Ordem aleatória (Fisher-Yates)
+      for (let i = merged.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [merged[i], merged[j]] = [merged[j], merged[i]];
+      }
 
       setFlyers(merged);
     } catch (err) {
