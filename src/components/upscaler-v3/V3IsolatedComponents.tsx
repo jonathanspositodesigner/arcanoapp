@@ -102,30 +102,36 @@ export const V3SocialPopup = memo(({ people, times, purchaseText }: V3SocialPopu
 });
 V3SocialPopup.displayName = "V3SocialPopup";
 
-/* ─── Sticky CTA Bar ─── */
+/* ─── Sticky CTA Bar (mobile-only via CSS) ─── */
 interface V3StickyBarProps {
   scrollToPrice: () => void;
   label: string;
   desktopSuffix?: string;
   mobileButtonText: string;
   desktopButtonText: string;
+  microcopy?: string;
 }
 
-export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileButtonText, desktopButtonText }: V3StickyBarProps) => {
+export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileButtonText, desktopButtonText, microcopy }: V3StickyBarProps) => {
   const [visible, setVisible] = useState(false);
   const isMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 600);
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 500);
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const micro = microcopy ?? "Acesso liberado · Cancele quando quiser";
+
   return (
     <div className={`v3-sticky-cta ${visible ? "visible" : ""}`}>
-      <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-        <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>{label}</strong>
-        {!isMobileRef.current && desktopSuffix && <> — {desktopSuffix}</>}
+      <div className="v3-sticky-cta-text">
+        <span className="v3-sticky-cta-micro">{micro}</span>
+        <strong style={{ color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 13, lineHeight: 1.2 }}>
+          {label}{!isMobileRef.current && desktopSuffix ? ` — ${desktopSuffix}` : ""}
+        </strong>
       </div>
       <button className="v3-sticky-btn" onClick={scrollToPrice}>
         {isMobileRef.current ? mobileButtonText : desktopButtonText}
@@ -190,6 +196,7 @@ export const V3PromoCountdownPT = memo(() => {
     fontSize: 20, fontWeight: 800, color: "#F5C842",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontVariantNumeric: "tabular-nums", lineHeight: 1,
+    minWidth: "2ch", display: "inline-block", textAlign: "center",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.5)",
@@ -201,13 +208,13 @@ export const V3PromoCountdownPT = memo(() => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12, marginBottom: 4 }}>
-      <div style={boxStyle}><span ref={dRef} style={numStyle}>--</span><span style={labelStyle}>Dias</span></div>
+      <div style={boxStyle}><span ref={dRef} style={numStyle}>00</span><span style={labelStyle}>Dias</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={hRef} style={numStyle}>--</span><span style={labelStyle}>Hrs</span></div>
+      <div style={boxStyle}><span ref={hRef} style={numStyle}>00</span><span style={labelStyle}>Hrs</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={mRef} style={numStyle}>--</span><span style={labelStyle}>Min</span></div>
+      <div style={boxStyle}><span ref={mRef} style={numStyle}>00</span><span style={labelStyle}>Min</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={sRef} style={numStyle}>--</span><span style={labelStyle}>Seg</span></div>
+      <div style={boxStyle}><span ref={sRef} style={numStyle}>00</span><span style={labelStyle}>Seg</span></div>
     </div>
   );
 });
@@ -246,6 +253,7 @@ export const V3PromoCountdown = memo(() => {
     fontSize: 26, fontWeight: 800, color: "#F5C842",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontVariantNumeric: "tabular-nums", lineHeight: 1,
+    minWidth: "2ch", display: "inline-block", textAlign: "center",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: 9, fontWeight: 600, color: "rgba(255,255,255,0.45)",
@@ -257,13 +265,13 @@ export const V3PromoCountdown = memo(() => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-      <div style={boxStyle}><span ref={dRef} style={numStyle}>--</span><span style={labelStyle}>Días</span></div>
+      <div style={boxStyle}><span ref={dRef} style={numStyle}>00</span><span style={labelStyle}>Días</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={hRef} style={numStyle}>--</span><span style={labelStyle}>Hrs</span></div>
+      <div style={boxStyle}><span ref={hRef} style={numStyle}>00</span><span style={labelStyle}>Hrs</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={mRef} style={numStyle}>--</span><span style={labelStyle}>Min</span></div>
+      <div style={boxStyle}><span ref={mRef} style={numStyle}>00</span><span style={labelStyle}>Min</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={sRef} style={numStyle}>--</span><span style={labelStyle}>Seg</span></div>
+      <div style={boxStyle}><span ref={sRef} style={numStyle}>00</span><span style={labelStyle}>Seg</span></div>
     </div>
   );
 });
@@ -443,4 +451,45 @@ export const V3LazySection = memo(({ children, minHeight = 400 }: { children: Re
     </div>
   );
 });
+V3LazySection.displayName = "V3LazySection";
+
+/* ─── Social Proof Strip (real platform users) ─── */
+import { supabase } from "@/integrations/supabase/client";
+
+export const V3SocialProofStrip = memo(() => {
+  const [count, setCount] = useState<number | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("get_platform_stats");
+        if (cancelled) return;
+        const stats = (data ?? {}) as { total_users?: number };
+        if (typeof stats.total_users === "number" && stats.total_users > 0) {
+          setCount(stats.total_users);
+        }
+      } catch {
+        /* fail silently — fallback used */
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const display = count !== null
+    ? `Mais de ${count.toLocaleString("pt-BR")} criadores brasileiros já usam`
+    : "Mais de 1.000+ criadores brasileiros já usam";
+
+  return (
+    <div className="v3-social-proof-strip">
+      <div className="v3-social-proof-headline">{display}</div>
+      <div className="v3-social-proof-items">
+        <span><span aria-hidden="true">✓</span> Resultado em segundos</span>
+        <span><span aria-hidden="true">✓</span> Sem instalar nada</span>
+        <span><span aria-hidden="true">✓</span> Funciona no celular</span>
+      </div>
+    </div>
+  );
+});
+V3SocialProofStrip.displayName = "V3SocialProofStrip";
 V3LazySection.displayName = "V3LazySection";

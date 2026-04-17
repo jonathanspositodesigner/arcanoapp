@@ -3,7 +3,7 @@ import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { useGeoRedirect } from "@/hooks/useGeoRedirect";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
-import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection, V3PromoCountdownPT } from "@/components/upscaler-v3/V3IsolatedComponents";
+import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection, V3PromoCountdownPT, V3SocialProofStrip } from "@/components/upscaler-v3/V3IsolatedComponents";
 
 // Image imports for before/after and gallery
 import upscalerFotoAntes from "@/assets/upscaler-foto-antes.webp";
@@ -236,9 +236,42 @@ const UpscalerArcanoV3 = () => {
     return () => mo.disconnect();
   }, []);
 
-  // Auto-slide using direct DOM - NO setState - DISABLED on mobile
+  // Auto-slide using direct DOM - NO setState
+  // Mobile: one-shot intro animation 100% -> 50% (1.5s) when slider enters viewport.
+  // Desktop: continuous gentle oscillation.
   useEffect(() => {
-    if (window.innerWidth <= 600) return; // Skip autoSlide on mobile for performance
+    const isSmall = window.innerWidth <= 600;
+
+    if (isSmall) {
+      // Mobile intro animation
+      autoPctRef.current = 100;
+      setSliderDOM(100);
+      const el = sliderRef.current;
+      if (!el) return;
+      let started = false;
+      const obs = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !started) {
+          started = true;
+          const start = performance.now();
+          const from = 100, to = 50, dur = 1500;
+          const tick = (now: number) => {
+            if (!autoRef.current) return;
+            const t = Math.min((now - start) / dur, 1);
+            const eased = 1 - Math.pow(1 - t, 3);
+            const pct = from + (to - from) * eased;
+            autoPctRef.current = pct;
+            setSliderDOM(pct);
+            if (t < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+          obs.disconnect();
+        }
+      }, { threshold: 0.4 });
+      obs.observe(el);
+      return () => obs.disconnect();
+    }
+
+    // Desktop continuous slide
     autoRef.current = true;
     let raf: number;
     const autoSlide = () => {
@@ -305,6 +338,12 @@ const UpscalerArcanoV3 = () => {
             <span className="v3-hero-title-desktop">Saia de um resultado amador para<br /><em>profissional com apenas um clique.</em></span>
             <span className="v3-hero-title-mobile">De amador a <em>profissional com um clique</em></span>
           </h1>
+          {/* CTA mobile — guarantees above-the-fold visibility on small screens */}
+          <div className="v3-hero-cta-mobile">
+            <button className="v3-btn-primary" onClick={scrollToPrice}>
+              Acessar o Upscaler V3 <span>→</span>
+            </button>
+          </div>
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
@@ -348,6 +387,9 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
+          {/* Real-time social proof strip */}
+          <V3SocialProofStrip />
+
           <p className="v3-hero-sub" style={{ textAlign: "center", marginTop: 24 }}>Simples, Rápido e Fácil de usar com o resultado impecável.</p>
 
           <div className="v3-stats-row">
@@ -367,7 +409,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+          <div className="v3-hero-cta-desktop" style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
             <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
               Quero o Upscaler Arcano V3 <span>→</span>
             </button>
@@ -693,6 +735,12 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
         </footer>
       </div>
+      <V3StickyBar
+        scrollToPrice={scrollToPrice}
+        label="Acesso liberado"
+        mobileButtonText="Acessar o Upscaler →"
+        desktopButtonText="Acessar o Upscaler →"
+      />
       <PagarmeCheckoutModal />
     </>
   );
