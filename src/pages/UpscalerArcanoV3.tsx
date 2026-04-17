@@ -307,24 +307,6 @@ const UpscalerArcanoV3 = () => {
             )}
           </p>
 
-          <div className="v3-stats-row">
-            <div>
-              <div className="v3-stat-num">+3.2<span>mil</span></div>
-              <div className="v3-stat-label">Profissionais ativos</div>
-            </div>
-            <div className="v3-stat-divider" />
-            <div>
-              <div className="v3-stat-num">+14<span>mil</span></div>
-              <div className="v3-stat-label">Imagens melhoradas</div>
-            </div>
-            <div className="v3-stat-divider" />
-            <div>
-              <div className="v3-stat-num">60<span>s</span></div>
-              <div className="v3-stat-label">Modo Turbo V3</div>
-            </div>
-          </div>
-
-
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
@@ -365,6 +347,23 @@ const UpscalerArcanoV3 = () => {
                   aria-label={`Slide ${i + 1}`}
                 />
               ))}
+            </div>
+          </div>
+
+          <div className="v3-stats-row">
+            <div>
+              <div className="v3-stat-num">+3.2<span>mil</span></div>
+              <div className="v3-stat-label">Profissionais ativos</div>
+            </div>
+            <div className="v3-stat-divider" />
+            <div>
+              <div className="v3-stat-num">+14<span>mil</span></div>
+              <div className="v3-stat-label">Imagens melhoradas</div>
+            </div>
+            <div className="v3-stat-divider" />
+            <div>
+              <div className="v3-stat-num">60<span>s</span></div>
+              <div className="v3-stat-label">Modo Turbo V3</div>
             </div>
           </div>
         </section>
