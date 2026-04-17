@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, Receipt, Calendar, Mail, MailX, AlertTriangle, RefreshCw, Loader2, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import RenewalEmailsMonitoring from "./RenewalEmailsMonitoring";
 import { format } from "date-fns";
@@ -80,6 +80,8 @@ const SalesManagementContent = () => {
   const [emailStatuses, setEmailStatuses] = useState<Map<string, EmailLogStatus>>(new Map());
   const [resendingEmails, setResendingEmails] = useState<Set<string>>(new Set());
   const [platformFilter, setPlatformFilter] = useState("all");
+  // Map<email, { count, lastWaivedAt, waivers }>
+  const [waiverMap, setWaiverMap] = useState<Map<string, { count: number; lastWaivedAt: string | null; waivers: any[] }>>(new Map());
 
   const dateRange = useMemo(() => {
     const now = new Date();
