@@ -763,15 +763,6 @@ const FlyerMakerTool: React.FC = () => {
                       title="Flyer de Referência"
                       emptyLabel="Escolher da biblioteca"
                       emptySubLabel="Ou envie seu flyer"
-                    />XXXDUPMARK
-                    <ReferenceImageCard 
-                      image={referenceImage} 
-                      onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }} 
-                      onOpenLibrary={() => setShowPhotoLibrary(true)} 
-                      disabled={isProcessing}
-                      title="Flyer de Referência"
-                      emptyLabel="Escolher da biblioteca"
-                      emptySubLabel="Ou envie seu flyer"
                     />
 
                     {/* Artist Photos */}
