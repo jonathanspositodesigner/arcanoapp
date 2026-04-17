@@ -87,7 +87,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
       setIsLoadingCategories(true);
       const { data, error } = await supabase
         .from('ai_tool_library_categories')
-        .select('id, name, slug, display_order')
+        .select('id, name, slug, display_order, thumbnail_url')
         .eq('tool_slug', TOOL_SLUG)
         .order('display_order', { ascending: true });
       if (cancelled) return;
