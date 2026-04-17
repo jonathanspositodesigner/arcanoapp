@@ -149,6 +149,13 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     return list;
   }, [flyers, activeCategoryId, expandedTerms]);
 
+  // Reset paginação ao trocar categoria/busca
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [activeCategoryId, expandedTerms.join('|')]);
+
+  const displayedFlyers = useMemo(() => visibleFlyers.slice(0, visibleCount), [visibleFlyers, visibleCount]);
+
   const handleSelectFlyer = (flyer: FlyerItem) => {
     onSelectPhoto(flyer.image_url);
     onClose();
