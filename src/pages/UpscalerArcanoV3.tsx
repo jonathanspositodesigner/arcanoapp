@@ -569,11 +569,17 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 <div className="v3-plan-name">Ultimate</div>
                 <div className="v3-plan-tagline">Ideal para criadores ativos</div>
+                <div className="v3-promo-discount-badge">-20% OFF · Promo</div>
                 <div className="v3-plan-price">
+                  <div className="v3-price-old">De <s>R$ 99,90</s> por</div>
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
                   <span className="cents">,90</span>
                   <span className="period">acesso vitalício</span>
+                </div>
+                <div className="v3-promo-timer-wrap">
+                  <div className="v3-promo-timer-label">⏰ Oferta termina em</div>
+                  <V3PromoCountdownPT />
                 </div>
                 <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
                 <div className="v3-plan-divider" />
@@ -592,11 +598,17 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 <div className="v3-plan-name">Ilimitado</div>
                 <div className="v3-plan-tagline">Acesso permanente a tudo</div>
+                <div className="v3-promo-discount-badge v3-promo-discount-badge-gold">-50% OFF · Promo</div>
                 <div className="v3-plan-price">
+                  <div className="v3-price-old">De <s>R$ 199,90</s> por</div>
                   <span className="currency">R$</span>
                   <span className="amount">99</span>
                   <span className="cents">,90</span>
                   <span className="period">paga uma vez · usa para sempre</span>
+                </div>
+                <div className="v3-promo-timer-wrap">
+                  <div className="v3-promo-timer-label">⏰ Oferta termina em</div>
+                  <V3PromoCountdownPT />
                 </div>
                 <button className="v3-plan-cta filled v3-plan-cta-gold" onClick={() => openCheckout("upscaler-arcano-v3")}>Garantir Vitalício →</button>
                 <div className="v3-plan-divider" />
