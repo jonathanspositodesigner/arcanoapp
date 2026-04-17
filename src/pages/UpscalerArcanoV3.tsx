@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, useCallback, memo } from "react";
 import { usePagarmeCheckout } from "@/hooks/usePagarmeCheckout";
 import { useGeoRedirect } from "@/hooks/useGeoRedirect";
+import { supabase } from "@/integrations/supabase/client";
 import { ShieldCheck, Rocket, Flame, Crown, Infinity } from "lucide-react";
 import "@/styles/upscaler-v3.css";
 import { V3TurboCountdown, V3BatchGrid, V3SocialPopup, V3StickyBar, V3GalleryBeforeAfter, V3RealResultCard, V3LazySection, V3PromoCountdownPT, V3SocialProofStrip } from "@/components/upscaler-v3/V3IsolatedComponents";
@@ -147,6 +148,23 @@ const UpscalerArcanoV3 = () => {
   });
   const heroSlides = isMobile ? heroSlidesMobile : heroSlidesDesktop;
   const { openCheckout, PagarmeCheckoutModal } = usePagarmeCheckout({ source_page: "upscalerarcanov3" });
+  const [platformStats, setPlatformStats] = useState<{ users: number; images: number }>({ users: 7000, images: 16000 });
+
+  // Fetch real platform stats once
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.rpc("get_platform_stats");
+        if (data && typeof data === "object") {
+          const d = data as any;
+          setPlatformStats({
+            users: Number(d.total_users) || 7000,
+            images: Number(d.total_images) || 16000,
+          });
+        }
+      } catch (e) { /* keep fallback */ }
+    })();
+  }, []);
   
   // Hero slider refs for direct DOM manipulation (no state rerenders)
   const sliderRef = useRef<HTMLDivElement>(null);
@@ -495,11 +513,11 @@ const UpscalerArcanoV3 = () => {
 
           <div className="v3-proof-numbers">
             <div className="v3-proof-num-card">
-              <div className="v3-proof-number cyan" data-target="3200">0</div>
+              <div className="v3-proof-number cyan" data-target={platformStats.users}>0</div>
               <div className="v3-proof-num-label">Criadores brasileiros ja usam</div>
             </div>
             <div className="v3-proof-num-card">
-              <div className="v3-proof-number gold" data-target="14000">0</div>
+              <div className="v3-proof-number gold" data-target={platformStats.images}>0</div>
               <div className="v3-proof-num-label">Imagens melhoradas com sucesso</div>
             </div>
             <div className="v3-proof-num-card">
