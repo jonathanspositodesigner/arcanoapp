@@ -950,6 +950,8 @@ const FlyerMakerTool: React.FC = () => {
                     isRefining={isRefining}
                   />
                 )}
+                  </>
+                )}
               </div>
             </div>
 
