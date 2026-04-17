@@ -63,24 +63,38 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
       setCategories(catData || []);
 
       // 2) Carrega itens visíveis curados da biblioteca da ferramenta
-      const { data: libItems, error: libErr } = await supabase
-        .from('ai_tool_library_items')
-        .select('source_id, category_id, is_visible, display_order')
-        .eq('tool_slug', TOOL_SLUG)
-        .eq('is_visible', true)
-        .order('display_order', { ascending: true });
-      if (libErr) { console.error('[FlyerLibrary] lib err:', libErr); setFlyers([]); return; }
+      let libItems: Array<{ source_id: string; category_id: string | null; display_order: number }> = [];
+      const PAGE = 1000;
+      for (let from = 0; ; from += PAGE) {
+        const { data, error: libErr } = await supabase
+          .from('ai_tool_library_items')
+          .select('source_id, category_id, display_order')
+          .eq('tool_slug', TOOL_SLUG)
+          .eq('is_visible', true)
+          .order('display_order', { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (libErr) { console.error('[FlyerLibrary] lib err:', libErr); setFlyers([]); return; }
+        libItems = libItems.concat(data || []);
+        if (!data || data.length < PAGE) break;
+      }
 
-      const sourceIds = (libItems || []).map(i => i.source_id);
+      const sourceIds = libItems.map(i => i.source_id);
       if (sourceIds.length === 0) { setFlyers([]); return; }
 
-      // 3) Carrega artes correspondentes (excluindo vídeos)
-      const { data: artesData, error: artesErr } = await supabase
-        .from('admin_artes')
-        .select('id, title, image_url, category')
-        .in('id', sourceIds)
-        .not('image_url', 'like', '%.mp4');
-      if (artesErr) { console.error('[FlyerLibrary] artes err:', artesErr); setFlyers([]); return; }
+      // 3) Carrega artes em lotes (evita URL muito longa com .in())
+      const CHUNK = 100;
+      const allArtes: Array<{ id: string; title: string; image_url: string; category: string }> = [];
+      for (let i = 0; i < sourceIds.length; i += CHUNK) {
+        const chunk = sourceIds.slice(i, i + CHUNK);
+        const { data: artesData, error: artesErr } = await supabase
+          .from('admin_artes')
+          .select('id, title, image_url, category')
+          .in('id', chunk)
+          .not('image_url', 'like', '%.mp4');
+        if (artesErr) { console.error('[FlyerLibrary] artes err:', artesErr); setFlyers([]); return; }
+        if (artesData) allArtes.push(...artesData);
+      }
+      const artesData = allArtes;
 
       const catById = new Map((libItems || []).map(i => [i.source_id, i.category_id]));
       const merged: FlyerItem[] = (artesData || []).map(a => ({
