@@ -219,7 +219,7 @@ const PromptsFerramentas = () => {
               </div>
             )}
             <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
-              <div className="p-2 sm:p-4 bg-white/20 rounded-full">
+              <div className="p-2 sm:p-4 bg-yellow-500 rounded-full">
                 <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
               </div>
               <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
