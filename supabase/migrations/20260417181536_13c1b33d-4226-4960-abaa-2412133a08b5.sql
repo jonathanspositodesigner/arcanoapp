@@ -1,0 +1,6 @@
+ALTER TABLE public.ai_tool_library_categories ADD COLUMN IF NOT EXISTS thumbnail_url TEXT;
+
+UPDATE public.ai_tool_library_categories SET thumbnail_url = 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/4-1775496164833.webp' WHERE tool_slug = 'arcano_cloner' AND slug = 'politico';
+UPDATE public.ai_tool_library_categories SET thumbnail_url = 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/21-1769285786628.webp' WHERE tool_slug = 'arcano_cloner' AND slug = 'cantor-artista';
+UPDATE public.ai_tool_library_categories SET thumbnail_url = 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/6-1773785878946.jpg' WHERE tool_slug = 'arcano_cloner' AND slug = 'profissoes';
+UPDATE public.ai_tool_library_categories SET thumbnail_url = 'https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/3-1771613791270.webp' WHERE tool_slug = 'arcano_cloner' AND slug = 'outros';
