@@ -133,8 +133,8 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
           {label}{!isMobileRef.current && desktopSuffix ? ` — ${desktopSuffix}` : ""}
         </strong>
       </div>
-      <button className="v3-sticky-btn" onClick={scrollToPrice}>
-        {isMobileRef.current ? mobileButtonText : desktopButtonText}
+      <button className="v3-btn-primary v3-sticky-btn" onClick={scrollToPrice}>
+        {isMobileRef.current ? mobileButtonText : desktopButtonText} <span>→</span>
       </button>
     </div>
   );
