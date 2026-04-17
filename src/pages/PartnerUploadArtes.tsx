@@ -11,12 +11,14 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { linkArteToFlyerLibrary } from "@/lib/flyerLibrarySync";
 
 interface MediaData {
   file: File;
   preview: string;
   title: string;
   category: string;
+  flyerSubcategory: string;
   pack: string;
   description: string;
   canvaLink: string;
@@ -36,6 +38,12 @@ const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 interface Category {
   id: string;
   name: string;
+}
+
+interface FlyerSubcategory {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 const PartnerUploadArtes = () => {
