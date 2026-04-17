@@ -858,6 +858,7 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
+  const handleCancelJob = async () => {
     if (!jobId) return;
     try {
       const result = await centralCancelJob('flyer_maker', jobId);
