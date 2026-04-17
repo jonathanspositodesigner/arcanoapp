@@ -338,6 +338,12 @@ const UpscalerArcanoV3 = () => {
             <span className="v3-hero-title-desktop">Saia de um resultado amador para<br /><em>profissional com apenas um clique.</em></span>
             <span className="v3-hero-title-mobile">De amador a <em>profissional com um clique</em></span>
           </h1>
+          {/* CTA mobile — guarantees above-the-fold visibility on small screens */}
+          <div className="v3-hero-cta-mobile">
+            <button className="v3-btn-primary" onClick={scrollToPrice}>
+              Acessar o Upscaler V3 <span>→</span>
+            </button>
+          </div>
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
@@ -381,6 +387,9 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
+          {/* Real-time social proof strip */}
+          <V3SocialProofStrip />
+
           <p className="v3-hero-sub" style={{ textAlign: "center", marginTop: 24 }}>Simples, Rápido e Fácil de usar com o resultado impecável.</p>
 
           <div className="v3-stats-row">
@@ -400,7 +409,7 @@ const UpscalerArcanoV3 = () => {
             </div>
           </div>
 
-          <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+          <div className="v3-hero-cta-desktop" style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
             <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
               Quero o Upscaler Arcano V3 <span>→</span>
             </button>
@@ -726,6 +735,12 @@ const UpscalerArcanoV3 = () => {
           <span>© 2026 Upscaler Arcano · Todos os direitos reservados</span>
         </footer>
       </div>
+      <V3StickyBar
+        scrollToPrice={scrollToPrice}
+        label="Acesso liberado"
+        mobileButtonText="Acessar o Upscaler →"
+        desktopButtonText="Acessar o Upscaler →"
+      />
       <PagarmeCheckoutModal />
     </>
   );
