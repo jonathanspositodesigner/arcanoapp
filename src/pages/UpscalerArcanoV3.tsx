@@ -360,6 +360,12 @@ const UpscalerArcanoV3 = () => {
               <div className="v3-stat-label">Modo Turbo V3</div>
             </div>
           </div>
+
+          <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
+            <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
+              Quero o Upscaler Arcano V3 <span>→</span>
+            </button>
+          </div>
         </section>
 
         {/* JÁ PASSOU POR ISSO? */}
