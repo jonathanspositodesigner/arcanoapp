@@ -569,17 +569,11 @@ const UpscalerArcanoV3 = () => {
                 </div>
                 <div className="v3-plan-name">Ultimate</div>
                 <div className="v3-plan-tagline">Ideal para criadores ativos</div>
-                <div className="v3-promo-discount-badge">-20% OFF · Promo</div>
                 <div className="v3-plan-price">
-                  <div className="v3-price-old">De <s>R$ 99,90</s> por</div>
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
                   <span className="cents">,90</span>
                   <span className="period">R$ 0,34 por imagem</span>
-                </div>
-                <div className="v3-promo-timer-wrap">
-                  <div className="v3-promo-timer-label">⏰ Oferta termina em</div>
-                  <V3PromoCountdownPT />
                 </div>
                 <button className="v3-plan-cta filled" onClick={() => openCheckout("upscaler-arcano-ultimate")}>Garantir Acesso →</button>
                 <div className="v3-plan-divider" />
