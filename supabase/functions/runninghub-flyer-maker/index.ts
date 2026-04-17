@@ -36,7 +36,9 @@ const RUNNINGHUB_API_KEY = (
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const WEBAPP_ID = '2025656642724962305';
+const WEBAPP_ID_EVENTO = '2025656642724962305';
+const WEBAPP_ID_AGENDA = '2044904569490120705';
+const WEBAPP_ID = WEBAPP_ID_EVENTO; // legacy alias used in logs
 const JOB_TABLE = 'flyer_maker_jobs';
 
 const RATE_LIMIT_UPLOAD = { maxRequests: 10, windowSeconds: 60 };
