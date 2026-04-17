@@ -16,6 +16,7 @@ import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { linkArteToFlyerLibrary } from "@/lib/flyerLibrarySync";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -42,6 +43,7 @@ interface MediaData {
   title: string;
   description: string;
   category: string;
+  flyerSubcategory: string;
   pack: string;
   isVideo: boolean;
   isPremium: boolean;
@@ -59,6 +61,12 @@ interface Category {
   name: string;
 }
 
+interface FlyerSubcategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const AdminUploadArtes = () => {
   const navigate = useNavigate();
   const [mediaFiles, setMediaFiles] = useState<MediaData[]>([]);
@@ -67,6 +75,7 @@ const AdminUploadArtes = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [flyerSubcategories, setFlyerSubcategories] = useState<FlyerSubcategory[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
   
   // Announcement state
@@ -83,8 +92,18 @@ const AdminUploadArtes = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchFlyerSubcategories();
     fetchPacks();
   }, []);
+
+  const fetchFlyerSubcategories = async () => {
+    const { data } = await supabase
+      .from('ai_tool_library_categories')
+      .select('id, name, slug')
+      .eq('tool_slug', 'flyer_maker')
+      .order('display_order', { ascending: true });
+    setFlyerSubcategories(data || []);
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -185,6 +204,7 @@ const AdminUploadArtes = () => {
         title: "",
         description: "",
         category: "",
+        flyerSubcategory: "",
         pack: "",
         isVideo,
         isPremium: false,
@@ -237,7 +257,7 @@ const AdminUploadArtes = () => {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  const isCurrentItemComplete = (media: MediaData) => media.title && media.category && media.pack && media.canvaLink && media.driveLink;
+  const isCurrentItemComplete = (media: MediaData) => media.title && media.category && media.flyerSubcategory && media.pack && media.canvaLink && media.driveLink;
   const allFieldsFilled = mediaFiles.every(media => isCurrentItemComplete(media));
 
   const handleClickItem = (index: number) => {
@@ -253,6 +273,10 @@ const AdminUploadArtes = () => {
     }
     if (!media.category) {
       toast.error("Categoria é obrigatória");
+      return;
+    }
+    if (!media.flyerSubcategory) {
+      toast.error("Subcategoria do Flyer Maker é obrigatória");
       return;
     }
     if (!media.pack) {
@@ -292,10 +316,11 @@ const AdminUploadArtes = () => {
       }
 
       // Insert into database
-      const { error: insertError } = await supabase.from('admin_artes').insert({
+      const { data: inserted, error: insertError } = await supabase.from('admin_artes').insert({
         title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
         description: media.description || null,
         category: media.category,
+        flyer_subcategory: media.flyerSubcategory || null,
         pack: media.pack,
         image_url: publicUrl,
         download_url: downloadUrl,
@@ -304,8 +329,13 @@ const AdminUploadArtes = () => {
         canva_link: media.canvaLink || null,
         drive_link: media.driveLink || null,
         motion_type: media.isVideo ? media.motionType || null : null
-      });
+      }).select('id').single();
       if (insertError) throw insertError;
+
+      // Vincular automaticamente à biblioteca do Flyer Maker
+      if (inserted?.id) {
+        await linkArteToFlyerLibrary(media.flyerSubcategory, 'admin_artes', inserted.id);
+      }
 
       // Remove saved item from list
       setMediaFiles(prev => prev.filter((_, idx) => idx !== currentIndex));
@@ -331,6 +361,10 @@ const AdminUploadArtes = () => {
       }
       if (!media.category) {
         toast.error(`Categoria é obrigatória para "${media.title}"`);
+        return;
+      }
+      if (!media.flyerSubcategory) {
+        toast.error(`Subcategoria do Flyer Maker é obrigatória para "${media.title}"`);
         return;
       }
       if (!media.pack) {
@@ -372,11 +406,13 @@ const AdminUploadArtes = () => {
 
         // Insert into database
         const {
+          data: inserted,
           error: insertError
         } = await supabase.from('admin_artes').insert({
           title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
           description: media.description || null,
           category: media.category,
+          flyer_subcategory: media.flyerSubcategory || null,
           pack: media.pack,
           image_url: publicUrl,
           download_url: downloadUrl,
@@ -385,8 +421,13 @@ const AdminUploadArtes = () => {
           canva_link: media.canvaLink || null,
           drive_link: media.driveLink || null,
           motion_type: media.isVideo ? media.motionType || null : null
-        });
+        }).select('id').single();
         if (insertError) throw insertError;
+
+        // Vincular automaticamente à biblioteca do Flyer Maker
+        if (inserted?.id) {
+          await linkArteToFlyerLibrary(media.flyerSubcategory, 'admin_artes', inserted.id);
+        }
       }
       setMediaFiles([]);
       setShowModal(false);
@@ -542,6 +583,28 @@ const AdminUploadArtes = () => {
                       <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
                     ))}
                     <SelectItem value="__new__" className="text-primary font-medium">+ Adicionar nova categoria</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="flyerSubcategory">
+                  Subcategoria do Flyer Maker <span className="text-destructive">*</span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-1">
+                  A arte aparecerá automaticamente nesta categoria da biblioteca do Flyer Maker.
+                </p>
+                <Select
+                  value={currentMedia.flyerSubcategory}
+                  onValueChange={value => updateMediaData('flyerSubcategory', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione a subcategoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {flyerSubcategories.map(sub => (
+                      <SelectItem key={sub.id} value={sub.slug}>{sub.name}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

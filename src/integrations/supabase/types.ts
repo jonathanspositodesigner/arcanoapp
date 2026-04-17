@@ -159,6 +159,7 @@ export type Database = {
           description: string | null
           download_url: string | null
           drive_link: string | null
+          flyer_subcategory: string | null
           id: string
           image_url: string
           is_ai_generated: boolean | null
@@ -180,6 +181,7 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           drive_link?: string | null
+          flyer_subcategory?: string | null
           id?: string
           image_url: string
           is_ai_generated?: boolean | null
@@ -201,6 +203,7 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           drive_link?: string | null
+          flyer_subcategory?: string | null
           id?: string
           image_url?: string
           is_ai_generated?: boolean | null
@@ -3220,6 +3223,7 @@ export type Database = {
           description: string | null
           download_url: string | null
           drive_link: string | null
+          flyer_subcategory: string | null
           id: string
           image_url: string
           is_premium: boolean | null
@@ -3245,6 +3249,7 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           drive_link?: string | null
+          flyer_subcategory?: string | null
           id?: string
           image_url: string
           is_premium?: boolean | null
@@ -3270,6 +3275,7 @@ export type Database = {
           description?: string | null
           download_url?: string | null
           drive_link?: string | null
+          flyer_subcategory?: string | null
           id?: string
           image_url?: string
           is_premium?: boolean | null

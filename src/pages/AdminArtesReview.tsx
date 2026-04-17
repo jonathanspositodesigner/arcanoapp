@@ -7,6 +7,7 @@ import { ArrowLeft, Check, Trash2, XCircle, Handshake } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { linkArteToFlyerLibrary } from "@/lib/flyerLibrarySync";
 
 interface PartnerArte {
   id: string;
@@ -75,8 +76,8 @@ const AdminArtesReview = () => {
 
   const handleApprovePartner = async (arteId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
-    
-    const { error } = await supabase
+
+    const { data: updated, error } = await supabase
       .from('partner_artes')
       .update({ 
         approved: true, 
@@ -87,11 +88,17 @@ const AdminArtesReview = () => {
         rejected_at: null,
         rejected_by: null
       })
-      .eq('id', arteId);
+      .eq('id', arteId)
+      .select('id, flyer_subcategory')
+      .single();
 
     if (error) {
       toast.error("Erro ao aprovar");
     } else {
+      // Vincular automaticamente à biblioteca do Flyer Maker
+      if (updated?.flyer_subcategory) {
+        await linkArteToFlyerLibrary(updated.flyer_subcategory, 'partner_artes', arteId);
+      }
       toast.success("Aprovado com sucesso!");
       fetchPartnerArtes();
     }

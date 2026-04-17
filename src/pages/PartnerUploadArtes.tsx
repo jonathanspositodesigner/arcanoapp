@@ -11,12 +11,14 @@ import { toast } from "sonner";
 import { ArrowLeft, Upload, X, ChevronLeft, ChevronRight, CheckCircle } from "lucide-react";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { linkArteToFlyerLibrary } from "@/lib/flyerLibrarySync";
 
 interface MediaData {
   file: File;
   preview: string;
   title: string;
   category: string;
+  flyerSubcategory: string;
   pack: string;
   description: string;
   canvaLink: string;
@@ -38,6 +40,12 @@ interface Category {
   name: string;
 }
 
+interface FlyerSubcategory {
+  id: string;
+  name: string;
+  slug: string;
+}
+
 const PartnerUploadArtes = () => {
   const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -49,13 +57,24 @@ const PartnerUploadArtes = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [flyerSubcategories, setFlyerSubcategories] = useState<FlyerSubcategory[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
     fetchCategories();
+    fetchFlyerSubcategories();
     fetchPacks();
   }, []);
+
+  const fetchFlyerSubcategories = async () => {
+    const { data } = await supabase
+      .from('ai_tool_library_categories')
+      .select('id, name, slug')
+      .eq('tool_slug', 'flyer_maker')
+      .order('display_order', { ascending: true });
+    setFlyerSubcategories(data || []);
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
@@ -142,6 +161,7 @@ const PartnerUploadArtes = () => {
         preview: URL.createObjectURL(processedFile),
         title: "",
         category: "",
+        flyerSubcategory: "",
         pack: "",
         description: "",
         canvaLink: "",
@@ -206,7 +226,7 @@ const PartnerUploadArtes = () => {
   };
 
   const allFieldsFilled = mediaFiles.every(
-    (media) => media.title.trim() && media.category && media.pack && media.canvaLink.trim()
+    (media) => media.title.trim() && media.category && media.flyerSubcategory && media.pack && media.canvaLink.trim()
   );
 
   const formatTitle = (title: string) => {
@@ -237,6 +257,7 @@ const PartnerUploadArtes = () => {
             partner_id: partnerId,
             title: formatTitle(media.title),
             category: media.category,
+            flyer_subcategory: media.flyerSubcategory || null,
             pack: media.pack,
             description: media.description || null,
             image_url: publicUrl,
@@ -420,6 +441,30 @@ const PartnerUploadArtes = () => {
                     {categories.map((cat) => (
                       <SelectItem key={cat.id} value={cat.name} className="text-foreground">
                         {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm text-muted-foreground">
+                  Subcategoria do Flyer Maker <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-muted-foreground/80 mb-1">
+                  Após aprovação, a arte aparecerá nesta categoria da biblioteca do Flyer Maker.
+                </p>
+                <Select
+                  value={currentMedia.flyerSubcategory}
+                  onValueChange={(value) => updateMediaData(currentIndex, "flyerSubcategory", value)}
+                >
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
+                    <SelectValue placeholder="Selecione a subcategoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border/50 z-50">
+                    {flyerSubcategories.map((sub) => (
+                      <SelectItem key={sub.id} value={sub.slug} className="text-foreground">
+                        {sub.name}
                       </SelectItem>
                     ))}
                   </SelectContent>
