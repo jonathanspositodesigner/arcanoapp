@@ -212,6 +212,26 @@ const SalesManagementContent = () => {
     };
 
     fetchSales();
+
+    // Fetch warranty waivers (admin-only RPC)
+    (async () => {
+      try {
+        const { data, error } = await supabase.rpc("get_warranty_waiver_emails" as any);
+        if (error || !data) return;
+        const map = new Map<string, { count: number; lastWaivedAt: string | null; waivers: any[] }>();
+        for (const row of data as any[]) {
+          const waivers = Array.isArray(row.waivers) ? row.waivers : [];
+          map.set(String(row.email).toLowerCase(), {
+            count: waivers.length,
+            lastWaivedAt: row.last_waived_at ?? null,
+            waivers,
+          });
+        }
+        setWaiverMap(map);
+      } catch (err) {
+        console.error("[SalesManagement] Falha ao buscar waivers:", err);
+      }
+    })();
   }, [dateRange, fetchEmailStatuses]);
 
   const handleResendEmail = async (sale: SaleRecord, e: React.MouseEvent) => {
