@@ -390,14 +390,23 @@ const UpscalerArcanoTool: React.FC = () => {
   }, []);
 
   // Handle file selection with dimension validation and compression
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+  const handleFileSelect = useCallback(async (rawFile: File) => {
+    const { isAcceptedImage, ensureBrowserCompatibleImage } = await import('@/lib/heicConverter');
+    if (!isAcceptedImage(rawFile)) {
       toast.error(t('upscalerTool.errors.selectImage'));
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
+    if (rawFile.size > 15 * 1024 * 1024) {
       toast.error(t('upscalerTool.errors.maxSize'));
+      return;
+    }
+
+    let file: File;
+    try {
+      file = await ensureBrowserCompatibleImage(rawFile);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
       return;
     }
 
@@ -804,7 +813,7 @@ const UpscalerArcanoTool: React.FC = () => {
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept="image/*"
+                  accept="image/*,image/heic,image/heif,.heic,.heif"
                   className="hidden"
                   onChange={(e) => e.target.files?.[0] && handleFileSelect(e.target.files[0])}
                 />
