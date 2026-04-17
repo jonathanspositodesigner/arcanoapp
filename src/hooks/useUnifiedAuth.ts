@@ -77,15 +77,33 @@ const defaultT = (key: string) => {
     'errors.invalidCredentials': 'Email ou senha incorretos',
     'errors.checkRegisterError': 'Erro ao verificar cadastro',
     'errors.loginError': 'Erro ao fazer login',
+    'errors.loginTimeout': 'A autenticação demorou demais. Tente novamente.',
     'errors.passwordsDoNotMatch': 'As senhas não conferem',
     'errors.emailAlreadyRegistered': 'Este email já está cadastrado',
     'errors.signupError': 'Erro ao criar conta',
+    'errors.tryWithPassword': 'Problema ao verificar seu cadastro. Tente seguir com a senha.',
     'success.loginSuccess': 'Login realizado com sucesso!',
     'success.accountCreatedSuccess': 'Conta criada com sucesso!',
     'success.linkSent': 'Link enviado para seu email!',
   };
   return messages[key] || key;
 };
+
+const withTimeout = <T,>(promiseLike: PromiseLike<T>, ms: number, label: string): Promise<T> => {
+  const promise = Promise.resolve(promiseLike);
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      setTimeout(() => reject(new Error(`timeout:${label}`)), ms);
+    }),
+  ]);
+};
+
+const isTimeoutError = (error: unknown, label?: string) => {
+  return error instanceof Error && error.message.startsWith(`timeout:${label ?? ''}`);
+};
+
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
   const navigate = useNavigate();
@@ -146,26 +164,36 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     console.log('[UnifiedAuth] Checking email:', normalizedEmail);
     
     try {
-      // Retry RPC up to 3x to survive transient network/auth glitches
       let profileCheck: any = null;
-      let lastError: any = null;
-      for (let attempt = 1; attempt <= 3; attempt++) {
-        const { data, error } = await supabase
-          .rpc('check_profile_exists', { check_email: normalizedEmail });
-        if (!error) {
-          profileCheck = data;
-          lastError = null;
-          break;
+      let lastError: unknown = null;
+
+      for (let attempt = 1; attempt <= 2; attempt++) {
+        try {
+          const { data, error } = await withTimeout<{ data: any; error: any }>(
+            supabase.rpc('check_profile_exists', { check_email: normalizedEmail }),
+            6000,
+            'check_profile_exists'
+          );
+
+          if (!error) {
+            profileCheck = data;
+            lastError = null;
+            break;
+          }
+
+          lastError = error;
+          console.warn(`[UnifiedAuth] RPC attempt ${attempt} failed:`, error.message);
+        } catch (error) {
+          lastError = error;
+          console.warn(`[UnifiedAuth] RPC attempt ${attempt} aborted:`, error);
         }
-        lastError = error;
-        console.warn(`[UnifiedAuth] RPC attempt ${attempt} failed:`, error?.message);
-        if (attempt < 3) await new Promise(r => setTimeout(r, 400 * attempt));
+
+        if (attempt < 2) await sleep(350);
       }
 
       if (lastError) {
-        // Fallback: don't block the user — let them try to enter their password.
-        // signInWithPassword will return a clear error if the account doesn't exist.
         console.error('[UnifiedAuth] RPC failed after retries, falling back to password step:', lastError);
+        toast.info(t('errors.tryWithPassword'));
         setState(prev => ({
           ...prev,
           step: 'password',
@@ -220,11 +248,21 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       // This catches users created by webhook with password=email and password_changed=true incorrectly
       if (profileExists && passwordChanged && !hasLoggedIn) {
         console.log('[UnifiedAuth] User never logged in despite password_changed=true, trying auto-login');
-        
-        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password: normalizedEmail,
-        });
+        let autoLoginError: unknown = null;
+
+        try {
+          const { error } = await withTimeout<{ data: any; error: any }>(
+            supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password: normalizedEmail,
+            }),
+            8000,
+            'first_access_auto_login'
+          );
+          autoLoginError = error;
+        } catch (error) {
+          autoLoginError = error;
+        }
         
         if (!autoLoginError) {
           console.log('[UnifiedAuth] Auto-login successful for never-logged-in user');
@@ -249,12 +287,21 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       // Case 2b: First access (no password set) → try auto-login or send link
       if (profileExists && !passwordChanged) {
         console.log('[UnifiedAuth] First access flow');
-        
-        // Try auto-login with email as password
-        const { error: autoLoginError } = await supabase.auth.signInWithPassword({
-          email: normalizedEmail,
-          password: normalizedEmail,
-        });
+        let autoLoginError: unknown = null;
+
+        try {
+          const { error } = await withTimeout<{ data: any; error: any }>(
+            supabase.auth.signInWithPassword({
+              email: normalizedEmail,
+              password: normalizedEmail,
+            }),
+            8000,
+            'first_access_auto_login'
+          );
+          autoLoginError = error;
+        } catch (error) {
+          autoLoginError = error;
+        }
         
         if (!autoLoginError) {
           console.log('[UnifiedAuth] Auto-login successful');
@@ -303,10 +350,14 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: state.verifiedEmail,
-        password,
-      });
+      const { data, error } = await withTimeout<{ data: any; error: any }>(
+        supabase.auth.signInWithPassword({
+          email: state.verifiedEmail,
+          password,
+        }),
+        12000,
+        'sign_in'
+      );
       
        if (error) {
          console.error('[UnifiedAuth] Login error:', error);
@@ -337,12 +388,29 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         }
       }
       
-      // Check if user needs to change password AND if email is verified
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('password_changed, email_verified, created_at')
-        .eq('id', data.user.id)
-        .maybeSingle();
+      let profile: { password_changed?: boolean | null; email_verified?: boolean | null; created_at?: string | null } | null = null;
+
+      try {
+        const { data: profileData, error: profileError } = await withTimeout<{ data: typeof profile; error: any }>(
+          Promise.resolve(
+            supabase
+              .from('profiles')
+              .select('password_changed, email_verified, created_at')
+              .eq('id', data.user.id)
+              .maybeSingle()
+          ),
+          6000,
+          'load_profile'
+        );
+
+        if (profileError) {
+          console.warn('[UnifiedAuth] Profile fetch error after login:', profileError);
+        } else {
+          profile = profileData;
+        }
+      } catch (error) {
+        console.warn('[UnifiedAuth] Profile fetch timeout after login:', error);
+      }
       
       // Block login if email not verified
       if (profile && profile.email_verified === false) {
@@ -386,19 +454,22 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       const pendingReferral = localStorage.getItem('referral_code');
       if (pendingReferral && data.user) {
         console.log('[UnifiedAuth] Found pending referral on login:', pendingReferral);
-        try {
-          const { data: refResult, error: refError } = await supabase.rpc('process_referral', {
+        void Promise.resolve(
+          supabase.rpc('process_referral', {
             p_referred_user_id: data.user.id,
             p_referral_code: pendingReferral,
-          });
-          console.log('[UnifiedAuth] Login referral result:', refResult, 'error:', refError);
-          if (!refError) {
+          })
+        )
+          .then(({ data: refResult, error: refError }) => {
+            console.log('[UnifiedAuth] Login referral result:', refResult, 'error:', refError);
+            if (!refError) {
             localStorage.removeItem('referral_code');
             console.log('[UnifiedAuth] Referral processed on login successfully');
-          }
-        } catch (refErr) {
-          console.error('[UnifiedAuth] Referral on login error:', refErr);
-        }
+            }
+          })
+          .catch((refErr) => {
+            console.error('[UnifiedAuth] Referral on login error:', refErr);
+          });
       }
 
       // Success!
@@ -409,7 +480,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       
     } catch (error) {
       console.error('[UnifiedAuth] Login error:', error);
-      toast.error(t('errors.loginError'));
+      toast.error(isTimeoutError(error, 'sign_in') ? t('errors.loginTimeout') : t('errors.loginError'));
       setState(prev => ({ ...prev, isLoading: false }));
     }
   }, [state.verifiedEmail, navigate, config, t]);

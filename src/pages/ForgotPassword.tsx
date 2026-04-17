@@ -16,6 +16,10 @@ const ForgotPassword = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
 
+  const getRecoveryErrorMessage = (data?: { success?: boolean; error?: string } | null, error?: { message?: string } | null) => {
+    return data?.error || error?.message || t('errors.sendRecoveryEmailError');
+  };
+
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -25,7 +29,7 @@ const ForgotPassword = () => {
         body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password` }
       });
 
-      if (error || (data && !data.success)) throw new Error(data?.error || 'Erro ao enviar email');
+      if (error || (data && !data.success)) throw new Error(getRecoveryErrorMessage(data, error));
 
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));

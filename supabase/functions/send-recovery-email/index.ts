@@ -6,6 +6,13 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+async function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return await Promise.race([
+    promise,
+    new Promise<T>((_, reject) => setTimeout(() => reject(new Error(`timeout:${label}`)), ms)),
+  ]);
+}
+
 // SendPulse OAuth2 token cache
 let cachedToken: { token: string; expiresAt: number } | null = null;
 
@@ -14,7 +21,7 @@ async function getSendPulseToken(): Promise<string> {
     return cachedToken.token;
   }
 
-  const response = await fetch("https://api.sendpulse.com/oauth/access_token", {
+  const response = await withTimeout(fetch("https://api.sendpulse.com/oauth/access_token", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -22,7 +29,7 @@ async function getSendPulseToken(): Promise<string> {
       client_id: Deno.env.get("SENDPULSE_CLIENT_ID"),
       client_secret: Deno.env.get("SENDPULSE_CLIENT_SECRET"),
     }),
-  });
+  }), 8000, "sendpulse_token");
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -99,6 +106,10 @@ serve(async (req) => {
     const normalizedEmail = email.trim().toLowerCase();
     console.log(`[send-recovery-email] Generating recovery link for: ${normalizedEmail}`);
 
+    if (!Deno.env.get("SENDPULSE_CLIENT_ID") || !Deno.env.get("SENDPULSE_CLIENT_SECRET")) {
+      throw new Error("Configuração de email indisponível");
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""
@@ -120,13 +131,13 @@ serve(async (req) => {
     }
 
     // Generate recovery link via admin API
-    const { data: linkData, error: linkError } = await supabaseAdmin.auth.admin.generateLink({
+    const { data: linkData, error: linkError } = await withTimeout(supabaseAdmin.auth.admin.generateLink({
       type: "recovery",
       email: normalizedEmail,
       options: {
         redirectTo: redirect_url || undefined,
       },
-    });
+    }), 10000, "generate_recovery_link");
 
     if (linkError) {
       console.error("[send-recovery-email] generateLink error:", linkError);
@@ -179,20 +190,20 @@ serve(async (req) => {
       },
     };
 
-    const sendResponse = await fetch("https://api.sendpulse.com/smtp/emails", {
+    const sendResponse = await withTimeout(fetch("https://api.sendpulse.com/smtp/emails", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(emailPayload),
-    });
+    }), 10000, "sendpulse_send_email");
 
     const sendResult = await sendResponse.text();
     console.log(`[send-recovery-email] SendPulse response: ${sendResponse.status} - ${sendResult}`);
 
     if (!sendResponse.ok) {
-      throw new Error(`SendPulse error: ${sendResult}`);
+      throw new Error(sendResult || `Email provider error: ${sendResponse.status}`);
     }
 
     return new Response(
@@ -201,8 +212,11 @@ serve(async (req) => {
     );
   } catch (error: any) {
     console.error("[send-recovery-email] Error:", error);
+    const message = typeof error?.message === "string" && error.message.startsWith("timeout:")
+      ? "Tempo excedido ao processar o email de recuperação"
+      : (error?.message || "Erro ao enviar email de recuperação");
     return new Response(
-      JSON.stringify({ success: false, error: error.message }),
+      JSON.stringify({ success: false, error: message }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
