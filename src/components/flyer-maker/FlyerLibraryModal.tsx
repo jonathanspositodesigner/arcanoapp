@@ -14,6 +14,8 @@ interface FlyerLibraryModalProps {
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
+  /** Quando definido, filtra a biblioteca apenas pela categoria de slug informado e oculta as tabs. */
+  categorySlug?: string;
 }
 
 interface FlyerItem {
