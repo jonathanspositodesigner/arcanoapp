@@ -5,20 +5,11 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, ExternalLink, Play, AlertTriangle, ChevronRight, Lock, Unlock, Check, CheckCircle2, Circle, Trophy } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useSmartBackNavigation } from "@/hooks/useSmartBackNavigation";
 import WhatsAppSupportButton from "@/components/WhatsAppSupportButton";
+import WarrantyWaiverModal from "@/components/lessons/WarrantyWaiverModal";
 
 interface VideoLesson {
   titleKey: string;
@@ -88,21 +79,27 @@ const UpscalerArcanoV1 = () => {
     return t('toolLessons.tooltipAlmostThere');
   };
 
-  // Handle lesson click - just select, don't mark as watched
-  const handleLessonClick = (index: number) => {
-    setSelectedLesson(index);
+  // Helper: persist watched lessons to localStorage
+  const persistWatched = (next: number[]) => {
+    setWatchedLessons(next);
+    localStorage.setItem('watched_lessons_upscaller-arcano_v1-legacy', JSON.stringify(next));
   };
 
-  // Toggle watched status for a lesson
-  const toggleWatchedStatus = (lessonNum: number) => {
-    let updated: number[];
-    if (watchedLessons.includes(lessonNum)) {
-      updated = watchedLessons.filter(n => n !== lessonNum);
-    } else {
-      updated = [...watchedLessons, lessonNum];
+  // Handle lesson click - select and auto-mark as watched
+  const handleLessonClick = (index: number) => {
+    setSelectedLesson(index);
+    const lessonNum = index + 1;
+    if (!watchedLessons.includes(lessonNum)) {
+      persistWatched([...watchedLessons, lessonNum]);
     }
-    setWatchedLessons(updated);
-    localStorage.setItem('watched_lessons_upscaller-arcano_v1-legacy', JSON.stringify(updated));
+  };
+
+  // Toggle watched status for a lesson (manual button)
+  const toggleWatchedStatus = (lessonNum: number) => {
+    const updated = watchedLessons.includes(lessonNum)
+      ? watchedLessons.filter(n => n !== lessonNum)
+      : [...watchedLessons, lessonNum];
+    persistWatched(updated);
   };
 
   // Check if button is a tool access button (should show warning modal)
