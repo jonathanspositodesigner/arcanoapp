@@ -15,6 +15,7 @@ import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 import { generateAndUploadThumbnail } from "@/hooks/useVideoThumbnail";
+import { fetchFotosSubcategories, syncFotoToAllTools, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 // Validation schema - category validated dynamically
 const promptSchema = z.object({
@@ -57,6 +58,7 @@ interface MediaData {
   txtFileName?: string;
   gender: string | null;
   tags: string[];
+  subcategorySlug: string | null;
 }
 
 const AdminUpload = () => {
@@ -67,6 +69,7 @@ const AdminUpload = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -77,6 +80,7 @@ const AdminUpload = () => {
       if (data) setCategories(data);
     };
     fetchCategories();
+    fetchFotosSubcategories().then(setSubcategories);
   }, []);
 
   // Safeguard: keep currentIndex within valid bounds
@@ -208,7 +212,8 @@ const AdminUpload = () => {
         tutorialUrl: "",
         txtFileName,
         gender: null,
-        tags: []
+        tags: [],
+        subcategorySlug: null
       });
     }
     
@@ -253,7 +258,7 @@ const AdminUpload = () => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
+  const updateMediaData = (field: keyof MediaData, value: string | boolean | null) => {
     setMediaFiles(prev => prev.map((media, idx) => 
       idx === currentIndex ? { ...media, [field]: value } : media
     ));
@@ -374,7 +379,7 @@ const AdminUpload = () => {
         }
 
         // Insert into database
-        const { error: insertError } = await supabase
+        const { data: inserted, error: insertError } = await supabase
           .from('admin_prompts')
           .insert({
             title: media.title,
@@ -387,9 +392,20 @@ const AdminUpload = () => {
             thumbnail_url: thumbnailUrl,
             gender: media.category === 'Fotos' ? media.gender : null,
             tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
-          });
+          })
+          .select('id')
+          .single();
 
         if (insertError) throw insertError;
+
+        // Sincroniza com bibliotecas das ferramentas (Cloner, Veste AI, Pose Maker)
+        if (media.category === 'Fotos' && media.subcategorySlug && inserted?.id) {
+          const syncResult = await syncFotoToAllTools(inserted.id, media.subcategorySlug);
+          if (!syncResult.success) {
+            console.error('Library sync failed:', syncResult.error);
+            toast.warning(`"${media.title}" enviado, mas falhou ao sincronizar bibliotecas`);
+          }
+        }
       }
 
       setMediaFiles([]);
@@ -574,7 +590,7 @@ const AdminUpload = () => {
               </Select>
             </div>
 
-              {/* Gender field - only shows when category is 'Fotos' */}
+              {/* Gender + Subcategoria - only shows when category is 'Fotos' */}
               {currentMedia.category === 'Fotos' && (
                 <>
                   <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
@@ -592,6 +608,29 @@ const AdminUpload = () => {
                       <SelectContent>
                         <SelectItem value="masculino">Masculino</SelectItem>
                         <SelectItem value="feminino">Feminino</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🗂️</span>
+                      <div>
+                        <Label className="font-medium">Subcategoria</Label>
+                        <p className="text-xs text-muted-foreground">Aplicada em Cloner, Veste AI e Pose Maker</p>
+                      </div>
+                    </div>
+                    <Select
+                      value={currentMedia.subcategorySlug || ''}
+                      onValueChange={(value) => updateMediaData('subcategorySlug', value || null)}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subcategories.map((sc) => (
+                          <SelectItem key={sc.id} value={sc.slug}>{sc.name}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
