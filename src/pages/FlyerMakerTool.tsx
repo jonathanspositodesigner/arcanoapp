@@ -1349,6 +1349,161 @@ const FlyerMakerTool: React.FC = () => {
                       </Button>
                     )}
                   </>
+                ) : flyerType === 'contrate' ? (
+                  <>
+                    <button
+                      onClick={() => setFlyerType(null)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors -mb-1 self-start"
+                      disabled={isProcessing}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
+                    </button>
+
+                    <ReferenceImageCard
+                      image={referenceImage}
+                      onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }}
+                      onOpenLibrary={() => setShowPhotoLibrary(true)}
+                      disabled={isProcessing}
+                      title="Flyer de Referência"
+                      emptyLabel="Escolher da biblioteca"
+                      emptySubLabel="Ou envie seu próprio flyer"
+                    />
+
+                    {/* Foto do Artista */}
+                    <div className="border border-border rounded-xl p-4 bg-muted/50">
+                      <span className="text-sm font-medium text-foreground mb-2 block">Foto do Artista</span>
+                      {contrateArtistPhoto ? (
+                        <div className="relative aspect-[3/4] rounded-lg overflow-hidden group max-w-[120px]">
+                          <img src={contrateArtistPhoto} alt="" className="w-full h-full object-cover" />
+                          <button
+                            onClick={() => {
+                              if (contrateArtistPhoto) URL.revokeObjectURL(contrateArtistPhoto);
+                              setContrateArtistPhoto(null);
+                              setContrateArtistFile(null);
+                            }}
+                            className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity"
+                            disabled={isProcessing}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className={`aspect-[3/4] max-w-[120px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                          <input
+                            type="file"
+                            accept={IMAGE_ACCEPT}
+                            className="hidden"
+                            onChange={async (e) => {
+                              const rawFile = e.target.files?.[0];
+                              e.target.value = '';
+                              if (!rawFile) return;
+                              if (!isAcceptedImage(rawFile)) {
+                                toast.error('Selecione uma imagem válida');
+                                return;
+                              }
+                              try {
+                                const file = await ensureBrowserCompatibleImage(rawFile);
+                                setContrateArtistPhoto(URL.createObjectURL(file));
+                                setContrateArtistFile(file);
+                              } catch (err) {
+                                toast.error(err instanceof Error ? err.message : 'Erro ao processar imagem');
+                              }
+                            }}
+                            disabled={isProcessing}
+                          />
+                          <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+                          <span className="text-[10px] text-muted-foreground">Enviar foto</span>
+                        </label>
+                      )}
+                    </div>
+
+                    {/* Campos de texto */}
+                    <div className="space-y-2.5">
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Título:</span>
+                        <Input placeholder="CONTRATE AGORA" value={contrateTitle} onChange={e => setContrateTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Nome do Artista:</span>
+                        <Input placeholder="ANA CASTELA" value={contrateArtistName} onChange={e => setContrateArtistName(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Contato / Telefone:</span>
+                        <Input placeholder="(99) 99999-9999" value={contrateContact} onChange={e => setContrateContact(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Informação adicional (opcional):</span>
+                        <Input placeholder="DISPONÍVEL PARA EVENTOS" value={contrateFooter} onChange={e => setContrateFooter(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                      </div>
+                    </div>
+
+                    {/* Tamanho */}
+                    <div>
+                      <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
+                      <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1">
+                        <button onClick={() => setContrateImageSize('3:4')} className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${contrateImageSize === '3:4' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} disabled={isProcessing}>
+                          Feed (3:4)
+                        </button>
+                        <button onClick={() => setContrateImageSize('9:16')} className={`py-2.5 px-3 text-sm rounded-md transition-all font-medium ${contrateImageSize === '9:16' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`} disabled={isProcessing}>
+                          Stories (9:16)
+                        </button>
+                      </div>
+                    </div>
+
+                    <CreativitySlider value={contrateCreativity} onChange={setContrateCreativity} disabled={isProcessing} max={10} showRecommendation={false} />
+
+                    {/* Generate Button */}
+                    {!isProcessing && status !== 'completed' && (
+                      <Button
+                        className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl shadow-lg disabled:opacity-50"
+                        disabled={!canProcessContrate || isSubmitting}
+                        onClick={handleProcessContrate}
+                      >
+                        {isSubmitting ? (
+                          <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando...</>
+                        ) : (
+                          <>
+                            <Sparkles className="w-4 h-4 mr-2" />
+                            Gerar Flyer
+                            <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                              <Coins className="w-3.5 h-3.5" /> {creditCost}
+                              {testCredits > 0 && <span className="ml-1">(🧪 teste)</span>}
+                            </span>
+                          </>
+                        )}
+                      </Button>
+                    )}
+
+                    {/* Completed Actions */}
+                    {status === 'completed' && (
+                      <div className="space-y-2">
+                        <Button
+                          className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                          onClick={() => download({ url: outputImage!, filename: `contrate-${Date.now()}.png` })}
+                        >
+                          <Download className="w-4 h-4 mr-2" /> Baixar HD
+                        </Button>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={handleNew}>
+                            <RefreshCw className="w-4 h-4 mr-2" /> Nova
+                          </Button>
+                          <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={() => setRefineMode(true)}>
+                            <Wand2 className="w-4 h-4 mr-2" /> Alterar
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+
+                    {status === 'waiting' && (
+                      <Button
+                        variant="outline"
+                        className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/100/10 rounded-xl"
+                        onClick={handleCancelQueue}
+                      >
+                        <XCircle className="w-4 h-4 mr-2" /> Sair da Fila
+                      </Button>
+                    )}
+                  </>
                 ) : flyerType !== 'evento' ? (
                   <div className="flex-1 flex flex-col">
                     <button
