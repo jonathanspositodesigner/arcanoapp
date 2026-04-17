@@ -15,6 +15,10 @@ const ForgotPasswordArtesMusicos = () => {
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
+  const getRecoveryErrorMessage = (data?: { success?: boolean; error?: string } | null, error?: { message?: string } | null) => {
+    return data?.error || error?.message || t('errors.sendRecoveryEmailError');
+  };
+
   const handleSendResetEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -22,10 +26,10 @@ const ForgotPasswordArtesMusicos = () => {
       const { data, error } = await supabase.functions.invoke('send-recovery-email', {
         body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password-artes-musicos` }
       });
-      if (error || (data && !data.success)) { toast.error(t('errors.sendRecoveryEmailError')); return; }
+      if (error || (data && !data.success)) { toast.error(getRecoveryErrorMessage(data, error)); return; }
       setEmailSent(true);
       toast.success(t('success.recoveryEmailSent'));
-    } catch (error) { toast.error(t('errors.sendRecoveryEmailError')); } finally { setIsLoading(false); }
+    } catch (error) { toast.error(error instanceof Error ? error.message : t('errors.sendRecoveryEmailError')); } finally { setIsLoading(false); }
   };
 
   if (emailSent) {

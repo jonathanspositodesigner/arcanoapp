@@ -15,6 +15,10 @@ const ForgotPasswordArtes = () => {
   const [emailSent, setEmailSent] = useState(false);
   const navigate = useNavigate();
 
+  const getRecoveryErrorMessage = (data?: { success?: boolean; error?: string } | null, error?: { message?: string } | null) => {
+    return data?.error || error?.message || t('errors.sendRecoveryEmailError');
+  };
+
   const handleSendResetEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -25,7 +29,7 @@ const ForgotPasswordArtes = () => {
       });
 
       if (error || (data && !data.success)) {
-        toast.error(t('errors.sendRecoveryEmailError'));
+        toast.error(getRecoveryErrorMessage(data, error));
         return;
       }
 
@@ -33,7 +37,7 @@ const ForgotPasswordArtes = () => {
       toast.success(t('success.recoveryEmailSent'));
     } catch (error) {
       console.error("Error sending reset email:", error);
-      toast.error(t('errors.sendRecoveryEmailError'));
+      toast.error(error instanceof Error ? error.message : t('errors.sendRecoveryEmailError'));
     } finally {
       setIsLoading(false);
     }
