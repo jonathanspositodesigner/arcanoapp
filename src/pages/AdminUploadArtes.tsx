@@ -588,6 +588,28 @@ const AdminUploadArtes = () => {
               </div>
 
               <div>
+                <Label htmlFor="flyerSubcategory">
+                  Subcategoria do Flyer Maker <span className="text-destructive">*</span>
+                </Label>
+                <p className="text-xs text-muted-foreground mb-1">
+                  A arte aparecerá automaticamente nesta categoria da biblioteca do Flyer Maker.
+                </p>
+                <Select
+                  value={currentMedia.flyerSubcategory}
+                  onValueChange={value => updateMediaData('flyerSubcategory', value)}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue placeholder="Selecione a subcategoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-background border border-border z-50">
+                    {flyerSubcategories.map(sub => (
+                      <SelectItem key={sub.id} value={sub.slug}>{sub.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <Label htmlFor="pack">Pack <span className="text-destructive">*</span></Label>
                 <Select value={currentMedia.pack} onValueChange={value => updateMediaData('pack', value)}>
                   <SelectTrigger className="mt-1">
