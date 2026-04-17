@@ -15,6 +15,7 @@ import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
 import { generateAndUploadThumbnail } from "@/hooks/useVideoThumbnail";
+import { fetchFotosSubcategories, syncFotoToAllTools, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 // Validation schema - category validated dynamically
 const promptSchema = z.object({
@@ -57,6 +58,7 @@ interface MediaData {
   txtFileName?: string;
   gender: string | null;
   tags: string[];
+  subcategorySlug: string | null;
 }
 
 const AdminUpload = () => {
@@ -67,6 +69,7 @@ const AdminUpload = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -77,6 +80,7 @@ const AdminUpload = () => {
       if (data) setCategories(data);
     };
     fetchCategories();
+    fetchFotosSubcategories().then(setSubcategories);
   }, []);
 
   // Safeguard: keep currentIndex within valid bounds
@@ -208,7 +212,8 @@ const AdminUpload = () => {
         tutorialUrl: "",
         txtFileName,
         gender: null,
-        tags: []
+        tags: [],
+        subcategorySlug: null
       });
     }
     
