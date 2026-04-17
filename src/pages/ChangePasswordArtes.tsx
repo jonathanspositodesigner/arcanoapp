@@ -17,7 +17,15 @@ const resendPasswordLink = async (
   const { data, error } = await supabase.functions.invoke('send-recovery-email', {
     body: { email: email.trim().toLowerCase(), redirect_url: redirectUrl }
   });
-  if (error || (data && !data.success)) return { success: false, error: 'Erro ao reenviar link' };
+
+  if (error || (data && !data.success)) {
+    const { error: fallbackError } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
+      redirectTo: redirectUrl,
+    });
+
+    if (fallbackError) return { success: false, error: 'Erro ao reenviar link' };
+  }
+
   return { success: true };
 };
 

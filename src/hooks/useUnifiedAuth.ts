@@ -105,6 +105,14 @@ const isTimeoutError = (error: unknown, label?: string) => {
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
+const sendNativeRecoveryEmail = async (email: string, redirectUrl: string) => {
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: redirectUrl,
+  });
+
+  if (error) throw error;
+};
+
 export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
   const navigate = useNavigate();
   const t = config.t || defaultT;
@@ -620,10 +628,10 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       });
       
       if (error || (recoveryData && !recoveryData.success)) {
-        toast.error(t('errors.errorSendingLink'));
-      } else {
-        toast.success(t('success.linkSent'));
+        await sendNativeRecoveryEmail(email.trim().toLowerCase(), redirectUrl);
       }
+
+      toast.success(t('success.linkSent'));
     } catch (error) {
       toast.error(t('errors.errorSendingLink'));
     } finally {
