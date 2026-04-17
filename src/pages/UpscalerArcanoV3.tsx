@@ -366,7 +366,7 @@ const UpscalerArcanoV3 = () => {
         <section className="v3-audience">
           <div className="v3-audience-inner">
             <div className="v3-section-tag">Já passou por isso?</div>
-            <div className="v3-section-title" style={{ marginBottom: 48 }}>Reconhece alguma<br /><span>dessas situações?</span></div>
+            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você já passou por isso,<br /><span>o Upscaler Arcano é pra você!</span></div>
             <div className="v3-audience-grid">
               {[
                 { emoji: "📱", desc: <>Tirou foto com o celular e <strong>ficou ruim</strong>?</> },
