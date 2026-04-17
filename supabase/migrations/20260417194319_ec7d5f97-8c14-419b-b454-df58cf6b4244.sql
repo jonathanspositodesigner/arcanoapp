@@ -1,0 +1,1 @@
+UPDATE public.ai_tool_library_categories SET slug='contrate' WHERE id='df9e3174-28b8-41c9-9d0d-54b67fc1c609';

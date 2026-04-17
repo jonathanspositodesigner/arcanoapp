@@ -14,6 +14,8 @@ interface FlyerLibraryModalProps {
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
+  /** Quando definido, filtra a biblioteca apenas pela categoria de slug informado e oculta as tabs. */
+  categorySlug?: string;
 }
 
 interface FlyerItem {
@@ -38,6 +40,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   onClose,
   onSelectPhoto,
   onUploadPhoto,
+  categorySlug,
 }) => {
   const [flyers, setFlyers] = useState<FlyerItem[]>([]);
   const [categories, setCategories] = useState<CategoryTab[]>([]);
@@ -105,6 +108,13 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
       fetchAll();
     }
   }, [isOpen, fetchAll]);
+
+  // Quando categorySlug é fornecido, força a categoria correspondente após carregar
+  useEffect(() => {
+    if (!categorySlug || categories.length === 0) return;
+    const found = categories.find(c => c.slug === categorySlug);
+    if (found) setActiveCategoryId(found.id);
+  }, [categorySlug, categories]);
 
   // Filtragem cliente (categoria + busca expandida)
   const visibleFlyers = useMemo(() => {
@@ -192,7 +202,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         </div>
 
         {/* Tabs de categorias */}
-        {categories.length > 0 && (
+        {!categorySlug && categories.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 mt-3 flex-shrink-0 scrollbar-thin">
             <button
               onClick={() => setActiveCategoryId('all')}

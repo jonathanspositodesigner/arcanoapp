@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2 } from 'lucide-react';
+import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2, ArrowLeft, Calendar, Mic2, Handshake, Shapes, Construction } from 'lucide-react';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -94,6 +94,7 @@ const FlyerMakerTool: React.FC = () => {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
+  const [flyerType, setFlyerType] = useState<'evento' | 'agenda' | 'contrate' | 'outro' | null>(null);
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
@@ -703,7 +704,56 @@ const FlyerMakerTool: React.FC = () => {
                   )}
                 </div>
 
-                {!refineMode ? (
+                {flyerType === null ? (
+                  <div className="flex-1 flex flex-col">
+                    <p className="text-sm font-medium text-foreground mb-3">Qual tipo de flyer vamos fazer hoje?</p>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { id: 'evento' as const, label: 'Evento', Icon: Calendar },
+                        { id: 'agenda' as const, label: 'Agenda de Artista', Icon: Mic2 },
+                        { id: 'contrate' as const, label: 'Contrate', Icon: Handshake },
+                        { id: 'outro' as const, label: 'Outro', Icon: Shapes },
+                      ].map(({ id, label, Icon }) => (
+                        <button
+                          key={id}
+                          onClick={() => setFlyerType(id)}
+                          className="group relative aspect-[3/4] rounded-xl border border-border bg-muted/40 hover:bg-muted hover:border-primary/60 transition-all flex flex-col items-center justify-center gap-2 p-3 active:scale-95"
+                        >
+                          <Icon className="w-7 h-7 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <span className="text-xs font-medium text-foreground text-center leading-tight">{label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : flyerType !== 'evento' ? (
+                  <div className="flex-1 flex flex-col">
+                    <button
+                      onClick={() => setFlyerType(null)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-3 self-start"
+                      disabled={isProcessing}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
+                    </button>
+                    <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-8 border border-dashed border-border rounded-xl bg-muted/20">
+                      <Construction className="w-10 h-10 text-muted-foreground" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Em breve</p>
+                        <p className="text-xs text-muted-foreground mt-1 px-4">
+                          Os controles para este tipo de flyer estão sendo configurados.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => setFlyerType(null)}
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors -mb-1 self-start"
+                      disabled={isProcessing}
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
+                    </button>
+                    {!refineMode ? (
                   <>
                     <ReferenceImageCard 
                       image={referenceImage} 
@@ -900,6 +950,8 @@ const FlyerMakerTool: React.FC = () => {
                     isRefining={isRefining}
                   />
                 )}
+                  </>
+                )}
               </div>
             </div>
 
@@ -968,7 +1020,19 @@ const FlyerMakerTool: React.FC = () => {
           </div>
         </div>
 
-        <FlyerLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} onUploadPhoto={(dataUrl, file) => { handleReferenceImageChange(dataUrl, file); setShowPhotoLibrary(false); }} />
+        <FlyerLibraryModal
+          isOpen={showPhotoLibrary}
+          onClose={() => setShowPhotoLibrary(false)}
+          onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }}
+          onUploadPhoto={(dataUrl, file) => { handleReferenceImageChange(dataUrl, file); setShowPhotoLibrary(false); }}
+          categorySlug={
+            flyerType === 'evento' ? 'evento'
+            : flyerType === 'agenda' ? 'agenda-de-artista'
+            : flyerType === 'contrate' ? 'contrate'
+            : flyerType === 'outro' ? 'outros-modelos'
+            : undefined
+          }
+        />
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
         
