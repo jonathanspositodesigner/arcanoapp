@@ -838,6 +838,7 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
+  // "Nova" — keep inputs filled, only clear the result/refine state
   const handleNew = () => {
     setOutputImage(null);
     setThumbnailImage(null);
@@ -847,8 +848,33 @@ const FlyerMakerTool: React.FC = () => {
     setRefinePrompt('');
     setRefineJobId(null);
     setIsRefining(false);
+    setJobId(null);
+    setProgress(0);
+    setQueuePosition(0);
+    setDebugErrorMessage(null);
     setStatus('idle');
-    // Reset agenda states
+  };
+
+  // Full reset — clears every input. Triggered by the discreet "Resetar" button.
+  const handleReset = () => {
+    handleNew();
+    // Evento inputs
+    if (referenceImage) URL.revokeObjectURL(referenceImage);
+    setReferenceImage(null);
+    setReferenceFile(null);
+    artistPhotos.forEach(p => { try { URL.revokeObjectURL(p.url); } catch {} });
+    setArtistPhotos([]);
+    if (logoImage) URL.revokeObjectURL(logoImage);
+    setLogoImage(null);
+    setLogoFile(null);
+    setDateTimeLocation('');
+    setTitle('');
+    setAddress('');
+    setArtistNames('');
+    setFooterPromo('');
+    setImageSize('3:4');
+    setCreativity(0);
+    // Agenda inputs
     if (agendaArtistPhoto) URL.revokeObjectURL(agendaArtistPhoto);
     setAgendaArtistPhoto(null);
     setAgendaArtistFile(null);
