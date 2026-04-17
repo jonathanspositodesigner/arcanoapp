@@ -392,22 +392,7 @@ const UpscalerArcanoV3 = () => {
 
           <p className="v3-hero-sub" style={{ textAlign: "center", marginTop: 24 }}>Simples, Rápido e Fácil de usar com o resultado impecável.</p>
 
-          <div className="v3-stats-row">
-            <div>
-              <div className="v3-stat-num">+3.2<span>mil</span></div>
-              <div className="v3-stat-label">Profissionais ativos</div>
-            </div>
-            <div className="v3-stat-divider" />
-            <div>
-              <div className="v3-stat-num">+14<span>mil</span></div>
-              <div className="v3-stat-label">Imagens melhoradas</div>
-            </div>
-            <div className="v3-stat-divider" />
-            <div>
-              <div className="v3-stat-num">60<span>s</span></div>
-              <div className="v3-stat-label">Modo Turbo V3</div>
-            </div>
-          </div>
+
 
           <div className="v3-hero-cta-desktop" style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
             <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
