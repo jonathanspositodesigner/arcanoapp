@@ -257,7 +257,7 @@ const AdminUploadArtes = () => {
       setCurrentIndex(currentIndex - 1);
     }
   };
-  const isCurrentItemComplete = (media: MediaData) => media.title && media.category && media.pack && media.canvaLink && media.driveLink;
+  const isCurrentItemComplete = (media: MediaData) => media.title && media.category && media.flyerSubcategory && media.pack && media.canvaLink && media.driveLink;
   const allFieldsFilled = mediaFiles.every(media => isCurrentItemComplete(media));
 
   const handleClickItem = (index: number) => {
@@ -273,6 +273,10 @@ const AdminUploadArtes = () => {
     }
     if (!media.category) {
       toast.error("Categoria é obrigatória");
+      return;
+    }
+    if (!media.flyerSubcategory) {
+      toast.error("Subcategoria do Flyer Maker é obrigatória");
       return;
     }
     if (!media.pack) {
@@ -312,10 +316,11 @@ const AdminUploadArtes = () => {
       }
 
       // Insert into database
-      const { error: insertError } = await supabase.from('admin_artes').insert({
+      const { data: inserted, error: insertError } = await supabase.from('admin_artes').insert({
         title: media.title.charAt(0).toUpperCase() + media.title.slice(1).toLowerCase(),
         description: media.description || null,
         category: media.category,
+        flyer_subcategory: media.flyerSubcategory || null,
         pack: media.pack,
         image_url: publicUrl,
         download_url: downloadUrl,
@@ -324,8 +329,13 @@ const AdminUploadArtes = () => {
         canva_link: media.canvaLink || null,
         drive_link: media.driveLink || null,
         motion_type: media.isVideo ? media.motionType || null : null
-      });
+      }).select('id').single();
       if (insertError) throw insertError;
+
+      // Vincular automaticamente à biblioteca do Flyer Maker
+      if (inserted?.id) {
+        await linkArteToFlyerLibrary(media.flyerSubcategory, 'admin_artes', inserted.id);
+      }
 
       // Remove saved item from list
       setMediaFiles(prev => prev.filter((_, idx) => idx !== currentIndex));
@@ -351,6 +361,10 @@ const AdminUploadArtes = () => {
       }
       if (!media.category) {
         toast.error(`Categoria é obrigatória para "${media.title}"`);
+        return;
+      }
+      if (!media.flyerSubcategory) {
+        toast.error(`Subcategoria do Flyer Maker é obrigatória para "${media.title}"`);
         return;
       }
       if (!media.pack) {
