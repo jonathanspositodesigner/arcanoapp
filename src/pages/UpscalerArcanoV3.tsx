@@ -716,7 +716,7 @@ const UpscalerArcanoV3 = () => {
         {/* FINAL CTA */}
         <section className="v3-final-cta">
           <h2>Sua próxima imagem<br />merece ser <em>perfeita.</em></h2>
-          <p>+3.200 profissionais já sabem disso. Agora é a sua vez.</p>
+          <p>+7.000 profissionais já sabem disso. Agora é a sua vez.</p>
           <button className="v3-btn-primary" onClick={scrollToPrice} style={{ display: "inline-flex" }}>
             Quero o Upscaler Arcano V3 <span>→</span>
           </button>
