@@ -232,6 +232,13 @@ const IALibraryManager = () => {
         .order("created_at", { ascending: false })
         .limit(2000);
       if (meta.sourceCategory) q = q.eq("category", meta.sourceCategory);
+      // Flyer Maker exibe apenas imagens estáticas (sem vídeos)
+      if (toolSlug === "flyer_maker") {
+        q = q
+          .not("image_url", "ilike", "%.mp4")
+          .not("image_url", "ilike", "%.mov")
+          .not("image_url", "ilike", "%.webm");
+      }
 
       const { data: src, error } = await q;
       if (error) {
