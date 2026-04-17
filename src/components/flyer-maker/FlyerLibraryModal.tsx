@@ -109,6 +109,13 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     }
   }, [isOpen, fetchAll]);
 
+  // Quando categorySlug é fornecido, força a categoria correspondente após carregar
+  useEffect(() => {
+    if (!categorySlug || categories.length === 0) return;
+    const found = categories.find(c => c.slug === categorySlug);
+    if (found) setActiveCategoryId(found.id);
+  }, [categorySlug, categories]);
+
   // Filtragem cliente (categoria + busca expandida)
   const visibleFlyers = useMemo(() => {
     let list = flyers;
