@@ -529,6 +529,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="currency">R$</span>
                   <span className="amount">24</span>
                   <span className="cents">,90</span>
+                  <span className="period">R$ 0,99 por imagem</span>
                 </div>
                 <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-starter")}>Começar →</button>
                 <div className="v3-plan-divider" />
@@ -550,6 +551,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="currency">R$</span>
                   <span className="amount">37</span>
                   <span className="cents">,00</span>
+                  <span className="period">R$ 0,53 por imagem</span>
                 </div>
                 <button className="v3-plan-cta outline" onClick={() => openCheckout("upscaler-arcano-pro")}>Começar →</button>
                 <div className="v3-plan-divider" />
@@ -573,6 +575,7 @@ const UpscalerArcanoV3 = () => {
                   <span className="currency">R$</span>
                   <span className="amount">79</span>
                   <span className="cents">,90</span>
+                  <span className="period">R$ 0,34 por imagem</span>
                 </div>
                 <div className="v3-promo-timer-wrap">
                   <div className="v3-promo-timer-label">⏰ Oferta termina em</div>
