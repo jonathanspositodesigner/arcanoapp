@@ -298,7 +298,10 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-hero-badge">
             <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versão 3 disponível agora
           </div>
-          <h1 className="v3-hero-title-sm">Saia de um resultado amador para <em>profissional com apenas um clique.</em></h1>
+          <h1 className="v3-hero-title-sm">
+            <span className="v3-hero-title-desktop">Saia de um resultado amador para<br /><em>profissional com apenas um clique.</em></span>
+            <span className="v3-hero-title-mobile">De amador a <em>profissional com um clique</em></span>
+          </h1>
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
