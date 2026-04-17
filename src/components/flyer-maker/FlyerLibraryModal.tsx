@@ -202,7 +202,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         </div>
 
         {/* Tabs de categorias */}
-        {categories.length > 0 && (
+        {!categorySlug && categories.length > 0 && (
           <div className="flex gap-1.5 overflow-x-auto pb-1 mt-3 flex-shrink-0 scrollbar-thin">
             <button
               onClick={() => setActiveCategoryId('all')}
