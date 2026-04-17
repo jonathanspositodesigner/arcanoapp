@@ -559,6 +559,7 @@ const SalesManagementContent = () => {
                     <th className="text-center py-2 px-3 font-medium">Status</th>
                     <th className="text-center py-2 px-3 font-medium">📧</th>
                     <th className="text-center py-2 px-3 font-medium">📱</th>
+                    <th className="text-center py-2 px-3 font-medium">⚠️</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -615,6 +616,32 @@ const SalesManagementContent = () => {
                             </TooltipProvider>
                           ) : null}
                         </td>
+                        <td className="py-2.5 px-3 text-center">
+                          {(() => {
+                            const w = waiverMap.get(sale.user_email?.toLowerCase());
+                            if (!w) return <span className="text-muted-foreground/30">—</span>;
+                            return (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <ShieldOff className="h-4 w-4 text-yellow-500 inline-block" />
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs">
+                                    <p className="font-semibold">Abriu mão da garantia ({w.count}x)</p>
+                                    {w.lastWaivedAt && (
+                                      <p className="text-xs">Último: {formatDate(w.lastWaivedAt)}</p>
+                                    )}
+                                    {w.waivers.slice(0, 3).map((wv: any, i: number) => (
+                                      <p key={i} className="text-xs text-muted-foreground">
+                                        {wv.tool_slug}{wv.version_slug ? ` / ${wv.version_slug}` : ''}
+                                      </p>
+                                    ))}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            );
+                          })()}
+                        </td>
                       </tr>
                     );
                   })}
@@ -642,6 +669,9 @@ const SalesManagementContent = () => {
                           <span className={sale.whatsapp_welcome_sent ? "text-emerald-500" : "text-muted-foreground/40"}>
                             📱
                           </span>
+                        )}
+                        {waiverMap.has(sale.user_email?.toLowerCase()) && (
+                          <ShieldOff className="h-4 w-4 text-yellow-500" aria-label="Abriu mão da garantia" />
                         )}
                         <Badge variant={st.variant} className="text-xs">{st.label}</Badge>
                       </div>
