@@ -183,10 +183,13 @@
     "tooltipProgress2": "🔥 ¡Vas por buen camino! Faltan 2 clases.",
     "tooltipAlmostThere": "🎯 ¡Casi listo! ¡Completa la Clase 4 para desbloquear!",
     "toolUnlocked": "🎉 ¡Herramienta desbloqueada!",
-    "warningModalTitle": "⚠️ ¡Atención!",
-    "warningModalDescription": "Es muy importante que veas las clases antes de usar la herramienta para evitar errores y garantizar los mejores resultados. ¿Estás seguro de que deseas abrirla de todos modos?",
-    "continueWatching": "Continuar Viendo",
-    "assumeRisk": "Quiero asumir el riesgo"
+    "warningModalTitle": "⚠️ Antes de continuar, lee con atención",
+    "warningModalDescription": "Recomendamos encarecidamente que veas todas las videoclases antes de usar la herramienta. Son esenciales para evitar errores, dudas y garantizar los mejores resultados.",
+    "warningModalWaiverTitle": "Aviso de renuncia",
+    "warningModalWaiverText": "Al continuar sin ver las clases, reconoces que estás eligiendo usar la herramienta bajo tu propia responsabilidad y que renuncias a la garantía de reembolso de 7 días ofrecida en la compra.",
+    "warningModalCheckbox": "Soy consciente y acepto renunciar a la garantía de 7 días para usar la herramienta ahora.",
+    "continueWatching": "Volver y ver las clases",
+    "assumeRisk": "Ir a la herramienta"
   },
   "upscalerTool": {
     "title": "Upscaler Arcano",
