@@ -717,6 +717,7 @@ const ToolVersionLessons = () => {
         onConfirm={handleConfirmOpen}
         onCancel={handleContinueWatching}
       />
+    </Wrapper>
   );
 };
 
