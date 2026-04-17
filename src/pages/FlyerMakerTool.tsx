@@ -545,7 +545,163 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
-  const handleCancelQueue = async () => {
+  const handleProcessAgenda = async () => {
+    if (!startSubmit()) return;
+
+    if (!referenceImage || !agendaArtistPhoto || !agendaTitle.trim() || !agendaArtistName.trim()) {
+      toast.error('Preencha todos os campos obrigatórios');
+      endSubmit();
+      return;
+    }
+
+    const validDates = agendaDates.filter(d => d.dia.trim() && d.local.trim());
+    if (validDates.length === 0) {
+      toast.error('Adicione pelo menos uma data com dia e local');
+      endSubmit();
+      return;
+    }
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
+    const freshCredits = await checkBalance();
+    const freshTestCredits = await fetchTestCredits();
+    const totalAvailable = freshCredits + freshTestCredits;
+    if (totalAvailable < creditCost) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+    setThumbnailImage(null);
+    setDebugErrorMessage(null);
+
+    let localJobId: string | null = null;
+
+    try {
+      setProgress(10);
+      let referenceUrl = referenceImage;
+      if (referenceFile) {
+        const compressed = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressed, 'agenda-reference');
+      }
+
+      setProgress(25);
+      let artistUrl = agendaArtistPhoto;
+      if (agendaArtistFile) {
+        const compressed = await compressImage(agendaArtistFile);
+        artistUrl = await uploadToStorage(compressed, 'agenda-artist');
+      }
+
+      const datesString = validDates
+        .map((d, i) => {
+          const base = `DATA${i + 1}: ${d.dia.trim()}, ${d.local.trim()}`;
+          return d.cidade.trim() ? `${base} - ${d.cidade.trim()}` : base;
+        })
+        .join('\n');
+
+      setProgress(35);
+      const { data: job, error: jobError } = await supabase
+        .from('flyer_maker_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          reference_image_url: referenceUrl,
+          artist_photo_urls: [artistUrl],
+          logo_url: null,
+          artist_count: 1,
+          date_time_location: datesString,
+          title: agendaTitle.trim(),
+          address: '',
+          artist_names: agendaArtistName.trim(),
+          footer_promo: agendaFooter.trim(),
+          image_size: agendaImageSize,
+          creativity: agendaCreativity,
+          job_payload: { flyerSubType: 'agenda' }
+        } as any)
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Falha ao criar job');
+
+      localJobId = job.id;
+      setJobId(job.id);
+      registerJob(job.id, 'Flyer Maker', 'pending');
+
+      setProgress(50);
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-flyer-maker/run', {
+        body: {
+          jobId: job.id,
+          userId: user.id,
+          creditCost,
+          flyerSubType: 'agenda',
+          referenceImageUrl: referenceUrl,
+          artistPhotoUrls: [artistUrl],
+          logoUrl: null,
+          dateTimeLocation: datesString,
+          title: agendaTitle.trim() ? `TITULO: ${agendaTitle.trim()}` : '',
+          address: '',
+          artistNames: agendaArtistName.trim() ? `NOMES DOS ARTISTAS: ${agendaArtistName.trim()}` : '',
+          footerPromo: agendaFooter.trim() ? `PROMOÇÃO DE RODAPÉ: ${agendaFooter.trim()}` : 'PROMOÇÃO DE RODAPÉ:',
+          imageSize: agendaImageSize,
+          creativity: agendaCreativity
+        },
+      });
+
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
+
+      fetchTestCredits();
+      refetchCredits();
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      if (runResult?.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(60);
+      }
+    } catch (error: any) {
+      console.error('[FlyerMaker Agenda] Process error:', error);
+      if (localJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localJobId, 'flyer_maker', error.message || 'Erro desconhecido');
+      }
+      setStatus('error');
+      setDebugErrorMessage(error.message);
+      toast.error(error.message);
+      endSubmit();
+    }
+  };
     if (!jobId) return;
     try {
       const result = await centralCancelJob('flyer_maker', jobId);
