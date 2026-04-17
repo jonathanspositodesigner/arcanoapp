@@ -190,6 +190,7 @@ export const V3PromoCountdownPT = memo(() => {
     fontSize: 20, fontWeight: 800, color: "#F5C842",
     fontFamily: "'Plus Jakarta Sans', sans-serif",
     fontVariantNumeric: "tabular-nums", lineHeight: 1,
+    minWidth: "2ch", display: "inline-block", textAlign: "center",
   };
   const labelStyle: React.CSSProperties = {
     fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.5)",
@@ -201,13 +202,13 @@ export const V3PromoCountdownPT = memo(() => {
 
   return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 4, marginTop: 12, marginBottom: 4 }}>
-      <div style={boxStyle}><span ref={dRef} style={numStyle}>--</span><span style={labelStyle}>Dias</span></div>
+      <div style={boxStyle}><span ref={dRef} style={numStyle}>00</span><span style={labelStyle}>Dias</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={hRef} style={numStyle}>--</span><span style={labelStyle}>Hrs</span></div>
+      <div style={boxStyle}><span ref={hRef} style={numStyle}>00</span><span style={labelStyle}>Hrs</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={mRef} style={numStyle}>--</span><span style={labelStyle}>Min</span></div>
+      <div style={boxStyle}><span ref={mRef} style={numStyle}>00</span><span style={labelStyle}>Min</span></div>
       <span style={sepStyle}>:</span>
-      <div style={boxStyle}><span ref={sRef} style={numStyle}>--</span><span style={labelStyle}>Seg</span></div>
+      <div style={boxStyle}><span ref={sRef} style={numStyle}>00</span><span style={labelStyle}>Seg</span></div>
     </div>
   );
 });
