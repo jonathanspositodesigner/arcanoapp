@@ -1115,6 +1115,29 @@ const AdminManageImages = () => {
                   </Select>
                 </div>
 
+                <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg">🗂️</span>
+                    <div>
+                      <Label className="font-medium">Subcategoria</Label>
+                      <p className="text-xs text-muted-foreground">Cloner, Veste AI e Pose Maker</p>
+                    </div>
+                  </div>
+                  <Select
+                    value={editSubcategorySlug || ''}
+                    onValueChange={(value) => setEditSubcategorySlug(value || null)}
+                  >
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Selecionar..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {subcategories.map((sc) => (
+                        <SelectItem key={sc.id} value={sc.slug}>{sc.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 {/* Tags field for editing 'Fotos' category */}
                 <div className="space-y-2">
                   <Label className="font-medium">Tags de Busca (até 10)</Label>
