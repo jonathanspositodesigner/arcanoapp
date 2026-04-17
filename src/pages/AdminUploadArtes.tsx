@@ -16,6 +16,7 @@ import { AnnouncementConfigModal } from "@/components/AnnouncementConfigModal";
 import { AnnouncementPreviewModal } from "@/components/AnnouncementPreviewModal";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { linkArteToFlyerLibrary } from "@/lib/flyerLibrarySync";
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
 const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
@@ -42,6 +43,7 @@ interface MediaData {
   title: string;
   description: string;
   category: string;
+  flyerSubcategory: string;
   pack: string;
   isVideo: boolean;
   isPremium: boolean;
@@ -57,6 +59,12 @@ interface MediaData {
 interface Category {
   id: string;
   name: string;
+}
+
+interface FlyerSubcategory {
+  id: string;
+  name: string;
+  slug: string;
 }
 
 const AdminUploadArtes = () => {
