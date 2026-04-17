@@ -156,6 +156,7 @@ const FlyerMakerTool: React.FC = () => {
   refinementHistoryRef.current = refinementHistory;
 
   const canProcess = referenceImage && artistPhotos.length > 0 && logoImage && status === 'idle';
+  const canProcessAgenda = !!(referenceImage && agendaArtistPhoto && agendaTitle.trim() && agendaArtistName.trim() && agendaDates.length > 0 && agendaDates[0].dia.trim() && agendaDates[0].local.trim()) && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
 
   useEffect(() => {
