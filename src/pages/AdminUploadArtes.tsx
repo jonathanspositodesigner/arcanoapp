@@ -75,6 +75,7 @@ const AdminUploadArtes = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [flyerSubcategories, setFlyerSubcategories] = useState<FlyerSubcategory[]>([]);
   const [packs, setPacks] = useState<Pack[]>([]);
   
   // Announcement state
@@ -91,8 +92,18 @@ const AdminUploadArtes = () => {
 
   useEffect(() => {
     fetchCategories();
+    fetchFlyerSubcategories();
     fetchPacks();
   }, []);
+
+  const fetchFlyerSubcategories = async () => {
+    const { data } = await supabase
+      .from('ai_tool_library_categories')
+      .select('id, name, slug')
+      .eq('tool_slug', 'flyer_maker')
+      .order('display_order', { ascending: true });
+    setFlyerSubcategories(data || []);
+  };
 
   const fetchCategories = async () => {
     const { data } = await supabase
