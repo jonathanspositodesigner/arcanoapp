@@ -94,6 +94,7 @@ const FlyerMakerTool: React.FC = () => {
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
   // UI states
+  const [flyerType, setFlyerType] = useState<'evento' | 'agenda' | 'contrate' | 'outro' | null>(null);
   const [showPhotoLibrary, setShowPhotoLibrary] = useState(false);
   const [status, setStatus] = useState<ProcessingStatus>('idle');
   const [progress, setProgress] = useState(0);
