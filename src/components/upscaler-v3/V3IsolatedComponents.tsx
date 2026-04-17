@@ -102,30 +102,36 @@ export const V3SocialPopup = memo(({ people, times, purchaseText }: V3SocialPopu
 });
 V3SocialPopup.displayName = "V3SocialPopup";
 
-/* ─── Sticky CTA Bar ─── */
+/* ─── Sticky CTA Bar (mobile-only via CSS) ─── */
 interface V3StickyBarProps {
   scrollToPrice: () => void;
   label: string;
   desktopSuffix?: string;
   mobileButtonText: string;
   desktopButtonText: string;
+  microcopy?: string;
 }
 
-export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileButtonText, desktopButtonText }: V3StickyBarProps) => {
+export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileButtonText, desktopButtonText, microcopy }: V3StickyBarProps) => {
   const [visible, setVisible] = useState(false);
   const isMobileRef = useRef(typeof window !== 'undefined' && window.innerWidth <= 600);
 
   useEffect(() => {
     const handleScroll = () => setVisible(window.scrollY > 500);
+    handleScroll();
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const micro = microcopy ?? "Acesso liberado · Cancele quando quiser";
+
   return (
     <div className={`v3-sticky-cta ${visible ? "visible" : ""}`}>
-      <div style={{ fontSize: 14, color: "var(--muted2)" }}>
-        <strong style={{ color: "var(--white)", fontFamily: "'Syne', sans-serif" }}>{label}</strong>
-        {!isMobileRef.current && desktopSuffix && <> — {desktopSuffix}</>}
+      <div className="v3-sticky-cta-text">
+        <span className="v3-sticky-cta-micro">{micro}</span>
+        <strong style={{ color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 13, lineHeight: 1.2 }}>
+          {label}{!isMobileRef.current && desktopSuffix ? ` — ${desktopSuffix}` : ""}
+        </strong>
       </div>
       <button className="v3-sticky-btn" onClick={scrollToPrice}>
         {isMobileRef.current ? mobileButtonText : desktopButtonText}
