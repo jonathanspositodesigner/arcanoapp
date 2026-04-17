@@ -362,16 +362,21 @@ const UpscalerArcanoV3 = () => {
           </div>
         </section>
 
-        {/* AUDIENCE */}
+        {/* JÁ PASSOU POR ISSO? */}
         <section className="v3-audience">
           <div className="v3-audience-inner">
-            <div className="v3-section-tag">Para quem é</div>
-            <div className="v3-section-title" style={{ marginBottom: 48 }}>Se você faz dinheiro com imagens,<br /><span>o Upscaler Arcano é pra você!</span></div>
+            <div className="v3-section-tag">Já passou por isso?</div>
+            <div className="v3-section-title" style={{ marginBottom: 48 }}>Reconhece alguma<br /><span>dessas situações?</span></div>
             <div className="v3-audience-grid">
-              {audienceCards.map((card, i) => (
+              {[
+                { emoji: "📱", desc: <>Tirou foto com o celular e <strong>ficou ruim</strong>?</> },
+                { emoji: "😤", desc: <>Recebeu foto do cliente em <strong>baixa qualidade</strong>?</> },
+                { emoji: "📷", desc: <>Fez uma sessão perfeita mas a foto ficou <strong>granulada e em baixa qualidade</strong>?</> },
+                { emoji: "🤖", desc: <>Gerou imagem com IA mas <strong>não ficou boa</strong>?</> },
+                { emoji: "🎸", desc: <>Deixou de fechar um contrato grande porque <strong>não tinha fotos profissionais</strong>?</> },
+              ].map((card, i) => (
                 <div key={i} className="v3-audience-card v3-reveal">
                   <span className="v3-audience-emoji">{card.emoji}</span>
-                  <div className="v3-audience-role">{card.role}</div>
                   <div className="v3-audience-desc">{card.desc}</div>
                 </div>
               ))}
