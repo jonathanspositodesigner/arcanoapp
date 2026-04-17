@@ -40,6 +40,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   onClose,
   onSelectPhoto,
   onUploadPhoto,
+  categorySlug,
 }) => {
   const [flyers, setFlyers] = useState<FlyerItem[]>([]);
   const [categories, setCategories] = useState<CategoryTab[]>([]);
