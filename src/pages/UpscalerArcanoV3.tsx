@@ -40,7 +40,6 @@ const heroSlidesDesktop = [
 ];
 const heroSlidesMobile = [
   { before: heroMobileAntes, after: heroMobileDepois },
-  { before: galleryBefore3, after: galleryAfter3 },
 ];
 
 const SOCIAL_PEOPLE = [
