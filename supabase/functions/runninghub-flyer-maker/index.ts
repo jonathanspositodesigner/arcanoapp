@@ -38,6 +38,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
 const WEBAPP_ID_EVENTO = '2025656642724962305';
 const WEBAPP_ID_AGENDA = '2044904569490120705';
+const WEBAPP_ID_CONTRATE = '2045273255975591938';
 const WEBAPP_ID = WEBAPP_ID_EVENTO; // legacy alias used in logs
 const JOB_TABLE = 'flyer_maker_jobs';
 
@@ -202,8 +203,13 @@ async function handleRun(req: Request) {
     dateTimeLocation, title, address, artistNames, footerPromo,
     imageSize, creativity
   } = body;
-  const flyerSubType: 'evento' | 'agenda' = body.flyerSubType === 'agenda' ? 'agenda' : 'evento';
-  const webappId = flyerSubType === 'agenda' ? WEBAPP_ID_AGENDA : WEBAPP_ID_EVENTO;
+  const flyerSubType: 'evento' | 'agenda' | 'contrate' =
+    body.flyerSubType === 'agenda' ? 'agenda' :
+    body.flyerSubType === 'contrate' ? 'contrate' : 'evento';
+  const webappId =
+    flyerSubType === 'agenda' ? WEBAPP_ID_AGENDA :
+    flyerSubType === 'contrate' ? WEBAPP_ID_CONTRATE :
+    WEBAPP_ID_EVENTO;
 
   // ========== JWT AUTH VERIFICATION ==========
   const authHeader = req.headers.get('Authorization');
@@ -229,7 +235,7 @@ async function handleRun(req: Request) {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  if (flyerSubType !== 'agenda' && !logoUrl) {
+  if (flyerSubType === 'evento' && !logoUrl) {
     return new Response(JSON.stringify({ error: 'Missing logo', code: 'MISSING_PARAMS' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -366,11 +372,27 @@ async function handleRun(req: Request) {
     { nodeId: '190', fieldName: 'aspectRatio', fieldValue: imageSize || '9:16', description: 'TAMANHO DA IMAGEM' },
   ] : null;
 
+  // Contrate: nodeInfoList per WebApp 2045273255975591938
+  // node 1 = flyer ref, node 11 = artist photo, node 7 = title, node 10 = artist name,
+  // node 140 = contact/phone, node 9 = footer info, node 107 = creativity, node 190 = aspectRatio
+  const contrateNodeInfoList = flyerSubType === 'contrate' ? [
+    { nodeId: '1', fieldName: 'image', fieldValue: referenceFileName, description: 'FLYER REFERENCIA' },
+    { nodeId: '11', fieldName: 'image', fieldValue: artistFileNames[0], description: 'FOTO DO ARTISTA' },
+    { nodeId: '7', fieldName: 'text', fieldValue: title || 'TITULO:', description: 'TITULO' },
+    { nodeId: '10', fieldName: 'text', fieldValue: artistNames || 'NOMES DOS ARTISTAS:', description: 'NOME DO ARTISTA' },
+    { nodeId: '140', fieldName: 'text', fieldValue: dateTimeLocation || 'CONTATO:', description: 'CONTATO TELEFONE' },
+    { nodeId: '9', fieldName: 'text', fieldValue: footerPromo || 'PROMOÇÃO DE RODAPÉ:', description: 'OUTRAS INFORMAÇÕES' },
+    { nodeId: '107', fieldName: 'value', fieldValue: String(creativity ?? 4), description: 'CRIATIVIDADE DA IA' },
+    { nodeId: '190', fieldName: 'aspectRatio', fieldValue: imageSize || '9:16', description: 'TAMANHO DA IMAGEM' },
+  ] : null;
+
+  const prebuiltNodeInfoList = agendaNodeInfoList || contrateNodeInfoList;
+
   await supabase.from(JOB_TABLE).update({
     job_payload: {
       flyerSubType,
       webappId,
-      ...(agendaNodeInfoList ? { nodeInfoList: agendaNodeInfoList } : {}),
+      ...(prebuiltNodeInfoList ? { nodeInfoList: prebuiltNodeInfoList } : {}),
       referenceFileName, artistFileNames, logoFileName,
       dateTimeLocation: dateTimeLocation || '', title: title || '',
       address: address || '', artistNames: artistNames || '',
