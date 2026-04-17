@@ -109,7 +109,13 @@ const IALibraryManager = () => {
         sourcesById = Object.fromEntries(sourceChunks.map((s: any) => [s.id, s]));
       }
 
-      const enriched: LibraryItem[] = (itemData || []).map((it) => ({
+      const isVideoUrl = (url?: string) => {
+        if (!url) return false;
+        const u = url.toLowerCase();
+        return u.includes(".mp4") || u.includes(".mov") || u.includes(".webm");
+      };
+
+      let enriched: LibraryItem[] = (itemData || []).map((it) => ({
         id: it.id,
         source_id: it.source_id,
         category_id: it.category_id,
@@ -119,6 +125,18 @@ const IALibraryManager = () => {
         image_url: sourcesById[it.source_id]?.image_url,
         thumbnail_url: sourcesById[it.source_id]?.thumbnail_url,
       }));
+
+      // Para Flyer Maker: remove vídeos da biblioteca (limpa registros órfãos de vídeos)
+      if (toolSlug === "flyer_maker") {
+        const videoItemIds = enriched
+          .filter((i) => isVideoUrl(i.image_url))
+          .map((i) => i.id);
+        if (videoItemIds.length > 0) {
+          await supabase.from("ai_tool_library_items").delete().in("id", videoItemIds);
+        }
+        enriched = enriched.filter((i) => !isVideoUrl(i.image_url));
+      }
+
       setItems(enriched);
     } finally {
       setLoading(false);
