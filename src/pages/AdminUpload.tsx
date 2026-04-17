@@ -258,7 +258,7 @@ const AdminUpload = () => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
+  const updateMediaData = (field: keyof MediaData, value: string | boolean | null) => {
     setMediaFiles(prev => prev.map((media, idx) => 
       idx === currentIndex ? { ...media, [field]: value } : media
     ));
@@ -379,7 +379,7 @@ const AdminUpload = () => {
         }
 
         // Insert into database
-        const { error: insertError } = await supabase
+        const { data: inserted, error: insertError } = await supabase
           .from('admin_prompts')
           .insert({
             title: media.title,
@@ -392,9 +392,20 @@ const AdminUpload = () => {
             thumbnail_url: thumbnailUrl,
             gender: media.category === 'Fotos' ? media.gender : null,
             tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
-          });
+          })
+          .select('id')
+          .single();
 
         if (insertError) throw insertError;
+
+        // Sincroniza com bibliotecas das ferramentas (Cloner, Veste AI, Pose Maker)
+        if (media.category === 'Fotos' && media.subcategorySlug && inserted?.id) {
+          const syncResult = await syncFotoToAllTools(inserted.id, media.subcategorySlug);
+          if (!syncResult.success) {
+            console.error('Library sync failed:', syncResult.error);
+            toast.warning(`"${media.title}" enviado, mas falhou ao sincronizar bibliotecas`);
+          }
+        }
       }
 
       setMediaFiles([]);
