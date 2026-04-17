@@ -2,6 +2,8 @@ import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Loader2, Upload, X, Wand2, Coins } from 'lucide-react';
+import { isAcceptedImage, ensureBrowserCompatibleImage, IMAGE_ACCEPT } from '@/lib/heicConverter';
+import { toast } from 'sonner';
 
 interface RefinePanelProps {
   prompt: string;
@@ -34,14 +36,24 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = () => {
-      onReferenceChange(file, reader.result as string);
-    };
-    reader.readAsDataURL(file);
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    e.target.value = '';
+    if (!rawFile) return;
+    if (!isAcceptedImage(rawFile)) {
+      toast.error('Selecione uma imagem válida (JPG, PNG, WEBP ou HEIC).');
+      return;
+    }
+    try {
+      const file = await ensureBrowserCompatibleImage(rawFile);
+      const reader = new FileReader();
+      reader.onload = () => {
+        onReferenceChange(file, reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
+    }
   };
 
   return (
@@ -87,7 +99,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
           className="hidden"
           onChange={handleFileSelect}
         />

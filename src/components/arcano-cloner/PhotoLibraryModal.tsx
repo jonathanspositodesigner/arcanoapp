@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import imageCompression from 'browser-image-compression';
 import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
+import { isAcceptedImage, ensureBrowserCompatibleImage, IMAGE_ACCEPT } from '@/lib/heicConverter';
 
 interface PhotoLibraryModalProps {
   isOpen: boolean;
@@ -127,19 +128,26 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   };
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !onUploadPhoto) return;
+    const rawFile = event.target.files?.[0];
+    if (!rawFile || !onUploadPhoto) return;
+    if (!isAcceptedImage(rawFile)) {
+      toast.error('Selecione uma imagem válida (JPG, PNG, WEBP ou HEIC).');
+      return;
+    }
 
     setIsUploading(true);
-    
+
     try {
+      // Convert HEIC (iPhone) → JPEG before processing
+      const file = await ensureBrowserCompatibleImage(rawFile);
+
       // Compress image before using
       const options = {
         maxSizeMB: 2,
         maxWidthOrHeight: 2048,
         useWebWorker: true,
       };
-      
+
       const compressedFile = await imageCompression(file, options);
       
       // Convert to data URL
@@ -176,7 +184,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept={IMAGE_ACCEPT}
           onChange={handleFileChange}
           className="hidden"
         />

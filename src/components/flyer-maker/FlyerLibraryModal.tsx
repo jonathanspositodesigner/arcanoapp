@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import imageCompression from 'browser-image-compression';
 import { useSmartSearch, buildSmartSearchFilter } from '@/hooks/useSmartSearch';
+import { isAcceptedImage, ensureBrowserCompatibleImage, IMAGE_ACCEPT } from '@/lib/heicConverter';
+import { toast } from 'sonner';
 
 interface FlyerLibraryModalProps {
   isOpen: boolean;
@@ -92,15 +94,23 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   const handleUploadClick = () => fileInputRef.current?.click();
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !onUploadPhoto) return;
+    const rawFile = event.target.files?.[0];
+    if (!rawFile || !onUploadPhoto) return;
+    if (!isAcceptedImage(rawFile)) {
+      toast.error('Selecione uma imagem válida (JPG, PNG, WEBP ou HEIC).');
+      return;
+    }
     setIsUploading(true);
     try {
+      const file = await ensureBrowserCompatibleImage(rawFile);
       const compressed = await imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 2048, useWebWorker: true });
       const reader = new FileReader();
       reader.onloadend = () => { onUploadPhoto(reader.result as string, compressed as unknown as File); onClose(); };
       reader.readAsDataURL(compressed);
-    } catch (err) { console.error('[FlyerLibrary] Upload error:', err); }
+    } catch (err) {
+      console.error('[FlyerLibrary] Upload error:', err);
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
+    }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
 
@@ -114,7 +124,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} className="hidden" />
+        <input ref={fileInputRef} type="file" accept={IMAGE_ACCEPT} onChange={handleFileChange} className="hidden" />
 
         {onUploadPhoto && (
           <Button

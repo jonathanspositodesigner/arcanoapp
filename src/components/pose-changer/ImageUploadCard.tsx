@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import { getImageDimensions, compressToMaxDimension, MAX_AI_DIMENSION } from '@/hooks/useImageOptimizer';
+import { isAcceptedImage, ensureBrowserCompatibleImage, IMAGE_ACCEPT } from '@/lib/heicConverter';
 
 interface ImageUploadCardProps {
   title: string;
@@ -43,14 +44,22 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
     reader.readAsDataURL(file);
   }, [onImageChange]);
 
-  const handleFileSelect = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) {
+  const handleFileSelect = useCallback(async (rawFile: File) => {
+    if (!isAcceptedImage(rawFile)) {
       toast.error('Por favor, selecione uma imagem válida.');
       return;
     }
 
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('Arquivo muito grande. Máximo 10MB.');
+    if (rawFile.size > 15 * 1024 * 1024) {
+      toast.error('Arquivo muito grande. Máximo 15MB.');
+      return;
+    }
+
+    let file: File;
+    try {
+      file = await ensureBrowserCompatibleImage(rawFile);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
       return;
     }
 
@@ -110,10 +119,9 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
       const items = e.clipboardData?.items;
       if (items) {
         for (const item of items) {
-          if (item.type.startsWith('image/')) {
+          if (item.type.startsWith('image/') || item.type === '') {
             const file = item.getAsFile();
-            if (file) handleFileSelect(file);
-            break;
+            if (file && isAcceptedImage(file)) { handleFileSelect(file); break; }
           }
         }
       }
@@ -182,7 +190,7 @@ const ImageUploadCard: React.FC<ImageUploadCardProps> = ({
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/*"
+            accept={IMAGE_ACCEPT}
             className="hidden"
             onChange={handleInputChange}
             disabled={disabled}

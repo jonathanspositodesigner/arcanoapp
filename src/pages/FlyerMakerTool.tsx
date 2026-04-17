@@ -22,6 +22,7 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
+import { isAcceptedImage, ensureBrowserCompatibleImage, IMAGE_ACCEPT } from '@/lib/heicConverter';
 import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
@@ -315,15 +316,24 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
-  const handleArtistPhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      if (artistPhotos.length >= 5) {
-        toast.error('Máximo de 5 fotos de artistas');
-        return;
-      }
-      const file = e.target.files[0];
+  const handleArtistPhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    e.target.value = '';
+    if (!rawFile) return;
+    if (artistPhotos.length >= 5) {
+      toast.error('Máximo de 5 fotos de artistas');
+      return;
+    }
+    if (!isAcceptedImage(rawFile)) {
+      toast.error('Selecione uma imagem válida (JPG, PNG, WEBP ou HEIC).');
+      return;
+    }
+    try {
+      const file = await ensureBrowserCompatibleImage(rawFile);
       const url = URL.createObjectURL(file);
       setArtistPhotos([...artistPhotos, { url, file }]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
     }
   };
 
@@ -334,11 +344,20 @@ const FlyerMakerTool: React.FC = () => {
     setArtistPhotos(newPhotos);
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    e.target.value = '';
+    if (!rawFile) return;
+    if (!isAcceptedImage(rawFile)) {
+      toast.error('Selecione uma imagem válida (JPG, PNG, WEBP ou HEIC).');
+      return;
+    }
+    try {
+      const file = await ensureBrowserCompatibleImage(rawFile);
       setLogoImage(URL.createObjectURL(file));
       setLogoFile(file);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Erro ao processar a imagem.');
     }
   };
 
@@ -715,7 +734,7 @@ const FlyerMakerTool: React.FC = () => {
                           if (idx === artistPhotos.length) {
                             return (
                               <label key={idx} className={`aspect-[3/4] rounded-lg border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <input type="file" accept="image/*" className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
+                                <input type="file" accept={IMAGE_ACCEPT} className="hidden" onChange={handleArtistPhotoUpload} disabled={isProcessing} />
                                 <Plus className="w-5 h-5 text-muted-foreground" />
                               </label>
                             );
@@ -737,7 +756,7 @@ const FlyerMakerTool: React.FC = () => {
                         </div>
                       ) : (
                         <label className={`h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
-                          <input type="file" accept="image/*" className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
+                          <input type="file" accept={IMAGE_ACCEPT} className="hidden" onChange={handleLogoUpload} disabled={isProcessing} />
                           <Upload className="w-5 h-5 text-muted-foreground mb-1" />
                           <span className="text-[10px] text-muted-foreground">Upload Logo</span>
                         </label>
