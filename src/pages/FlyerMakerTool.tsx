@@ -714,7 +714,150 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
-  const handleCancelQueue = async () => {
+  const handleProcessContrate = async () => {
+    if (!startSubmit()) return;
+
+    if (!referenceImage || !contrateArtistPhoto || !contrateTitle.trim() || !contrateArtistName.trim()) {
+      toast.error('Preencha todos os campos obrigatórios');
+      endSubmit();
+      return;
+    }
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
+    const freshCredits = await checkBalance();
+    const freshTestCredits = await fetchTestCredits();
+    const totalAvailable = freshCredits + freshTestCredits;
+    if (totalAvailable < creditCost) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+    setThumbnailImage(null);
+    setDebugErrorMessage(null);
+
+    let localJobId: string | null = null;
+
+    try {
+      setProgress(10);
+      let referenceUrl = referenceImage;
+      if (referenceFile) {
+        const compressed = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressed, 'contrate-reference');
+      }
+
+      setProgress(25);
+      let artistUrl = contrateArtistPhoto;
+      if (contrateArtistFile) {
+        const compressed = await compressImage(contrateArtistFile);
+        artistUrl = await uploadToStorage(compressed, 'contrate-artist');
+      }
+
+      setProgress(35);
+      const { data: job, error: jobError } = await supabase
+        .from('flyer_maker_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          reference_image_url: referenceUrl,
+          artist_photo_urls: [artistUrl],
+          logo_url: null,
+          artist_count: 1,
+          date_time_location: contrateContact.trim(),
+          title: contrateTitle.trim(),
+          address: '',
+          artist_names: contrateArtistName.trim(),
+          footer_promo: contrateFooter.trim(),
+          image_size: contrateImageSize,
+          creativity: contrateCreativity,
+          job_payload: { flyerSubType: 'contrate' }
+        } as any)
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Falha ao criar job');
+
+      localJobId = job.id;
+      setJobId(job.id);
+      registerJob(job.id, 'Flyer Maker', 'pending');
+
+      setProgress(50);
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-flyer-maker/run', {
+        body: {
+          jobId: job.id,
+          userId: user.id,
+          creditCost,
+          flyerSubType: 'contrate',
+          referenceImageUrl: referenceUrl,
+          artistPhotoUrls: [artistUrl],
+          logoUrl: null,
+          dateTimeLocation: contrateContact.trim() ? `CONTATO: ${contrateContact.trim()}` : 'CONTATO:',
+          title: contrateTitle.trim() ? `TITULO: ${contrateTitle.trim()}` : 'TITULO:',
+          address: '',
+          artistNames: contrateArtistName.trim() ? `NOMES DOS ARTISTAS: ${contrateArtistName.trim()}` : 'NOMES DOS ARTISTAS:',
+          footerPromo: contrateFooter.trim() ? `PROMOÇÃO DE RODAPÉ: ${contrateFooter.trim()}` : 'PROMOÇÃO DE RODAPÉ:',
+          imageSize: contrateImageSize,
+          creativity: contrateCreativity
+        },
+      });
+
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
+
+      fetchTestCredits();
+      refetchCredits();
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      if (runResult?.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(60);
+      }
+    } catch (error: any) {
+      console.error('[FlyerMaker Contrate] Process error:', error);
+      if (localJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localJobId, 'flyer_maker', error.message || 'Erro desconhecido');
+      }
+      setStatus('error');
+      setDebugErrorMessage(error.message);
+      toast.error(error.message);
+      endSubmit();
+    }
+  };
+
     if (!jobId) return;
     try {
       const result = await centralCancelJob('flyer_maker', jobId);
@@ -895,6 +1038,16 @@ const FlyerMakerTool: React.FC = () => {
     setAgendaCreativity(0);
     setAgendaImageSize('9:16');
     setAgendaDates([{ dia: '', local: '', cidade: '' }]);
+    // Contrate inputs
+    if (contrateArtistPhoto) URL.revokeObjectURL(contrateArtistPhoto);
+    setContrateArtistPhoto(null);
+    setContrateArtistFile(null);
+    setContrateTitle('CONTRATE AGORA');
+    setContrateArtistName('');
+    setContrateContact('');
+    setContrateFooter('');
+    setContrateCreativity(4);
+    setContrateImageSize('9:16');
   };
 
   return (
