@@ -360,23 +360,39 @@ async function handleRun(req: Request) {
   }).eq('id', jobId);
 
   // Save job_payload for queue manager
+  const agendaNodeInfoList = flyerSubType === 'agenda' ? [
+    { nodeId: '1', fieldName: 'image', fieldValue: referenceFileName, description: 'FLYER REFERENCIA' },
+    { nodeId: '11', fieldName: 'image', fieldValue: artistFileNames[0], description: 'SUA FOTO' },
+    { nodeId: '7', fieldName: 'text', fieldValue: title || 'TITULO: AGENDA MENSAL', description: 'TITULO' },
+    { nodeId: '10', fieldName: 'text', fieldValue: artistNames || 'NOMES DOS ARTISTAS:', description: 'NOME DO ARTISTA' },
+    { nodeId: '140', fieldName: 'text', fieldValue: dateTimeLocation || '', description: 'DATAS' },
+    { nodeId: '9', fieldName: 'text', fieldValue: footerPromo || 'PROMOÇÃO DE RODAPÉ:', description: 'INFORMAÇÃO ADICIONAL' },
+    { nodeId: '107', fieldName: 'value', fieldValue: String(creativity ?? 4), description: 'CRIATIVIDADE DA IA' },
+    { nodeId: '190', fieldName: 'aspectRatio', fieldValue: imageSize || '9:16', description: 'TAMANHO DA IMAGEM' },
+  ] : null;
+
   await supabase.from(JOB_TABLE).update({
     job_payload: {
+      flyerSubType,
+      webappId,
+      ...(agendaNodeInfoList ? { nodeInfoList: agendaNodeInfoList } : {}),
       referenceFileName, artistFileNames, logoFileName,
       dateTimeLocation: dateTimeLocation || '', title: title || '',
       address: address || '', artistNames: artistNames || '',
       footerPromo: footerPromo || '', imageSize: imageSize || '3:4',
       creativity: creativity ?? 0,
+      test_credits_used: testCreditsUsed,
+      normal_credits_charged: normalCreditsToCharge,
     }
   }).eq('id', jobId);
 
   // ========== DELEGATE TO QUEUE MANAGER ==========
   try {
-    await logStep(jobId, 'delegating_to_queue');
+    await logStep(jobId, 'delegating_to_queue', { flyerSubType, webappId });
     const qmResponse = await fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/run-or-queue`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` },
-      body: JSON.stringify({ table: JOB_TABLE, jobId }),
+      body: JSON.stringify({ table: JOB_TABLE, jobId, webappId }),
     });
     const qmResult = await qmResponse.json();
 
