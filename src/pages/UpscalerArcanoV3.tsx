@@ -299,14 +299,6 @@ const UpscalerArcanoV3 = () => {
             <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versão 3 disponível agora
           </div>
           <h1>Saia de um resultado amador para <em>profissional com apenas um clique.</em></h1>
-          <p className="v3-hero-sub">
-            {isMobile ? (
-              <>Simples, Rápido e Fácil de usar com o resultado impecável.</>
-            ) : (
-              <>Simples, Rápido e Fácil de usar com o resultado impecável.</>
-            )}
-          </p>
-
           {/* BEFORE/AFTER SLIDER CAROUSEL */}
           <div className="v3-slider-wrapper">
             <div className="v3-slider-label">
@@ -349,6 +341,8 @@ const UpscalerArcanoV3 = () => {
               ))}
             </div>
           </div>
+
+          <p className="v3-hero-sub" style={{ textAlign: "center", marginTop: 24 }}>Simples, Rápido e Fácil de usar com o resultado impecável.</p>
 
           <div className="v3-stats-row">
             <div>
