@@ -93,6 +93,18 @@ const FlyerMakerTool: React.FC = () => {
   const [imageSize, setImageSize] = useState<'3:4' | '9:16'>('3:4');
   const [creativity, setCreativity] = useState(0);
 
+  // === Agenda-specific states ===
+  const [agendaArtistPhoto, setAgendaArtistPhoto] = useState<string | null>(null);
+  const [agendaArtistFile, setAgendaArtistFile] = useState<File | null>(null);
+  const [agendaTitle, setAgendaTitle] = useState('');
+  const [agendaArtistName, setAgendaArtistName] = useState('');
+  const [agendaFooter, setAgendaFooter] = useState('');
+  const [agendaCreativity, setAgendaCreativity] = useState(0);
+  const [agendaImageSize, setAgendaImageSize] = useState<'3:4' | '9:16'>('9:16');
+  const [agendaDates, setAgendaDates] = useState<Array<{ dia: string; local: string; cidade: string }>>([
+    { dia: '', local: '', cidade: '' }
+  ]);
+
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
