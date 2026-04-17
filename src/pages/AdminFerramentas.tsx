@@ -191,7 +191,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-primary rounded-full">
-                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arquivo</h2>
                   <p className="text-muted-foreground hidden sm:block">Faça upload de novos arquivos exclusivos para a biblioteca</p>
@@ -210,7 +210,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Arquivos</h2>
                   <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições enviadas</p>
@@ -229,7 +229,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Imagens</h2>
                   <p className="text-muted-foreground hidden sm:block">Edite ou exclua arquivos já publicados</p>
@@ -248,7 +248,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-pink-500 rounded-full">
-                    <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <LayoutDashboard className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Premium</h2>
                   <p className="text-muted-foreground hidden sm:block">Dashboard de assinaturas premium</p>
@@ -267,7 +267,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-teal-500 rounded-full">
-                    <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <FolderOpen className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Coleções</h2>
                   <p className="text-muted-foreground hidden sm:block">Crie coleções com links compartilháveis</p>
@@ -286,7 +286,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de prompts</p>
@@ -305,7 +305,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de prompts</p>
@@ -324,7 +324,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
-                    <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <ShieldCheck className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Administradores</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerencie contas de administradores</p>
@@ -408,7 +408,7 @@ const AdminFerramentas = () => {
                 )}
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Upload className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Enviar Arte</h2>
                   <p className="text-muted-foreground hidden sm:block">Upload de novas artes para a biblioteca</p>
@@ -418,7 +418,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-artes-review')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-green-500 rounded-full">
-                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <CheckCircle className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Analisar Artes</h2>
                   <p className="text-muted-foreground hidden sm:block">Aprove ou rejeite contribuições de artes</p>
@@ -428,7 +428,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-artes')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-blue-500 rounded-full">
-                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Settings className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Artes</h2>
                   <p className="text-muted-foreground hidden sm:block">Edite ou exclua artes já publicadas</p>
@@ -438,7 +438,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
-                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
                   <p className="text-muted-foreground hidden sm:block">Cadastre e edite os packs de artes</p>
@@ -448,7 +448,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-packs')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-teal-500 to-cyan-500 rounded-full">
-                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Package className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Packs</h2>
                   <p className="text-muted-foreground hidden sm:block">Cadastre e edite os packs de artes</p>
@@ -458,7 +458,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-banners')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-pink-500 to-rose-500 rounded-full">
-                    <Image className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Image className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Banners</h2>
                   <p className="text-muted-foreground hidden sm:block">Carrossel de divulgação da biblioteca</p>
@@ -468,7 +468,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-pack-purchases')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full">
-                    <ShoppingCart className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <ShoppingCart className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Clientes</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerenciar acessos de usuários aos packs</p>
@@ -478,7 +478,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-leads')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full">
-                    <UserPlus className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <UserPlus className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Gerenciar Leads</h2>
                   <p className="text-muted-foreground hidden sm:block">Usuários que criaram conta sem comprar</p>
@@ -493,7 +493,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-manage-promotions')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-slate-500 to-slate-400 rounded-full">
-                    <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Gift className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Promoções</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerencie combos e promoções com webhook</p>
@@ -503,7 +503,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-categories-artes')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-white/20 rounded-full">
-                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Tag className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Categorias</h2>
                   <p className="text-muted-foreground hidden sm:block">Gerencie as categorias de artes</p>
@@ -513,7 +513,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-webhook-logs')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full">
-                    <FileSearch className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <FileSearch className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Logs de Webhook</h2>
                   <p className="text-muted-foreground hidden sm:block">Monitore webhooks recebidos</p>
@@ -523,7 +523,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/admin-blacklist')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-red-500 to-rose-600 rounded-full">
-                    <ShieldBan className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <ShieldBan className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Lista Negra</h2>
                   <p className="text-muted-foreground hidden sm:block">Emails bloqueados (fraudes)</p>
@@ -533,7 +533,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-abandoned-checkouts')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-orange-500 to-red-500 rounded-full">
-                    <UserX className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <UserX className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Checkouts Abandonados</h2>
                   <p className="text-muted-foreground hidden sm:block">Remarketing de leads</p>
@@ -548,7 +548,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105 relative" onClick={() => navigate('/admin-hub')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-red-600 to-orange-500 rounded-full">
-                    <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <ReceiptText className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Reembolsos</h2>
                   <p className="text-muted-foreground hidden sm:block">Logs de reembolsos e chargebacks</p>
@@ -563,7 +563,7 @@ const AdminFerramentas = () => {
               <Card className="p-3 sm:p-8 cursor-pointer hover:shadow-hover transition-all hover:scale-105" onClick={() => navigate('/biblioteca-artes')}>
                 <div className="flex flex-col items-center text-center space-y-2 sm:space-y-4">
                   <div className="p-2 sm:p-4 bg-gradient-to-r from-amber-500 to-orange-500 rounded-full">
-                    <Palette className="h-6 w-6 sm:h-12 sm:w-12 text-foreground" />
+                    <Palette className="h-6 w-6 sm:h-12 sm:w-12 text-white" />
                   </div>
                   <h2 className="text-xs sm:text-2xl font-bold text-foreground">Ver Biblioteca</h2>
                   <p className="text-muted-foreground hidden sm:block">Acesse a Biblioteca de Artes Arcanas</p>
