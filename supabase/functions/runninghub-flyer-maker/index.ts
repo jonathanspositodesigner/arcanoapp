@@ -202,6 +202,8 @@ async function handleRun(req: Request) {
     dateTimeLocation, title, address, artistNames, footerPromo,
     imageSize, creativity
   } = body;
+  const flyerSubType: 'evento' | 'agenda' = body.flyerSubType === 'agenda' ? 'agenda' : 'evento';
+  const webappId = flyerSubType === 'agenda' ? WEBAPP_ID_AGENDA : WEBAPP_ID_EVENTO;
 
   // ========== JWT AUTH VERIFICATION ==========
   const authHeader = req.headers.get('Authorization');
@@ -219,11 +221,16 @@ async function handleRun(req: Request) {
     });
   }
   const userId = authUser.id;
-  console.log(`[FlyerMaker] JWT verified - userId: ${userId}`);
+  console.log(`[FlyerMaker] JWT verified - userId: ${userId}, subType: ${flyerSubType}, webappId: ${webappId}`);
 
-  // Validate required fields
-  if (!jobId || !referenceImageUrl || !artistPhotoUrls?.length || !logoUrl) {
+  // Validate required fields (logo is only required for 'evento' subtype)
+  if (!jobId || !referenceImageUrl || !artistPhotoUrls?.length) {
     return new Response(JSON.stringify({ error: 'Missing required fields', code: 'MISSING_PARAMS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if (flyerSubType !== 'agenda' && !logoUrl) {
+    return new Response(JSON.stringify({ error: 'Missing logo', code: 'MISSING_PARAMS' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -236,7 +243,8 @@ async function handleRun(req: Request) {
 
   // Validate URLs from Supabase storage
   const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
-  const allImageUrls = [referenceImageUrl, ...artistPhotoUrls, logoUrl];
+  const allImageUrls = [referenceImageUrl, ...artistPhotoUrls];
+  if (logoUrl) allImageUrls.push(logoUrl);
   for (const imageUrl of allImageUrls) {
     try {
       const urlObj = new URL(imageUrl);
