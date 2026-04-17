@@ -146,12 +146,33 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
     console.log('[UnifiedAuth] Checking email:', normalizedEmail);
     
     try {
-      const { data: profileCheck, error } = await supabase
-        .rpc('check_profile_exists', { check_email: normalizedEmail });
-      
-      if (error) {
-        console.error('[UnifiedAuth] RPC error:', error);
-        throw error;
+      // Retry RPC up to 3x to survive transient network/auth glitches
+      let profileCheck: any = null;
+      let lastError: any = null;
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const { data, error } = await supabase
+          .rpc('check_profile_exists', { check_email: normalizedEmail });
+        if (!error) {
+          profileCheck = data;
+          lastError = null;
+          break;
+        }
+        lastError = error;
+        console.warn(`[UnifiedAuth] RPC attempt ${attempt} failed:`, error?.message);
+        if (attempt < 3) await new Promise(r => setTimeout(r, 400 * attempt));
+      }
+
+      if (lastError) {
+        // Fallback: don't block the user — let them try to enter their password.
+        // signInWithPassword will return a clear error if the account doesn't exist.
+        console.error('[UnifiedAuth] RPC failed after retries, falling back to password step:', lastError);
+        setState(prev => ({
+          ...prev,
+          step: 'password',
+          verifiedEmail: normalizedEmail,
+          isLoading: false,
+        }));
+        return;
       }
       
       const profileExists = profileCheck?.[0]?.exists_in_db || false;
