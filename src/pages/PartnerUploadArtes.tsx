@@ -161,6 +161,7 @@ const PartnerUploadArtes = () => {
         preview: URL.createObjectURL(processedFile),
         title: "",
         category: "",
+        flyerSubcategory: "",
         pack: "",
         description: "",
         canvaLink: "",
