@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2, ArrowLeft, Calendar, Mic2, Handshake, Shapes, Construction } from 'lucide-react';
+import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2, ArrowLeft, Construction } from 'lucide-react';
+import flyerTypeEvento from '@/assets/flyer-type-evento.webp';
+import flyerTypeAgenda from '@/assets/flyer-type-agenda.webp';
+import flyerTypeContrate from '@/assets/flyer-type-contrate.webp';
+import flyerTypeOutro from '@/assets/flyer-type-outro.jpg';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -709,17 +713,19 @@ const FlyerMakerTool: React.FC = () => {
                     <p className="text-sm font-medium text-foreground mb-3">Qual tipo de flyer vamos fazer hoje?</p>
                     <div className="grid grid-cols-2 gap-3">
                       {[
-                        { id: 'evento' as const, label: 'Evento', Icon: Calendar },
-                        { id: 'agenda' as const, label: 'Agenda de Artista', Icon: Mic2 },
-                        { id: 'contrate' as const, label: 'Contrate', Icon: Handshake },
-                        { id: 'outro' as const, label: 'Outro', Icon: Shapes },
-                      ].map(({ id, label, Icon }) => (
+                        { id: 'evento' as const, label: 'Evento', img: flyerTypeEvento },
+                        { id: 'agenda' as const, label: 'Agenda de Artista', img: flyerTypeAgenda },
+                        { id: 'contrate' as const, label: 'Contrate', img: flyerTypeContrate },
+                        { id: 'outro' as const, label: 'Outro', img: flyerTypeOutro },
+                      ].map(({ id, label, img }) => (
                         <button
                           key={id}
                           onClick={() => setFlyerType(id)}
-                          className="group relative aspect-[3/4] rounded-xl border border-border bg-muted/40 hover:bg-muted hover:border-primary/60 transition-all flex flex-col items-center justify-center gap-2 p-3 active:scale-95"
+                          className="group flex flex-col gap-2 active:scale-95 transition-transform"
                         >
-                          <Icon className="w-7 h-7 text-muted-foreground group-hover:text-primary transition-colors" />
+                          <div className="aspect-[3/4] rounded-xl overflow-hidden border border-border group-hover:border-primary/60 bg-muted/40 transition-colors">
+                            <img src={img} alt={label} className="w-full h-full object-cover" loading="lazy" />
+                          </div>
                           <span className="text-xs font-medium text-foreground text-center leading-tight">{label}</span>
                         </button>
                       ))}
