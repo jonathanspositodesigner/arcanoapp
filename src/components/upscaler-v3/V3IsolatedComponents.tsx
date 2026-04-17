@@ -128,10 +128,10 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
   return (
     <div className={`v3-sticky-cta ${visible ? "visible" : ""}`}>
       <div className="v3-sticky-cta-text">
-        <span className="v3-sticky-cta-micro">{micro}</span>
         <strong style={{ color: "#fff", fontFamily: "'Syne', sans-serif", fontSize: 13, lineHeight: 1.2 }}>
           {label}{!isMobileRef.current && desktopSuffix ? ` — ${desktopSuffix}` : ""}
         </strong>
+        <span className="v3-sticky-cta-micro">{micro}</span>
       </div>
       <button className="v3-btn-primary v3-sticky-btn" onClick={scrollToPrice}>
         {isMobileRef.current ? mobileButtonText : desktopButtonText} <span>→</span>
