@@ -848,6 +848,16 @@ const FlyerMakerTool: React.FC = () => {
     setRefineJobId(null);
     setIsRefining(false);
     setStatus('idle');
+    // Reset agenda states
+    if (agendaArtistPhoto) URL.revokeObjectURL(agendaArtistPhoto);
+    setAgendaArtistPhoto(null);
+    setAgendaArtistFile(null);
+    setAgendaTitle('');
+    setAgendaArtistName('');
+    setAgendaFooter('');
+    setAgendaCreativity(0);
+    setAgendaImageSize('9:16');
+    setAgendaDates([{ dia: '', local: '', cidade: '' }]);
   };
 
   return (
