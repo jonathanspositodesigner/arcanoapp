@@ -45,6 +45,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   const [flyers, setFlyers] = useState<FlyerItem[]>([]);
   const [categories, setCategories] = useState<CategoryTab[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
+  const [visibleCount, setVisibleCount] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
