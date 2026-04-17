@@ -244,24 +244,9 @@ const ToolVersionLessons = () => {
     persistWatched(updated);
   };
 
-  // Check if button is a tool access button (should show warning modal)
-  const isToolAccessButton = (buttonText: string): boolean => {
-    const lowerText = buttonText.toLowerCase();
-    return lowerText.includes('link') || 
-           lowerText.includes('ferramenta') || 
-           lowerText.includes('herramienta') ||
-           lowerText.includes('acesse') ||
-           lowerText.includes('accede') ||
-           lowerText.includes('acceder') ||
-           lowerText.includes('tool') ||
-           lowerText.includes('upscaler') ||
-           lowerText.includes('upscaller') ||
-           lowerText.includes('cloner') ||
-           lowerText.includes('flyer') ||
-           lowerText.includes('veste') ||
-           lowerText.includes('pose') ||
-           lowerText.includes('arcano');
-  };
+  // Todos os botões da página de aulas levam à ferramenta — sempre passam pelo modal de waiver
+  // se o usuário ainda não desbloqueou (não assistiu todas as aulas).
+  const isToolAccessButton = (_buttonText: string): boolean => true;
 
   // Handle tool button click - show warning modal only if lessons not completed
   const handleToolButtonClick = (url: string) => {
