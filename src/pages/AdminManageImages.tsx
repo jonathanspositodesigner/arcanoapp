@@ -98,6 +98,7 @@ const AdminManageImages = () => {
   useEffect(() => {
     checkAdminAndFetchPrompts();
     fetchCategories();
+    fetchFotosSubcategories().then(setSubcategories);
   }, []);
 
   const fetchCategories = async () => {
@@ -185,7 +186,7 @@ const AdminManageImages = () => {
       return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
     });
 
-  const handleEdit = (prompt: Prompt) => {
+  const handleEdit = async (prompt: Prompt) => {
     setEditingPrompt(prompt);
     setEditTitle(prompt.title);
     setEditPromptText(prompt.prompt);
@@ -198,6 +199,13 @@ const AdminManageImages = () => {
     setEditTags(prompt.tags || []);
     setNewMediaFile(null);
     setNewMediaPreview("");
+    // Carrega subcategoria atual (se for admin + Fotos)
+    if (prompt.type === 'admin' && prompt.category === 'Fotos') {
+      const slug = await getCurrentSubcategorySlug(prompt.id);
+      setEditSubcategorySlug(slug);
+    } else {
+      setEditSubcategorySlug(null);
+    }
   };
 
   const handleCloseEdit = () => {
@@ -294,6 +302,16 @@ const AdminManageImages = () => {
         .eq('id', editingPrompt.id);
 
       if (error) throw error;
+
+      // Sincroniza bibliotecas das ferramentas (Cloner, Veste AI, Pose Maker)
+      if (editingPrompt.type === 'admin') {
+        const targetSlug = editCategory === 'Fotos' ? editSubcategorySlug : null;
+        const syncResult = await syncFotoToAllTools(editingPrompt.id, targetSlug);
+        if (!syncResult.success) {
+          console.error('Library sync failed:', syncResult.error);
+          toast.warning('Salvo, mas houve falha ao sincronizar bibliotecas');
+        }
+      }
 
       toast.success("Arquivo atualizado com sucesso!");
       handleCloseEdit();
