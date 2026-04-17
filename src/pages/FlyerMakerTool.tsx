@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2, ArrowLeft, Calendar, Mic2, Handshake, Shapes, Construction } from 'lucide-react';
+import { Sparkles, Download, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Plus, Trash2, Upload, Wand2, ArrowLeft, Construction } from 'lucide-react';
+import flyerTypeEvento from '@/assets/flyer-type-evento.webp';
+import flyerTypeAgenda from '@/assets/flyer-type-agenda.webp';
+import flyerTypeContrate from '@/assets/flyer-type-contrate.webp';
+import flyerTypeOutro from '@/assets/flyer-type-outro.jpg';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
