@@ -133,7 +133,7 @@ export const V3StickyBar = memo(({ scrollToPrice, label, desktopSuffix, mobileBu
         </strong>
         <span className="v3-sticky-cta-micro">{micro}</span>
       </div>
-      <button className="v3-btn-primary" onClick={scrollToPrice} style={{ flexShrink: 0, fontSize: 14, padding: "12px 22px" }}>
+      <button className="v3-btn-primary v3-sticky-btn" onClick={scrollToPrice}>
         {isMobileRef.current ? mobileButtonText : desktopButtonText} <span>→</span>
       </button>
     </div>
