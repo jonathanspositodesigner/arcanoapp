@@ -1020,7 +1020,19 @@ const FlyerMakerTool: React.FC = () => {
           </div>
         </div>
 
-        <FlyerLibraryModal isOpen={showPhotoLibrary} onClose={() => setShowPhotoLibrary(false)} onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }} onUploadPhoto={(dataUrl, file) => { handleReferenceImageChange(dataUrl, file); setShowPhotoLibrary(false); }} />
+        <FlyerLibraryModal
+          isOpen={showPhotoLibrary}
+          onClose={() => setShowPhotoLibrary(false)}
+          onSelectPhoto={(url) => { handleReferenceImageChange(url); setShowPhotoLibrary(false); }}
+          onUploadPhoto={(dataUrl, file) => { handleReferenceImageChange(dataUrl, file); setShowPhotoLibrary(false); }}
+          categorySlug={
+            flyerType === 'evento' ? 'evento'
+            : flyerType === 'agenda' ? 'agenda-de-artista'
+            : flyerType === 'contrate' ? 'contrate'
+            : flyerType === 'outro' ? 'outros-modelos'
+            : undefined
+          }
+        />
         <NoCreditsModal isOpen={showNoCreditsModal} onClose={() => setShowNoCreditsModal(false)} reason={noCreditsReason} />
         <ActiveJobBlockModal isOpen={showActiveJobModal} onClose={() => setShowActiveJobModal(false)} activeTool={activeToolName} activeJobId={activeJobId} activeStatus={activeStatus} onCancelJob={centralCancelJob} />
         
