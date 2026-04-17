@@ -45,6 +45,7 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   const [flyers, setFlyers] = useState<FlyerItem[]>([]);
   const [categories, setCategories] = useState<CategoryTab[]>([]);
   const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
+  const [visibleCount, setVisibleCount] = useState(20);
   const [isLoading, setIsLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
@@ -104,9 +105,11 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
         category: a.category,
         category_id: catById.get(a.id) ?? null,
       }));
-      // Preserva ordem de display_order da biblioteca
-      const orderById = new Map((libItems || []).map((i, idx) => [i.source_id, idx]));
-      merged.sort((a, b) => (orderById.get(a.id) ?? 0) - (orderById.get(b.id) ?? 0));
+      // Ordem aleatória (Fisher-Yates)
+      for (let i = merged.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [merged[i], merged[j]] = [merged[j], merged[i]];
+      }
 
       setFlyers(merged);
     } catch (err) {
@@ -145,6 +148,13 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     }
     return list;
   }, [flyers, activeCategoryId, expandedTerms]);
+
+  // Reset paginação ao trocar categoria/busca
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [activeCategoryId, expandedTerms.join('|')]);
+
+  const displayedFlyers = useMemo(() => visibleFlyers.slice(0, visibleCount), [visibleFlyers, visibleCount]);
 
   const handleSelectFlyer = (flyer: FlyerItem) => {
     onSelectPhoto(flyer.image_url);
@@ -271,29 +281,43 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
               <p className="text-xs sm:text-sm">Nenhum flyer encontrado</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
-              {visibleFlyers.map((flyer) => (
-                <button
-                  key={flyer.id}
-                  onClick={() => handleSelectFlyer(flyer)}
-                  className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-border hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
-                >
-                  <img 
-                    src={flyer.image_url} 
-                    alt={flyer.title} 
-                    className="absolute inset-0 w-full h-full object-cover" 
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
-                  </div>
-                  <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
-                    <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-secondary px-3 py-1 rounded-full transition-opacity">Selecionar</span>
-                  </div>
-                </button>
-              ))}
-            </div>
+            <>
+              <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                {displayedFlyers.map((flyer) => (
+                  <button
+                    key={flyer.id}
+                    onClick={() => handleSelectFlyer(flyer)}
+                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-border hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
+                  >
+                    <img 
+                      src={flyer.image_url} 
+                      alt={flyer.title} 
+                      className="absolute inset-0 w-full h-full object-cover" 
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
+                    </div>
+                    <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
+                      <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-secondary px-3 py-1 rounded-full transition-opacity">Selecionar</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              {displayedFlyers.length < visibleFlyers.length && (
+                <div className="flex justify-center mt-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setVisibleCount((c) => c + 20)}
+                    className="text-xs"
+                  >
+                    Ver mais ({visibleFlyers.length - displayedFlyers.length} restantes)
+                  </Button>
+                </div>
+              )}
+            </>
           )}
           <p className="text-[10px] sm:text-xs text-muted-foreground/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
         </div>
