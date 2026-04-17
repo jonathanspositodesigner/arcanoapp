@@ -160,7 +160,7 @@ const AdminHub = () => {
                 >
                   <div className="flex flex-col items-center text-center space-y-2">
                     <div className={`p-2.5 bg-gradient-to-r ${platform.color} rounded-full`}>
-                      <platform.icon className="h-6 w-6 text-foreground" />
+                      <platform.icon className="h-6 w-6 text-white" />
                     </div>
                     <div>
                       <h3 className="text-sm font-bold text-foreground">{platform.title}</h3>
