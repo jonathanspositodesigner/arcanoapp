@@ -105,6 +105,16 @@ const FlyerMakerTool: React.FC = () => {
     { dia: '', local: '', cidade: '' }
   ]);
 
+  // === Contrate-specific states ===
+  const [contrateArtistPhoto, setContrateArtistPhoto] = useState<string | null>(null);
+  const [contrateArtistFile, setContrateArtistFile] = useState<File | null>(null);
+  const [contrateTitle, setContrateTitle] = useState('CONTRATE AGORA');
+  const [contrateArtistName, setContrateArtistName] = useState('');
+  const [contrateContact, setContrateContact] = useState('');
+  const [contrateFooter, setContrateFooter] = useState('');
+  const [contrateCreativity, setContrateCreativity] = useState(4);
+  const [contrateImageSize, setContrateImageSize] = useState<'3:4' | '9:16'>('9:16');
+
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
@@ -157,6 +167,7 @@ const FlyerMakerTool: React.FC = () => {
 
   const canProcess = referenceImage && artistPhotos.length > 0 && logoImage && status === 'idle';
   const canProcessAgenda = !!(referenceImage && agendaArtistPhoto && agendaTitle.trim() && agendaArtistName.trim() && agendaDates.length > 0 && agendaDates[0].dia.trim() && agendaDates[0].local.trim()) && status === 'idle';
+  const canProcessContrate = !!(referenceImage && contrateArtistPhoto && contrateTitle.trim() && contrateArtistName.trim()) && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
 
   useEffect(() => {
