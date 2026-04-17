@@ -477,38 +477,15 @@ const UpscalerArcanoV2 = () => {
         </div>
       )}
 
-      {/* Warning Modal - Tool Access */}
-        <AlertDialog open={showWarningModal} onOpenChange={setShowWarningModal}>
-          <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md left-1/2 -translate-x-1/2">
-          <AlertDialogHeader>
-            <div className="flex items-center justify-center mb-4">
-              <div className="w-16 h-16 rounded-full bg-yellow-500/20 flex items-center justify-center">
-                <AlertTriangle className="h-8 w-8 text-yellow-500" />
-              </div>
-            </div>
-            <AlertDialogTitle className="text-center text-xl">
-              {t('toolLessons.warningModalTitle')}
-            </AlertDialogTitle>
-            <AlertDialogDescription className="text-center text-base">
-              {t('toolLessons.warningModalDescription')}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter className="flex flex-col gap-2 mt-4 sm:flex-row">
-            <AlertDialogCancel 
-              onClick={handleContinueWatching}
-              className="flex-1 bg-secondary hover:bg-secondary text-foreground border-0 order-1 sm:order-1"
-            >
-              {t('toolLessons.continueWatching')}
-            </AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleConfirmOpen}
-              className="flex-1 bg-zinc-700 hover:bg-zinc-600 text-zinc-300 order-2 sm:order-2"
-            >
-              {t('toolLessons.assumeRisk')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* Warning Modal - Tool Access (com termo de waiver) */}
+      <WarrantyWaiverModal
+        open={showWarningModal}
+        onOpenChange={setShowWarningModal}
+        toolSlug="upscaller-arcano"
+        versionSlug="v2-legacy"
+        onConfirm={handleConfirmOpen}
+        onCancel={handleContinueWatching}
+      />
     </div>
   );
 };
