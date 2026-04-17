@@ -734,7 +734,7 @@ const UpscalerArcanoV3 = () => {
       </div>
       <V3StickyBar
         scrollToPrice={scrollToPrice}
-        label="Acesso liberado"
+        label="Acesso imediato"
         mobileButtonText="Acessar o Upscaler →"
         desktopButtonText="Acessar o Upscaler →"
       />
