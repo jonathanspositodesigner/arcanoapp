@@ -16,7 +16,7 @@ const TOOL_META: Record<string, { name: string; sourceTable: "admin_prompts" | "
   arcano_cloner: { name: "Arcano Cloner", sourceTable: "admin_prompts", sourceCategory: "Fotos", hasCategories: true },
   veste_ai: { name: "Veste AI", sourceTable: "admin_prompts", sourceCategory: "Fotos", hasCategories: true },
   pose_maker: { name: "Pose Maker", sourceTable: "admin_prompts", sourceCategory: "Fotos", hasCategories: true },
-  flyer_maker: { name: "Flyer Maker", sourceTable: "admin_artes", hasCategories: false },
+  flyer_maker: { name: "Flyer Maker", sourceTable: "admin_artes", hasCategories: true },
   seedance2: { name: "Seedance 2", sourceTable: "admin_prompts", sourceCategory: "Seedance 2", hasCategories: false },
 };
 

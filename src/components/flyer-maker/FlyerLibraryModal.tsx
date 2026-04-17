@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Loader2, ImageIcon, Upload, Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -21,9 +21,17 @@ interface FlyerItem {
   title: string;
   image_url: string;
   category: string;
+  category_id: string | null;
 }
 
-const ITEMS_PER_PAGE = 20;
+interface CategoryTab {
+  id: string;
+  name: string;
+  slug: string;
+  display_order: number;
+}
+
+const TOOL_SLUG = 'flyer_maker';
 
 const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   isOpen,
@@ -32,59 +40,87 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
   onUploadPhoto,
 }) => {
   const [flyers, setFlyers] = useState<FlyerItem[]>([]);
+  const [categories, setCategories] = useState<CategoryTab[]>([]);
+  const [activeCategoryId, setActiveCategoryId] = useState<string>('all');
   const [isLoading, setIsLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
-  const [page, setPage] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const { searchTerm, setSearchTerm, expandedTerms } = useSmartSearch();
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const fetchFlyers = useCallback(async (pageNum: number, reset = false) => {
+  const fetchAll = useCallback(async () => {
     setIsLoading(true);
     try {
-      let query = supabase
+      // 1) Carrega categorias da ferramenta
+      const { data: catData } = await supabase
+        .from('ai_tool_library_categories')
+        .select('id, name, slug, display_order')
+        .eq('tool_slug', TOOL_SLUG)
+        .order('display_order', { ascending: true });
+      setCategories(catData || []);
+
+      // 2) Carrega itens visíveis curados da biblioteca da ferramenta
+      const { data: libItems, error: libErr } = await supabase
+        .from('ai_tool_library_items')
+        .select('source_id, category_id, is_visible, display_order')
+        .eq('tool_slug', TOOL_SLUG)
+        .eq('is_visible', true)
+        .order('display_order', { ascending: true });
+      if (libErr) { console.error('[FlyerLibrary] lib err:', libErr); setFlyers([]); return; }
+
+      const sourceIds = (libItems || []).map(i => i.source_id);
+      if (sourceIds.length === 0) { setFlyers([]); return; }
+
+      // 3) Carrega artes correspondentes (excluindo vídeos)
+      const { data: artesData, error: artesErr } = await supabase
         .from('admin_artes')
         .select('id, title, image_url, category')
+        .in('id', sourceIds)
         .not('image_url', 'like', '%.mp4');
+      if (artesErr) { console.error('[FlyerLibrary] artes err:', artesErr); setFlyers([]); return; }
 
-      if (expandedTerms.length > 0) {
-        const orFilter = buildSmartSearchFilter(expandedTerms, ['title', 'category']);
-        query = query.or(orFilter);
-      }
+      const catById = new Map((libItems || []).map(i => [i.source_id, i.category_id]));
+      const merged: FlyerItem[] = (artesData || []).map(a => ({
+        id: a.id,
+        title: a.title,
+        image_url: a.image_url,
+        category: a.category,
+        category_id: catById.get(a.id) ?? null,
+      }));
+      // Preserva ordem de display_order da biblioteca
+      const orderById = new Map((libItems || []).map((i, idx) => [i.source_id, idx]));
+      merged.sort((a, b) => (orderById.get(a.id) ?? 0) - (orderById.get(b.id) ?? 0));
 
-      query = query
-        .range(pageNum * ITEMS_PER_PAGE, (pageNum + 1) * ITEMS_PER_PAGE - 1)
-        .order('created_at', { ascending: false });
-
-      const { data, error } = await query;
-      if (error) { console.error('[FlyerLibrary] Error:', error); return; }
-
-      if (reset) setFlyers(data || []);
-      else setFlyers(prev => [...prev, ...(data || [])]);
-
-      setHasMore((data?.length ?? 0) === ITEMS_PER_PAGE);
+      setFlyers(merged);
     } catch (err) {
       console.error('[FlyerLibrary] Fetch error:', err);
     } finally {
       setIsLoading(false);
     }
-  }, [expandedTerms]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {
-      setPage(0);
-      setFlyers([]);
-      setHasMore(true);
-      fetchFlyers(0, true);
+      setActiveCategoryId('all');
+      fetchAll();
     }
-  }, [isOpen, expandedTerms, fetchFlyers]);
+  }, [isOpen, fetchAll]);
 
-  const handleLoadMore = () => {
-    const nextPage = page + 1;
-    setPage(nextPage);
-    fetchFlyers(nextPage);
-  };
+  // Filtragem cliente (categoria + busca expandida)
+  const visibleFlyers = useMemo(() => {
+    let list = flyers;
+    if (activeCategoryId === 'uncategorized') list = list.filter(f => !f.category_id);
+    else if (activeCategoryId !== 'all') list = list.filter(f => f.category_id === activeCategoryId);
+
+    if (expandedTerms.length > 0) {
+      const terms = expandedTerms.map(t => t.toLowerCase());
+      list = list.filter(f => {
+        const hay = `${f.title} ${f.category}`.toLowerCase();
+        return terms.some(t => hay.includes(t));
+      });
+    }
+    return list;
+  }, [flyers, activeCategoryId, expandedTerms]);
 
   const handleSelectFlyer = (flyer: FlyerItem) => {
     onSelectPhoto(flyer.image_url);
@@ -113,6 +149,8 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
     }
     finally { setIsUploading(false); if (fileInputRef.current) fileInputRef.current.value = ''; }
   };
+
+  const uncategorizedCount = flyers.filter(f => !f.category_id).length;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -153,50 +191,85 @@ const FlyerLibraryModal: React.FC<FlyerLibraryModalProps> = ({
           />
         </div>
 
+        {/* Tabs de categorias */}
+        {categories.length > 0 && (
+          <div className="flex gap-1.5 overflow-x-auto pb-1 mt-3 flex-shrink-0 scrollbar-thin">
+            <button
+              onClick={() => setActiveCategoryId('all')}
+              className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                activeCategoryId === 'all'
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-accent0/10 text-muted-foreground hover:bg-accent0/20'
+              }`}
+            >
+              Todos ({flyers.length})
+            </button>
+            {categories.map((c) => {
+              const count = flyers.filter(f => f.category_id === c.id).length;
+              if (count === 0) return null;
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => setActiveCategoryId(c.id)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                    activeCategoryId === c.id
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-accent0/10 text-muted-foreground hover:bg-accent0/20'
+                  }`}
+                >
+                  {c.name} ({count})
+                </button>
+              );
+            })}
+            {uncategorizedCount > 0 && (
+              <button
+                onClick={() => setActiveCategoryId('uncategorized')}
+                className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                  activeCategoryId === 'uncategorized'
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-accent0/10 text-muted-foreground hover:bg-accent0/20'
+                }`}
+              >
+                Sem categoria ({uncategorizedCount})
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="mt-3 sm:mt-4 overflow-y-auto flex-1 pr-1 -mr-1">
           {isLoading && flyers.length === 0 ? (
             <div className="flex items-center justify-center py-8 sm:py-12">
               <Loader2 className="w-6 h-6 sm:w-8 sm:h-8 text-muted-foreground animate-spin" />
             </div>
-          ) : flyers.length === 0 ? (
+          ) : visibleFlyers.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12 text-muted-foreground">
               <ImageIcon className="w-8 h-8 sm:w-12 sm:h-12 mb-2 opacity-50" />
               <p className="text-xs sm:text-sm">Nenhum flyer encontrado</p>
             </div>
           ) : (
-            <>
-              <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                {flyers.map((flyer) => (
-                  <button
-                    key={flyer.id}
-                    onClick={() => handleSelectFlyer(flyer)}
-                    className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-border hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
-                  >
-                    <img 
-                      src={flyer.image_url} 
-                      alt={flyer.title} 
-                      className="absolute inset-0 w-full h-full object-cover" 
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
-                    </div>
-                    <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
-                      <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-secondary px-3 py-1 rounded-full transition-opacity">Selecionar</span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              {hasMore && (
-                <div className="flex justify-center mt-3 sm:mt-4">
-                  <Button variant="outline" size="sm" onClick={handleLoadMore} disabled={isLoading} className="bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20 text-xs h-8">
-                    {isLoading ? (<><Loader2 className="w-3 h-3 mr-1.5 animate-spin" /> Carregando...</>) : 'Carregar mais'}
-                  </Button>
-                </div>
-              )}
-            </>
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+              {visibleFlyers.map((flyer) => (
+                <button
+                  key={flyer.id}
+                  onClick={() => handleSelectFlyer(flyer)}
+                  className="group relative aspect-[3/4] rounded-lg sm:rounded-xl overflow-hidden border border-border hover:border-white-400 transition-all active:scale-95 sm:hover:scale-105"
+                >
+                  <img 
+                    src={flyer.image_url} 
+                    alt={flyer.title} 
+                    className="absolute inset-0 w-full h-full object-cover" 
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="hidden sm:block absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 to-transparent p-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-[10px] text-white font-medium text-center line-clamp-2">{flyer.title}</p>
+                  </div>
+                  <div className="absolute inset-0 bg-accent0/0 group-hover:bg-accent0/10 transition-colors flex items-center justify-center">
+                    <span className="hidden sm:block opacity-0 group-hover:opacity-100 text-foreground text-xs font-medium bg-secondary px-3 py-1 rounded-full transition-opacity">Selecionar</span>
+                  </div>
+                </button>
+              ))}
+            </div>
           )}
           <p className="text-[10px] sm:text-xs text-muted-foreground/70 text-center mt-3 pb-1">💡 Toque para selecionar um flyer de referência</p>
         </div>
