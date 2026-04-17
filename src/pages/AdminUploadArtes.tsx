@@ -204,6 +204,7 @@ const AdminUploadArtes = () => {
         title: "",
         description: "",
         category: "",
+        flyerSubcategory: "",
         pack: "",
         isVideo,
         isPremium: false,
