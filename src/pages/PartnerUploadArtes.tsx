@@ -448,6 +448,30 @@ const PartnerUploadArtes = () => {
               </div>
 
               <div>
+                <label className="text-sm text-muted-foreground">
+                  Subcategoria do Flyer Maker <span className="text-red-500">*</span>
+                </label>
+                <p className="text-xs text-muted-foreground/80 mb-1">
+                  Após aprovação, a arte aparecerá nesta categoria da biblioteca do Flyer Maker.
+                </p>
+                <Select
+                  value={currentMedia.flyerSubcategory}
+                  onValueChange={(value) => updateMediaData(currentIndex, "flyerSubcategory", value)}
+                >
+                  <SelectTrigger className="bg-card border-border/50 text-foreground">
+                    <SelectValue placeholder="Selecione a subcategoria" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border/50 z-50">
+                    {flyerSubcategories.map((sub) => (
+                      <SelectItem key={sub.id} value={sub.slug} className="text-foreground">
+                        {sub.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
                 <label className="text-sm text-muted-foreground">Pack <span className="text-red-500">*</span></label>
                 <Select
                   value={currentMedia.pack}
