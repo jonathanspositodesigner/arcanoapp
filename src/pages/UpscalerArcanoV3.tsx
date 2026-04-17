@@ -298,7 +298,7 @@ const UpscalerArcanoV3 = () => {
           <div className="v3-hero-badge">
             <span style={{ animation: "v3Blink 1.5s infinite" }}>●</span> &nbsp;Versão 3 disponível agora
           </div>
-          <h1>Foto ruim é<br /><em>problema do passado.</em></h1>
+          <h1>Saia de um resultado amador para <em>profissional com apenas um clique.</em></h1>
           <p className="v3-hero-sub">
             {isMobile ? (
               <>Rápido. Simples. Resultado profissional em 60 segundos.</>
