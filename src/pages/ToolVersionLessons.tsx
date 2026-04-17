@@ -253,7 +253,14 @@ const ToolVersionLessons = () => {
            lowerText.includes('acesse') ||
            lowerText.includes('accede') ||
            lowerText.includes('acceder') ||
-           lowerText.includes('tool');
+           lowerText.includes('tool') ||
+           lowerText.includes('upscaler') ||
+           lowerText.includes('upscaller') ||
+           lowerText.includes('cloner') ||
+           lowerText.includes('flyer') ||
+           lowerText.includes('veste') ||
+           lowerText.includes('pose') ||
+           lowerText.includes('arcano');
   };
 
   // Handle tool button click - show warning modal only if lessons not completed
