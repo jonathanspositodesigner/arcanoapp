@@ -157,8 +157,27 @@ const IALibraryManager = () => {
   };
 
   const renameCategory = async (id: string) => {
-    if (!editCatName.trim()) return;
-    const { error } = await supabase.from("ai_tool_library_categories").update({ name: editCatName.trim() }).eq("id", id);
+    const newName = editCatName.trim();
+    if (!newName) return;
+    const newSlug = newName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+    // Verifica se outro registro já usa esse slug nesta ferramenta
+    const { data: clash } = await supabase
+      .from("ai_tool_library_categories")
+      .select("id")
+      .eq("tool_slug", toolSlug)
+      .eq("slug", newSlug)
+      .neq("id", id)
+      .maybeSingle();
+    if (clash) {
+      toast.error(`Já existe uma categoria com o nome "${newName}".`);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("ai_tool_library_categories")
+      .update({ name: newName, slug: newSlug })
+      .eq("id", id);
     if (error) return toast.error(error.message);
     setEditingCat(null);
     toast.success("Categoria renomeada");
