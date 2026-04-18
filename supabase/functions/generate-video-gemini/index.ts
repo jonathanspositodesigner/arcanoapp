@@ -554,6 +554,8 @@ async function processQueue(): Promise<Response> {
 
     // Rate limited — requeue with bounded retries (max 5), then fail + refund
     if (startRes.status === 429) {
+      const rateLimitBody = await startRes.text().catch(() => '');
+      console.error(`[GeminiQueue] 429 RATE LIMIT BODY for job ${job.id}: ${rateLimitBody.slice(0, 1000)}`);
       const newRetry = (job.retry_count || 0) + 1;
       const MAX_429_RETRIES = 5;
       if (newRetry >= MAX_429_RETRIES) {
