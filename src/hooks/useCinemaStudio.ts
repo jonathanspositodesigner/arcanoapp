@@ -850,7 +850,16 @@ export function useCinemaStudio() {
         break;
       }
 
+      const isTransportError = !!fnError && !response;
       if (fnError && !response?.success) {
+        if (isTransportError) {
+          setTaskId(null);
+          setProgress(45);
+          setStatus('processing');
+          startPolling('', job.id, estimatedCredits);
+          return;
+        }
+
         const errDetail = response?.error || fnError.message || 'Erro desconhecido';
         throw new Error(errDetail.includes('Service busy') ? 'Servidores ocupados. Tente novamente em alguns minutos.' : errDetail);
       }
