@@ -537,14 +537,44 @@ async function processQueue(): Promise<Response> {
       }
     );
 
-    // Rate limited — requeue
+    // Rate limited — requeue with bounded retries (max 5), then fail + refund
     if (startRes.status === 429) {
-      console.warn(`[GeminiQueue] Rate limited for job ${job.id}, requeuing`);
+      const newRetry = (job.retry_count || 0) + 1;
+      const MAX_429_RETRIES = 5;
+      if (newRetry >= MAX_429_RETRIES) {
+        console.error(`[GeminiQueue] Rate limit exceeded ${MAX_429_RETRIES}x for job ${job.id}, failing + refunding`);
+        await supabase
+          .from(TABLE)
+          .update({
+            status: 'failed',
+            error_message: 'Limite de uso da API Google atingido. Tente novamente mais tarde.',
+            retry_count: newRetry,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', job.id);
+        const cost = CREDIT_COSTS[job.context] || 800;
+        await refundCredits(supabase, job.user_id, cost, job.context);
+        if (job.context === 'movie-led-maker' && job.user_id) {
+          try {
+            await supabase.from('movieled_maker_jobs').update({
+              status: 'failed',
+              error_message: 'Limite de uso da API Google atingido (rate limit). Créditos estornados.',
+              credits_refunded: true,
+              completed_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('session_id', job.id);
+          } catch (mirrorErr: any) {
+            console.warn(`[GeminiQueue] Mirror update failed (non-fatal): ${mirrorErr.message}`);
+          }
+        }
+        return jsonResponse({ message: 'Rate limit exceeded, job failed and refunded' });
+      }
+      console.warn(`[GeminiQueue] Rate limited for job ${job.id}, requeuing (${newRetry}/${MAX_429_RETRIES})`);
       await supabase
         .from(TABLE)
         .update({
           status: 'queued',
-          retry_count: (job.retry_count || 0) + 1,
+          retry_count: newRetry,
           updated_at: new Date().toISOString(),
         })
         .eq('id', job.id);
