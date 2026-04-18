@@ -510,7 +510,7 @@ async function processQueue(): Promise<Response> {
       const rhBase64 = arrayBufferToBase64(rhImgBuffer);
       const rhMimeType = rhImgRes.headers.get('content-type') || 'image/png';
       instance.image = { bytesBase64Encoded: rhBase64, mimeType: rhMimeType };
-      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${rhResult.generatedPrompt.substring(0, 100)}..."`);
+      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${(rhPrompt || '').substring(0, 100)}..."`);
 
     } else {
       // ===== Standard flow: use original reference image if available =====
