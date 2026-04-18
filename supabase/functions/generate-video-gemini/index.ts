@@ -172,12 +172,16 @@ async function uploadImageToRunningHub(imageUrl: string, jobId: string): Promise
 }
 
 interface RHResult {
-  generatedImageUrl: string;
-  generatedPrompt: string;
+  videoUrl: string;
 }
 
-async function runRunningHubPreprocessing(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
-  console.log(`[GeminiQueue/RH] Starting preprocessing for job ${jobId}, text: "${rawText}"`);
+/**
+ * Calls the RunningHub Movie LED workflow which now returns a final MP4 video directly.
+ * (Previously this was a "preprocessing" step that returned image+prompt for Google Veo —
+ *  Google integration is now fully disabled in the Movie LED flow.)
+ */
+async function runRunningHubVideo(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
+  console.log(`[GeminiQueue/RH] Starting RH video generation for job ${jobId}, text: "${rawText}"`);
 
   // Upload image to RunningHub first (required - RH servers can't access external URLs reliably)
   const rhFileName = await uploadImageToRunningHub(imageUrl, jobId);
