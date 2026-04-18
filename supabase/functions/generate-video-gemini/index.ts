@@ -478,25 +478,46 @@ async function processQueue(): Promise<Response> {
       let rhPrompt: string | null = job.rh_generated_prompt || null;
 
       if (rhImageUrl && rhPrompt) {
-        console.log(`[GeminiQueue] Movie LED Maker — REUSING cached RH preprocessing for job ${job.id} (skipping RH call)`);
+        console.log(`[GeminiQueue] Movie LED Maker — REUSING cached RH preprocessing for job ${job.id} (skipping RH call) ✅ NO RH COINS SPENT`);
       } else {
-        console.log(`[GeminiQueue] Movie LED Maker flow — starting RunningHub preprocessing for job ${job.id}`);
-        if (!RUNNINGHUB_API_KEY) {
-          throw new Error('RUNNINGHUB_API_KEY não configurada');
-        }
-        const rhResult = await runRunningHubPreprocessing(
-          job.reference_image_url,
-          job.raw_input_text,
-          job.id
-        );
-        rhImageUrl = rhResult.generatedImageUrl;
-        rhPrompt = rhResult.generatedPrompt;
-
-        // Cache for retries
-        await supabase
+        // BLINDAGEM ANTI-DUPLICAÇÃO: re-fetch the row to confirm cache is really empty
+        // (avoids racing/stale data and prevents accidental double RH calls)
+        const { data: freshJob } = await supabase
           .from(TABLE)
-          .update({ rh_image_url: rhImageUrl, rh_generated_prompt: rhPrompt, updated_at: new Date().toISOString() })
-          .eq('id', job.id);
+          .select('rh_image_url, rh_generated_prompt')
+          .eq('id', job.id)
+          .maybeSingle();
+
+        if (freshJob?.rh_image_url && freshJob?.rh_generated_prompt) {
+          console.log(`[GeminiQueue] Movie LED Maker — RACE-RECOVERED cache for job ${job.id} ✅ NO RH COINS SPENT`);
+          rhImageUrl = freshJob.rh_image_url;
+          rhPrompt = freshJob.rh_generated_prompt;
+        } else {
+          console.log(`[GeminiQueue] Movie LED Maker — calling RunningHub preprocessing for job ${job.id} (will spend 1 RH coin)`);
+          if (!RUNNINGHUB_API_KEY) {
+            throw new Error('RUNNINGHUB_API_KEY não configurada');
+          }
+          const rhResult = await runRunningHubPreprocessing(
+            job.reference_image_url,
+            job.raw_input_text,
+            job.id
+          );
+          rhImageUrl = rhResult.generatedImageUrl;
+          rhPrompt = rhResult.generatedPrompt;
+
+          // CRITICAL: Cache IMMEDIATELY and verify the write succeeded
+          const { error: cacheErr, data: cacheRow } = await supabase
+            .from(TABLE)
+            .update({ rh_image_url: rhImageUrl, rh_generated_prompt: rhPrompt, updated_at: new Date().toISOString() })
+            .eq('id', job.id)
+            .select('rh_image_url')
+            .maybeSingle();
+          if (cacheErr || !cacheRow?.rh_image_url) {
+            console.error(`[GeminiQueue] ⚠️ FAILED TO CACHE RH RESULT for job ${job.id}: ${cacheErr?.message || 'no row returned'}. Future retries WILL re-spend RH coins!`);
+          } else {
+            console.log(`[GeminiQueue] ✅ RH cache persisted for job ${job.id}`);
+          }
+        }
       }
 
       instance.prompt = rhPrompt;
