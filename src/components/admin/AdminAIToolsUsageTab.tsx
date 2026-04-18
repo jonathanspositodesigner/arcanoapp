@@ -219,6 +219,7 @@ const AdminAIToolsUsageTab = () => {
   const [toolFilter, setToolFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [cancellingJobId, setCancellingJobId] = useState<string | null>(null);
   const [userTypeMap, setUserTypeMap] = useState<Record<string, UserClientType>>({});
   const [receitaPorCreditoAtual, setReceitaPorCreditoAtual] = useState(RECEITA_POR_CREDITO_PADRAO);
@@ -408,15 +409,17 @@ const AdminAIToolsUsageTab = () => {
       
       const toolFilterParam = toolFilter === 'all' ? null : toolFilter;
       const statusFilterParam = statusFilter === 'all' ? null : statusFilter;
+      const searchTermParam = debouncedSearch.trim() || null;
       
-      // Use v2 RPCs with server-side status filter
+      // Use v2 RPCs with server-side status + search filter
       const { data: records, error: recordsError } = await supabase.rpc('get_ai_tools_usage_v2' as any, {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
         p_page: currentPage,
         p_page_size: ITEMS_PER_PAGE,
         p_tool_filter: toolFilterParam,
-        p_status_filter: statusFilterParam
+        p_status_filter: statusFilterParam,
+        p_search_term: searchTermParam
       });
 
       if (recordsError) throw recordsError;
@@ -475,12 +478,13 @@ const AdminAIToolsUsageTab = () => {
         setUserTypeMap(typeMap);
       }
 
-      // Fetch total count (v2 with status filter)
+      // Fetch total count (v2 with status + search filter)
       const { data: countData, error: countError } = await supabase.rpc('get_ai_tools_usage_count_v2' as any, {
         p_start_date: start?.toISOString() || null,
         p_end_date: end?.toISOString() || null,
         p_tool_filter: toolFilterParam,
-        p_status_filter: statusFilterParam
+        p_status_filter: statusFilterParam,
+        p_search_term: searchTermParam
       });
 
       if (countError) throw countError;
@@ -492,13 +496,15 @@ const AdminAIToolsUsageTab = () => {
           p_start_date: start?.toISOString() || null,
           p_end_date: end?.toISOString() || null,
           p_tool_filter: toolFilterParam,
-          p_status_filter: statusFilterParam
+          p_status_filter: statusFilterParam,
+          p_search_term: searchTermParam
         }),
         supabase.rpc('get_ai_tools_completed_by_tool' as any, {
           p_start_date: start?.toISOString() || null,
           p_end_date: end?.toISOString() || null,
           p_tool_filter: toolFilterParam,
-          p_status_filter: statusFilterParam
+          p_status_filter: statusFilterParam,
+          p_search_term: searchTermParam
         })
       ]);
 
@@ -524,7 +530,7 @@ const AdminAIToolsUsageTab = () => {
     if (toolRegistry.length > 0) {
       fetchData();
     }
-  }, [currentPage, dateFilter, toolFilter, statusFilter, toolRegistry]);
+  }, [currentPage, dateFilter, toolFilter, statusFilter, debouncedSearch, toolRegistry]);
 
   useEffect(() => {
     fetchReceitaPorCreditoAtual();
@@ -534,7 +540,13 @@ const AdminAIToolsUsageTab = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [dateFilter, toolFilter, statusFilter]);
+  }, [dateFilter, toolFilter, statusFilter, debouncedSearch]);
+
+  // Debounce search input (400ms)
+  useEffect(() => {
+    const t = window.setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => window.clearTimeout(t);
+  }, [searchTerm]);
 
   // No more client-side status filter — it's now server-side
   const filteredRecords = useMemo(() => {
