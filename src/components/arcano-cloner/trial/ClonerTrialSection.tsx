@@ -154,16 +154,16 @@ export default function ClonerTrialSection() {
     if (!userFile || !referenceFile || !email) return;
     if (!startSubmit()) return;
 
+    let localJobId: string | null = null;
+
     setStatus('uploading');
     setProgress(10);
 
     try {
-      // 1. Compress both images
       const compressedUser = await optimizeForAI(userFile);
       const compressedRef = await optimizeForAI(referenceFile);
       setProgress(25);
 
-      // 2. Upload both to upscaler-uploads bucket
       const emailHash = email.replace(/[^a-zA-Z0-9]/g, '_').slice(0, 20);
       const tempId = crypto.randomUUID();
 
@@ -188,76 +188,63 @@ export default function ClonerTrialSection() {
       const refUrl = supabase.storage.from('upscaler-uploads').getPublicUrl(refPath).data.publicUrl;
       setProgress(40);
 
-      // 3. Create job - use authenticated user_id if available (prevents RLS errors)
       const { data: authData } = await supabase.auth.getUser();
       const trialUserId = authData?.user?.id || null;
-      
-      const { data: job, error: jobError } = await supabase
-        .from('arcano_cloner_jobs')
-        .insert({
-          session_id: sessionIdRef.current,
-          user_id: trialUserId,
-          status: 'pending',
-          user_image_url: userUrl,
-          reference_image_url: refUrl,
-          aspect_ratio: aspectRatio,
-          creativity: creativity,
-          custom_prompt: null,
-        } as any)
-        .select('id')
-        .single();
-
-      if (jobError || !job) {
-        console.error('[ClonerTrial] Job creation error:', jobError);
-        toast.error('Erro ao criar processamento');
-        setStatus('idle');
-        setProgress(0);
-        endSubmit();
-        return;
-      }
-
-      const createdJobId = (job as any).id;
-      setJobId(createdJobId);
+      const clientJobId = crypto.randomUUID();
+      localJobId = clientJobId;
+      setJobId(clientJobId);
       setProgress(50);
       setStatus('processing');
 
-      // 4. Call edge function with trial_mode
-      const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
-        body: {
-          jobId: createdJobId,
-          userImageUrl: userUrl,
-          referenceImageUrl: refUrl,
-          aspectRatio: aspectRatio,
-          userId: trialUserId,
-          creditCost: 0,
-          creativity: creativity,
-          customPrompt: '',
-          trial_mode: true,
-        },
-      });
+      const MAX_INVOKE_RETRIES = 3;
+      let response: any = null;
+      let fnError: any = null;
 
-      if (fnError) {
+      for (let attempt = 0; attempt < MAX_INVOKE_RETRIES; attempt++) {
+        const result = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
+          body: {
+            jobId: clientJobId,
+            userImageUrl: userUrl,
+            referenceImageUrl: refUrl,
+            aspectRatio: aspectRatio,
+            userId: trialUserId,
+            creditCost: 0,
+            creativity: creativity,
+            customPrompt: '',
+            trial_mode: true,
+          },
+        });
+
+        response = result.data;
+        fnError = result.error;
+
+        if (response?.success || response?.error) break;
+
+        const isNetworkError = !response && fnError && (
+          fnError.message?.includes('non-2xx') ||
+          fnError.message?.includes('Failed to fetch') ||
+          fnError.message?.includes('NetworkError') ||
+          fnError.message?.includes('FunctionsFetchError')
+        );
+
+        if (isNetworkError && attempt < MAX_INVOKE_RETRIES - 1) {
+          console.warn(`[ClonerTrial] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+
+        break;
+      }
+
+      if (fnError && !response) {
         console.error('[ClonerTrial] Edge function error:', fnError);
-        const errorInfo = getAIErrorMessage(fnError.message || null);
-        toast.error(errorInfo.message, { description: errorInfo.solution });
-        setStatus('failed');
-        setProgress(0);
-        setJobId(null);
-        endSubmit();
-        return;
+        throw new Error(fnError.message || 'Erro ao iniciar processamento');
       }
 
       if (!response?.success && response?.error) {
-        const errorInfo = getAIErrorMessage(response.error);
-        toast.error(errorInfo.message, { description: errorInfo.solution });
-        setStatus('failed');
-        setProgress(0);
-        setJobId(null);
-        endSubmit();
-        return;
+        throw new Error(response.error);
       }
 
-      // 5. Job started - consume trial use
       console.log('[ClonerTrial] Edge function response:', response);
 
       const { data: consumeData, error: consumeErr } = await supabase.functions.invoke("landing-trial-code/consume", {
@@ -269,11 +256,14 @@ export default function ClonerTrialSection() {
       } else {
         console.error('[ClonerTrial] Consume error:', consumeData?.error);
       }
-
-      // useJobStatusSync handles the rest
-
     } catch (err: any) {
       console.error('[ClonerTrial] Generate error:', err);
+      if (localJobId) {
+        try {
+          const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+          await markJobAsFailedInDb(localJobId, 'arcano_cloner', err?.message || 'Erro desconhecido');
+        } catch {}
+      }
       const errorInfo = getAIErrorMessage(err?.message || null);
       toast.error(errorInfo.message, { description: errorInfo.solution });
       setStatus('failed');
