@@ -396,11 +396,12 @@ const ArcanoClonerTool: React.FC = () => {
   };
 
   const handleProcess = async () => {
-    // Instant lock to prevent duplicate clicks
     if (!startSubmit()) {
       console.log('[ArcanoCloner] Already submitting, ignoring duplicate click');
       return;
     }
+
+    let localJobId: string | null = null;
 
     if (!userImage || !referenceImage || !userFile) {
       toast.error('Por favor, selecione ambas as imagens');
@@ -415,7 +416,6 @@ const ArcanoClonerTool: React.FC = () => {
       return;
     }
  
-    // Check if user has active job in any tool
     const activeCheck = await checkActiveJob(user.id);
     if (activeCheck.hasActiveJob && activeCheck.activeTool) {
       setActiveToolName(activeCheck.activeTool);
@@ -442,7 +442,6 @@ const ArcanoClonerTool: React.FC = () => {
     setFailedAtStep(null);
 
     try {
-      // Step 0: Revalidate auth - get fresh user ID from server (not React state)
       setCurrentStep('validating_auth');
       const { data: authData, error: authError } = await supabase.auth.getUser();
       const verifiedUserId = authData?.user?.id;
@@ -454,97 +453,42 @@ const ArcanoClonerTool: React.FC = () => {
         setStatus('idle');
         return;
       }
-      console.log('[ArcanoCloner] Auth verified, userId:', verifiedUserId);
 
-      // Step 1: Compress and upload user image
       setProgress(10);
       setCurrentStep('compressing_user_image');
-      console.log('[ArcanoCloner] Compressing user image...');
       const compressedUser = await compressImage(userFile);
       const userUrl = await uploadToStorage(compressedUser, 'user', verifiedUserId);
-      console.log('[ArcanoCloner] User image uploaded:', userUrl);
 
-      // Step 2: Compress and upload reference image
       setProgress(30);
       setCurrentStep('compressing_reference_image');
       let referenceUrl: string;
-      
       if (referenceFile) {
-        console.log('[ArcanoCloner] Compressing reference image...');
         const compressedRef = await compressImage(referenceFile);
         referenceUrl = await uploadToStorage(compressedRef, 'reference', verifiedUserId);
       } else {
         referenceUrl = referenceImage;
       }
-      console.log('[ArcanoCloner] Reference image uploaded:', referenceUrl);
 
-      // Step 3: Create job in database
       setProgress(50);
       setCurrentStep('creating_job');
-      
-      let createdJob: any;
-      const { data: job, error: jobError } = await supabase
-        .from('arcano_cloner_jobs')
-        .insert({
-          session_id: sessionIdRef.current,
-          user_id: verifiedUserId,
-          status: 'pending',
-          user_image_url: userUrl,
-          reference_image_url: referenceUrl,
-          aspect_ratio: aspectRatio,
-          creativity: creativity,
-          custom_prompt: customPromptEnabled ? customPrompt : null,
-        } as any)
-        .select()
-        .single();
 
-      if (jobError || !job) {
-        // If RLS error, try session refresh + retry once
-        if (jobError?.message?.includes('row-level security') || jobError?.message?.includes('security policy')) {
-          console.warn('[ArcanoCloner] RLS error on job insert, attempting session refresh...');
-          const { error: refreshErr } = await supabase.auth.refreshSession();
-          if (refreshErr) throw new Error('Sessão expirada. Faça login novamente.');
-          
-          const { data: retryJob, error: retryErr } = await supabase
-            .from('arcano_cloner_jobs')
-            .insert({
-              session_id: sessionIdRef.current,
-              user_id: verifiedUserId,
-              status: 'pending',
-              user_image_url: userUrl,
-              reference_image_url: referenceUrl,
-              aspect_ratio: aspectRatio,
-              creativity: creativity,
-              custom_prompt: customPromptEnabled ? customPrompt : null,
-            } as any)
-            .select()
-            .single();
-          
-          if (retryErr || !retryJob) {
-            throw new Error(retryErr?.message || 'Falha ao criar job após refresh');
-          }
-          createdJob = retryJob;
-        } else {
-          throw new Error(jobError?.message || 'Falha ao criar job');
-        }
-      } else {
-        createdJob = job;
-      }
+      const clientJobId = crypto.randomUUID();
+      localJobId = clientJobId;
+      setJobId(clientJobId);
+      registerJob(clientJobId, 'Arcano Cloner', 'pending');
 
-      setJobId(createdJob.id);
-      registerJob(createdJob.id, 'Arcano Cloner', 'pending');
-      console.log('[ArcanoCloner] Job created:', createdJob.id);
-
-      // Step 4: Call edge function to start processing
       setProgress(60);
       setCurrentStep('starting_processing');
       setStatus('processing');
 
-      const { data: runResult, error: runError } = await supabase.functions.invoke(
-        'runninghub-arcano-cloner/run',
-        {
+      const MAX_INVOKE_RETRIES = 3;
+      let runResult: any = null;
+      let runError: any = null;
+
+      for (let attempt = 0; attempt < MAX_INVOKE_RETRIES; attempt++) {
+        const result = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
           body: {
-            jobId: createdJob.id,
+            jobId: clientJobId,
             userImageUrl: userUrl,
             referenceImageUrl: referenceUrl,
             aspectRatio: aspectRatio,
@@ -553,18 +497,35 @@ const ArcanoClonerTool: React.FC = () => {
             creativity: creativity,
             customPrompt: customPromptEnabled ? customPrompt : '',
           },
-        }
-      );
+        });
 
-      if (runError) {
+        runResult = result.data;
+        runError = result.error;
+
+        if (runResult?.success || runResult?.error) break;
+
+        const isNetworkError = !runResult && runError && (
+          runError.message?.includes('non-2xx') ||
+          runError.message?.includes('Failed to fetch') ||
+          runError.message?.includes('NetworkError') ||
+          runError.message?.includes('FunctionsFetchError')
+        );
+
+        if (isNetworkError && attempt < MAX_INVOKE_RETRIES - 1) {
+          console.warn(`[ArcanoCloner] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
+          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
+          continue;
+        }
+
+        break;
+      }
+
+      if (runError && !runResult) {
         console.error('[ArcanoCloner] Edge function error:', runError);
         throw new Error(runError.message || 'Erro ao iniciar processamento');
       }
 
-      console.log('[ArcanoCloner] Edge function response:', runResult);
-
-      // Check for known error codes
-      if (runResult.code === 'INSUFFICIENT_CREDITS') {
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
         setStatus('idle');
         setNoCreditsReason('insufficient');
         setShowNoCreditsModal(true);
@@ -572,19 +533,18 @@ const ArcanoClonerTool: React.FC = () => {
         return;
       }
 
-      if (runResult.code === 'RATE_LIMIT_EXCEEDED') {
+      if (runResult?.code === 'RATE_LIMIT_EXCEEDED') {
         toast.error('Muitas requisições. Aguarde 1 minuto.');
         setStatus('error');
         endSubmit();
         return;
       }
 
-      if (runResult.error && !runResult.success && !runResult.queued) {
+      if (runResult?.error && !runResult?.success && !runResult?.queued) {
         throw new Error(runResult.error);
       }
 
-      // Check if queued
-      if (runResult.queued) {
+      if (runResult?.queued) {
         setStatus('waiting');
         setQueuePosition(runResult.position || 1);
         toast.info(`Você está na fila (posição ${runResult.position})`);
@@ -592,15 +552,11 @@ const ArcanoClonerTool: React.FC = () => {
         setStatus('processing');
         setProgress(70);
       }
-
-      // Now wait for Realtime updates via useJobStatusSync
-
     } catch (error: any) {
       console.error('[ArcanoCloner] Process error:', error);
-      // DEFENSIVO: Marcar job como failed no banco para evitar órfãos
-      if (jobId) {
+      if (localJobId) {
         const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
-        await markJobAsFailedInDb(jobId, 'arcano_cloner', error.message || 'Erro desconhecido');
+        await markJobAsFailedInDb(localJobId, 'arcano_cloner', error.message || 'Erro desconhecido');
       }
       setStatus('error');
       setDebugErrorMessage(error.message || 'Erro ao processar imagem');
