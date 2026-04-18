@@ -656,21 +656,36 @@ async function processQueue(): Promise<Response> {
       .eq('id', job.id);
     console.log(`[GeminiQueue] Job ${job.id} marked as completed`);
 
-    // Sync to movieled_maker_jobs for "Minhas Criações" feed
+    // Sync to movieled_maker_jobs for "Minhas Criações" feed (UPDATE pre-created row, fallback to INSERT)
     if (job.context === 'movie-led-maker' && job.user_id) {
       try {
-        await supabase.from('movieled_maker_jobs').insert({
-          user_id: job.user_id,
-          session_id: job.id,
-          status: 'completed',
-          output_url: publicVideoUrl,
-          completed_at: new Date().toISOString(),
-          current_step: 'completed',
-          engine: 'gemini-lite',
-          api_account: 'gemini',
-          credits_charged: true,
-          user_credit_cost: CREDIT_COSTS['movie-led-maker'] || 800,
-        });
+        const { data: existing } = await supabase
+          .from('movieled_maker_jobs')
+          .select('id')
+          .eq('session_id', job.id)
+          .maybeSingle();
+
+        if (existing?.id) {
+          await supabase.from('movieled_maker_jobs').update({
+            status: 'completed',
+            output_url: publicVideoUrl,
+            completed_at: new Date().toISOString(),
+            current_step: 'completed',
+          }).eq('id', existing.id);
+        } else {
+          await supabase.from('movieled_maker_jobs').insert({
+            user_id: job.user_id,
+            session_id: job.id,
+            status: 'completed',
+            output_url: publicVideoUrl,
+            completed_at: new Date().toISOString(),
+            current_step: 'completed',
+            engine: 'gemini-lite',
+            api_account: 'gemini',
+            credits_charged: true,
+            user_credit_cost: CREDIT_COSTS['movie-led-maker'] || 800,
+          });
+        }
         console.log(`[GeminiQueue] Synced movieled_maker_jobs entry for job ${job.id}`);
       } catch (syncErr: any) {
         console.error(`[GeminiQueue] Failed to sync movieled_maker_jobs:`, syncErr.message);
@@ -691,6 +706,20 @@ async function processQueue(): Promise<Response> {
         updated_at: new Date().toISOString(),
       })
       .eq('id', job.id);
+
+    // Mirror failure state to movieled_maker_jobs (so Custos IA reflects reality)
+    if (shouldFail && job.context === 'movie-led-maker' && job.user_id) {
+      try {
+        await supabase.from('movieled_maker_jobs')
+          .update({
+            status: 'failed',
+            error_message: String(e.message || e).substring(0, 500),
+            completed_at: new Date().toISOString(),
+            current_step: 'failed',
+          })
+          .eq('session_id', job.id);
+      } catch {}
+    }
 
     // Refund credits on permanent failure
     if (shouldFail && job.user_id) {
