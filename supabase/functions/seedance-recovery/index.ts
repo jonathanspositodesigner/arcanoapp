@@ -65,23 +65,31 @@ serve(async (req) => {
 
     for (const job of eligibleJobs) {
       try {
-        // Handle orphaned queued/pending jobs (edge function never ran or failed before task_id)
+        // Handle orphaned queued/pending jobs by retrying background processing first
         if ((job.status === "queued" || job.status === "pending") && !job.task_id) {
-          console.log(`[seedance-recovery] 🧹 Cleaning orphaned ${job.status} job ${job.id} (stuck since ${job.created_at})`);
+          console.log(`[seedance-recovery] ♻️ Reprocessing orphaned ${job.status} job ${job.id} (stuck since ${job.created_at})`);
 
-          const chargedAmount = job.credits_charged || 0;
-          if (chargedAmount > 0) {
-            await supabase.rpc("add_upscaler_credits", {
-              _user_id: job.user_id,
-              _amount: chargedAmount,
-              _description: "Estorno - Seedance 2 (job travou na fila)",
-            });
-            console.log(`[seedance-recovery] Refunded ${chargedAmount} credits to user ${job.user_id}`);
+          const processResponse = await fetch(`${supabaseUrl}/functions/v1/seedance-generate/process`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${supabaseKey}`,
+            },
+            body: JSON.stringify({ jobId: job.id }),
+          });
+
+          const processPayload = await processResponse.json().catch(() => null);
+
+          if (processResponse.ok && (processPayload?.success || processPayload?.skipped)) {
+            console.log(`[seedance-recovery] Reprocess triggered for job ${job.id}`);
+            recovered++;
+            continue;
           }
 
+          console.warn(`[seedance-recovery] Reprocess failed for job ${job.id}:`, processPayload);
           await supabase.from("seedance_jobs").update({
             status: "failed",
-            error_message: "Job não foi processado - tente novamente",
+            error_message: processPayload?.error || "Falha ao reenviar job órfão",
           }).eq("id", job.id);
           failed++;
           continue;
