@@ -5646,32 +5646,19 @@ export type Database = {
           users_expired: number
         }[]
       }
-      get_ai_tools_completed_by_tool:
-        | {
-            Args: {
-              p_end_date?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              completed_count: number
-              tool_name: string
-            }[]
-          }
-        | {
-            Args: {
-              p_end_date?: string
-              p_search_term?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              completed_count: number
-              tool_name: string
-            }[]
-          }
+      get_ai_tools_completed_by_tool: {
+        Args: {
+          p_end_date?: string
+          p_search_term?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          completed_count: number
+          tool_name: string
+        }[]
+      }
       get_ai_tools_cost_averages: {
         Args: never
         Returns: {
@@ -5747,26 +5734,16 @@ export type Database = {
         }
         Returns: number
       }
-      get_ai_tools_usage_count_v2:
-        | {
-            Args: {
-              p_end_date?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: number
-          }
-        | {
-            Args: {
-              p_end_date?: string
-              p_search_term?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: number
-          }
+      get_ai_tools_usage_count_v2: {
+        Args: {
+          p_end_date?: string
+          p_search_term?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: number
+      }
       get_ai_tools_usage_summary: {
         Args: {
           p_end_date?: string
@@ -5785,106 +5762,56 @@ export type Database = {
           total_rh_cost: number
         }[]
       }
-      get_ai_tools_usage_summary_v2:
-        | {
-            Args: {
-              p_end_date?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              avg_processing_seconds: number
-              avg_queue_wait: number
-              completed_jobs: number
-              failed_jobs: number
-              queued_jobs: number
-              total_credits: number
-              total_jobs: number
-              total_profit: number
-              total_rh_cost: number
-            }[]
-          }
-        | {
-            Args: {
-              p_end_date?: string
-              p_search_term?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              avg_processing_seconds: number
-              avg_queue_wait: number
-              completed_jobs: number
-              failed_jobs: number
-              queued_jobs: number
-              total_credits: number
-              total_jobs: number
-              total_profit: number
-              total_rh_cost: number
-            }[]
-          }
-      get_ai_tools_usage_v2:
-        | {
-            Args: {
-              p_end_date?: string
-              p_page?: number
-              p_page_size?: number
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              completed_at: string
-              created_at: string
-              error_message: string
-              failed_at_step: string
-              id: string
-              processing_seconds: number
-              profit: number
-              queue_wait_seconds: number
-              rh_cost: number
-              started_at: string
-              status: string
-              tool_name: string
-              user_credit_cost: number
-              user_email: string
-              user_id: string
-              user_name: string
-              waited_in_queue: boolean
-            }[]
-          }
-        | {
-            Args: {
-              p_end_date?: string
-              p_page?: number
-              p_page_size?: number
-              p_search_term?: string
-              p_start_date?: string
-              p_status_filter?: string
-              p_tool_filter?: string
-            }
-            Returns: {
-              completed_at: string
-              created_at: string
-              error_message: string
-              failed_at_step: string
-              id: string
-              processing_seconds: number
-              profit: number
-              queue_wait_seconds: number
-              rh_cost: number
-              started_at: string
-              status: string
-              tool_name: string
-              user_credit_cost: number
-              user_email: string
-              user_id: string
-              user_name: string
-              waited_in_queue: boolean
-            }[]
-          }
+      get_ai_tools_usage_summary_v2: {
+        Args: {
+          p_end_date?: string
+          p_search_term?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          avg_processing_seconds: number
+          avg_queue_wait: number
+          completed_jobs: number
+          failed_jobs: number
+          queued_jobs: number
+          total_credits: number
+          total_jobs: number
+          total_profit: number
+          total_rh_cost: number
+        }[]
+      }
+      get_ai_tools_usage_v2: {
+        Args: {
+          p_end_date?: string
+          p_page?: number
+          p_page_size?: number
+          p_search_term?: string
+          p_start_date?: string
+          p_status_filter?: string
+          p_tool_filter?: string
+        }
+        Returns: {
+          completed_at: string
+          created_at: string
+          error_message: string
+          failed_at_step: string
+          id: string
+          processing_seconds: number
+          profit: number
+          queue_wait_seconds: number
+          rh_cost: number
+          started_at: string
+          status: string
+          tool_name: string
+          user_credit_cost: number
+          user_email: string
+          user_id: string
+          user_name: string
+          waited_in_queue: boolean
+        }[]
+      }
       get_all_credit_users: {
         Args: never
         Returns: {
