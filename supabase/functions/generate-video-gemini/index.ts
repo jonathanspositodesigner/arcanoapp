@@ -436,7 +436,11 @@ async function processQueue(): Promise<Response> {
 
   await supabase
     .from(TABLE)
-    .update({ status: 'processing', updated_at: new Date().toISOString() })
+    .update({
+      status: 'processing',
+      updated_at: new Date().toISOString(),
+      processing_started_at: new Date().toISOString(),
+    })
     .eq('id', job.id);
 
   // Pre-create movieled_maker_jobs entry IMMEDIATELY so it shows in Custos IA dashboard
@@ -468,26 +472,37 @@ async function processQueue(): Promise<Response> {
     // Build instances payload
     const instance: Record<string, unknown> = { prompt: job.prompt };
 
-    // ===== MOVIE-LED-MAKER: RunningHub preprocessing =====
+    // ===== MOVIE-LED-MAKER: RunningHub preprocessing (with cache to avoid burning RH coins on retries) =====
     if (job.context === 'movie-led-maker' && job.raw_input_text && job.reference_image_url) {
-      console.log(`[GeminiQueue] Movie LED Maker flow — starting RunningHub preprocessing for job ${job.id}`);
+      let rhImageUrl: string | null = job.rh_image_url || null;
+      let rhPrompt: string | null = job.rh_generated_prompt || null;
 
-      if (!RUNNINGHUB_API_KEY) {
-        throw new Error('RUNNINGHUB_API_KEY não configurada');
+      if (rhImageUrl && rhPrompt) {
+        console.log(`[GeminiQueue] Movie LED Maker — REUSING cached RH preprocessing for job ${job.id} (skipping RH call)`);
+      } else {
+        console.log(`[GeminiQueue] Movie LED Maker flow — starting RunningHub preprocessing for job ${job.id}`);
+        if (!RUNNINGHUB_API_KEY) {
+          throw new Error('RUNNINGHUB_API_KEY não configurada');
+        }
+        const rhResult = await runRunningHubPreprocessing(
+          job.reference_image_url,
+          job.raw_input_text,
+          job.id
+        );
+        rhImageUrl = rhResult.generatedImageUrl;
+        rhPrompt = rhResult.generatedPrompt;
+
+        // Cache for retries
+        await supabase
+          .from(TABLE)
+          .update({ rh_image_url: rhImageUrl, rh_generated_prompt: rhPrompt, updated_at: new Date().toISOString() })
+          .eq('id', job.id);
       }
 
-      const rhResult = await runRunningHubPreprocessing(
-        job.reference_image_url,
-        job.raw_input_text,
-        job.id
-      );
+      instance.prompt = rhPrompt;
 
-      // Use RunningHub outputs for Gemini
-      instance.prompt = rhResult.generatedPrompt;
-
-      // Download the RunningHub-generated image and convert to base64
       console.log(`[GeminiQueue] Downloading RunningHub-generated image for job ${job.id}...`);
-      const rhImgRes = await fetch(rhResult.generatedImageUrl);
+      const rhImgRes = await fetch(rhImageUrl!);
       if (!rhImgRes.ok) {
         throw new Error(`Falha ao baixar imagem do pré-processamento: HTTP ${rhImgRes.status}`);
       }
@@ -495,7 +510,7 @@ async function processQueue(): Promise<Response> {
       const rhBase64 = arrayBufferToBase64(rhImgBuffer);
       const rhMimeType = rhImgRes.headers.get('content-type') || 'image/png';
       instance.image = { bytesBase64Encoded: rhBase64, mimeType: rhMimeType };
-      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${rhResult.generatedPrompt.substring(0, 100)}..."`);
+      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${(rhPrompt || '').substring(0, 100)}..."`);
 
     } else {
       // ===== Standard flow: use original reference image if available =====
