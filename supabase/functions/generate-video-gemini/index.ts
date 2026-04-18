@@ -273,43 +273,27 @@ async function runRunningHubVideo(imageUrl: string, rawText: string, jobId: stri
     throw new Error('RunningHub: timeout no pré-processamento (5 minutos)');
   }
 
-  // Extract image and txt from results
-  let generatedImageUrl: string | null = null;
-  let generatedPrompt: string | null = null;
-
+  // Extract MP4 video from results (RH workflow now returns final MP4 directly)
+  let videoUrl: string | null = null;
   for (const result of results) {
     const outputType = (result.outputType || '').toLowerCase();
-    if (['png', 'jpg', 'jpeg', 'webp'].includes(outputType) && result.url) {
-      generatedImageUrl = result.url;
-    } else if (outputType === 'txt') {
-      // txt content can come in result.text directly or need to be downloaded from result.url
-      if (result.text) {
-        generatedPrompt = result.text.trim();
-      } else if (result.url) {
-        try {
-          const txtRes = await fetch(result.url);
-          if (txtRes.ok) {
-            generatedPrompt = (await txtRes.text()).trim();
-          }
-        } catch (e: any) {
-          console.warn(`[GeminiQueue/RH] Failed to download txt from ${result.url}: ${e.message}`);
-        }
-      }
+    if (['mp4', 'mov', 'webm'].includes(outputType) && result.url) {
+      videoUrl = result.url;
+      break;
+    }
+    if (result.url && /\.(mp4|mov|webm)(\?|$)/i.test(result.url)) {
+      videoUrl = result.url;
+      break;
     }
   }
 
-  if (!generatedImageUrl) {
-    console.error(`[GeminiQueue/RH] No image output found for job ${jobId}. Results:`, JSON.stringify(results));
-    throw new Error('RunningHub: nenhuma imagem gerada no pré-processamento');
+  if (!videoUrl) {
+    console.error(`[GeminiQueue/RH] No video output found for job ${jobId}. Results:`, JSON.stringify(results));
+    throw new Error('RunningHub: nenhum vídeo retornado pelo workflow');
   }
 
-  if (!generatedPrompt) {
-    console.error(`[GeminiQueue/RH] No txt/prompt output found for job ${jobId}. Results:`, JSON.stringify(results));
-    throw new Error('RunningHub: nenhum prompt gerado no pré-processamento');
-  }
-
-  console.log(`[GeminiQueue/RH] Job ${jobId} preprocessing complete. Image: ${generatedImageUrl.substring(0, 80)}..., Prompt length: ${generatedPrompt.length}`);
-  return { generatedImageUrl, generatedPrompt };
+  console.log(`[GeminiQueue/RH] Job ${jobId} RH video generated: ${videoUrl.substring(0, 100)}`);
+  return { videoUrl };
 }
 
 // ========== ENQUEUE ENDPOINT ==========
