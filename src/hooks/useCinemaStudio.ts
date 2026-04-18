@@ -518,11 +518,54 @@ export function useCinemaStudio() {
   // ━━━ VIDEO MODE: Polling ━━━
   const startPolling = useCallback((tId: string, jId: string, creditsToCharge: number) => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    let resolvedTaskId = tId || null;
     pollIntervalRef.current = window.setInterval(async () => {
       try {
+        if (!resolvedTaskId) {
+          const { data: jobData } = await supabase
+            .from('seedance_jobs')
+            .select('status, task_id, output_url, error_message')
+            .eq('id', jId)
+            .maybeSingle();
+
+          if (jobData?.task_id) {
+            resolvedTaskId = jobData.task_id;
+            setTaskId(jobData.task_id);
+            setProgress(prev => Math.max(prev, 50));
+          } else if (jobData?.status === 'completed' && jobData.output_url) {
+            clearInterval(pollIntervalRef.current!);
+            pollIntervalRef.current = null;
+            setOutputUrl(jobData.output_url);
+            setStatus('completed');
+            setProgress(100);
+            updateJobStatus('completed');
+            refetchCredits();
+            toast.success('Geração concluída!');
+            generatingSceneIdRef.current = null;
+            generatingSceneStateRef.current = null;
+            setGeneratingMode(null);
+            return;
+          } else if (jobData?.status === 'failed') {
+            clearInterval(pollIntervalRef.current!);
+            pollIntervalRef.current = null;
+            setStatus('error');
+            setErrorMessage(jobData.error_message || 'Falha na geração');
+            updateJobStatus('failed');
+            toast.error(jobData.error_message || 'Erro na geração');
+            endSubmit();
+            generatingSceneIdRef.current = null;
+            generatingSceneStateRef.current = null;
+            setGeneratingMode(null);
+            return;
+          } else {
+            setProgress(prev => Math.max(prev, 45));
+            return;
+          }
+        }
+
         const accessToken = await getValidAccessToken();
         const { data, error } = await supabase.functions.invoke('seedance-poll', {
-          body: { taskId: tId, jobId: jId, creditsToCharge },
+          body: { taskId: resolvedTaskId, jobId: jId, creditsToCharge },
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
@@ -850,7 +893,16 @@ export function useCinemaStudio() {
         break;
       }
 
+      const isTransportError = !!fnError && !response;
       if (fnError && !response?.success) {
+        if (isTransportError) {
+          setTaskId(null);
+          setProgress(45);
+          setStatus('processing');
+          startPolling('', job.id, estimatedCredits);
+          return;
+        }
+
         const errDetail = response?.error || fnError.message || 'Erro desconhecido';
         throw new Error(errDetail.includes('Service busy') ? 'Servidores ocupados. Tente novamente em alguns minutos.' : errDetail);
       }

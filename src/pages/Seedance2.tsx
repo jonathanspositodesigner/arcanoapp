@@ -140,7 +140,7 @@ export default function Seedance2() {
         .from("seedance_jobs")
         .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
         .eq("user_id", user.id)
-        .in("status", ["queued", "running", "timeout_recovery"])
+        .in("status", ["pending", "queued", "running", "timeout_recovery"])
         .order("created_at", { ascending: false })
         .limit(10);
 
@@ -304,7 +304,7 @@ export default function Seedance2() {
       if (count > 180) {
         clearInterval(timer);
         delete pollTimers.current[genId];
-        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: "Timeout - geração demorou demais" } : g));
+        setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing", error: "Geração demorando mais que o normal, tentando recuperar automaticamente..." } : g));
         supabase.from("seedance_jobs").update({ status: "timeout_recovery" }).eq("id", jobId);
         return;
       }
@@ -544,7 +544,18 @@ export default function Seedance2() {
         realError.toLowerCase().includes(key.toLowerCase())
       )?.[1] || realError;
 
+      const isTransportError = !!error && !data;
       if (error || !data?.success) {
+        if (isTransportError) {
+          setGenerations((prev) => prev.map((g) => g.id === genId ? {
+            ...g,
+            status: "queued",
+            error: "Conexão instável no envio. O sistema vai continuar tentando em segundo plano.",
+          } : g));
+          startPolling(genId, jobData.id);
+          return;
+        }
+
         setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: friendlyError } : g));
         await supabase.from("seedance_jobs").update({
           status: "failed",
@@ -561,6 +572,17 @@ export default function Seedance2() {
       } : g));
       startPolling(genId, jobData.id, returnedTaskId);
     } catch (err: any) {
+      const maybeTransportError = err?.message?.includes("Failed to fetch") || err?.message?.includes("FunctionsFetchError");
+      if (createdJobId && maybeTransportError) {
+        setGenerations((prev) => prev.map((g) => g.id === genId ? {
+          ...g,
+          status: "queued",
+          error: "Conexão instável no envio. O sistema vai continuar tentando em segundo plano.",
+        } : g));
+        startPolling(genId, createdJobId);
+        return;
+      }
+
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
       if (createdJobId) {
         await supabase.from("seedance_jobs").update({

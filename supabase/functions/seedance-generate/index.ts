@@ -148,6 +148,28 @@ serve(async (req) => {
       if (!job) return json({ success: false, error: "Job not found" }, 404);
       if (job.task_id || job.status === "completed") return json({ success: true, skipped: true, taskId: job.task_id });
 
+      const parsedDuration = Number(job.duration || 5);
+      const parsedQuality = (job.quality === "720p" || job.quality === "480p") ? job.quality : "480p";
+      const creditsToCharge = computeCreditCost(job.model, parsedQuality, parsedDuration);
+
+      if (!job.credits_charged || job.credits_charged <= 0) {
+        const creditResult = await consumeCredits(supabase, job.user_id, creditsToCharge, `Seedance 2 (${job.model})`);
+        if (!creditResult.success) {
+          await supabase.from("seedance_jobs").update({
+            status: "failed",
+            error_message: creditResult.error || "Créditos insuficientes",
+            credits_charged: 0,
+          }).eq("id", jobId);
+          return json({ success: false, error: creditResult.error || "Créditos insuficientes" }, 400);
+        }
+
+        await supabase.from("seedance_jobs").update({
+          credits_charged: creditsToCharge,
+          status: "queued",
+          error_message: null,
+        }).eq("id", jobId);
+      }
+
       const normalizedImageUrls = Array.isArray(job.input_image_urls) ? job.input_image_urls.filter(Boolean) : [];
       const normalizedVideoUrls = Array.isArray(job.input_video_urls) ? job.input_video_urls.filter(Boolean) : [];
       const normalizedAudioUrls = Array.isArray(job.input_audio_urls) ? job.input_audio_urls.filter(Boolean) : [];
@@ -155,17 +177,21 @@ serve(async (req) => {
       const isImageToVideo = job.model.includes("image-to-video");
 
       if (isReferenceToVideo && normalizedImageUrls.length === 0) {
+        await refundCredits(supabase, job.user_id, creditsToCharge, `Estorno - Seedance 2 falhou (${job.model})`);
         await supabase.from("seedance_jobs").update({
           status: "failed",
           error_message: "Reference-to-video requires at least one reference image",
+          credits_charged: 0,
         }).eq("id", jobId);
         return json({ success: false, error: "Adicione ao menos uma imagem de referência." }, 400);
       }
 
       if (isImageToVideo && normalizedImageUrls.length === 0) {
+        await refundCredits(supabase, job.user_id, creditsToCharge, `Estorno - Seedance 2 falhou (${job.model})`);
         await supabase.from("seedance_jobs").update({
           status: "failed",
           error_message: "Image-to-video requires at least one input image",
+          credits_charged: 0,
         }).eq("id", jobId);
         return json({ success: false, error: "Adicione a imagem inicial para gerar o vídeo." }, 400);
       }
@@ -221,17 +247,7 @@ serve(async (req) => {
     if (!job || job.user_id !== user.id) return json({ success: false, error: "Job not found" }, 404);
     if (job.task_id) return json({ success: true, taskId: job.task_id, jobId, queued: false });
 
-    const parsedDuration = Number(job.duration || body.duration || 5);
-    const parsedQuality = (job.quality === "720p" || job.quality === "480p") ? job.quality : ((body.quality === "720p" || body.quality === "480p") ? body.quality : "480p");
-    const creditsToCharge = computeCreditCost(job.model, parsedQuality, parsedDuration);
-
-    if (!job.credits_charged || job.credits_charged <= 0) {
-      const creditResult = await consumeCredits(supabase, user.id, creditsToCharge, `Seedance 2 (${job.model})`);
-      if (!creditResult.success) return json({ success: false, error: creditResult.error }, 400);
-      await supabase.from("seedance_jobs").update({ credits_charged: creditsToCharge, status: "queued", error_message: null }).eq("id", jobId);
-    } else {
-      await supabase.from("seedance_jobs").update({ status: "queued", error_message: null }).eq("id", jobId);
-    }
+    await supabase.from("seedance_jobs").update({ status: "pending", error_message: null }).eq("id", jobId);
 
     fetch(`${supabaseUrl}/functions/v1/seedance-generate/process`, {
       method: "POST",
