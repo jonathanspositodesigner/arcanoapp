@@ -432,12 +432,37 @@ async function processQueue(): Promise<Response> {
     return jsonResponse({ message: 'No queued jobs' });
   }
 
-  console.log(`[GeminiQueue] Processing job ${job.id} for user ${job.user_id}`);
+  console.log(`[GeminiQueue] Processing job ${job.id} for user ${job.user_id} (context=${job.context})`);
 
   await supabase
     .from(TABLE)
     .update({ status: 'processing', updated_at: new Date().toISOString() })
     .eq('id', job.id);
+
+  // Pre-create movieled_maker_jobs entry IMMEDIATELY so it shows in Custos IA dashboard
+  // even if the job later times out / gets stuck. The watchdog will reconcile failures.
+  if (job.context === 'movie-led-maker' && job.user_id) {
+    try {
+      const { error: preInsertErr } = await supabase.from('movieled_maker_jobs').insert({
+        user_id: job.user_id,
+        session_id: job.id,
+        status: 'processing',
+        current_step: 'gemini_processing',
+        engine: 'gemini-lite',
+        api_account: 'gemini',
+        credits_charged: true,
+        user_credit_cost: CREDIT_COSTS['movie-led-maker'] || 800,
+        started_at: new Date().toISOString(),
+      });
+      if (preInsertErr) {
+        console.warn(`[GeminiQueue] Pre-insert movieled_maker_jobs failed (non-fatal):`, preInsertErr.message);
+      } else {
+        console.log(`[GeminiQueue] Pre-created movieled_maker_jobs entry for ${job.id}`);
+      }
+    } catch (e: any) {
+      console.warn(`[GeminiQueue] Pre-insert exception (non-fatal):`, e.message);
+    }
+  }
 
   try {
     // Build instances payload
