@@ -140,7 +140,7 @@ export default function Seedance2() {
         .from("seedance_jobs")
         .select("id, prompt, output_url, aspect_ratio, duration, status, error_message, task_id, created_at")
         .eq("user_id", user.id)
-        .in("status", ["queued", "running", "timeout_recovery"])
+        .in("status", ["pending", "queued", "running", "timeout_recovery"])
         .order("created_at", { ascending: false })
         .limit(10);
 
