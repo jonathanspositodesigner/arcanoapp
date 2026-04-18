@@ -856,7 +856,7 @@ export function useCinemaStudio() {
       }
       if (!response?.success) throw new Error(response?.error || 'Erro desconhecido');
 
-      setTaskId(response.taskId);
+      setTaskId(response.taskId || null);
       setProgress(50);
       setStatus('processing');
       startPolling(response.taskId, job.id, estimatedCredits);

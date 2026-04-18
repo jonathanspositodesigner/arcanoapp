@@ -120,7 +120,7 @@ export default function Seedance2() {
   const creditCost = getSeedanceTotalCost(speed, quality, modeToGenType(mode), parseInt(duration) || 5);
 
   // Track active jobs that need polling resumed after page load
-  const [pendingResume, setPendingResume] = useState<{ id: string; taskId: string }[]>([]);
+  const [pendingResume, setPendingResume] = useState<{ id: string; taskId?: string }[]>([]);
 
   // Fetch user creations (completed) + active jobs from seedance_jobs
   useEffect(() => {
@@ -159,7 +159,7 @@ export default function Seedance2() {
       const active = (activeData || []).map(mapJob);
       setGenerations([...active, ...completed]);
 
-      const toResume = active.filter(j => j.taskId).map(j => ({ id: j.id, taskId: j.taskId! }));
+      const toResume = active.map(j => ({ id: j.id, taskId: j.taskId }));
       if (toResume.length > 0) setPendingResume(toResume);
 
       setLoadingCreations(false);
@@ -294,8 +294,10 @@ export default function Seedance2() {
     return refreshed.session.access_token;
   }, []);
 
-  const startPolling = useCallback((genId: string, taskId: string, jobId: string) => {
+  const startPolling = useCallback((genId: string, jobId: string, initialTaskId?: string) => {
     let count = 0;
+    let resolvedTaskId = initialTaskId;
+
     const timer = setInterval(async () => {
       count += 1;
 
@@ -308,9 +310,35 @@ export default function Seedance2() {
       }
 
       try {
+        if (!resolvedTaskId) {
+          const { data: jobData } = await supabase
+            .from("seedance_jobs")
+            .select("status, task_id, output_url, error_message")
+            .eq("id", jobId)
+            .maybeSingle();
+
+          if (jobData?.task_id) {
+            resolvedTaskId = jobData.task_id;
+            setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: jobData.task_id, status: "processing" } : g));
+          } else if (jobData?.status === "completed" && jobData.output_url) {
+            clearInterval(timer);
+            delete pollTimers.current[genId];
+            setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "completed", videoUrl: jobData.output_url } : g));
+            return;
+          } else if (jobData?.status === "failed") {
+            clearInterval(timer);
+            delete pollTimers.current[genId];
+            setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: jobData.error_message || "Falhou" } : g));
+            return;
+          } else {
+            setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "queued", pollCount: count } : g));
+            return;
+          }
+        }
+
         const accessToken = await getValidAccessToken();
         const { data, error } = await supabase.functions.invoke("seedance-poll", {
-          body: { taskId, jobId },
+          body: { taskId: resolvedTaskId, jobId },
           headers: { Authorization: `Bearer ${accessToken}` },
         });
 
@@ -337,7 +365,7 @@ export default function Seedance2() {
           delete pollTimers.current[genId];
           setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: data.error } : g));
         } else {
-          setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, pollCount: count } : g));
+          setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing", pollCount: count } : g));
         }
       } catch (pollError: any) {
         if (pollError?.message?.includes("Sessão expirada")) {
@@ -363,7 +391,7 @@ export default function Seedance2() {
     if (pendingResume.length === 0) return;
     pendingResume.forEach(({ id, taskId }) => {
       if (!pollTimers.current[id]) {
-        startPolling(id, taskId, id);
+        startPolling(id, id, taskId);
       }
     });
     setPendingResume([]);
@@ -451,7 +479,7 @@ export default function Seedance2() {
       }
 
       createdJobId = jobData.id;
-      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "processing" } : g));
+      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "queued" } : g));
 
       let data: any = null;
       let error: any = null;
@@ -525,8 +553,13 @@ export default function Seedance2() {
         return;
       }
 
-      setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, taskId: data.taskId } : g));
-      startPolling(genId, data.taskId, jobData.id);
+      const returnedTaskId = data.taskId as string | undefined;
+      setGenerations((prev) => prev.map((g) => g.id === genId ? {
+        ...g,
+        status: returnedTaskId ? "processing" : "queued",
+        taskId: returnedTaskId,
+      } : g));
+      startPolling(genId, jobData.id, returnedTaskId);
     } catch (err: any) {
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "failed", error: err.message } : g));
       if (createdJobId) {
