@@ -172,12 +172,16 @@ async function uploadImageToRunningHub(imageUrl: string, jobId: string): Promise
 }
 
 interface RHResult {
-  generatedImageUrl: string;
-  generatedPrompt: string;
+  videoUrl: string;
 }
 
-async function runRunningHubPreprocessing(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
-  console.log(`[GeminiQueue/RH] Starting preprocessing for job ${jobId}, text: "${rawText}"`);
+/**
+ * Calls the RunningHub Movie LED workflow which now returns a final MP4 video directly.
+ * (Previously this was a "preprocessing" step that returned image+prompt for Google Veo —
+ *  Google integration is now fully disabled in the Movie LED flow.)
+ */
+async function runRunningHubVideo(imageUrl: string, rawText: string, jobId: string): Promise<RHResult> {
+  console.log(`[GeminiQueue/RH] Starting RH video generation for job ${jobId}, text: "${rawText}"`);
 
   // Upload image to RunningHub first (required - RH servers can't access external URLs reliably)
   const rhFileName = await uploadImageToRunningHub(imageUrl, jobId);
@@ -269,43 +273,27 @@ async function runRunningHubPreprocessing(imageUrl: string, rawText: string, job
     throw new Error('RunningHub: timeout no pré-processamento (5 minutos)');
   }
 
-  // Extract image and txt from results
-  let generatedImageUrl: string | null = null;
-  let generatedPrompt: string | null = null;
-
+  // Extract MP4 video from results (RH workflow now returns final MP4 directly)
+  let videoUrl: string | null = null;
   for (const result of results) {
     const outputType = (result.outputType || '').toLowerCase();
-    if (['png', 'jpg', 'jpeg', 'webp'].includes(outputType) && result.url) {
-      generatedImageUrl = result.url;
-    } else if (outputType === 'txt') {
-      // txt content can come in result.text directly or need to be downloaded from result.url
-      if (result.text) {
-        generatedPrompt = result.text.trim();
-      } else if (result.url) {
-        try {
-          const txtRes = await fetch(result.url);
-          if (txtRes.ok) {
-            generatedPrompt = (await txtRes.text()).trim();
-          }
-        } catch (e: any) {
-          console.warn(`[GeminiQueue/RH] Failed to download txt from ${result.url}: ${e.message}`);
-        }
-      }
+    if (['mp4', 'mov', 'webm'].includes(outputType) && result.url) {
+      videoUrl = result.url;
+      break;
+    }
+    if (result.url && /\.(mp4|mov|webm)(\?|$)/i.test(result.url)) {
+      videoUrl = result.url;
+      break;
     }
   }
 
-  if (!generatedImageUrl) {
-    console.error(`[GeminiQueue/RH] No image output found for job ${jobId}. Results:`, JSON.stringify(results));
-    throw new Error('RunningHub: nenhuma imagem gerada no pré-processamento');
+  if (!videoUrl) {
+    console.error(`[GeminiQueue/RH] No video output found for job ${jobId}. Results:`, JSON.stringify(results));
+    throw new Error('RunningHub: nenhum vídeo retornado pelo workflow');
   }
 
-  if (!generatedPrompt) {
-    console.error(`[GeminiQueue/RH] No txt/prompt output found for job ${jobId}. Results:`, JSON.stringify(results));
-    throw new Error('RunningHub: nenhum prompt gerado no pré-processamento');
-  }
-
-  console.log(`[GeminiQueue/RH] Job ${jobId} preprocessing complete. Image: ${generatedImageUrl.substring(0, 80)}..., Prompt length: ${generatedPrompt.length}`);
-  return { generatedImageUrl, generatedPrompt };
+  console.log(`[GeminiQueue/RH] Job ${jobId} RH video generated: ${videoUrl.substring(0, 100)}`);
+  return { videoUrl };
 }
 
 // ========== ENQUEUE ENDPOINT ==========
@@ -472,85 +460,135 @@ async function processQueue(): Promise<Response> {
     // Build instances payload
     const instance: Record<string, unknown> = { prompt: job.prompt };
 
-    // ===== MOVIE-LED-MAKER: RunningHub preprocessing (with cache to avoid burning RH coins on retries) =====
+    // ===== MOVIE-LED-MAKER: RunningHub-only flow (Google Veo integration FULLY DISABLED) =====
+    // The RH workflow now returns a final MP4 video directly. We download it, persist to
+    // Storage, mark the job completed, and SHORT-CIRCUIT — no Google API call is made.
     if (job.context === 'movie-led-maker' && job.raw_input_text && job.reference_image_url) {
-      let rhImageUrl: string | null = job.rh_image_url || null;
-      let rhPrompt: string | null = job.rh_generated_prompt || null;
+      // Reuse cached RH video URL if a previous attempt already generated it (avoids
+      // burning RH coins on retries).
+      let rhVideoUrl: string | null = job.rh_image_url || null;
 
-      if (rhImageUrl && rhPrompt) {
-        console.log(`[GeminiQueue] Movie LED Maker — REUSING cached RH preprocessing for job ${job.id} (skipping RH call) ✅ NO RH COINS SPENT`);
+      if (rhVideoUrl) {
+        console.log(`[GeminiQueue] Movie LED Maker — REUSING cached RH video for job ${job.id} ✅ NO RH COINS SPENT`);
       } else {
-        // BLINDAGEM ANTI-DUPLICAÇÃO: re-fetch the row to confirm cache is really empty
-        // (avoids racing/stale data and prevents accidental double RH calls)
         const { data: freshJob } = await supabase
           .from(TABLE)
-          .select('rh_image_url, rh_generated_prompt')
+          .select('rh_image_url')
           .eq('id', job.id)
           .maybeSingle();
 
-        if (freshJob?.rh_image_url && freshJob?.rh_generated_prompt) {
-          console.log(`[GeminiQueue] Movie LED Maker — RACE-RECOVERED cache for job ${job.id} ✅ NO RH COINS SPENT`);
-          rhImageUrl = freshJob.rh_image_url;
-          rhPrompt = freshJob.rh_generated_prompt;
+        if (freshJob?.rh_image_url) {
+          console.log(`[GeminiQueue] Movie LED Maker — RACE-RECOVERED cached RH video for job ${job.id} ✅ NO RH COINS SPENT`);
+          rhVideoUrl = freshJob.rh_image_url;
         } else {
-          console.log(`[GeminiQueue] Movie LED Maker — calling RunningHub preprocessing for job ${job.id} (will spend 1 RH coin)`);
+          console.log(`[GeminiQueue] Movie LED Maker — calling RunningHub for job ${job.id} (RH-only flow, Google disabled)`);
           if (!RUNNINGHUB_API_KEY) {
             throw new Error('RUNNINGHUB_API_KEY não configurada');
           }
-          const rhResult = await runRunningHubPreprocessing(
+          const rhResult = await runRunningHubVideo(
             job.reference_image_url,
             job.raw_input_text,
             job.id
           );
-          rhImageUrl = rhResult.generatedImageUrl;
-          rhPrompt = rhResult.generatedPrompt;
+          rhVideoUrl = rhResult.videoUrl;
 
-          // CRITICAL: Cache IMMEDIATELY and verify the write succeeded
-          const { error: cacheErr, data: cacheRow } = await supabase
+          // Cache the RH video URL on the job row so retries don't re-spend RH coins
+          const { error: cacheErr } = await supabase
             .from(TABLE)
-            .update({ rh_image_url: rhImageUrl, rh_generated_prompt: rhPrompt, updated_at: new Date().toISOString() })
-            .eq('id', job.id)
-            .select('rh_image_url')
-            .maybeSingle();
-          if (cacheErr || !cacheRow?.rh_image_url) {
-            console.error(`[GeminiQueue] ⚠️ FAILED TO CACHE RH RESULT for job ${job.id}: ${cacheErr?.message || 'no row returned'}. Future retries WILL re-spend RH coins!`);
+            .update({ rh_image_url: rhVideoUrl, updated_at: new Date().toISOString() })
+            .eq('id', job.id);
+          if (cacheErr) {
+            console.error(`[GeminiQueue] ⚠️ FAILED TO CACHE RH VIDEO URL for job ${job.id}: ${cacheErr.message}`);
           } else {
-            console.log(`[GeminiQueue] ✅ RH cache persisted for job ${job.id}`);
+            console.log(`[GeminiQueue] ✅ RH video URL cached for job ${job.id}`);
           }
         }
       }
 
-      instance.prompt = rhPrompt;
-
-      console.log(`[GeminiQueue] Downloading RunningHub-generated image for job ${job.id}...`);
-      const rhImgRes = await fetch(rhImageUrl!);
-      if (!rhImgRes.ok) {
-        throw new Error(`Falha ao baixar imagem do pré-processamento: HTTP ${rhImgRes.status}`);
+      // Download the RH MP4 (24h-valid link) and re-host on Supabase Storage for permanence
+      console.log(`[GeminiQueue] Downloading RH video for job ${job.id}...`);
+      const videoRes = await fetch(rhVideoUrl!);
+      if (!videoRes.ok) {
+        throw new Error(`Falha ao baixar vídeo do RunningHub: HTTP ${videoRes.status}`);
       }
-      const rhImgBuffer = await rhImgRes.arrayBuffer();
-      const rhBase64 = arrayBufferToBase64(rhImgBuffer);
-      const rhMimeType = rhImgRes.headers.get('content-type') || 'image/png';
-      instance.image = { bytesBase64Encoded: rhBase64, mimeType: rhMimeType };
-      console.log(`[GeminiQueue] RunningHub image attached (${(rhImgBuffer.byteLength / 1024).toFixed(0)}KB), prompt: "${(rhPrompt || '').substring(0, 100)}..."`);
+      const videoBlob = await videoRes.blob();
+      const storagePath = `gemini-videos/${job.user_id}/${job.id}.mp4`;
+      const { error: uploadError } = await supabase.storage
+        .from('artes-cloudinary')
+        .upload(storagePath, videoBlob, { contentType: 'video/mp4', upsert: true });
+      if (uploadError) {
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
+      const { data: publicUrlData } = supabase.storage
+        .from('artes-cloudinary')
+        .getPublicUrl(storagePath);
+      const publicVideoUrl = publicUrlData.publicUrl;
+      console.log(`[GeminiQueue] RH video uploaded to storage for job ${job.id}`);
 
-    } else {
-      // ===== Standard flow: use original reference image if available =====
-      if (job.reference_image_url) {
+      // Mark queue job completed
+      await supabase
+        .from(TABLE)
+        .update({
+          status: 'completed',
+          video_url: publicVideoUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', job.id);
+
+      // Mirror to movieled_maker_jobs (Minhas Criações + Custos IA)
+      if (job.user_id) {
         try {
-          console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
-          const imgRes = await fetch(job.reference_image_url);
-          if (imgRes.ok) {
-            const imgBuffer = await imgRes.arrayBuffer();
-            const base64 = arrayBufferToBase64(imgBuffer);
-            const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
-            instance.image = { bytesBase64Encoded: base64, mimeType };
-            console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
+          const { data: existing } = await supabase
+            .from('movieled_maker_jobs')
+            .select('id')
+            .eq('session_id', job.id)
+            .maybeSingle();
+          if (existing?.id) {
+            await supabase.from('movieled_maker_jobs').update({
+              status: 'completed',
+              output_url: publicVideoUrl,
+              completed_at: new Date().toISOString(),
+              current_step: 'completed',
+            }).eq('id', existing.id);
           } else {
-            console.warn(`[GeminiQueue] Failed to download reference image: HTTP ${imgRes.status}, proceeding without it`);
+            await supabase.from('movieled_maker_jobs').insert({
+              user_id: job.user_id,
+              session_id: job.id,
+              status: 'completed',
+              output_url: publicVideoUrl,
+              completed_at: new Date().toISOString(),
+              current_step: 'completed',
+              engine: 'gemini-lite',
+              api_account: 'runninghub',
+              credits_charged: true,
+              user_credit_cost: CREDIT_COSTS['movie-led-maker'] || 800,
+            });
           }
-        } catch (imgErr: any) {
-          console.warn(`[GeminiQueue] Reference image download error: ${imgErr.message}, proceeding without it`);
+        } catch (syncErr: any) {
+          console.error(`[GeminiQueue] Failed to sync movieled_maker_jobs:`, syncErr.message);
         }
+      }
+
+      console.log(`[GeminiQueue] Movie LED Maker job ${job.id} completed via RH-only flow ✅`);
+      return jsonResponse({ message: 'Done (RH-only)' });
+    }
+
+    // ===== Standard video-generator flow: use original reference image if available =====
+    if (job.reference_image_url) {
+      try {
+        console.log(`[GeminiQueue] Downloading reference image for job ${job.id}...`);
+        const imgRes = await fetch(job.reference_image_url);
+        if (imgRes.ok) {
+          const imgBuffer = await imgRes.arrayBuffer();
+          const base64 = arrayBufferToBase64(imgBuffer);
+          const mimeType = imgRes.headers.get('content-type') || 'image/jpeg';
+          instance.image = { bytesBase64Encoded: base64, mimeType };
+          console.log(`[GeminiQueue] Reference image attached (${(imgBuffer.byteLength / 1024).toFixed(0)}KB)`);
+        } else {
+          console.warn(`[GeminiQueue] Failed to download reference image: HTTP ${imgRes.status}, proceeding without it`);
+        }
+      } catch (imgErr: any) {
+        console.warn(`[GeminiQueue] Reference image download error: ${imgErr.message}, proceeding without it`);
       }
     }
 
