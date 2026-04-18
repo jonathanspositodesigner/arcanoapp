@@ -6045,6 +6045,13 @@ export type Database = {
           updated_count: number
         }[]
       }
+      reconcile_stuck_gemini_video_jobs: {
+        Args: never
+        Returns: {
+          action: string
+          job_id: string
+        }[]
+      }
       record_warranty_waiver: {
         Args: { _tool_slug: string; _version_slug?: string }
         Returns: boolean
