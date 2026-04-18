@@ -5040,12 +5040,15 @@ export type Database = {
           error_message: string | null
           id: string
           operation_name: string | null
+          processing_started_at: string | null
           prompt: string
           provider: string
           quality: string
           raw_input_text: string | null
           reference_image_url: string | null
           retry_count: number | null
+          rh_generated_prompt: string | null
+          rh_image_url: string | null
           status: string
           updated_at: string
           user_id: string
@@ -5059,12 +5062,15 @@ export type Database = {
           error_message?: string | null
           id?: string
           operation_name?: string | null
+          processing_started_at?: string | null
           prompt: string
           provider?: string
           quality?: string
           raw_input_text?: string | null
           reference_image_url?: string | null
           retry_count?: number | null
+          rh_generated_prompt?: string | null
+          rh_image_url?: string | null
           status?: string
           updated_at?: string
           user_id: string
@@ -5078,12 +5084,15 @@ export type Database = {
           error_message?: string | null
           id?: string
           operation_name?: string | null
+          processing_started_at?: string | null
           prompt?: string
           provider?: string
           quality?: string
           raw_input_text?: string | null
           reference_image_url?: string | null
           retry_count?: number | null
+          rh_generated_prompt?: string | null
+          rh_image_url?: string | null
           status?: string
           updated_at?: string
           user_id?: string
@@ -6045,13 +6054,7 @@ export type Database = {
           updated_count: number
         }[]
       }
-      reconcile_stuck_gemini_video_jobs: {
-        Args: never
-        Returns: {
-          action: string
-          job_id: string
-        }[]
-      }
+      reconcile_stuck_gemini_video_jobs: { Args: never; Returns: undefined }
       record_warranty_waiver: {
         Args: { _tool_slug: string; _version_slug?: string }
         Returns: boolean
