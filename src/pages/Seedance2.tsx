@@ -829,7 +829,7 @@ export default function Seedance2() {
                   disabled={!canGenerate() || uploading}
                   className={`group relative flex h-[44px] items-center justify-center gap-2 overflow-hidden rounded-xl px-4 text-sm font-semibold transition-all duration-300 ${
                     canGenerate() && !uploading
-                      ? "bg-gradient-to-r from-purple-600 to-purple-400 text-white shadow-lg shadow-primary/10 active:scale-[0.98]"
+                      ? "bg-gradient-to-r from-purple-700 to-purple-500 text-white shadow-lg shadow-purple-700/40 active:scale-[0.98]"
                       : "cursor-not-allowed bg-accent text-muted-foreground"
                   }`}
                 >
@@ -925,7 +925,7 @@ export default function Seedance2() {
                       disabled={!canGenerate() || uploading}
                       className={`group relative flex h-[48px] items-center justify-center gap-2.5 overflow-hidden rounded-xl px-5 text-sm font-semibold transition-all duration-300 ${
                         canGenerate() && !uploading
-                          ? "bg-gradient-to-r from-purple-600 to-purple-400 text-white shadow-lg shadow-primary/10 hover:shadow-gray-500 hover:scale-[1.02] active:scale-[0.98]"
+                          ? "bg-gradient-to-r from-purple-700 to-purple-500 text-white shadow-lg shadow-purple-700/40 hover:shadow-purple-600/60 hover:scale-[1.02] active:scale-[0.98]"
                           : "cursor-not-allowed bg-accent text-muted-foreground"
                       }`}
                     >
