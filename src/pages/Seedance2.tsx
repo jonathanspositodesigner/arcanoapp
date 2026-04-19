@@ -939,7 +939,7 @@ export default function Seedance2() {
                         <>
                           <span className="text-base">✦</span>
                           Gerar vídeo
-                          <span className="flex items-center gap-1 rounded-md bg-accent px-1.5 py-0.5 text-[11px]">
+                          <span className="flex items-center gap-1 rounded-md bg-black/30 px-1.5 py-0.5 text-[11px] text-white ring-1 ring-white/20">
                             <Coins className="h-3 w-3" />
                             {creditCost}
                           </span>
