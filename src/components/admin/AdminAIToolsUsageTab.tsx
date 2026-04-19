@@ -289,9 +289,15 @@ const AdminAIToolsUsageTab = () => {
     setErrorDetails(null);
     try {
       const tableName = getTableName(record.tool_name);
+      // Build select dynamically based on registry capabilities (some tables lack failed_at_step)
+      const entry = toolRegistry.find((t) => t.display_name === record.tool_name || t.tool_name === record.tool_name);
+      const baseFields = ['error_message', 'raw_api_response', 'raw_webhook_payload', 'credits_charged', 'credits_refunded', 'task_id', 'api_account'];
+      if (entry?.has_failed_at_step) baseFields.push('failed_at_step', 'current_step', 'step_history');
+      const selectStr = baseFields.join(', ');
+
       const { data, error } = await supabase
         .from(tableName as any)
-        .select('error_message, failed_at_step, current_step, step_history, raw_api_response, raw_webhook_payload, credits_charged, credits_refunded, task_id, api_account')
+        .select(selectStr)
         .eq('id', record.id)
         .maybeSingle();
 
@@ -304,7 +310,7 @@ const AdminAIToolsUsageTab = () => {
     } finally {
       setIsLoadingErrorDetails(false);
     }
-  }, [getTableName]);
+  }, [getTableName, toolRegistry]);
 
   const handleJobClick = useCallback(async (record: UsageRecord) => {
     setSelectedJob(record);
