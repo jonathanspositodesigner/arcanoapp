@@ -35,7 +35,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && handleClose()}>
-      <DialogContent className="sm:max-w-2xl p-0 gap-0 bg-background border-border overflow-hidden max-w-[calc(100%-2rem)] rounded-2xl">
+      <DialogContent className="sm:max-w-2xl p-0 gap-0 bg-background border-border overflow-hidden max-w-[calc(100%-2rem)] rounded-2xl z-[80]">
         <div className="p-4 sm:p-6">
           <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1">Tutorial — Seedance 2.0</h2>
           <p className="text-sm text-muted-foreground mb-4">Aprenda a usar a ferramenta assistindo o vídeo abaixo:</p>
@@ -70,7 +70,7 @@ const Seedance2TutorialModal = ({ open, onClose }: Seedance2TutorialModalProps) 
           </div>
         </div>
         <div className="p-4 sm:px-6 sm:pb-6 pt-0">
-          <Button onClick={handleClose} className="w-full bg-gradient-primary text-foreground font-semibold py-3">
+          <Button onClick={handleClose} className="w-full bg-gradient-to-r from-purple-700 to-purple-500 text-white font-semibold py-3 hover:from-purple-800 hover:to-purple-600 shadow-lg">
             Continuar para a ferramenta
           </Button>
         </div>
