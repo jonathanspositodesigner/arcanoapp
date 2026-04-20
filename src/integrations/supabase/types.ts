@@ -5595,6 +5595,21 @@ export type Database = {
       cleanup_stale_pose_changer_jobs: { Args: never; Returns: undefined }
       cleanup_stale_upscaler_jobs: { Args: never; Returns: undefined }
       cleanup_stale_veste_ai_jobs: { Args: never; Returns: undefined }
+      consume_credits_for_job: {
+        Args: {
+          _amount: number
+          _description: string
+          _job_id: string
+          _job_table: string
+          _user_id: string
+        }
+        Returns: {
+          already_charged: boolean
+          error_message: string
+          remaining_balance: number
+          success: boolean
+        }[]
+      }
       consume_flyer_test_credits: {
         Args: { _amount: number; _user_id: string }
         Returns: {

@@ -558,13 +558,15 @@ async function handleRun(req: Request) {
   if (!isTrialMode) {
     await logStep(jobId, 'consuming_credits', { amount: creditCost });
     console.log(`[ArcanoCloner] Consuming ${creditCost} credits for user ${userId}`);
-    
+
     const { data: creditResult, error: creditError } = await supabase.rpc(
-      'consume_upscaler_credits', 
+      'consume_credits_for_job',
       {
         _user_id: userId,
         _amount: creditCost,
-        _description: 'Arcano Cloner'
+        _description: 'Arcano Cloner',
+        _job_table: 'arcano_cloner_jobs',
+        _job_id: jobId,
       }
     );
 
@@ -588,31 +590,33 @@ async function handleRun(req: Request) {
       return new Response(JSON.stringify({ 
         error: errorMsg,
         code: 'INSUFFICIENT_CREDITS',
-        currentBalance: creditResult?.[0]?.new_balance
+        currentBalance: creditResult?.[0]?.remaining_balance
       }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`[ArcanoCloner] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+    if (creditResult[0].already_charged) {
+      console.log(`[ArcanoCloner] Job ${jobId} already charged — idempotent skip`);
+      await logStep(jobId, 'credits_already_charged_idempotent');
+    } else {
+      console.log(`[ArcanoCloner] Credits consumed. New balance: ${creditResult[0].remaining_balance}`);
+    }
   } else {
     console.log(`[ArcanoCloner] Trial mode - skipping credit consumption`);
     await logStep(jobId, 'trial_mode_skip_credits');
   }
 
-  // CRITICAL: Mark credits as charged for idempotent refund on failure
+  // Mark non-credit metadata (credits_charged is set atomically inside consume_credits_for_job)
   await supabase
     .from('arcano_cloner_jobs')
     .update({ 
-      credits_charged: !isTrialMode,
-      user_credit_cost: isTrialMode ? 0 : creditCost,
       user_file_name: userFileName,
       reference_file_name: referenceFileName,
       aspect_ratio: finalAspectRatio,
     })
     .eq('id', jobId);
-  console.log(`[ArcanoCloner] Job ${jobId} marked as credits_charged=${!isTrialMode}`);
 
   // Save all RH params to job_payload for queue manager
   await supabase

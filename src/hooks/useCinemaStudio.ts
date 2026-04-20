@@ -858,40 +858,23 @@ export function useCinemaStudio() {
       setJobId(job.id);
       setProgress(40);
 
-      let response: any = null;
-      let fnError: any = null;
-      for (let attempt = 0; attempt <= 2; attempt++) {
-        const accessToken = await getValidAccessToken();
-        const result = await supabase.functions.invoke('seedance-generate', {
-          body: {
-            model: selectedModel,
-            prompt: finalPrompt,
-            imageUrls: uploadedImageUrls,
-            videoUrls: [],
-            audioUrls: [],
-            duration: settings.duration,
-            quality: settings.quality,
-            aspectRatio: settings.aspectRatio,
-            generateAudio: settings.generateAudio,
-            jobId: job.id,
-          },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-        response = result.data;
-        fnError = result.error;
-        if (response?.success || response?.error) break;
-        const isNetworkErr = !response && fnError && (
-          fnError.message?.includes('non-2xx') ||
-          fnError.message?.includes('Failed to fetch') ||
-          fnError.message?.includes('FunctionsFetchError')
-        );
-        if (isNetworkErr && attempt < 2) {
-          console.warn(`[CinemaStudio] seedance-generate retry ${attempt + 1}/2`);
-          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
-          continue;
-        }
-        break;
-      }
+      // Single invoke (no retry loop) - prevents duplicate credit consumption on transport errors
+      const accessToken = await getValidAccessToken();
+      const { data: response, error: fnError } = await supabase.functions.invoke('seedance-generate', {
+        body: {
+          model: selectedModel,
+          prompt: finalPrompt,
+          imageUrls: uploadedImageUrls,
+          videoUrls: [],
+          audioUrls: [],
+          duration: settings.duration,
+          quality: settings.quality,
+          aspectRatio: settings.aspectRatio,
+          generateAudio: settings.generateAudio,
+          jobId: job.id,
+        },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       const isTransportError = !!fnError && !response;
       if (fnError && !response?.success) {

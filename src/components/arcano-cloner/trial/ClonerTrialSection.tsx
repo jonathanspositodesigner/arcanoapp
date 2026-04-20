@@ -196,45 +196,20 @@ export default function ClonerTrialSection() {
       setProgress(50);
       setStatus('processing');
 
-      const MAX_INVOKE_RETRIES = 3;
-      let response: any = null;
-      let fnError: any = null;
-
-      for (let attempt = 0; attempt < MAX_INVOKE_RETRIES; attempt++) {
-        const result = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
-          body: {
-            jobId: clientJobId,
-            userImageUrl: userUrl,
-            referenceImageUrl: refUrl,
-            aspectRatio: aspectRatio,
-            userId: trialUserId,
-            creditCost: 0,
-            creativity: creativity,
-            customPrompt: '',
-            trial_mode: true,
-          },
-        });
-
-        response = result.data;
-        fnError = result.error;
-
-        if (response?.success || response?.error) break;
-
-        const isNetworkError = !response && fnError && (
-          fnError.message?.includes('non-2xx') ||
-          fnError.message?.includes('Failed to fetch') ||
-          fnError.message?.includes('NetworkError') ||
-          fnError.message?.includes('FunctionsFetchError')
-        );
-
-        if (isNetworkError && attempt < MAX_INVOKE_RETRIES - 1) {
-          console.warn(`[ClonerTrial] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
-          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
-          continue;
-        }
-
-        break;
-      }
+      // Single invoke (no retry loop) - backend has idempotent charging via consume_credits_for_job
+      const { data: response, error: fnError } = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
+        body: {
+          jobId: clientJobId,
+          userImageUrl: userUrl,
+          referenceImageUrl: refUrl,
+          aspectRatio: aspectRatio,
+          userId: trialUserId,
+          creditCost: 0,
+          creativity: creativity,
+          customPrompt: '',
+          trial_mode: true,
+        },
+      });
 
       if (fnError && !response) {
         console.error('[ClonerTrial] Edge function error:', fnError);
