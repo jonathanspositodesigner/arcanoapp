@@ -278,7 +278,7 @@ const FerramentasIAAplicativo = () => {
     const hasAccess = checkToolAccess(tool.slug);
     const description = toolDescriptions[tool.slug] || "Ferramenta de IA";
     const isComingSoon = tool.slug === "forja-selos-3d-ilimitada";
-    const isNew = tool.slug === "movieled-maker" || tool.slug === "flyer-maker";
+    const isNew = tool.slug === "flyer-maker";
     const isUpscalerArcano = tool.slug === "upscaller-arcano";
     
     const handleCardClick = (e: React.MouseEvent) => {
