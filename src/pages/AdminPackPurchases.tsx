@@ -287,19 +287,34 @@ const AdminPackPurchases = () => {
   };
 
   const addPackAccess = () => {
-    const availablePacks = packs.filter(p => !formData.packAccesses.some(pa => pa.pack_slug === p.slug));
-    if (availablePacks.length === 0) {
-      toast.error("Todos os packs já foram adicionados");
+    console.log('[AdminPackPurchases] addPackAccess clicked', {
+      packsLoaded: packs.length,
+      currentAccesses: formData.packAccesses.length,
+    });
+    if (!packs || packs.length === 0) {
+      toast.error("Packs ainda não carregaram. Aguarde 1 segundo e tente novamente.");
+      fetchPacks();
       return;
     }
-    setFormData({
-      ...formData,
-      packAccesses: [...formData.packAccesses, {
-        pack_slug: availablePacks[0].slug,
-        access_type: 'vitalicio',
-        is_active: true
-      }]
-    });
+    const availablePacks = packs.filter(
+      (p) => !formData.packAccesses.some((pa) => pa.pack_slug === p.slug)
+    );
+    if (availablePacks.length === 0) {
+      toast.error("Todos os packs já foram adicionados a este cliente");
+      return;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      packAccesses: [
+        ...prev.packAccesses,
+        {
+          pack_slug: availablePacks[0].slug,
+          access_type: 'vitalicio',
+          is_active: true,
+        },
+      ],
+    }));
+    toast.success(`Pack "${availablePacks[0].name}" adicionado. Configure abaixo.`);
   };
 
   const removePackAccess = (index: number) => {
