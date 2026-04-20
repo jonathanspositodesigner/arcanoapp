@@ -1684,25 +1684,258 @@ const FlyerMakerTool: React.FC = () => {
                       </Button>
                     )}
                   </>
-                ) : flyerType !== 'evento' ? (
-                  <div className="flex-1 flex flex-col">
+                ) : flyerType === 'outro' ? (
+                  <>
                     <button
                       onClick={() => setFlyerType(null)}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mb-3 self-start"
+                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors -mb-1 self-start"
                       disabled={isProcessing}
                     >
                       <ArrowLeft className="w-3.5 h-3.5" /> Trocar tipo
                     </button>
-                    <div className="flex-1 flex flex-col items-center justify-center text-center gap-3 py-8 border border-dashed border-border rounded-xl bg-muted/20">
-                      <Construction className="w-10 h-10 text-muted-foreground" />
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Em breve</p>
-                        <p className="text-xs text-muted-foreground mt-1 px-4">
-                          Os controles para este tipo de flyer estão sendo configurados.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+
+                    {!refineMode ? (
+                      <>
+                        {/* 1. Referência */}
+                        <ReferenceImageCard
+                          image={referenceImage}
+                          onClearImage={() => { setReferenceImage(null); setReferenceFile(null); }}
+                          onOpenLibrary={() => setShowPhotoLibrary(true)}
+                          disabled={isProcessing}
+                          title="Referência do Flyer"
+                          emptyLabel="Escolher da biblioteca"
+                          emptySubLabel="Ou envie seu flyer"
+                        />
+
+                        {/* 2. Switch: Possui pessoa na arte? */}
+                        <div className="border border-border rounded-xl p-4 bg-muted/50">
+                          <div className="flex items-center justify-between mb-3">
+                            <div>
+                              <span className="text-sm font-medium text-foreground block">Possui pessoa na arte?</span>
+                              <span className="text-[10px] text-muted-foreground">Ative para enviar uma foto</span>
+                            </div>
+                            <Switch
+                              checked={outroPessoaSwitch}
+                              onCheckedChange={(checked) => {
+                                setOutroPessoaSwitch(checked);
+                                if (!checked) {
+                                  if (outroPessoaPhoto) URL.revokeObjectURL(outroPessoaPhoto);
+                                  setOutroPessoaPhoto(null);
+                                  setOutroPessoaFile(null);
+                                }
+                              }}
+                              disabled={isProcessing}
+                            />
+                          </div>
+
+                          {outroPessoaSwitch && (
+                            outroPessoaPhoto ? (
+                              <div className="relative aspect-[3/4] rounded-lg overflow-hidden group max-w-[120px]">
+                                <img src={outroPessoaPhoto} alt="" className="w-full h-full object-cover" />
+                                <button
+                                  onClick={() => {
+                                    URL.revokeObjectURL(outroPessoaPhoto);
+                                    setOutroPessoaPhoto(null);
+                                    setOutroPessoaFile(null);
+                                  }}
+                                  className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity"
+                                  disabled={isProcessing}
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            ) : (
+                              <label className={`aspect-[3/4] max-w-[120px] rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                                <input
+                                  type="file"
+                                  accept={IMAGE_ACCEPT}
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const rawFile = e.target.files?.[0];
+                                    e.target.value = '';
+                                    if (!rawFile) return;
+                                    if (!isAcceptedImage(rawFile)) { toast.error('Selecione uma imagem válida'); return; }
+                                    try {
+                                      const file = await ensureBrowserCompatibleImage(rawFile);
+                                      setOutroPessoaPhoto(URL.createObjectURL(file));
+                                      setOutroPessoaFile(file);
+                                    } catch (err) {
+                                      toast.error(err instanceof Error ? err.message : 'Erro ao processar imagem');
+                                    }
+                                  }}
+                                  disabled={isProcessing}
+                                />
+                                <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+                                <span className="text-[10px] text-muted-foreground">Enviar foto</span>
+                              </label>
+                            )
+                          )}
+                        </div>
+
+                        {/* 3. Logo / Outra imagem */}
+                        <div className="border border-border rounded-xl p-4 bg-muted/50">
+                          <span className="text-sm font-medium text-foreground mb-2 block">Logo / Outra imagem <span className="text-[10px] text-muted-foreground font-normal">(opcional)</span></span>
+                          {outroLogoImage ? (
+                            <div className="relative h-20 rounded-lg overflow-hidden group">
+                              <img src={outroLogoImage} alt="" className="w-full h-full object-contain bg-muted/50" />
+                              <button
+                                onClick={() => { setOutroLogoImage(null); setOutroLogoFile(null); }}
+                                className="absolute inset-0 bg-muted/70 opacity-0 group-hover:opacity-100 flex items-center justify-center text-foreground transition-opacity"
+                                disabled={isProcessing}
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className={`h-20 rounded-lg border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:bg-accent transition-colors ${isProcessing ? 'opacity-50 pointer-events-none' : ''}`}>
+                              <input
+                                type="file"
+                                accept={IMAGE_ACCEPT}
+                                className="hidden"
+                                onChange={async (e) => {
+                                  const rawFile = e.target.files?.[0];
+                                  e.target.value = '';
+                                  if (!rawFile) return;
+                                  if (!isAcceptedImage(rawFile)) { toast.error('Selecione uma imagem válida'); return; }
+                                  try {
+                                    const file = await ensureBrowserCompatibleImage(rawFile);
+                                    setOutroLogoImage(URL.createObjectURL(file));
+                                    setOutroLogoFile(file);
+                                  } catch (err) {
+                                    toast.error(err instanceof Error ? err.message : 'Erro ao processar imagem');
+                                  }
+                                }}
+                                disabled={isProcessing}
+                              />
+                              <Upload className="w-5 h-5 text-muted-foreground mb-1" />
+                              <span className="text-[10px] text-muted-foreground">Upload logo/imagem</span>
+                            </label>
+                          )}
+                        </div>
+
+                        {/* 4. Campos de texto */}
+                        <div className="space-y-2.5">
+                          <div>
+                            <span className="text-xs text-muted-foreground mb-1 block">Headline <span className="text-destructive">*</span></span>
+                            <Input placeholder="GRANDE OFERTA DE VERÃO" value={outroHeadline} onChange={e => setOutroHeadline(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                          </div>
+                          <div>
+                            <span className="text-xs text-muted-foreground mb-1 block">Sub-Headline <span className="text-[10px]">(opcional)</span></span>
+                            <Input placeholder="ATÉ 70% OFF EM TODOS OS PRODUTOS" value={outroSubHeadline} onChange={e => setOutroSubHeadline(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                          </div>
+                          <div>
+                            <span className="text-xs text-muted-foreground mb-1 block">Call to Action <span className="text-[10px]">(opcional)</span></span>
+                            <Input placeholder="COMPRE AGORA" value={outroCallToAction} onChange={e => setOutroCallToAction(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                          </div>
+                          <div>
+                            <span className="text-xs text-muted-foreground mb-1 block">Informação de Rodapé <span className="text-[10px]">(opcional)</span></span>
+                            <Input placeholder="VÁLIDO ATÉ 30/04 | WHATSAPP (99) 99999-9999" value={outroRodape} onChange={e => setOutroRodape(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                          </div>
+                        </div>
+
+                        {/* 5. Tamanho */}
+                        <div>
+                          <span className="text-sm font-medium text-foreground mb-2 block">Tamanho</span>
+                          <div className="grid grid-cols-3 gap-0 bg-muted border border-border rounded-lg p-1">
+                            {([
+                              { value: '3:4' as const, label: 'Feed' },
+                              { value: '9:16' as const, label: 'Stories' },
+                              { value: '16:9' as const, label: 'Landscape' },
+                            ]).map(({ value, label }) => (
+                              <button
+                                key={value}
+                                onClick={() => setOutroImageSize(value)}
+                                className={`py-2.5 px-2 text-xs rounded-md transition-all font-medium ${
+                                  outroImageSize === value
+                                    ? 'bg-primary text-primary-foreground shadow-sm'
+                                    : 'text-muted-foreground hover:text-foreground'
+                                }`}
+                                disabled={isProcessing}
+                              >
+                                {label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* 6. Criatividade */}
+                        <CreativitySlider value={outroCreativity} onChange={setOutroCreativity} disabled={isProcessing} max={5} showRecommendation={false} />
+
+                        {/* 7. Botão gerar */}
+                        {!isProcessing && status !== 'completed' && (
+                          <Button
+                            className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white rounded-xl shadow-lg disabled:opacity-50"
+                            disabled={!canProcessOutro || isSubmitting}
+                            onClick={handleProcessOutro}
+                          >
+                            {isSubmitting ? (
+                              <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Iniciando...</>
+                            ) : (
+                              <>
+                                <Sparkles className="w-4 h-4 mr-2" />
+                                Gerar Flyer
+                                <span className="ml-2 flex items-center gap-1 text-xs opacity-90">
+                                  <Coins className="w-3.5 h-3.5" /> {creditCost}
+                                  {testCredits > 0 && <span className="ml-1">(🧪 teste)</span>}
+                                </span>
+                              </>
+                            )}
+                          </Button>
+                        )}
+
+                        {/* Completed Actions */}
+                        {status === 'completed' && (
+                          <div className="space-y-2">
+                            <Button
+                              className="w-full py-4 text-sm font-semibold bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-xl"
+                              onClick={() => download({ url: outputImage!, filename: `flyer-outro-${Date.now()}.png` })}
+                            >
+                              <Download className="w-4 h-4 mr-2" /> Baixar HD
+                            </Button>
+                            <div className="grid grid-cols-2 gap-2">
+                              <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={handleNew}>
+                                <RefreshCw className="w-4 h-4 mr-2" /> Nova
+                              </Button>
+                              <Button variant="outline" className="w-full py-3 text-sm border-border text-muted-foreground hover:bg-accent rounded-xl" onClick={() => setRefineMode(true)}>
+                                <Wand2 className="w-4 h-4 mr-2" /> Alterar
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+
+                        {status === 'waiting' && (
+                          <Button
+                            variant="outline"
+                            className="w-full py-3 text-sm border-red-500/30 text-red-300 hover:bg-red-500/100/10 rounded-xl"
+                            onClick={handleCancelQueue}
+                          >
+                            <XCircle className="w-4 h-4 mr-2" /> Sair da Fila
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <RefinePanel
+                        title="Fazer Alteração"
+                        buttonLabel="Fazer Alteração"
+                        loadingLabel="Alterando..."
+                        prompt={refinePrompt}
+                        onPromptChange={setRefinePrompt}
+                        referencePreview={refineReferencePreview}
+                        onReferenceChange={(file, preview) => {
+                          setRefineReferenceFile(file);
+                          setRefineReferencePreview(preview);
+                        }}
+                        onSubmit={handleRefine}
+                        onCancel={() => {
+                          setRefineMode(false);
+                          setRefinePrompt('');
+                          setRefineReferenceFile(null);
+                          setRefineReferencePreview(null);
+                        }}
+                        isRefining={isRefining}
+                      />
+                    )}
+                  </>
                 ) : (
                   <>
                     <button
