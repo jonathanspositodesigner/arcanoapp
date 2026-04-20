@@ -217,8 +217,14 @@ async function handleRun(req: Request) {
     await logStep(jobId, 'consuming_credits', { amount: creditCost });
 
     const { data: creditResult, error: creditError } = await supabase.rpc(
-      'consume_upscaler_credits',
-      { _user_id: verifiedUserId, _amount: creditCost, _description: 'Gerar Imagem' }
+      'consume_credits_for_job',
+      {
+        _user_id: verifiedUserId,
+        _amount: creditCost,
+        _description: 'Gerar Imagem',
+        _job_table: 'image_generator_jobs',
+        _job_id: jobId,
+      }
     );
 
     if (creditError) {
@@ -231,19 +237,22 @@ async function handleRun(req: Request) {
 
     if (!creditResult || creditResult.length === 0 || !creditResult[0].success) {
       const errorMsg = creditResult?.[0]?.error_message || 'Saldo insuficiente';
-      await logStep(jobId, 'insufficient_credits', { balance: creditResult?.[0]?.new_balance });
-      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.new_balance }), {
+      await logStep(jobId, 'insufficient_credits', { balance: creditResult?.[0]?.remaining_balance });
+      return new Response(JSON.stringify({ error: errorMsg, code: 'INSUFFICIENT_CREDITS', currentBalance: creditResult?.[0]?.remaining_balance }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`[Flux2Klein] Credits consumed. New balance: ${creditResult[0].new_balance}`);
+    if (creditResult[0].already_charged) {
+      console.log(`[Flux2Klein] Job ${jobId} already charged — idempotent skip`);
+      await logStep(jobId, 'credits_already_charged_idempotent');
+    } else {
+      console.log(`[Flux2Klein] Credits consumed. New balance: ${creditResult[0].remaining_balance}`);
+    }
   }
 
-  // Mark credits charged
+  // Save job payload (credits_charged is set atomically inside consume_credits_for_job)
   await supabase.from(TABLE_NAME).update({
-    credits_charged: true,
-    user_credit_cost: creditCost,
     job_payload: {
       prompt: prompt.trim(),
       aspectRatio,
