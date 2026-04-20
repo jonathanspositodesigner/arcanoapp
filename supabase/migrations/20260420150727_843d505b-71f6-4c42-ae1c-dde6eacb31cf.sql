@@ -1,0 +1,1 @@
+UPDATE public.ai_tool_settings SET credit_cost = 50, updated_at = now() WHERE tool_name IN ('Refinar Avatar', 'Flyer Maker', 'Arcano Cloner');
