@@ -289,14 +289,30 @@ const AdminPremiumMusicos = () => {
     }
 
     try {
-      const response = await supabase.functions.invoke("update-user-password-artes", {
-        body: {
-          user_id: user.user_id,
-          new_password: user.profile.email,
-        },
-      });
+      const { data: { session }, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr || !session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        return;
+      }
 
-      if (response.error) throw response.error;
+      const response = await fetch(
+        `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            user_id: user.user_id,
+            new_password: user.profile.email,
+          }),
+        }
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || `Falha (${response.status}) ao redefinir senha`);
+      }
 
       await supabase
         .from("profiles")
@@ -305,9 +321,9 @@ const AdminPremiumMusicos = () => {
 
       toast.success("Senha redefinida para o email!");
       await fetchUsers();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error resetting password:", error);
-      toast.error("Erro ao redefinir senha");
+      toast.error(error?.message || "Erro ao redefinir senha");
     }
   };
 

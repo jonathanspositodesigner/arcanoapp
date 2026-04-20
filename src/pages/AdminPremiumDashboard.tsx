@@ -526,15 +526,31 @@ const AdminPremiumDashboard = () => {
 
     setIsResettingPassword(true);
     try {
-      // Call edge function to reset password to email
-      const response = await supabase.functions.invoke("update-user-password-artes", {
-        body: {
-          user_id: selectedUser.user_id,
-          new_password: selectedUser.email,
-        },
-      });
+      // Revalidate session to ensure fresh Bearer token
+      const { data: { session }, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr || !session) {
+        toast.error("Sessão expirada. Faça login novamente.");
+        return;
+      }
 
-      if (response.error) throw response.error;
+      const response = await fetch(
+        `https://jooojbaljrshgpaxdlou.supabase.co/functions/v1/update-user-password-artes`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            user_id: selectedUser.user_id,
+            new_password: selectedUser.email,
+          }),
+        }
+      );
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result?.error || `Falha (${response.status}) ao redefinir senha`);
+      }
 
       // Set password_changed to false to force password change on next login
       const { error: profileError } = await supabase
