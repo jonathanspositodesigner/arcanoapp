@@ -25,7 +25,7 @@ import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { JobDebugPanel, DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
-import { cancelJob as centralCancelJob, checkActiveJob } from '@/ai/JobManager';
+import { cancelJob as centralCancelJob, checkActiveJob, createJob } from '@/ai/JobManager';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
 import { useNotificationTokenRecovery } from '@/hooks/useNotificationTokenRecovery';
@@ -472,10 +472,27 @@ const ArcanoClonerTool: React.FC = () => {
       setProgress(50);
       setCurrentStep('creating_job');
 
-      const clientJobId = crypto.randomUUID();
-      localJobId = clientJobId;
-      setJobId(clientJobId);
-      registerJob(clientJobId, 'Arcano Cloner', 'pending');
+      const { jobId: newJobId, error: createError } = await createJob(
+        'arcano_cloner',
+        verifiedUserId,
+        sessionIdRef.current,
+        {
+          status: 'pending',
+          creativity,
+          custom_prompt: customPromptEnabled ? customPrompt : '',
+          aspect_ratio: aspectRatio,
+          user_image_url: userUrl,
+          reference_image_url: referenceUrl,
+        }
+      );
+
+      if (createError || !newJobId) {
+        throw new Error(createError || 'Falha ao criar job do Arcano Cloner');
+      }
+
+      localJobId = newJobId;
+      setJobId(newJobId);
+      registerJob(newJobId, 'Arcano Cloner', 'pending');
 
       setProgress(60);
       setCurrentStep('starting_processing');
@@ -484,7 +501,7 @@ const ArcanoClonerTool: React.FC = () => {
       // Single invoke (no retry loop) - backend has idempotent charging via consume_credits_for_job
       const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
         body: {
-          jobId: clientJobId,
+          jobId: newJobId,
           userImageUrl: userUrl,
           referenceImageUrl: referenceUrl,
           aspectRatio: aspectRatio,
