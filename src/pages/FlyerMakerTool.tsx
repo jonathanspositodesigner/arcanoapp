@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
@@ -115,6 +116,19 @@ const FlyerMakerTool: React.FC = () => {
   const [contrateCreativity, setContrateCreativity] = useState(4);
   const [contrateImageSize, setContrateImageSize] = useState<'3:4' | '9:16'>('9:16');
 
+  // === Outro-specific states ===
+  const [outroPessoaSwitch, setOutroPessoaSwitch] = useState(false);
+  const [outroPessoaPhoto, setOutroPessoaPhoto] = useState<string | null>(null);
+  const [outroPessoaFile, setOutroPessoaFile] = useState<File | null>(null);
+  const [outroLogoImage, setOutroLogoImage] = useState<string | null>(null);
+  const [outroLogoFile, setOutroLogoFile] = useState<File | null>(null);
+  const [outroHeadline, setOutroHeadline] = useState('');
+  const [outroSubHeadline, setOutroSubHeadline] = useState('');
+  const [outroCallToAction, setOutroCallToAction] = useState('');
+  const [outroRodape, setOutroRodape] = useState('');
+  const [outroImageSize, setOutroImageSize] = useState<'3:4' | '9:16' | '16:9'>('9:16');
+  const [outroCreativity, setOutroCreativity] = useState(2);
+
   // Outputs
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
@@ -168,6 +182,7 @@ const FlyerMakerTool: React.FC = () => {
   const canProcess = referenceImage && artistPhotos.length > 0 && logoImage && status === 'idle';
   const canProcessAgenda = !!(referenceImage && agendaArtistPhoto && agendaTitle.trim() && agendaArtistName.trim() && agendaDates.length > 0 && agendaDates[0].dia.trim() && agendaDates[0].local.trim()) && status === 'idle';
   const canProcessContrate = !!(referenceImage && contrateArtistPhoto && contrateTitle.trim() && contrateArtistName.trim()) && status === 'idle';
+  const canProcessOutro = !!(referenceImage && outroHeadline.trim()) && status === 'idle';
   const isProcessing = status === 'uploading' || status === 'processing' || status === 'waiting';
 
   useEffect(() => {
@@ -1049,6 +1064,19 @@ const FlyerMakerTool: React.FC = () => {
     setContrateFooter('');
     setContrateCreativity(4);
     setContrateImageSize('9:16');
+    // Outro inputs
+    setOutroPessoaSwitch(false);
+    if (outroPessoaPhoto) URL.revokeObjectURL(outroPessoaPhoto);
+    setOutroPessoaPhoto(null);
+    setOutroPessoaFile(null);
+    setOutroLogoImage(null);
+    setOutroLogoFile(null);
+    setOutroHeadline('');
+    setOutroSubHeadline('');
+    setOutroCallToAction('');
+    setOutroRodape('');
+    setOutroImageSize('9:16');
+    setOutroCreativity(2);
   };
 
   return (
