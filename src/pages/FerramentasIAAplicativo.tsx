@@ -48,7 +48,7 @@ const FerramentasIAAplicativo = () => {
     "ia-muda-pose": t('ferramentas.descriptions.mudaPose'),
     "ia-muda-roupa": t('ferramentas.descriptions.mudaRoupa'),
     "arcano-cloner": "Crie ensaios fotográficos ultra realistas com IA",
-    "flyer-maker": "Crie flyers para eventos incríveis com IA",
+    "flyer-maker": "Crie artes incríveis com IA",
     "remover-fundo": "Remova o fundo de qualquer imagem com IA",
     "upscaler-video": "Melhore a qualidade de vídeos curtos com IA",
     "movieled-maker": "Gere movies para telão de LED com um clique",
