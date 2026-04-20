@@ -98,6 +98,7 @@ const BibliotecaPrompts = () => {
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
 
   const toolsScrollRef = useRef<HTMLDivElement>(null);
+  const { getCreditCost } = useAIToolSettings();
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
 
