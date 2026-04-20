@@ -481,47 +481,23 @@ export default function Seedance2() {
       createdJobId = jobData.id;
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "queued" } : g));
 
-      let data: any = null;
-      let error: any = null;
-      const MAX_INVOKE_RETRIES = 2;
-
-      for (let attempt = 0; attempt <= MAX_INVOKE_RETRIES; attempt++) {
-        const result = await supabase.functions.invoke("seedance-generate", {
-          body: {
-            model,
-            prompt: finalPrompt,
-            duration: parseInt(duration),
-            quality,
-            aspectRatio: ratio === "auto" ? undefined : ratio,
-            generateAudio,
-            imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? referenceImageUrls : undefined,
-            videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
-            audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
-            jobId: jobData.id,
-            creditCost,
-          },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
-
-        data = result.data;
-        error = result.error;
-
-        if (data?.success || data?.error) break;
-
-        const isNetworkError = !data && error && (
-          error.message?.includes('non-2xx') ||
-          error.message?.includes('Failed to fetch') ||
-          error.message?.includes('NetworkError') ||
-          error.message?.includes('FunctionsFetchError')
-        );
-
-        if (isNetworkError && attempt < MAX_INVOKE_RETRIES) {
-          console.warn(`[Seedance2] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
-          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
-          continue;
-        }
-        break;
-      }
+      // Single invoke (no retry loop) - backend should be idempotent on jobId
+      const { data, error } = await supabase.functions.invoke("seedance-generate", {
+        body: {
+          model,
+          prompt: finalPrompt,
+          duration: parseInt(duration),
+          quality,
+          aspectRatio: ratio === "auto" ? undefined : ratio,
+          generateAudio,
+          imageUrls: mode === "startend" ? [startImage, endImage].filter(Boolean) : mode === "multiref" ? referenceImageUrls : undefined,
+          videoUrls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
+          audioUrls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
+          jobId: jobData.id,
+          creditCost,
+        },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
 
       let realError = data?.error || error?.message || "Erro desconhecido";
       if (!data && error?.context) {
