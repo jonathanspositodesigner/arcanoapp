@@ -85,7 +85,38 @@ const Index = () => {
 
     setIsUpdating(true);
     toast.info("Limpando cache do app...");
-    openForceUpdatePage('manual-button');
+
+    try {
+      // Step 1: Delete ALL caches directly
+      if ('caches' in window) {
+        const cacheNames = await caches.keys();
+        await Promise.allSettled(cacheNames.map(name => caches.delete(name)));
+        console.log('[ManualUpdate] Caches deleted:', cacheNames);
+      }
+
+      // Step 2: Unregister ALL service workers
+      if ('serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        for (const reg of registrations) {
+          if (reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          await reg.unregister();
+        }
+        console.log('[ManualUpdate] SWs unregistered:', registrations.length);
+      }
+
+      // Step 3: Small delay for cleanup to propagate
+      await new Promise(r => setTimeout(r, 500));
+
+      // Step 4: Hard redirect with cache-busting (no SW to intercept now)
+      const url = new URL(window.location.pathname, window.location.origin);
+      url.searchParams.set('_v', Date.now().toString());
+      url.searchParams.set('_nocache', '1');
+      window.location.replace(url.toString());
+    } catch (error) {
+      console.error('[ManualUpdate] Error:', error);
+      // Fallback: just hard reload
+      window.location.replace(`/?_v=${Date.now()}`);
+    }
   };
 
   const { t } = useTranslation('index');
