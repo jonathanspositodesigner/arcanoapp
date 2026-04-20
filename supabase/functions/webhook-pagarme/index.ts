@@ -825,8 +825,21 @@ serve(async (req) => {
           const ACCESS_RANK: Record<string, number> = { '6_meses': 1, '1_ano': 2, 'vitalicio': 3 }
           const existingRank = ACCESS_RANK[existingPurchase.access_type] || 0
           const newRank = ACCESS_RANK[accessType] || 0
+          const isExpired = !!existingPurchase.expires_at && new Date(existingPurchase.expires_at) < new Date()
 
-          if (newRank > existingRank) {
+          if (isExpired) {
+            // Pack expirado: tratar QUALQUER compra como renovação completa, ignorando rank.
+            await supabase.from('user_pack_purchases').update({
+              access_type: accessType,
+              has_bonus_access: hasBonusAccess,
+              expires_at: expiresAt,
+              product_name: product.title,
+              platform: 'pagarme',
+              purchased_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            }).eq('id', existingPurchase.id)
+            console.log(`   ├─ ✅ Acesso RENOVADO (estava expirado): ${product.pack_slug} (${existingPurchase.access_type} → ${accessType})`)
+          } else if (newRank > existingRank) {
             // Upgrade access type
             await supabase.from('user_pack_purchases').update({
               access_type: accessType,
