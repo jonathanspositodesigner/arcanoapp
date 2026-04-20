@@ -1,0 +1,1 @@
+UPDATE ai_tool_settings SET credit_cost = 100, updated_at = now() WHERE tool_name = 'Flyer Maker';
