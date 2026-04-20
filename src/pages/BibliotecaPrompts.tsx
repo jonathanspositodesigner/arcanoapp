@@ -28,6 +28,7 @@ import gerarImagemCover from "@/assets/gerar-imagem-cover.jpg";
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
 import { supabase } from "@/integrations/supabase/client";
+import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 
