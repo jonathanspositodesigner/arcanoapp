@@ -39,6 +39,7 @@ const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 const WEBAPP_ID_EVENTO = '2025656642724962305';
 const WEBAPP_ID_AGENDA = '2044904569490120705';
 const WEBAPP_ID_CONTRATE = '2045273255975591938';
+const WEBAPP_ID_OUTRO = '2046326522990043138';
 const WEBAPP_ID = WEBAPP_ID_EVENTO; // legacy alias used in logs
 const JOB_TABLE = 'flyer_maker_jobs';
 
@@ -203,12 +204,14 @@ async function handleRun(req: Request) {
     dateTimeLocation, title, address, artistNames, footerPromo,
     imageSize, creativity
   } = body;
-  const flyerSubType: 'evento' | 'agenda' | 'contrate' =
+  const flyerSubType: 'evento' | 'agenda' | 'contrate' | 'outro' =
     body.flyerSubType === 'agenda' ? 'agenda' :
-    body.flyerSubType === 'contrate' ? 'contrate' : 'evento';
+    body.flyerSubType === 'contrate' ? 'contrate' :
+    body.flyerSubType === 'outro' ? 'outro' : 'evento';
   const webappId =
     flyerSubType === 'agenda' ? WEBAPP_ID_AGENDA :
     flyerSubType === 'contrate' ? WEBAPP_ID_CONTRATE :
+    flyerSubType === 'outro' ? WEBAPP_ID_OUTRO :
     WEBAPP_ID_EVENTO;
 
   // ========== JWT AUTH VERIFICATION ==========
@@ -229,14 +232,20 @@ async function handleRun(req: Request) {
   const userId = authUser.id;
   console.log(`[FlyerMaker] JWT verified - userId: ${userId}, subType: ${flyerSubType}, webappId: ${webappId}`);
 
-  // Validate required fields (logo is only required for 'evento' subtype)
-  if (!jobId || !referenceImageUrl || !artistPhotoUrls?.length) {
+  // Validate required fields
+  if (!jobId || !referenceImageUrl) {
     return new Response(JSON.stringify({ error: 'Missing required fields', code: 'MISSING_PARAMS' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  if (flyerSubType === 'evento' && !logoUrl) {
-    return new Response(JSON.stringify({ error: 'Missing logo', code: 'MISSING_PARAMS' }), {
+  // Evento requires artists + logo; agenda/contrate require artists
+  if (flyerSubType === 'evento' && (!artistPhotoUrls?.length || !logoUrl)) {
+    return new Response(JSON.stringify({ error: 'Missing required fields for evento', code: 'MISSING_PARAMS' }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+  if ((flyerSubType === 'agenda' || flyerSubType === 'contrate') && !artistPhotoUrls?.length) {
+    return new Response(JSON.stringify({ error: 'Missing required fields', code: 'MISSING_PARAMS' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
@@ -249,7 +258,7 @@ async function handleRun(req: Request) {
 
   // Validate URLs from Supabase storage
   const allowedDomains = ['supabase.co', 'supabase.in', SUPABASE_URL.replace('https://', '')];
-  const allImageUrls = [referenceImageUrl, ...artistPhotoUrls];
+  const allImageUrls = [referenceImageUrl, ...(artistPhotoUrls || [])];
   if (logoUrl) allImageUrls.push(logoUrl);
   for (const imageUrl of allImageUrls) {
     try {
@@ -278,7 +287,7 @@ async function handleRun(req: Request) {
   try {
     referenceFileName = await uploadImageToRunningHub(referenceImageUrl, 'reference', jobId);
 
-    for (let i = 0; i < artistPhotoUrls.length; i++) {
+    for (let i = 0; i < (artistPhotoUrls?.length || 0); i++) {
       const fn = await uploadImageToRunningHub(artistPhotoUrls[i], `artist_${i + 1}`, jobId);
       artistFileNames.push(fn);
     }
@@ -388,11 +397,33 @@ async function handleRun(req: Request) {
 
   const prebuiltNodeInfoList = agendaNodeInfoList || contrateNodeInfoList;
 
+  // Outro: nodeInfoList for WebApp 2046326522990043138
+  const outroNodeInfoList = flyerSubType === 'outro' ? (() => {
+    const nodes: Array<{ nodeId: string; fieldName: string; fieldValue: string; description: string; fieldData?: string }> = [
+      { nodeId: '1', fieldName: 'image', fieldValue: referenceFileName, description: 'FLYER REFERENCIA' },
+      { nodeId: '7', fieldName: 'text', fieldValue: title || 'HEADLINE:', description: 'HEADLINE' },
+      { nodeId: '10', fieldName: 'text', fieldValue: address || 'SUB-HEADLINE:', description: 'SUB HEADLINE' },
+      { nodeId: '140', fieldName: 'text', fieldValue: dateTimeLocation || 'CALL TO ACTION:', description: 'CALL TO ACTION' },
+      { nodeId: '9', fieldName: 'text', fieldValue: footerPromo || 'PROMO:', description: 'RODAPÉ' },
+      { nodeId: '107', fieldName: 'value', fieldValue: String(creativity ?? 2), description: 'CRIATIVIDADE DA IA' },
+      { nodeId: '190', fieldName: 'aspectRatio', fieldData: '[["auto", "1:1", "1:4", "1:8", "2:3", "3:2", "3:4", "4:1", "4:3", "4:5", "5:4", "8:1", "9:16", "16:9", "21:9"], {"default": "4:3"}]', fieldValue: imageSize || '9:16', description: 'TAMANHO DA IMAGEM' },
+    ];
+    if (artistFileNames.length > 0) {
+      nodes.push({ nodeId: '11', fieldName: 'image', fieldValue: artistFileNames[0], description: 'SUA IMAGEM' });
+    }
+    if (logoFileName) {
+      nodes.push({ nodeId: '195', fieldName: 'image', fieldValue: logoFileName, description: 'LOGO' });
+    }
+    return nodes;
+  })() : null;
+
+  const finalNodeInfoList = prebuiltNodeInfoList || outroNodeInfoList;
+
   await supabase.from(JOB_TABLE).update({
     job_payload: {
       flyerSubType,
       webappId,
-      ...(prebuiltNodeInfoList ? { nodeInfoList: prebuiltNodeInfoList } : {}),
+      ...(finalNodeInfoList ? { nodeInfoList: finalNodeInfoList } : {}),
       referenceFileName, artistFileNames, logoFileName,
       dateTimeLocation: dateTimeLocation || '', title: title || '',
       address: address || '', artistNames: artistNames || '',
