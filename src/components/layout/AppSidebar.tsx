@@ -109,6 +109,11 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             MovieLed Maker
           </button>
 
+          <button onClick={() => handleNavAndClose("/flyer-maker")} className={navItemClass("/flyer-maker")}>
+            <Palette className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Flyer Maker
+          </button>
+
           {/* CONTA */}
           <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Conta</p>
 
