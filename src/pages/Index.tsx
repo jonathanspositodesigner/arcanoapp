@@ -59,6 +59,8 @@ interface CardData {
   imagePosition: string;
 }
 
+export const APP_BUILD_VERSION = '1.1.1';
+
 const Index = () => {
   const navigate = useNavigate();
   
@@ -679,6 +681,11 @@ const Index = () => {
         onSignupStart={() => { signupInProgressRef.current = true; }}
         onSignupEnd={() => { signupInProgressRef.current = false; }}
       />
+
+      {/* Build version footer */}
+      <div className="w-full text-center py-2 text-[10px] text-muted-foreground/40">
+        v{APP_BUILD_VERSION}
+      </div>
 
     </div>
   );
