@@ -1525,8 +1525,8 @@ async function startJobOnRunningHub(
     }
 
     case 'flyer_maker_jobs': {
-      // Agenda/Contrate subtypes: use pre-built nodeInfoList + alternate webappId from job_payload
-      if ((p.flyerSubType === 'agenda' || p.flyerSubType === 'contrate') && Array.isArray(p.nodeInfoList) && p.webappId) {
+      // Agenda/Contrate/Outro subtypes: use pre-built nodeInfoList + alternate webappId from job_payload
+      if ((p.flyerSubType === 'agenda' || p.flyerSubType === 'contrate' || p.flyerSubType === 'outro') && Array.isArray(p.nodeInfoList) && p.webappId) {
         webappId = p.webappId;
         nodeInfoList = p.nodeInfoList;
         break;
