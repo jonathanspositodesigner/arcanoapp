@@ -873,6 +873,157 @@ const FlyerMakerTool: React.FC = () => {
     }
   };
 
+  const handleProcessOutro = async () => {
+    if (!startSubmit()) return;
+
+    if (!referenceImage || !outroHeadline.trim()) {
+      toast.error('Flyer de referência e Headline são obrigatórios');
+      endSubmit();
+      return;
+    }
+
+    if (!user?.id) {
+      setNoCreditsReason('not_logged');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    const activeCheck = await checkActiveJob(user.id);
+    if (activeCheck.hasActiveJob && activeCheck.activeTool) {
+      setActiveToolName(activeCheck.activeTool);
+      setActiveJobId(activeCheck.activeJobId);
+      setActiveStatus(activeCheck.activeStatus);
+      setShowActiveJobModal(true);
+      endSubmit();
+      return;
+    }
+
+    const freshCredits = await checkBalance();
+    const freshTestCredits = await fetchTestCredits();
+    const totalAvailable = freshCredits + freshTestCredits;
+    if (totalAvailable < creditCost) {
+      setNoCreditsReason('insufficient');
+      setShowNoCreditsModal(true);
+      endSubmit();
+      return;
+    }
+
+    setStatus('uploading');
+    setProgress(0);
+    setOutputImage(null);
+    setThumbnailImage(null);
+    setDebugErrorMessage(null);
+
+    let localJobId: string | null = null;
+
+    try {
+      setProgress(10);
+      let referenceUrl = referenceImage;
+      if (referenceFile) {
+        const compressed = await compressImage(referenceFile);
+        referenceUrl = await uploadToStorage(compressed, 'outro-reference');
+      }
+
+      let pessoaUrl: string | null = null;
+      if (outroPessoaSwitch && outroPessoaFile) {
+        setProgress(22);
+        const compressed = await compressImage(outroPessoaFile);
+        pessoaUrl = await uploadToStorage(compressed, 'outro-person');
+      }
+
+      let logoUrl: string | null = null;
+      if (outroLogoFile) {
+        setProgress(34);
+        const compressed = await compressImage(outroLogoFile);
+        logoUrl = await uploadToStorage(compressed, 'outro-logo');
+      }
+
+      setProgress(40);
+      const { data: job, error: jobError } = await supabase
+        .from('flyer_maker_jobs')
+        .insert({
+          session_id: sessionIdRef.current,
+          user_id: user.id,
+          status: 'pending',
+          reference_image_url: referenceUrl,
+          artist_photo_urls: pessoaUrl ? [pessoaUrl] : [],
+          logo_url: logoUrl || null,
+          artist_count: pessoaUrl ? 1 : 0,
+          date_time_location: '',
+          title: outroHeadline.trim(),
+          address: outroSubHeadline.trim(),
+          artist_names: outroCallToAction.trim(),
+          footer_promo: outroRodape.trim(),
+          image_size: outroImageSize,
+          creativity: outroCreativity,
+          job_payload: { flyerSubType: 'outro' }
+        } as any)
+        .select()
+        .single();
+
+      if (jobError || !job) throw new Error(jobError?.message || 'Falha ao criar job');
+
+      localJobId = job.id;
+      setJobId(job.id);
+      registerJob(job.id, 'Flyer Maker', 'pending');
+
+      setProgress(50);
+      setStatus('processing');
+
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-flyer-maker/run', {
+        body: {
+          jobId: job.id,
+          userId: user.id,
+          creditCost,
+          flyerSubType: 'outro',
+          referenceImageUrl: referenceUrl,
+          artistPhotoUrls: pessoaUrl ? [pessoaUrl] : [],
+          logoUrl: logoUrl || null,
+          title: `HEADLINE:${outroHeadline.trim()}`,
+          address: `SUB-HEADLINE:${outroSubHeadline.trim()}`,
+          dateTimeLocation: `CALL TO ACTION:${outroCallToAction.trim()}`,
+          footerPromo: `PROMO:${outroRodape.trim()}`,
+          artistNames: '',
+          imageSize: outroImageSize,
+          creativity: outroCreativity,
+        },
+      });
+
+      if (runError) throw new Error(runError.message || 'Erro ao iniciar processamento');
+
+      fetchTestCredits();
+      refetchCredits();
+
+      if (runResult?.code === 'INSUFFICIENT_CREDITS') {
+        setStatus('idle');
+        setNoCreditsReason('insufficient');
+        setShowNoCreditsModal(true);
+        endSubmit();
+        return;
+      }
+
+      if (runResult?.queued) {
+        setStatus('waiting');
+        setQueuePosition(runResult.position || 1);
+        toast.info(`Você está na fila (posição ${runResult.position})`);
+      } else {
+        setStatus('processing');
+        setProgress(60);
+      }
+    } catch (error: any) {
+      console.error('[FlyerMaker Outro] Process error:', error);
+      if (localJobId) {
+        const { markJobAsFailedInDb } = await import('@/utils/markJobAsFailedInDb');
+        await markJobAsFailedInDb(localJobId, 'flyer_maker', error.message || 'Erro desconhecido');
+      }
+      setStatus('error');
+      setDebugErrorMessage(error.message);
+      toast.error(error.message);
+      endSubmit();
+    }
+  };
+
   const handleCancelQueue = async () => {
     if (!jobId) return;
     try {
