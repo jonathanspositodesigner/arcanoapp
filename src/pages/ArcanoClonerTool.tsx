@@ -481,44 +481,19 @@ const ArcanoClonerTool: React.FC = () => {
       setCurrentStep('starting_processing');
       setStatus('processing');
 
-      const MAX_INVOKE_RETRIES = 3;
-      let runResult: any = null;
-      let runError: any = null;
-
-      for (let attempt = 0; attempt < MAX_INVOKE_RETRIES; attempt++) {
-        const result = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
-          body: {
-            jobId: clientJobId,
-            userImageUrl: userUrl,
-            referenceImageUrl: referenceUrl,
-            aspectRatio: aspectRatio,
-            userId: verifiedUserId,
-            creditCost: creditCost,
-            creativity: creativity,
-            customPrompt: customPromptEnabled ? customPrompt : '',
-          },
-        });
-
-        runResult = result.data;
-        runError = result.error;
-
-        if (runResult?.success || runResult?.error) break;
-
-        const isNetworkError = !runResult && runError && (
-          runError.message?.includes('non-2xx') ||
-          runError.message?.includes('Failed to fetch') ||
-          runError.message?.includes('NetworkError') ||
-          runError.message?.includes('FunctionsFetchError')
-        );
-
-        if (isNetworkError && attempt < MAX_INVOKE_RETRIES - 1) {
-          console.warn(`[ArcanoCloner] Edge function retry ${attempt + 1}/${MAX_INVOKE_RETRIES}`);
-          await new Promise(r => setTimeout(r, 3000 * (attempt + 1)));
-          continue;
-        }
-
-        break;
-      }
+      // Single invoke (no retry loop) - backend has idempotent charging via consume_credits_for_job
+      const { data: runResult, error: runError } = await supabase.functions.invoke('runninghub-arcano-cloner/run', {
+        body: {
+          jobId: clientJobId,
+          userImageUrl: userUrl,
+          referenceImageUrl: referenceUrl,
+          aspectRatio: aspectRatio,
+          userId: verifiedUserId,
+          creditCost: creditCost,
+          creativity: creativity,
+          customPrompt: customPromptEnabled ? customPrompt : '',
+        },
+      });
 
       if (runError && !runResult) {
         console.error('[ArcanoCloner] Edge function error:', runError);
