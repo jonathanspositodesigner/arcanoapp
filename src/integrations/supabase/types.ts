@@ -394,7 +394,9 @@ export type Database = {
           device_fingerprint: string
           expires_at: string
           id: string
+          ip_address: string | null
           used_at: string | null
+          user_agent: string | null
           user_id: string
         }
         Insert: {
@@ -403,7 +405,9 @@ export type Database = {
           device_fingerprint: string
           expires_at: string
           id?: string
+          ip_address?: string | null
           used_at?: string | null
+          user_agent?: string | null
           user_id: string
         }
         Update: {
@@ -412,7 +416,9 @@ export type Database = {
           device_fingerprint?: string
           expires_at?: string
           id?: string
+          ip_address?: string | null
           used_at?: string | null
+          user_agent?: string | null
           user_id?: string
         }
         Relationships: []
