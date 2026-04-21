@@ -1933,6 +1933,7 @@ const FlyerMakerTool: React.FC = () => {
                           setRefineReferencePreview(null);
                         }}
                         isRefining={isRefining}
+                        creditCost={50}
                       />
                     )}
                   </>
@@ -2140,6 +2141,7 @@ const FlyerMakerTool: React.FC = () => {
                       setRefineReferencePreview(null);
                     }}
                     isRefining={isRefining}
+                    creditCost={50}
                   />
                 )}
                   </>
