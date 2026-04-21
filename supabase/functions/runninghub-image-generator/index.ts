@@ -347,7 +347,7 @@ async function handleRun(req: Request) {
   // Minimum costs per source — client cannot send less than these values
   const MIN_COSTS: Record<string, number> = {
     'arcano_cloner_refine': 100,
-    'flyer_maker_refine': 100,
+    'flyer_maker_refine': 50,
     'cinema_studio_photo': 100,
     'legacy_proxy': 100,
     'standard': 100,
