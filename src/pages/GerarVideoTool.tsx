@@ -10,7 +10,6 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
@@ -66,7 +65,7 @@ const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
-  const { isPlanos2User, hasVideoGeneration } = useAuth();
+  // Acesso liberado para todos com créditos (avulsos ou de plano)
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
 
   // Check if user is unlimited
@@ -571,32 +570,6 @@ const GerarVideoTool = () => {
 
   const hasFrames = !!startFrame || !!endFrame;
   const framesReady = selectedModel === 'wan2.2' ? (!!startFrame && !!endFrame) : !!startFrame;
-
-  // Block access for planos2 users without video generation permission
-  if (isPlanos2User && !hasVideoGeneration) {
-    return (
-      <AppLayout>
-        <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
-          <div className="max-w-md text-center space-y-4">
-            <div className="text-6xl">🔒</div>
-            <h1 className="text-xl font-bold text-foreground">Recurso não disponível no seu plano</h1>
-            <p className="text-muted-foreground text-sm">
-              A geração de vídeos está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
-            </p>
-            <p className="text-muted-foreground text-xs">
-              Faça upgrade do seu plano para desbloquear esta ferramenta.
-            </p>
-            <button
-              onClick={goBack}
-              className="mt-4 px-6 py-2.5 rounded-full bg-secondary hover:bg-accent0 text-foreground text-sm font-medium transition-colors"
-            >
-              Voltar
-            </button>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>
