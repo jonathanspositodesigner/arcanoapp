@@ -128,7 +128,11 @@ const AdminLogin = () => {
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Log tentativa falha (senha errada ou conta inexistente)
+        logAdminAttempt(email, false, error.message);
+        throw error;
+      }
 
       // Verifica se é admin
       const { data: roleData, error: roleError } = await supabase
@@ -140,6 +144,7 @@ const AdminLogin = () => {
 
       if (roleError || !roleData) {
         await supabase.auth.signOut();
+        logAdminAttempt(email, false, 'Não é administrador');
         toast.error("Acesso negado. Você não tem permissões de administrador.");
         return;
       }
@@ -148,12 +153,14 @@ const AdminLogin = () => {
       const isTrusted = await checkTrustedDevice(data.user.id);
 
       if (isTrusted) {
+        logAdminAttempt(email, true);
         toast.success("Login realizado com sucesso!");
         navigate('/admin-hub');
       } else {
         // Dispositivo desconhecido - envia código 2FA
         setPendingUserId(data.user.id);
         await send2FACode(data.user.id);
+        logAdminAttempt(email, true, 'Aguardando 2FA - dispositivo desconhecido');
         setStep("verification");
         toast.info("Código de verificação enviado para seu email");
       }
