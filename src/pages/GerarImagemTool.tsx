@@ -38,7 +38,7 @@ const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited } = useCredits();
-  const { isPlanos2User, hasImageGeneration } = useAuth();
+  // Acesso liberado para todos com créditos (avulsos ou de plano)
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob } = useAIJob();
@@ -524,26 +524,6 @@ const GerarImagemTool = () => {
       refetchCredits();
     }
   };
-
-  // Block access for planos2 users without image generation permission
-  if (isPlanos2User && !hasImageGeneration) {
-    return (
-      <AppLayout>
-        <div className="min-h-screen bg-gradient-to-br from-[#0f0a15] via-[#1a0f25] to-[#0a0510] flex flex-col items-center justify-center p-6">
-          <div className="max-w-md text-center space-y-4">
-            <div className="text-6xl">🔒</div>
-            <h1 className="text-xl font-bold text-foreground">Recurso não disponível no seu plano</h1>
-            <p className="text-muted-foreground text-sm">
-              A geração de imagens está disponível a partir do plano <strong className="text-muted-foreground">Pro</strong>.
-            </p>
-            <button onClick={goBack} className="mt-4 px-6 py-2.5 rounded-full bg-secondary hover:bg-accent0 text-foreground text-sm font-medium transition-colors">
-              Voltar
-            </button>
-          </div>
-        </div>
-      </AppLayout>
-    );
-  }
 
   return (
     <AppLayout>

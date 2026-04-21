@@ -397,18 +397,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isPlanos2User: !!planos2Subscription,
     isSubscriptionActive: !!planos2Subscription && planos2Subscription.is_active === true && 
       (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date()),
-    hasImageGeneration: (() => {
-      const active = !!planos2Subscription && planos2Subscription.is_active === true && 
-        (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date());
-      if (!planos2Subscription) return true; // legacy users
-      return active ? planos2Subscription.has_image_generation : false;
-    })(),
-    hasVideoGeneration: (() => {
-      const active = !!planos2Subscription && planos2Subscription.is_active === true && 
-        (!planos2Subscription.expires_at || new Date(planos2Subscription.expires_at) > new Date());
-      if (!planos2Subscription) return true; // legacy users
-      return active ? planos2Subscription.has_video_generation : false;
-    })(),
+    // Acesso TOTAL: todas as ferramentas liberadas para qualquer usuário com créditos
+    // (avulsos ou de plano). A cobrança de créditos já gerencia o uso.
+    hasImageGeneration: true,
+    hasVideoGeneration: true,
     costMultiplier: planos2Subscription?.cost_multiplier ?? 1.0,
     logout,
     refetch

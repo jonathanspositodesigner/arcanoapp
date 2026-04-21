@@ -50,8 +50,10 @@ export const usePlanos2Access = (userId?: string) => {
   return {
     subscription,
     isLoading,
-    hasImageGeneration: isReallyActive ? (subscription?.has_image_generation ?? true) : !subscription ? true : false,
-    hasVideoGeneration: isReallyActive ? (subscription?.has_video_generation ?? true) : !subscription ? true : false,
+    // Acesso TOTAL: todas as ferramentas liberadas para qualquer usuário com créditos
+    // (avulsos ou de plano). A cobrança de créditos já gerencia o uso.
+    hasImageGeneration: true,
+    hasVideoGeneration: true,
     isPlanos2User: !!subscription,
     isSubscriptionActive: isReallyActive,
     planSlug: subscription?.plan_slug ?? null,
