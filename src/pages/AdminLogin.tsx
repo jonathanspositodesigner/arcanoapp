@@ -17,6 +17,22 @@ import {
 
 type LoginStep = "credentials" | "verification";
 
+const logAdminAttempt = async (email: string, success: boolean, failureReason?: string) => {
+  try {
+    const fingerprint = getDeviceFingerprint();
+    await supabase.functions.invoke('log-admin-login-attempt', {
+      body: {
+        email,
+        success,
+        failure_reason: failureReason || null,
+        device_fingerprint: fingerprint,
+      },
+    });
+  } catch (e) {
+    console.error('Erro ao registrar tentativa de login:', e);
+  }
+};
+
 const AdminLogin = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
