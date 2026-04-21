@@ -355,6 +355,12 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       return;
     }
     
+    // Prevent double-click / rapid re-submission
+    if (state.isLoading) {
+      console.warn('[UnifiedAuth] Login already in progress, ignoring duplicate call');
+      return;
+    }
+    
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
