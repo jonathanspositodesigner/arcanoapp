@@ -14,6 +14,13 @@ serve(async (req) => {
   try {
     const { user_id, email, device_fingerprint, device_name } = await req.json();
 
+    // Capture client IP and User-Agent for security auditing
+    const clientIp = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
+      || req.headers.get('cf-connecting-ip')
+      || req.headers.get('x-real-ip')
+      || 'unknown';
+    const clientUserAgent = req.headers.get('user-agent') || 'unknown';
+
     // ========== INPUT VALIDATION ==========
     // Validate user_id is a valid UUID
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -119,6 +126,8 @@ serve(async (req) => {
         code,
         device_fingerprint,
         expires_at: expiresAt,
+        ip_address: clientIp,
+        user_agent: clientUserAgent,
       });
 
     if (insertError) {
@@ -194,7 +203,7 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Código 2FA enviado para ${targetEmail} (login: ${email})`);
+    console.log(`Código 2FA enviado para ${targetEmail} (login: ${email}) | IP: ${clientIp} | UA: ${clientUserAgent}`);
 
     return new Response(
       JSON.stringify({ success: true, message: "Código enviado por email" }),
