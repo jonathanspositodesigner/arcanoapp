@@ -1364,15 +1364,15 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="space-y-2.5">
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Título da Agenda:</span>
-                        <Input placeholder="AGENDA MENSAL" value={agendaTitle} onChange={e => setAgendaTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="AGENDA MENSAL" value={agendaTitle} onChange={e => setAgendaTitle(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Nome do Artista:</span>
-                        <Input placeholder="ANA CASTELA" value={agendaArtistName} onChange={e => setAgendaArtistName(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ANA CASTELA" value={agendaArtistName} onChange={e => setAgendaArtistName(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção (opcional):</span>
-                        <Input placeholder="SHOWS PARTICULARES: (99) 99999-9999" value={agendaFooter} onChange={e => setAgendaFooter(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="SHOWS PARTICULARES: (99) 99999-9999" value={agendaFooter} onChange={e => setAgendaFooter(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
@@ -1407,7 +1407,7 @@ const FlyerMakerTool: React.FC = () => {
                                   value={date.dia}
                                   onChange={e => {
                                     const updated = [...agendaDates];
-                                    updated[index] = { ...updated[index], dia: e.target.value.toUpperCase() };
+                                    updated[index] = { ...updated[index], dia: e.target.value };
                                     setAgendaDates(updated);
                                   }}
                                   disabled={isProcessing}
@@ -1421,7 +1421,7 @@ const FlyerMakerTool: React.FC = () => {
                                   value={date.local}
                                   onChange={e => {
                                     const updated = [...agendaDates];
-                                    updated[index] = { ...updated[index], local: e.target.value.toUpperCase() };
+                                    updated[index] = { ...updated[index], local: e.target.value };
                                     setAgendaDates(updated);
                                   }}
                                   disabled={isProcessing}
@@ -1435,7 +1435,7 @@ const FlyerMakerTool: React.FC = () => {
                                   value={date.cidade}
                                   onChange={e => {
                                     const updated = [...agendaDates];
-                                    updated[index] = { ...updated[index], cidade: e.target.value.toUpperCase() };
+                                    updated[index] = { ...updated[index], cidade: e.target.value };
                                     setAgendaDates(updated);
                                   }}
                                   disabled={isProcessing}
@@ -1601,19 +1601,19 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="space-y-2.5">
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Título:</span>
-                        <Input placeholder="CONTRATE AGORA" value={contrateTitle} onChange={e => setContrateTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="CONTRATE AGORA" value={contrateTitle} onChange={e => setContrateTitle(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Nome do Artista:</span>
-                        <Input placeholder="ANA CASTELA" value={contrateArtistName} onChange={e => setContrateArtistName(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ANA CASTELA" value={contrateArtistName} onChange={e => setContrateArtistName(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Contato / Telefone:</span>
-                        <Input placeholder="(99) 99999-9999" value={contrateContact} onChange={e => setContrateContact(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="(99) 99999-9999" value={contrateContact} onChange={e => setContrateContact(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Informação adicional (opcional):</span>
-                        <Input placeholder="DISPONÍVEL PARA EVENTOS" value={contrateFooter} onChange={e => setContrateFooter(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DISPONÍVEL PARA EVENTOS" value={contrateFooter} onChange={e => setContrateFooter(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
@@ -1817,19 +1817,19 @@ const FlyerMakerTool: React.FC = () => {
                         <div className="space-y-2.5">
                           <div>
                             <span className="text-xs text-muted-foreground mb-1 block">Headline <span className="text-destructive">*</span></span>
-                            <Input placeholder="GRANDE OFERTA DE VERÃO" value={outroHeadline} onChange={e => setOutroHeadline(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                            <Input placeholder="GRANDE OFERTA DE VERÃO" value={outroHeadline} onChange={e => setOutroHeadline(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                           </div>
                           <div>
                             <span className="text-xs text-muted-foreground mb-1 block">Sub-Headline <span className="text-[10px]">(opcional)</span></span>
-                            <Input placeholder="ATÉ 70% OFF EM TODOS OS PRODUTOS" value={outroSubHeadline} onChange={e => setOutroSubHeadline(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                            <Input placeholder="ATÉ 70% OFF EM TODOS OS PRODUTOS" value={outroSubHeadline} onChange={e => setOutroSubHeadline(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                           </div>
                           <div>
                             <span className="text-xs text-muted-foreground mb-1 block">Call to Action <span className="text-[10px]">(opcional)</span></span>
-                            <Input placeholder="COMPRE AGORA" value={outroCallToAction} onChange={e => setOutroCallToAction(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                            <Input placeholder="COMPRE AGORA" value={outroCallToAction} onChange={e => setOutroCallToAction(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                           </div>
                           <div>
                             <span className="text-xs text-muted-foreground mb-1 block">Informação de Rodapé <span className="text-[10px]">(opcional)</span></span>
-                            <Input placeholder="VÁLIDO ATÉ 30/04 | WHATSAPP (99) 99999-9999" value={outroRodape} onChange={e => setOutroRodape(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                            <Input placeholder="VÁLIDO ATÉ 30/04 | WHATSAPP (99) 99999-9999" value={outroRodape} onChange={e => setOutroRodape(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                           </div>
                         </div>
 
@@ -2009,23 +2009,23 @@ const FlyerMakerTool: React.FC = () => {
                     <div className="space-y-2.5">
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Data e Horário:</span>
-                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="SEG.18.ABR - 18H" value={dateTimeLocation} onChange={e => setDateTimeLocation(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Título do Evento:</span>
-                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DEU FERIAS" value={title} onChange={e => setTitle(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Endereço:</span>
-                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENDEREÇO DO LOCAL..." value={address} onChange={e => setAddress(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Nomes dos Artistas:</span>
-                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="DJ ALOK - RASTA CHINELA..." value={artistNames} onChange={e => setArtistNames(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                       <div>
                         <span className="text-xs text-muted-foreground mb-1 block">Rodapé / Promoção:</span>
-                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value.toUpperCase())} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 uppercase placeholder:text-muted-foreground" />
+                        <Input placeholder="ENTRADA OFF PARA ELAS..." value={footerPromo} onChange={e => setFooterPromo(e.target.value)} disabled={isProcessing} className="bg-muted border-border text-foreground text-sm h-10 placeholder:text-muted-foreground" />
                       </div>
                     </div>
 
