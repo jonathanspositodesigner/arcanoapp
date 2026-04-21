@@ -769,6 +769,27 @@ async function processHotmartWebhook(
       const purchaseValue = purchase?.price?.value || purchase?.full_price?.value || 0
       const purchaseCurrency = purchase?.price?.currency_code || 'USD'
       
+      // Converter valor para BRL usando exchange_rates
+      let purchaseValueBRL = Number(purchaseValue)
+      if (purchaseCurrency && purchaseCurrency !== 'BRL') {
+        try {
+          const { data: rateData } = await supabase
+            .from('exchange_rates')
+            .select('rate_to_brl')
+            .eq('currency', purchaseCurrency.toUpperCase())
+            .single()
+          
+          if (rateData?.rate_to_brl) {
+            purchaseValueBRL = Math.round(Number(purchaseValue) * rateData.rate_to_brl * 100) / 100
+            console.log(`   ├─ 💱 Conversão moeda: ${purchaseCurrency} ${purchaseValue} → BRL ${purchaseValueBRL} (rate: ${rateData.rate_to_brl})`)
+          } else {
+            console.warn(`   ├─ ⚠️ Taxa de câmbio não encontrada para ${purchaseCurrency}, enviando valor original`)
+          }
+        } catch (convErr: any) {
+          console.warn(`   ├─ ⚠️ Erro ao converter moeda ${purchaseCurrency}: ${convErr.message}, enviando valor original`)
+        }
+      }
+      
       // event_time real do pagamento
       const approvedDate = purchase?.approved_date || purchase?.order_date
       const realEventTime = approvedDate ? Math.floor(new Date(approvedDate).getTime() / 1000) : undefined
@@ -793,8 +814,8 @@ async function processHotmartWebhook(
         body: JSON.stringify({
           event_name: 'Purchase',
           email,
-          value: Number(purchaseValue),
-          currency: purchaseCurrency,
+          value: purchaseValueBRL,
+          currency: 'BRL',
           utm_data: Object.keys(utmData).length > 0 ? utmData : null,
           fbp,
           fbc,
@@ -805,7 +826,7 @@ async function processHotmartWebhook(
         }),
       })
       
-      console.log(`   ├─ 📊 Meta CAPI Purchase (Hotmart→Pixel ES): ${capiResponse.ok ? '✅ sent' : `❌ ${capiResponse.status}`} | event_id: ${capiEventId} | value: ${purchaseCurrency} ${purchaseValue} | fbc: ${fbc ? '✅' : '❌'} | fbp: ${fbp ? '✅' : '❌'}`)
+      console.log(`   ├─ 📊 Meta CAPI Purchase (Hotmart→Pixel ES): ${capiResponse.ok ? '✅ sent' : `❌ ${capiResponse.status}`} | event_id: ${capiEventId} | value: BRL ${purchaseValueBRL} (original: ${purchaseCurrency} ${purchaseValue}) | fbc: ${fbc ? '✅' : '❌'} | fbp: ${fbp ? '✅' : '❌'}`)
     } catch (capiErr: any) {
       console.warn(`   ├─ ⚠️ Meta CAPI Purchase (Hotmart) falhou (não-crítico): ${capiErr.message}`)
     }
