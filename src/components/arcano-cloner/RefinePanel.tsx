@@ -17,9 +17,10 @@ interface RefinePanelProps {
   title?: string;
   buttonLabel?: string;
   loadingLabel?: string;
+  creditCost?: number;
 }
 
-const REFINE_COST = 100;
+const DEFAULT_REFINE_COST = 100;
 
 const RefinePanel: React.FC<RefinePanelProps> = ({
   prompt,
@@ -33,6 +34,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
   title: panelTitle = 'Refinar Resultado',
   buttonLabel = 'Refinar',
   loadingLabel = 'Refinando...',
+  creditCost = DEFAULT_REFINE_COST,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
