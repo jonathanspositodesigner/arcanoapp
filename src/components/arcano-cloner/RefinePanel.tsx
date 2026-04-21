@@ -134,7 +134,7 @@ const RefinePanel: React.FC<RefinePanelProps> = ({
               {buttonLabel}
               <span className="ml-1.5 flex items-center gap-0.5 text-[10px] opacity-90">
                 <Coins className="w-3 h-3" />
-                {REFINE_COST}
+                {creditCost}
               </span>
             </>
           )}
