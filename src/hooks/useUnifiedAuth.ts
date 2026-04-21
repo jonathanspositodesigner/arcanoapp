@@ -355,6 +355,12 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       return;
     }
     
+    // Prevent double-click / rapid re-submission
+    if (state.isLoading) {
+      console.warn('[UnifiedAuth] Login already in progress, ignoring duplicate call');
+      return;
+    }
+    
     setState(prev => ({ ...prev, isLoading: true, error: null }));
     
     try {
@@ -481,10 +487,15 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       }
 
       // Success!
+      console.log('[UnifiedAuth] Login successful, waiting for session to stabilize...');
+      // Small delay to let AuthContext process the SIGNED_IN event before navigating
+      await sleep(150);
+
       toast.success(t('success.loginSuccess'));
       config.onLoginSuccess?.();
       navigate(config.defaultRedirect);
-      setState(prev => ({ ...prev, isLoading: false }));
+      // Keep isLoading true briefly so the login button stays disabled during navigation
+      setTimeout(() => setState(prev => ({ ...prev, isLoading: false })), 500);
       
     } catch (error) {
       console.error('[UnifiedAuth] Login error:', error);

@@ -290,20 +290,62 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, currentSession) => {
-        // Synchronous state updates only
-        setSession(currentSession);
-        setUser(currentSession?.user ?? null);
-        
-        // Defer async operations with setTimeout to avoid deadlocks
+        console.log('[Auth] onAuthStateChange:', event, currentSession?.user?.email ?? 'no-user');
+
         if (currentSession?.user) {
+          // Synchronous state updates
+          setSession(currentSession);
+          setUser(currentSession.user);
+
+          // Defer async operations with setTimeout to avoid deadlocks
           setTimeout(() => {
             checkAllStatuses(currentSession.user.id)
               .catch(err => console.error('[Auth] Status check failed:', err))
               .finally(() => setIsLoading(false));
           }, 0);
         } else {
-          resetAllStates();
-          setIsLoading(false);
+          // Session lost — but DON'T immediately reset if we had a user.
+          // Try to recover the session first (handles token refresh race conditions).
+          if (event === 'SIGNED_OUT') {
+            // Explicit sign out — reset immediately
+            console.log('[Auth] Explicit SIGNED_OUT, resetting state');
+            setSession(null);
+            setUser(null);
+            resetAllStates();
+            setIsLoading(false);
+          } else {
+            // Could be a transient loss (INITIAL_SESSION with null, TOKEN_REFRESHED glitch)
+            // Try to recover before giving up
+            console.warn('[Auth] Session lost on event:', event, '— attempting recovery');
+            setTimeout(async () => {
+              try {
+                const { data: { session: recovered } } = await supabase.auth.getSession();
+                if (recovered?.user) {
+                  console.log('[Auth] Session recovered for:', recovered.user.email);
+                  setSession(recovered);
+                  setUser(recovered.user);
+                  try {
+                    await checkAllStatuses(recovered.user.id);
+                  } catch (err) {
+                    console.error('[Auth] Status check failed after recovery:', err);
+                  }
+                  setIsLoading(false);
+                } else {
+                  console.log('[Auth] Recovery failed, no session found — resetting');
+                  setSession(null);
+                  setUser(null);
+                  resetAllStates();
+                  setIsLoading(false);
+                }
+              } catch (err) {
+                console.error('[Auth] Recovery attempt error:', err);
+                setSession(null);
+                setUser(null);
+                resetAllStates();
+                setIsLoading(false);
+              }
+            }, 100);
+          }
         }
       }
     );
