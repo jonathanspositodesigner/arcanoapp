@@ -7,7 +7,6 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useQueueSessionCleanup } from '@/hooks/useQueueSessionCleanup';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';

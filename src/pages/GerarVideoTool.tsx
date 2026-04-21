@@ -10,7 +10,6 @@ import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
-import { useAuth } from '@/contexts/AuthContext';
 import { useProcessingButton } from '@/hooks/useProcessingButton';
 import { useJobPendingWatchdog } from '@/hooks/useJobPendingWatchdog';
 import { useJobStatusSync } from '@/hooks/useJobStatusSync';
