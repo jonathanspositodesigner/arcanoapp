@@ -67,7 +67,7 @@ const GptImagePromoBanner = () => {
 
           {/* Description */}
           <p className="text-white/90 text-[11px] sm:text-sm font-medium text-center leading-tight">
-            <span className="font-bold text-yellow-200">GPT Image Ilimitado</span> por 7 dias!
+            <span className="font-bold text-yellow-200">GPT Image 2 Ilimitado</span> por 7 dias!
           </p>
 
           {/* Countdown */}

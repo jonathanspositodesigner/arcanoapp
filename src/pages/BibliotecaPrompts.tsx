@@ -458,11 +458,11 @@ const BibliotecaPrompts = () => {
           {t('sidebar.installApp')}
         </Button>
 
-        {/* Banner Seedance 2 com Vídeo */}
-        <Seedance2PromoBanner />
-
         {/* Banner GPT Image Promo */}
         <GptImagePromoBanner />
+
+        {/* Banner Seedance 2 com Vídeo */}
+        <Seedance2PromoBanner />
 
         {/* ===== AI Tools Quick Access Strip ===== */}
         <div className="mb-6 sm:mb-8">
