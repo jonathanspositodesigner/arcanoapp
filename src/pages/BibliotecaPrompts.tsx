@@ -310,7 +310,13 @@ const BibliotecaPrompts = () => {
       return;
     }
 
-    if (promptItem.isPremium && hasLimitPlan) {
+    // Block premium prompts that haven't been unlocked today
+    if (promptItem.isPremium && !isPromptUnlocked(String(promptItem.id))) {
+      toast.error('Libere o prompt primeiro antes de copiar.');
+      return;
+    }
+
+    if (!promptItem.isPremium && hasLimitPlan) {
       if (hasReachedLimit) {
         setShowLimitModal(true);
         return;
@@ -344,7 +350,7 @@ const BibliotecaPrompts = () => {
     }
 
     // Record the copy for daily limit tracking AFTER clipboard succeeds
-    if (promptItem.isPremium && hasLimitPlan) {
+    if (!promptItem.isPremium && hasLimitPlan) {
       const recorded = await recordCopy(String(promptItem.id));
       if (!recorded) {
         setShowLimitModal(true);
