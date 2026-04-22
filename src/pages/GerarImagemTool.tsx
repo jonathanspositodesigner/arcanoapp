@@ -749,7 +749,7 @@ const GerarImagemTool = () => {
                     </button>
                   </div>
                 ))}
-                <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">{referenceImages.length}/5</span>
+                <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">{referenceImages.length}/{maxRefs}</span>
               </div>
             </div>
           )}
@@ -760,7 +760,7 @@ const GerarImagemTool = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || referenceImages.length >= 5}
+                disabled={isProcessing || referenceImages.length >= maxRefs}
                 className="relative flex-shrink-0 w-9 h-9 rounded-full border border-border bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
