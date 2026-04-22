@@ -2374,6 +2374,54 @@ export type Database = {
         }
         Relationships: []
       }
+      gpt_image_jobs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          credits_charged: number | null
+          error_message: string | null
+          id: string
+          input_image_urls: string[] | null
+          output_url: string | null
+          prompt: string
+          size: string | null
+          status: string | null
+          task_id: string | null
+          thumbnail_url: string | null
+          user_id: string
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          error_message?: string | null
+          id?: string
+          input_image_urls?: string[] | null
+          output_url?: string | null
+          prompt: string
+          size?: string | null
+          status?: string | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_id: string
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          credits_charged?: number | null
+          error_message?: string | null
+          id?: string
+          input_image_urls?: string[] | null
+          output_url?: string | null
+          prompt?: string
+          size?: string | null
+          status?: string | null
+          task_id?: string | null
+          thumbnail_url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       image_generator_jobs: {
         Row: {
           api_account: string | null
