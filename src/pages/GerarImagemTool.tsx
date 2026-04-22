@@ -531,7 +531,7 @@ const GerarImagemTool = () => {
           toast.info(`Na fila — posição ${result.position}`);
         }
         } else {
-          // ========== GPT IMAGE 2 FLOW (RunningHub, same as Flux2 Klein) ==========
+          // ========== GPT IMAGE FLOW (RunningHub or Evolink) ==========
           const uploadedUrls: string[] = [];
           for (let i = 0; i < referenceImages.length; i++) {
             toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
