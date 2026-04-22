@@ -1,0 +1,1 @@
+UPDATE planos2_subscriptions SET gpt_image_free_until = NOW() + INTERVAL '7 days' WHERE user_id = '82f74de6-67ec-4f52-bd5d-05fd17b0a54f' AND gpt_image_free_until IS NULL
