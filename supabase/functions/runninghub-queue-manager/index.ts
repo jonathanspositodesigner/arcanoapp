@@ -867,7 +867,7 @@ async function handleFinish(req: Request): Promise<Response> {
     
     if (finalOutputUrl) updateData.output_url = finalOutputUrl;
     if (errorMessage) {
-      updateData.error_message = errorMessage;
+      updateData.error_message = normalizeAIError(errorMessage).message;
       updateData.failed_at_step = 'webhook_received';
     }
     if (rhCost) updateData.rh_cost = rhCost;
