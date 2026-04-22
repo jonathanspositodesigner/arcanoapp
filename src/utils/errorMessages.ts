@@ -118,10 +118,12 @@ export function getAIErrorMessage(errorMessage: string | null): {
   // Fila cheia / limite de API (erro 421)
   if (error.includes('queue limit') || error.includes('queue full') || 
       error.includes('too many requests') || error.includes('rate limit') || 
-      error.includes('429') || error.includes('421')) {
+      error.includes('429') || error.includes('421') ||
+      error.includes('currently busy') || error.includes('model is currently busy') ||
+      error.includes('servidor ocupado') || error.includes('稍后重试')) {
     return {
       message: 'Servidor ocupado no momento',
-      solution: 'A fila de processamento está cheia. Aguarde 2-3 minutos e tente novamente.'
+      solution: 'A fila de processamento está cheia. Seus créditos foram estornados automaticamente. Aguarde 2-3 minutos e tente novamente.'
     };
   }
   
