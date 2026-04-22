@@ -554,6 +554,10 @@ const Index = () => {
       {/* Conteúdo principal compacto */}
       <main className="flex-1 flex flex-col px-3 py-3 pt-14">
         <div className="w-full max-w-7xl mx-auto">
+
+          {/* Banner GPT Image Promo */}
+          <GptImagePromoBanner />
+
           {/* Títulos compactos */}
           <FadeIn delay={150} duration={600}>
             <div className="mb-3 sm:mb-4">
@@ -568,9 +572,6 @@ const Index = () => {
 
           {/* Banner Seedance 2 */}
           <Seedance2PromoBanner />
-
-          {/* Banner GPT Image Promo */}
-          <GptImagePromoBanner />
 
           {/* Loading state */}
           {isLoading ? (
