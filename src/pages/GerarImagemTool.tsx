@@ -229,7 +229,8 @@ const GerarImagemTool = () => {
         return;
       }
       try {
-        const { data } = await supabase.functions.invoke('runninghub-gpt-image/poll', {
+        const pollFunction = effectiveEngineRef.current === 'gpt_image_evolink' ? 'evolink-gpt-image/poll' : 'runninghub-gpt-image/poll';
+        const { data } = await supabase.functions.invoke(pollFunction, {
           body: { jobId: pollJobId },
         });
         if (data?.status === 'completed' && data?.outputUrl) {
@@ -630,9 +631,10 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
-      if (effectiveEngineRef.current === 'gpt_image_2') {
-        // GPT Image 2: reconcile via RunningHub edge function
-        const { data } = await supabase.functions.invoke('runninghub-gpt-image/reconcile', {
+      if (effectiveEngineRef.current === 'gpt_image_2' || effectiveEngineRef.current === 'gpt_image_evolink') {
+        // GPT Image: reconcile via appropriate edge function
+        const reconcileFunc = effectiveEngineRef.current === 'gpt_image_evolink' ? 'evolink-gpt-image/reconcile' : 'runninghub-gpt-image/reconcile';
+        const { data } = await supabase.functions.invoke(reconcileFunc, {
           body: { jobId },
         });
         if (data?.status === 'completed' && data?.outputUrl) {
