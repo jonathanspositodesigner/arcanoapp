@@ -19,6 +19,7 @@ import { useTranslation } from "react-i18next";
 import ExpiredSubscriptionModal from "@/components/ExpiredSubscriptionModal";
 import ExpiringSubscriptionModal from "@/components/ExpiringSubscriptionModal";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
+import GptImagePromoBanner from "@/components/GptImagePromoBanner";
 import arcanoClonerCover from "@/assets/arcano-cloner-cover.webp";
 import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
@@ -459,6 +460,9 @@ const BibliotecaPrompts = () => {
 
         {/* Banner Seedance 2 com Vídeo */}
         <Seedance2PromoBanner />
+
+        {/* Banner GPT Image Promo */}
+        <GptImagePromoBanner />
 
         {/* ===== AI Tools Quick Access Strip ===== */}
         <div className="mb-6 sm:mb-8">
