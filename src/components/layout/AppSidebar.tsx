@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, Zap, Sparkles, Video, Star, LogIn, Smartphone, Menu, Users, X, ChevronDown, BookOpen, Settings, LogOut, Coins, Wand2, Home, ImagePlus, Gift, Layout, Film, Palette, Shirt, MonitorPlay, Gem } from "lucide-react";
+import { LibraryBig } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
@@ -62,7 +63,12 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           <button onClick={() => handleNavAndClose("/biblioteca-prompts")} className={navItemClass("/biblioteca-prompts")}>
             <Layout className="h-4 w-4 mr-2.5 flex-shrink-0" />
-            Biblioteca
+            Biblioteca de Prompts
+          </button>
+
+          <button onClick={() => handleNavAndClose("/biblioteca-artes")} className={navItemClass("/biblioteca-artes")}>
+            <LibraryBig className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Biblioteca de Artes
           </button>
 
           <button onClick={() => handleNavAndClose("/ferramentas-ia-aplicativo")} className={navItemClass("/ferramentas-ia-aplicativo")}>
