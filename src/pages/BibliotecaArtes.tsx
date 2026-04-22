@@ -243,7 +243,8 @@ const BibliotecaArtes = () => {
       bonusClicks: item.bonus_clicks || 0,
       canvaLink: (item as any).canva_link || null,
       driveLink: (item as any).drive_link || null,
-      motionType: (item as any).motion_type || null
+      motionType: (item as any).motion_type || null,
+      flyerSubcategory: (item as any).flyer_subcategory || null
     }));
     const partnerArtes: ArteItem[] = (partnerResult.data || []).map(item => ({
       id: item.id,
@@ -261,7 +262,8 @@ const BibliotecaArtes = () => {
       clickCount: clickCounts[item.id] || 0,
       bonusClicks: item.bonus_clicks || 0,
       canvaLink: (item as any).canva_link || null,
-      driveLink: (item as any).drive_link || null
+      driveLink: (item as any).drive_link || null,
+      flyerSubcategory: (item as any).flyer_subcategory || null
     }));
     const allCombined = [...adminArtes, ...partnerArtes].sort((a, b) => {
       const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
