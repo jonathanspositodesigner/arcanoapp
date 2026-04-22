@@ -226,6 +226,35 @@ async function checkRateLimit(
   }
 }
 
+async function findConflictingArcanoJob(userId: string, currentJobId: string) {
+  const { data: activeJob } = await supabase
+    .from('arcano_cloner_jobs')
+    .select('id, status, task_id, created_at')
+    .eq('user_id', userId)
+    .neq('id', currentJobId)
+    .in('status', ['queued', 'starting', 'running'])
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (activeJob) return activeJob;
+
+  const pendingCutoff = new Date(Date.now() - 185 * 1000).toISOString();
+  const { data: pendingJob } = await supabase
+    .from('arcano_cloner_jobs')
+    .select('id, status, task_id, created_at')
+    .eq('user_id', userId)
+    .neq('id', currentJobId)
+    .eq('status', 'pending')
+    .is('task_id', null)
+    .gt('created_at', pendingCutoff)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  return pendingJob || null;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -461,6 +490,78 @@ async function handleRun(req: Request) {
         code: 'INVALID_USER_ID'
       }), {
         status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
+  const { data: currentJob, error: currentJobError } = await supabase
+    .from('arcano_cloner_jobs')
+    .select('id, user_id, status, task_id, created_at')
+    .eq('id', jobId)
+    .maybeSingle();
+
+  if (currentJobError || !currentJob) {
+    return new Response(JSON.stringify({
+      error: 'Job not found',
+      code: 'JOB_NOT_FOUND'
+    }), {
+      status: 404,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!isTrialMode && currentJob.user_id !== userId) {
+    return new Response(JSON.stringify({
+      error: 'Job does not belong to this user',
+      code: 'JOB_USER_MISMATCH'
+    }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (currentJob.task_id && ['starting', 'running', 'completed'].includes(currentJob.status)) {
+    await logStep(jobId, 'idempotent_retry_existing_task', { taskId: currentJob.task_id, status: currentJob.status });
+    return new Response(JSON.stringify({
+      success: true,
+      taskId: currentJob.task_id,
+      jobId,
+      queued: currentJob.status === 'queued',
+      status: currentJob.status,
+      duplicate: true,
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  if (!isTrialMode) {
+    const conflictingJob = await findConflictingArcanoJob(userId, jobId);
+    if (conflictingJob) {
+      await logStep(jobId, 'duplicate_request_blocked', {
+        conflictingJobId: conflictingJob.id,
+        conflictingStatus: conflictingJob.status,
+      });
+
+      await supabase
+        .from('arcano_cloner_jobs')
+        .update({
+          status: 'failed',
+          current_step: 'failed',
+          failed_at_step: 'duplicate_guard',
+          error_message: `DUPLICATE_REQUEST_BLOCKED: active job ${conflictingJob.id} (${conflictingJob.status})`,
+          completed_at: new Date().toISOString(),
+        })
+        .eq('id', jobId)
+        .eq('status', 'pending');
+
+      return new Response(JSON.stringify({
+        error: 'Você já tem um processamento em andamento. Aguarde ele terminar.',
+        code: 'DUPLICATE_ACTIVE_JOB',
+        activeJobId: conflictingJob.id,
+        activeStatus: conflictingJob.status,
+      }), {
+        status: 409,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

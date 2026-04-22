@@ -1271,6 +1271,71 @@ async function handleRunOrQueue(req: Request): Promise<Response> {
     }
     
     console.log(`[QueueManager] /run-or-queue: table=${table}, jobId=${jobId}`);
+
+    const { data: currentJob, error: currentJobError } = await supabase
+      .from(table)
+      .select('id, user_id, status, task_id, created_at')
+      .eq('id', jobId)
+      .maybeSingle();
+
+    if (currentJobError || !currentJob) {
+      return new Response(JSON.stringify({ error: 'Job not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (['queued', 'starting', 'running', 'completed'].includes(currentJob.status)) {
+      console.log(`[QueueManager] run-or-queue idempotent skip for ${jobId} (${currentJob.status})`);
+      return new Response(JSON.stringify({
+        success: true,
+        queued: currentJob.status === 'queued',
+        taskId: currentJob.task_id,
+        status: currentJob.status,
+        duplicate: true,
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    if (currentJob.user_id) {
+      const pendingCutoff = new Date(Date.now() - 185 * 1000).toISOString();
+      const { data: conflictingJob } = await supabase
+        .from(table)
+        .select('id, status, task_id, created_at')
+        .eq('user_id', currentJob.user_id)
+        .neq('id', jobId)
+        .or(`status.in.(queued,starting,running),and(status.eq.pending,task_id.is.null,created_at.gt.${pendingCutoff})`)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (conflictingJob) {
+        await supabase
+          .from(table)
+          .update({
+            status: 'failed',
+            current_step: 'failed',
+            failed_at_step: 'duplicate_guard',
+            error_message: `DUPLICATE_REQUEST_BLOCKED: active job ${conflictingJob.id} (${conflictingJob.status})`,
+            completed_at: new Date().toISOString(),
+          })
+          .eq('id', jobId)
+          .eq('status', 'pending');
+
+        console.log(`[QueueManager] duplicate blocked for user ${currentJob.user_id}: ${jobId} -> active ${conflictingJob.id}`);
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'User already has an active Arcano Cloner job',
+          code: 'DUPLICATE_ACTIVE_JOB',
+          activeJobId: conflictingJob.id,
+          activeStatus: conflictingJob.status,
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+    }
     
     // Limpeza oportunística
     await cleanupStaleJobs();
@@ -1300,7 +1365,7 @@ async function handleRunOrQueue(req: Request): Promise<Response> {
         }
         
         // Marcar como STARTING agora (ocupa vaga)
-        await supabase
+        const { data: claimedRows } = await supabase
           .from(table)
           .update({
             status: 'starting',
@@ -1310,7 +1375,20 @@ async function handleRunOrQueue(req: Request): Promise<Response> {
             waited_in_queue: false,
             api_account: availableAccount.name,
           })
-          .eq('id', jobId);
+          .eq('id', jobId)
+          .eq('status', 'pending')
+          .select('id');
+
+        if (!claimedRows || claimedRows.length === 0) {
+          console.log(`[QueueManager] Job ${jobId} was already claimed by another request, skipping duplicate start`);
+          return new Response(JSON.stringify({
+            success: true,
+            duplicate: true,
+            status: 'starting',
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
         
         await logStep(table, jobId, 'starting', { accountName: availableAccount.name, via: 'run-or-queue' });
         
