@@ -42,7 +42,7 @@ const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user, planType } = usePremiumStatus();
-  const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited } = useCredits();
+  const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited, isGptImageFreeTrial, gptImageFreeUntil } = useCredits();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
@@ -89,7 +89,8 @@ const GerarImagemTool = () => {
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>('flux2_klein');
   const gptPollIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : engine === 'gpt_image_evolink' ? 80 : getCreditCost('gerar_imagem', 100));
+  const isGptEngine = engine === 'gpt_image_2' || engine === 'gpt_image_evolink';
+  const creditCost = isUnlimited ? 0 : (isGptEngine && isGptImageFreeTrial) ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : engine === 'gpt_image_evolink' ? 80 : getCreditCost('gerar_imagem', 100));
 
   // Dynamic max refs: 4 for GPT Image 2, 5 for others
   const maxRefs = (engine === 'gpt_image_2' || engine === 'gpt_image_evolink') ? 4 : 5;
