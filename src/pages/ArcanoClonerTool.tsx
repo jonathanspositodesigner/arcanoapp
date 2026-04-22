@@ -487,6 +487,14 @@ const ArcanoClonerTool: React.FC = () => {
       );
 
       if (createError || !newJobId) {
+        if (createError?.includes('ux_arcano_cloner_one_active_job_per_user')) {
+          setActiveToolName('Arcano Cloner');
+          setActiveStatus('pending');
+          setShowActiveJobModal(true);
+          setStatus('idle');
+          endSubmit();
+          return;
+        }
         throw new Error(createError || 'Falha ao criar job do Arcano Cloner');
       }
 
@@ -528,6 +536,16 @@ const ArcanoClonerTool: React.FC = () => {
       if (runResult?.code === 'RATE_LIMIT_EXCEEDED') {
         toast.error('Muitas requisições. Aguarde 1 minuto.');
         setStatus('error');
+        endSubmit();
+        return;
+      }
+
+       if (runResult?.code === 'DUPLICATE_ACTIVE_JOB') {
+        setStatus('idle');
+        setActiveToolName('Arcano Cloner');
+        setActiveJobId(runResult.activeJobId);
+        setActiveStatus(runResult.activeStatus);
+        setShowActiveJobModal(true);
         endSubmit();
         return;
       }
