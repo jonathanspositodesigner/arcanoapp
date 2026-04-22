@@ -140,6 +140,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: false },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -163,6 +164,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -186,6 +188,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -211,6 +214,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -236,6 +240,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
@@ -260,6 +265,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: false },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: false },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -284,6 +290,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -309,6 +316,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -336,6 +344,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -363,6 +372,7 @@ const Planos2 = () => {
         { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Nano Banana Pro', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Veo 3.1', iconType: 'video', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, badge: 'Ilimitado' },
         { text: 'Fila prioritária nas gerações de IA', included: true }
       ],
       popular: false,
