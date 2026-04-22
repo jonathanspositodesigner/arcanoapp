@@ -501,8 +501,8 @@ const GerarImagemTool = () => {
           setStatus('running');
           setProgress(20);
 
-          // Call GPT Image RunningHub edge function directly
-          const { data, error } = await supabase.functions.invoke('runninghub-gpt-image/run', {
+          // Call GPT Image RunningHub edge function (submit only — returns immediately)
+          const { data: runData, error: runError } = await supabase.functions.invoke('runninghub-gpt-image/run', {
             body: {
               jobId: newJobId,
               prompt: prompt.trim(),
@@ -512,8 +512,8 @@ const GerarImagemTool = () => {
             },
           });
 
-          if (error) {
-            const errMsg = error.message || 'Erro desconhecido';
+          if (runError) {
+            const errMsg = runError.message || 'Erro desconhecido';
             setStatus('failed');
             setErrorMessage(errMsg);
             const errInfo = getAIErrorMessage(errMsg);
@@ -523,7 +523,7 @@ const GerarImagemTool = () => {
             return;
           }
 
-          if (data?.code === 'INSUFFICIENT_CREDITS') {
+          if (runData?.code === 'INSUFFICIENT_CREDITS') {
             setNoCreditsReason('insufficient');
             setShowNoCreditsModal(true);
             resetJobState();
@@ -532,58 +532,10 @@ const GerarImagemTool = () => {
             return;
           }
 
-          if (data?.error && !data?.success) {
+          if (runData?.error && !runData?.success) {
             setStatus('failed');
-            setErrorMessage(data.error);
-            const errInfo = getAIErrorMessage(data.error);
-            toast.error(errInfo.message);
-            refetchCredits();
-            endSubmit();
-            return;
-          }
-
-          if (data?.success && data?.outputUrl) {
-            setResultUrl(data.outputUrl);
-            setStatus('completed');
-            setProgress(100);
-            toast.success('Imagem gerada com sucesso!');
-            refetchCredits();
-          }
-          // Call GPT Image RunningHub edge function (submit only, returns immediately)
-          const { data, error } = await supabase.functions.invoke('runninghub-gpt-image/run', {
-            body: {
-              jobId: newJobId,
-              prompt: prompt.trim(),
-              aspectRatio,
-              creditCost,
-              referenceImageUrls: uploadedUrls,
-            },
-          });
-
-          if (error) {
-            const errMsg = error.message || 'Erro desconhecido';
-            setStatus('failed');
-            setErrorMessage(errMsg);
-            const errInfo = getAIErrorMessage(errMsg);
-            toast.error(errInfo.message);
-            refetchCredits();
-            endSubmit();
-            return;
-          }
-
-          if (data?.code === 'INSUFFICIENT_CREDITS') {
-            setNoCreditsReason('insufficient');
-            setShowNoCreditsModal(true);
-            resetJobState();
-            refetchCredits();
-            endSubmit();
-            return;
-          }
-
-          if (data?.error && !data?.success) {
-            setStatus('failed');
-            setErrorMessage(data.error);
-            const errInfo = getAIErrorMessage(data.error);
+            setErrorMessage(runData.error);
+            const errInfo = getAIErrorMessage(runData.error);
             toast.error(errInfo.message);
             refetchCredits();
             endSubmit();
@@ -591,7 +543,7 @@ const GerarImagemTool = () => {
           }
 
           // Submit succeeded — start client-side polling
-          if (data?.success) {
+          if (runData?.success) {
             setStatus('running');
             setProgress(40);
             startGptImagePolling(newJobId);
