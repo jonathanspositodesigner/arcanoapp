@@ -822,6 +822,7 @@ async function processQueue(): Promise<Response> {
             error_message: String(e.message || e).substring(0, 500),
             completed_at: new Date().toISOString(),
             current_step: 'failed',
+            credits_refunded: true,
           })
           .eq('session_id', job.id);
       } catch {}
