@@ -44,6 +44,7 @@ interface ArteItem {
   canvaLink?: string;
   driveLink?: string;
   motionType?: 'canva' | 'after_effects' | null;
+  flyerSubcategory?: string | null;
 }
 interface PackItem {
   id: string;
