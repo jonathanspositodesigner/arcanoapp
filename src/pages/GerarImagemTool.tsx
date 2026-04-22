@@ -87,6 +87,7 @@ const GerarImagemTool = () => {
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>('flux2_klein');
+  const gptPollIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
   const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : getCreditCost('gerar_imagem', 100));
 
@@ -547,6 +548,53 @@ const GerarImagemTool = () => {
             setProgress(100);
             toast.success('Imagem gerada com sucesso!');
             refetchCredits();
+          }
+          // Call GPT Image RunningHub edge function (submit only, returns immediately)
+          const { data, error } = await supabase.functions.invoke('runninghub-gpt-image/run', {
+            body: {
+              jobId: newJobId,
+              prompt: prompt.trim(),
+              aspectRatio,
+              creditCost,
+              referenceImageUrls: uploadedUrls,
+            },
+          });
+
+          if (error) {
+            const errMsg = error.message || 'Erro desconhecido';
+            setStatus('failed');
+            setErrorMessage(errMsg);
+            const errInfo = getAIErrorMessage(errMsg);
+            toast.error(errInfo.message);
+            refetchCredits();
+            endSubmit();
+            return;
+          }
+
+          if (data?.code === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+            resetJobState();
+            refetchCredits();
+            endSubmit();
+            return;
+          }
+
+          if (data?.error && !data?.success) {
+            setStatus('failed');
+            setErrorMessage(data.error);
+            const errInfo = getAIErrorMessage(data.error);
+            toast.error(errInfo.message);
+            refetchCredits();
+            endSubmit();
+            return;
+          }
+
+          // Submit succeeded — start client-side polling
+          if (data?.success) {
+            setStatus('running');
+            setProgress(40);
+            startGptImagePolling(newJobId);
           }
         }
       }
