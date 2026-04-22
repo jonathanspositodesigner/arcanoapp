@@ -745,6 +745,34 @@ async function handleRun(req: Request) {
     });
     const qmResult = await qmResponse.json();
 
+    if (!qmResponse.ok) {
+      const errorCode = qmResult?.code || 'RUN_FAILED';
+      const errorMessage = qmResult?.error || 'Failed to start job';
+
+      if (errorCode === 'DUPLICATE_ACTIVE_JOB') {
+        return new Response(JSON.stringify({
+          success: false,
+          error: 'Você já tem um processamento em andamento. Aguarde ele terminar.',
+          code: 'DUPLICATE_ACTIVE_JOB',
+          activeJobId: qmResult?.activeJobId,
+          activeStatus: qmResult?.activeStatus,
+        }), {
+          status: 409,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        success: false,
+        error: errorMessage,
+        code: errorCode,
+        refunded: qmResult?.refunded ?? false,
+      }), {
+        status: qmResponse.status,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
     if (qmResult.queued) {
       console.log(`[ArcanoCloner] Job ${jobId} queued at position ${qmResult.position}`);
       return new Response(JSON.stringify({ success: true, queued: true, position: qmResult.position, message: 'Job queued, will start when slot available' }), {
