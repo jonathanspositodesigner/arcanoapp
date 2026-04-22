@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
+import { usePremiumPromptLimit } from "@/hooks/usePremiumPromptLimit";
 import { useCredits } from "@/contexts/CreditsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
@@ -81,6 +82,14 @@ const BibliotecaPrompts = () => {
     hasReachedLimit,
     recordCopy
   } = useDailyPromptLimit(user, planType, planos2Sub?.daily_prompt_limit);
+  const {
+    remainingUnlocks,
+    dailyLimit: premiumDailyLimit,
+    hasReachedLimit: premiumLimitReached,
+    isUnlimited: isPremiumUnlimited,
+    isPromptUnlocked,
+    unlockPrompt,
+  } = usePremiumPromptLimit(user, isPremium, planType);
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
