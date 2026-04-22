@@ -3665,6 +3665,7 @@ export type Database = {
           credits_per_month: number
           daily_prompt_limit: number | null
           expires_at: string | null
+          gpt_image_free_until: string | null
           greenn_contract_id: string | null
           greenn_product_id: number | null
           has_image_generation: boolean
@@ -3687,6 +3688,7 @@ export type Database = {
           credits_per_month?: number
           daily_prompt_limit?: number | null
           expires_at?: string | null
+          gpt_image_free_until?: string | null
           greenn_contract_id?: string | null
           greenn_product_id?: number | null
           has_image_generation?: boolean
@@ -3709,6 +3711,7 @@ export type Database = {
           credits_per_month?: number
           daily_prompt_limit?: number | null
           expires_at?: string | null
+          gpt_image_free_until?: string | null
           greenn_contract_id?: string | null
           greenn_product_id?: number | null
           has_image_generation?: boolean
