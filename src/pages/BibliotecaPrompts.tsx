@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart, Coins } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -561,6 +561,30 @@ const BibliotecaPrompts = () => {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
 
+          {/* Premium Prompt Counter */}
+          {user && isPremium && (
+            <div className="flex items-center gap-3 mb-4">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
+                <Lock className="h-3.5 w-3.5 text-purple-400" />
+                <span className="text-xs font-medium text-foreground">
+                  Prompts Premium:
+                </span>
+                <span className="text-xs font-bold text-purple-400 tabular-nums">
+                  {isPremiumUnlimited ? '∞' : `${remainingUnlocks}/${premiumDailyLimit}`}
+                </span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
+                <Coins className="h-3.5 w-3.5 text-yellow-400" />
+                <span className="text-xs font-medium text-foreground">
+                  Créditos:
+                </span>
+                <span className="text-xs font-bold text-yellow-400 tabular-nums">
+                  {creditsLoading ? '...' : credits.toLocaleString()}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
             <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
@@ -851,10 +875,10 @@ const BibliotecaPrompts = () => {
               <div className="flex flex-wrap gap-3">
                 <Button 
                   onClick={() => copyToClipboard(selectedPrompt)} 
-                  className={`flex-1 ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
+                  className={`flex-1 ${(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
                 >
-                  {selectedPrompt.isPremium && !isPremium ? (
-                    <><Lock className="h-4 w-4 mr-2" />Exclusivo Assinantes</>
+                  {(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? (
+                    <><Lock className="h-4 w-4 mr-2" />{selectedPrompt.isPremium && isPremium ? 'Libere o prompt primeiro' : 'Exclusivo Assinantes'}</>
                   ) : (
                     <><Copy className="h-4 w-4 mr-2" />{t('modal.copyPrompt')}</>
                   )}
@@ -864,14 +888,16 @@ const BibliotecaPrompts = () => {
                     if (selectedPrompt.isPremium && !isPremium) {
                       setPremiumModalItem(selectedPrompt);
                       setShowPremiumModal(true);
+                    } else if (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) {
+                      toast.error('Libere o prompt primeiro antes de baixar.');
                     } else {
                       downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl);
                     }
                   }} 
                   variant="outline" 
-                  className={`${selectedPrompt.isPremium && !isPremium ? 'bg-accent border-border text-muted-foreground hover:bg-accent' : 'bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground'}`}
+                  className={`${(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? 'bg-accent border-border text-muted-foreground hover:bg-accent' : 'bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground'}`}
                 >
-                  {selectedPrompt.isPremium && !isPremium ? (
+                  {(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? (
                     <><Lock className="h-4 w-4 mr-2" />{t('modal.download')}</>
                   ) : (
                     <><Download className="h-4 w-4 mr-2" />{t('modal.download')}</>

@@ -39,7 +39,7 @@ export function useNavigationGuard(): NavigationGuardResult {
   const [pendingNavigation, setPendingNavigation] = useState<(() => void) | null>(null);
   
   // Acesso ao navigator do React Router
-  const { navigator } = useContext(NavigationContext);
+  const { navigator } = useContext(NavigationContext) as any;
   
   // Refs para guardar métodos originais (evita recriação)
   const originalMethodsRef = useRef<{
