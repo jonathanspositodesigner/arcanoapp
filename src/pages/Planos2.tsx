@@ -66,7 +66,7 @@ const Planos2 = () => {
   ];
   // GPT Image promo countdown - 7 days
   const PROMO_START_KEY = "gpt_image_promo_planos2_start";
-const PROMO_DURATION_DAYS = 30;
+const PROMO_DURATION_DAYS = 7;
 
   const getPromoStart = (): number => {
     const stored = localStorage.getItem(PROMO_START_KEY);
@@ -410,7 +410,7 @@ const PROMO_DURATION_DAYS = 30;
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-yellow-300" />
               <span className="text-white font-bold tracking-wide text-sm md:text-base">
-                🎉 GPT Image 2 Ilimitado por 30 dias em qualquer assinatura!
+                🎉 GPT Image 2 Ilimitado por 7 dias em qualquer assinatura!
               </span>
             </div>
 
@@ -439,7 +439,7 @@ const PROMO_DURATION_DAYS = 30;
             </div>
           </div>
         </div>
-        <p className="text-center text-foreground/70 text-xs mb-4 max-w-6xl mx-auto">Assine qualquer plano e ganhe acesso ao GPT Image 2 ilimitado por 30 dias!</p>
+        <p className="text-center text-foreground/70 text-xs mb-4 max-w-6xl mx-auto">Assine qualquer plano e ganhe acesso ao GPT Image 2 ilimitado por 7 dias!</p>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r dark:from-gray-400 dark:to-pink-400 from-purple-700 to-pink-600 bg-clip-text text-transparent mb-6">
@@ -641,7 +641,7 @@ const PROMO_DURATION_DAYS = 30;
                 <div className="mb-3 mx-auto w-full rounded-lg px-3 py-2 flex items-center justify-center gap-2 shadow-md" style={{ background: "linear-gradient(90deg, #ff0059, #cc0047)" }}>
                     <ImageIcon className="w-3.5 h-3.5 text-white" />
                     <span className="text-[12px] font-extrabold italic text-white tracking-wider">GPT Image 2</span>
-                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">30 DIAS FREE</span>
+                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">7 DIAS FREE</span>
                 </div>
                 </>
               )}
