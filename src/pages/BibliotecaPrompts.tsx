@@ -952,7 +952,7 @@ const BibliotecaPrompts = () => {
               </div>
               <div>
                 <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
-                <div className="bg-background border border-border rounded-lg p-4 relative">
+                <div className="bg-background border border-border rounded-lg p-4 relative mt-4">
                   {selectedPrompt.isPremium && !isPremium ? (
                     <>
                       <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
