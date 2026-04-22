@@ -206,6 +206,61 @@ const GerarImagemTool = () => {
     return () => { if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current); };
   }, [isProcessing, jobId]);
 
+  // GPT Image client-side polling
+  const stopGptImagePolling = useCallback(() => {
+    if (gptPollIntervalRef.current) {
+      clearInterval(gptPollIntervalRef.current);
+      gptPollIntervalRef.current = undefined;
+    }
+  }, []);
+
+  const startGptImagePolling = useCallback((pollJobId: string) => {
+    stopGptImagePolling();
+    let pollCount = 0;
+    const MAX_CLIENT_POLLS = 120; // 120 × 5s = 10 min max
+    gptPollIntervalRef.current = setInterval(async () => {
+      pollCount++;
+      if (pollCount > MAX_CLIENT_POLLS) {
+        stopGptImagePolling();
+        setStatus('failed');
+        setErrorMessage('Tempo esgotado na geração.');
+        toast.error('Tempo esgotado. Tente novamente.');
+        refetchCredits();
+        return;
+      }
+      try {
+        const { data } = await supabase.functions.invoke('runninghub-gpt-image/poll', {
+          body: { jobId: pollJobId },
+        });
+        if (data?.status === 'completed' && data?.outputUrl) {
+          stopGptImagePolling();
+          setResultUrl(data.outputUrl);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Imagem gerada com sucesso!');
+          refetchCredits();
+        } else if (data?.status === 'failed') {
+          stopGptImagePolling();
+          setStatus('failed');
+          setErrorMessage(data.error || 'Falha na geração');
+          const errInfo = getAIErrorMessage(data.error || 'Erro');
+          toast.error(errInfo.message);
+          refetchCredits();
+        } else {
+          // Still running — update progress
+          setProgress(Math.min(90, 40 + pollCount));
+        }
+      } catch (e) {
+        console.warn('[GerarImagem] GPT poll error:', e);
+      }
+    }, 5000);
+  }, [stopGptImagePolling, refetchCredits]);
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => stopGptImagePolling();
+  }, [stopGptImagePolling]);
+
   // File processing
   const processFiles = useCallback((files: File[]) => {
     const remaining = maxRefs - referenceImages.length;
