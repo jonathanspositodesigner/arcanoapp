@@ -16,6 +16,7 @@ import { useLocale } from "@/contexts/LocaleContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCredits } from "@/contexts/CreditsContext";
 import Seedance2PromoBanner from "@/components/Seedance2PromoBanner";
+import GptImagePromoBanner from "@/components/GptImagePromoBanner";
 import { useTheme } from "@/hooks/useTheme";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import {
@@ -567,6 +568,9 @@ const Index = () => {
 
           {/* Banner Seedance 2 */}
           <Seedance2PromoBanner />
+
+          {/* Banner GPT Image Promo */}
+          <GptImagePromoBanner />
 
           {/* Loading state */}
           {isLoading ? (
