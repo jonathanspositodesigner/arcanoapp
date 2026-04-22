@@ -1039,7 +1039,8 @@ async function handleReconcile(req: Request): Promise<Response> {
     
     // If task failed on provider side
     if (taskStatus === 'FAILED' || taskStatus === 'ERROR') {
-      const errorMsg = statusData.data?.errorMessage || statusData.data?.failedReason?.exception_message || 'Provider task failed';
+      const rawErrorMsg = statusData.data?.errorMessage || statusData.data?.failedReason?.exception_message || 'Provider task failed';
+      const errorMsg = normalizeAIError(rawErrorMsg).message;
       
       const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
       await fetch(finishUrl, {
