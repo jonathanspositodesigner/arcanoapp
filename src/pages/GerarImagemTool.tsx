@@ -677,6 +677,31 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
+      if (effectiveEngineRef.current === 'gpt_image_2') {
+        // GPT Image 2: check DB directly
+        const { data: dbJob } = await supabase
+          .from('gpt_image_jobs' as any)
+          .select('status, output_url, error_message')
+          .eq('id', jobId)
+          .single();
+        const j = dbJob as any;
+        if (j?.status === 'completed' && j?.output_url) {
+          setStatus('completed');
+          setResultUrl(j.output_url);
+          setProgress(100);
+          toast.success('Imagem recuperada!');
+          refetchCredits();
+        } else if (j?.status === 'failed') {
+          setStatus('failed');
+          setErrorMessage(j.error_message || 'Falha');
+          toast.error('Geração falhou.');
+          refetchCredits();
+        } else {
+          toast.info('Ainda processando...');
+        }
+        return;
+      }
+
       const reconcileEndpoint = effectiveEngineRef.current === 'flux2_klein' ? 'runninghub-flux2-klein/reconcile' : 'runninghub-image-generator/reconcile';
       const { data } = await supabase.functions.invoke(reconcileEndpoint, {
         body: { jobId },
