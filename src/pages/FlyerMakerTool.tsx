@@ -201,7 +201,21 @@ const FlyerMakerTool: React.FC = () => {
     }
   }, [location.state]);
 
-  
+  // Pre-fill reference image and flyer type from navigation state (e.g. from Biblioteca de Artes)
+  useEffect(() => {
+    const state = location.state as { referenceImageUrl?: string; flyerType?: string } | null;
+    if (state?.referenceImageUrl && !referenceImage) {
+      setReferenceImage(state.referenceImageUrl);
+      if (state.flyerType) {
+        const validTypes = ['evento', 'agenda', 'contrate', 'outro'];
+        if (validTypes.includes(state.flyerType)) {
+          setFlyerType(state.flyerType as 'evento' | 'agenda' | 'contrate' | 'outro');
+        }
+      }
+      // Clear the state so refresh doesn't re-trigger
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state]);
 
   useQueueSessionCleanup(sessionIdRef.current, status);
 
