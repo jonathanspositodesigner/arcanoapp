@@ -641,7 +641,7 @@ const PROMO_DURATION_DAYS = 7;
                 <div className="mb-3 mx-auto w-full rounded-lg px-3 py-2 flex items-center justify-center gap-2 shadow-md" style={{ background: "linear-gradient(90deg, #ff0059, #cc0047)" }}>
                     <ImageIcon className="w-3.5 h-3.5 text-white" />
                     <span className="text-[12px] font-extrabold italic text-white tracking-wider">GPT Image 2</span>
-                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">7 DIAS FREE</span>
+                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">{plan.name === "IA Unlimited" ? "ILIMITADO" : "7 DIAS FREE"}</span>
                 </div>
                 </>
               )}
