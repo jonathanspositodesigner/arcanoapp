@@ -875,9 +875,9 @@ const BibliotecaPrompts = () => {
               <div className="flex flex-wrap gap-3">
                 <Button 
                   onClick={() => copyToClipboard(selectedPrompt)} 
-                  className={`flex-1 ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
+                  className={`flex-1 ${(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
                 >
-                  {selectedPrompt.isPremium && !isPremium ? (
+                  {(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? (
                     <><Lock className="h-4 w-4 mr-2" />Exclusivo Assinantes</>
                   ) : (
                     <><Copy className="h-4 w-4 mr-2" />{t('modal.copyPrompt')}</>
