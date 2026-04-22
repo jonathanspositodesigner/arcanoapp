@@ -847,7 +847,7 @@ const GerarImagemTool = () => {
                 </button>
                 {aspectDropdownOpen && (
                   <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[140px]">
-                    {ASPECT_RATIOS.map(({ ratio, label, w, h }) => {
+                    {availableAspectRatios.map(({ ratio, label, w, h }) => {
                       const isSelected = aspectRatio === ratio;
                       return (
                         <button
