@@ -193,12 +193,7 @@ const BibliotecaPrompts = () => {
     if (itemId && allPrompts.length > 0) {
       const item = allPrompts.find(p => p.id === itemId);
       if (item) {
-        if (item.isPremium && !isPremium) {
-          setPremiumModalItem(item);
-          setShowPremiumModal(true);
-        } else {
-          setSelectedPrompt(item);
-        }
+        setSelectedPrompt(item);
       }
     }
   }, [searchParams, allPrompts, isPremium]);
@@ -299,6 +294,13 @@ const BibliotecaPrompts = () => {
   const hasLimitPlan = planType === "arcano_basico" || planType === "arcano_pro" || (planos2Sub?.daily_prompt_limit != null && planos2Sub.daily_prompt_limit > 0);
 
   const copyToClipboard = async (promptItem: PromptItem) => {
+    // Block non-subscribers from copying premium prompts
+    if (promptItem.isPremium && !isPremium) {
+      setPremiumModalItem(promptItem);
+      setShowPremiumModal(true);
+      return;
+    }
+
     if (promptItem.isPremium && hasLimitPlan) {
       if (hasReachedLimit) {
         setShowLimitModal(true);
@@ -397,12 +399,7 @@ const BibliotecaPrompts = () => {
 
   const handleItemClick = (item: PromptItem) => {
     setSearchParams({ item: String(item.id) });
-    if (item.isPremium && !isPremium) {
-      setPremiumModalItem(item);
-      setShowPremiumModal(true);
-    } else {
-      setSelectedPrompt(item);
-    }
+    setSelectedPrompt(item);
   };
 
   const handleCloseModal = () => {
@@ -821,9 +818,9 @@ const BibliotecaPrompts = () => {
               </div>
               <div className="rounded-lg overflow-hidden border border-border">
                 {isVideoUrl(selectedPrompt.imageUrl) ? (
-                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={selectedPrompt.isPremium} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
+                  <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
                 ) : (
-                  <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={selectedPrompt.isPremium} className="w-full" />
+                  <SecureImage src={selectedPrompt.imageUrl} alt={selectedPrompt.title} isPremium={false} className="w-full" />
                 )}
               </div>
               {selectedPrompt.referenceImages && selectedPrompt.referenceImages.length > 0 && (
@@ -831,19 +828,39 @@ const BibliotecaPrompts = () => {
                   <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.referenceImages')}</h3>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
                     {selectedPrompt.referenceImages.map((img, idx) => (
-                      <SecureImage key={idx} src={img} alt={`Reference ${idx + 1}`} isPremium={selectedPrompt.isPremium} className="w-full h-24 object-cover rounded-lg border border-border" />
+                      <SecureImage key={idx} src={img} alt={`Reference ${idx + 1}`} isPremium={false} className="w-full h-24 object-cover rounded-lg border border-border" />
                     ))}
                   </div>
                 </div>
               )}
               <div className="flex flex-wrap gap-3">
-                <Button onClick={() => copyToClipboard(selectedPrompt)} className="flex-1 bg-secondary hover:bg-secondary text-foreground">
-                  <Copy className="h-4 w-4 mr-2" />
-                  {t('modal.copyPrompt')}
+                <Button 
+                  onClick={() => copyToClipboard(selectedPrompt)} 
+                  className={`flex-1 ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
+                >
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <><Lock className="h-4 w-4 mr-2" />Exclusivo Assinantes</>
+                  ) : (
+                    <><Copy className="h-4 w-4 mr-2" />{t('modal.copyPrompt')}</>
+                  )}
                 </Button>
-                <Button onClick={() => downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl)} variant="outline" className="bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground">
-                  <Download className="h-4 w-4 mr-2" />
-                  {t('modal.download')}
+                <Button 
+                  onClick={() => {
+                    if (selectedPrompt.isPremium && !isPremium) {
+                      setPremiumModalItem(selectedPrompt);
+                      setShowPremiumModal(true);
+                    } else {
+                      downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl);
+                    }
+                  }} 
+                  variant="outline" 
+                  className={`${selectedPrompt.isPremium && !isPremium ? 'bg-accent border-border text-muted-foreground hover:bg-accent' : 'bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground'}`}
+                >
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <><Lock className="h-4 w-4 mr-2" />{t('modal.download')}</>
+                  ) : (
+                    <><Download className="h-4 w-4 mr-2" />{t('modal.download')}</>
+                  )}
                 </Button>
                 {selectedPrompt.tutorialUrl && (
                   <Button onClick={() => openTutorial(selectedPrompt.tutorialUrl!)} className="bg-red-600 hover:bg-red-700 text-white">
@@ -891,7 +908,25 @@ const BibliotecaPrompts = () => {
               <div>
                 <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
                 <div className="bg-background border border-border rounded-lg p-4 relative">
-                  {revealedPrompts.has(String(selectedPrompt.id)) ? (
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">Assine um plano para acessar</p>
+                          <Button 
+                            onClick={() => navigate("/planos-2")} 
+                            size="sm" 
+                            className="mt-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                            Ver planos
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : revealedPrompts.has(String(selectedPrompt.id)) ? (
                     <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
