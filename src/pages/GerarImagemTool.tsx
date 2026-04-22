@@ -975,7 +975,7 @@ const GerarImagemTool = () => {
                     Gerar Imagem
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
-                      {isUnlimited ? '∞' : creditCost}
+                      {isUnlimited ? '∞' : (isGptEngine && isGptImageFreeTrial) ? '🎁 FREE' : creditCost}
                     </span>
                   </>
                 )}
