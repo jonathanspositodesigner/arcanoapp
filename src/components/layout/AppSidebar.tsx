@@ -76,13 +76,21 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             <span className="ml-auto text-[9px] font-bold bg-gradient-to-r from-green-500 to-emerald-500 text-white px-1.5 py-0.5 rounded-full leading-none">Novo</span>
           </button>
 
-          <button onClick={() => handleNavAndClose("/minhas-criacoes")} className={navItemClass("/minhas-criacoes")}>
-            <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
-            Minhas Criações
+          <button onClick={() => handleNavAndClose("/gerar-imagem")} className={navItemClass("/gerar-imagem")}>
+            <ImagePlus className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Gerar Imagem
           </button>
 
-          {/* FERRAMENTAS */}
-          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Ferramentas</p>
+          <button onClick={() => handleNavAndClose("/gerar-video")} className={navItemClass("/gerar-video")}>
+            <Video className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Gerar Vídeo
+          </button>
+
+          {/* FERRAMENTAS EXCLUSIVAS */}
+          <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1 flex items-center gap-1">
+            <Star className="h-3 w-3" />
+            Ferramentas Exclusivas
+          </p>
 
           <button onClick={() => handleNavAndClose("/upscaler-arcano-tool")} className={navItemClass("/upscaler-arcano-tool")}>
             <Wand2 className="h-4 w-4 mr-2.5 flex-shrink-0" />
@@ -116,6 +124,11 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           {/* CONTA */}
           <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Conta</p>
+
+          <button onClick={() => handleNavAndClose("/minhas-criacoes")} className={navItemClass("/minhas-criacoes")}>
+            <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Minhas Criações
+          </button>
 
           <button onClick={() => handleNavAndClose("/planos-2")} className={navItemClass("/planos-2")}>
             <Gem className="h-4 w-4 mr-2.5 flex-shrink-0" />
