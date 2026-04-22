@@ -193,12 +193,7 @@ const BibliotecaPrompts = () => {
     if (itemId && allPrompts.length > 0) {
       const item = allPrompts.find(p => p.id === itemId);
       if (item) {
-        if (item.isPremium && !isPremium) {
-          setPremiumModalItem(item);
-          setShowPremiumModal(true);
-        } else {
-          setSelectedPrompt(item);
-        }
+        setSelectedPrompt(item);
       }
     }
   }, [searchParams, allPrompts, isPremium]);
