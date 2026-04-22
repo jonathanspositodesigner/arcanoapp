@@ -1893,6 +1893,30 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_premium_unlocks: {
+        Row: {
+          id: string
+          prompt_id: string
+          unlock_date: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          id?: string
+          prompt_id: string
+          unlock_date?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          id?: string
+          prompt_id?: string
+          unlock_date?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       daily_prompt_copies: {
         Row: {
           copied_at: string
@@ -5942,6 +5966,10 @@ export type Database = {
         Args: { _user_id: string }
         Returns: number
       }
+      get_daily_premium_unlock_count: {
+        Args: { _user_id: string }
+        Returns: number
+      }
       get_flyer_test_credits: { Args: { _user_id: string }; Returns: number }
       get_mp_dashboard_orders: {
         Args: { _end: string; _start: string }
@@ -6035,6 +6063,12 @@ export type Database = {
           expires_at: string
           has_bonus: boolean
           pack_slug: string
+        }[]
+      }
+      get_user_unlocked_prompts_today: {
+        Args: { _user_id: string }
+        Returns: {
+          prompt_id: string
         }[]
       }
       get_warranty_waiver_emails: {
