@@ -565,22 +565,19 @@ const GerarImagemTool = () => {
     toast.info('Verificando status...');
     try {
       if (effectiveEngineRef.current === 'gpt_image_2') {
-        // GPT Image 2: check DB directly
-        const { data: dbJob } = await supabase
-          .from('gpt_image_jobs' as any)
-          .select('status, output_url, error_message')
-          .eq('id', jobId)
-          .single();
-        const j = dbJob as any;
-        if (j?.status === 'completed' && j?.output_url) {
+        // GPT Image 2: reconcile via RunningHub edge function
+        const { data } = await supabase.functions.invoke('runninghub-gpt-image/reconcile', {
+          body: { jobId },
+        });
+        if (data?.status === 'completed' && data?.outputUrl) {
           setStatus('completed');
-          setResultUrl(j.output_url);
+          setResultUrl(data.outputUrl);
           setProgress(100);
           toast.success('Imagem recuperada!');
           refetchCredits();
-        } else if (j?.status === 'failed') {
+        } else if (data?.status === 'failed') {
           setStatus('failed');
-          setErrorMessage(j.error_message || 'Falha');
+          setErrorMessage(data.error || 'Falha');
           toast.error('Geração falhou.');
           refetchCredits();
         } else {
