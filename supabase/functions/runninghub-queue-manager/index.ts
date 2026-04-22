@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { normalizeAIError } from "../_shared/error-normalizer.ts";
 
 /**
  * RUNNINGHUB QUEUE MANAGER - CENTRALIZED JOB ORCHESTRATOR
@@ -866,7 +867,7 @@ async function handleFinish(req: Request): Promise<Response> {
     
     if (finalOutputUrl) updateData.output_url = finalOutputUrl;
     if (errorMessage) {
-      updateData.error_message = errorMessage;
+      updateData.error_message = normalizeAIError(errorMessage).message;
       updateData.failed_at_step = 'webhook_received';
     }
     if (rhCost) updateData.rh_cost = rhCost;
@@ -1038,7 +1039,8 @@ async function handleReconcile(req: Request): Promise<Response> {
     
     // If task failed on provider side
     if (taskStatus === 'FAILED' || taskStatus === 'ERROR') {
-      const errorMsg = statusData.data?.errorMessage || statusData.data?.failedReason?.exception_message || 'Provider task failed';
+      const rawErrorMsg = statusData.data?.errorMessage || statusData.data?.failedReason?.exception_message || 'Provider task failed';
+      const errorMsg = normalizeAIError(rawErrorMsg).message;
       
       const finishUrl = `${SUPABASE_URL}/functions/v1/runninghub-queue-manager/finish`;
       await fetch(finishUrl, {

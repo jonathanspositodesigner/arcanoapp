@@ -1,4 +1,5 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { normalizeAIError } from "../_shared/error-normalizer.ts";
 
 /**
  * GENERATE VIDEO GEMINI - Queue Processor
@@ -265,11 +266,7 @@ async function runRunningHubVideo(imageUrl: string, rawText: string, jobId: stri
     if (pollData.status === 'FAILED') {
       const reason = pollData.failedReason?.exception_message || pollData.errorMessage || 'Erro desconhecido';
       console.error(`[GeminiQueue/RH] Job ${jobId} FAILED:`, reason);
-      // Translate "busy" errors to user-friendly Portuguese
-      if (reason.toLowerCase().includes('currently busy') || reason.includes('稍后重试')) {
-        throw new Error('Servidor ocupado no momento. Tente novamente em alguns minutos.');
-      }
-      throw new Error(`RunningHub: falha no pré-processamento - ${reason}`);
+      throw new Error(normalizeAIError(reason).message);
     }
   }
 

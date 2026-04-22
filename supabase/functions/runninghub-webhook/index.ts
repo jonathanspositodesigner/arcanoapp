@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { normalizeAIError } from "../_shared/error-normalizer.ts";
 
 /**
  * RUNNINGHUB WEBHOOK - CENTRALIZED
@@ -314,7 +315,8 @@ serve(async (req) => {
     }
 
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
-    const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
+    const rawError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
+    const finalError = rawError ? normalizeAIError(rawError).message : null;
 
     // ========================================
     // FALLBACK LOGIC: De Longe → Standard

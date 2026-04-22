@@ -1,6 +1,7 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { normalizeAIError } from "../_shared/error-normalizer.ts";
 
 /**
  * RUNNINGHUB FLUX2 KLEIN - EDGE FUNCTION
@@ -432,7 +433,8 @@ async function handleRun(req: Request) {
       }
 
       if (rhStatus === 'FAILED') {
-        const failReason = queryData.errorMessage || queryData.failedReason?.exception_message || 'Generation failed on RunningHub';
+        const rawFailReason = queryData.errorMessage || queryData.failedReason?.exception_message || 'Generation failed on RunningHub';
+        const failReason = normalizeAIError(rawFailReason).message;
         // Refund on generation failure
         await supabase.rpc('refund_upscaler_credits', {
           _user_id: verifiedUserId,
