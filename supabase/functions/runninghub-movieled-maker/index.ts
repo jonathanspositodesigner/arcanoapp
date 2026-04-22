@@ -27,6 +27,7 @@ const corsHeaders = {
 const ENGINE_COSTS: Record<string, number> = {
   'veo3.1': 1500,
   'wan2.2': 500,
+  'kling2.5': 900,
 };
 
 // ========== RESILIENT FETCH (for RunningHub only) ==========

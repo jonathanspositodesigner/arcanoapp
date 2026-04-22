@@ -43,6 +43,7 @@ const ENGINES = [
   // EVOLINK_BACKUP — descomente para reverter para EvoLink
   // { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
   { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 900, duration: '8s', resolution: '720p', time: '2 a 5 min' },
+  { id: 'kling2.5', name: 'Kling 2.5 Turbo', cost: 900, duration: '5s', resolution: '720p', time: '3 a 6 min' },
 ] as const;
 
 const MovieLedMakerTool = () => {
