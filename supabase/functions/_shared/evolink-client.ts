@@ -23,6 +23,13 @@ export interface EvolinkGenerateParams {
   audioUrls?: string[];
 }
 
+export interface EvolinkImageGenerateParams {
+  model: string;           // Ex: 'gpt-image-2-beta'
+  prompt: string;
+  size?: string;           // '1:1' | '3:2' | '2:3' | 'auto'
+  imageUrls?: string[];
+}
+
 export interface EvolinkGenerateResult {
   success: true;
   taskId: string;
@@ -70,6 +77,90 @@ export function isEvolinkModel(model: string): boolean {
  */
 export function resolveEvolinkModel(model: string): string {
   return EVOLINK_MODELS[model] || model;
+}
+
+// ==================== IMAGE GENERATION ====================
+
+/**
+ * Gera uma imagem via API Evolink (endpoint /v1/images/generations).
+ * Usado para GPT Image 2 e outros modelos de imagem.
+ */
+export async function evolinkGenerateImage(
+  apiKey: string,
+  params: EvolinkImageGenerateParams
+): Promise<EvolinkResult> {
+  if (!apiKey) {
+    return { success: false, error: 'EVOLINK_API_KEY not configured' };
+  }
+
+  const payload: Record<string, unknown> = {
+    model: params.model,
+    prompt: params.prompt,
+    size: params.size ?? 'auto',
+  };
+
+  if (params.imageUrls && params.imageUrls.length > 0) {
+    payload.image_urls = params.imageUrls;
+  }
+
+  console.log(`[EvolinkClient] Calling image generate:`, JSON.stringify({
+    model: params.model,
+    size: payload.size,
+    imageCount: params.imageUrls?.length || 0,
+  }));
+
+  const MAX_BUSY_RETRIES = 3;
+  const BUSY_DELAYS = [5000, 10000, 20000];
+
+  for (let busyAttempt = 0; busyAttempt <= MAX_BUSY_RETRIES; busyAttempt++) {
+    try {
+      const response = await fetchWithRetry(
+        `${EVOLINK_BASE_URL}/images/generations`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        },
+        'Evolink Image Generate'
+      );
+
+      const data = await response.json();
+      console.log(`[EvolinkClient] Image generate response:`, JSON.stringify(data));
+
+      if (!response.ok || !data.id) {
+        const errMsg = data.error?.message || data.error?.code || data.error || `Evolink API error: ${response.status}`;
+        const errStr = typeof errMsg === 'string' ? errMsg : JSON.stringify(errMsg);
+
+        const isBusy = errStr.toLowerCase().includes('service busy') ||
+                       errStr.toLowerCase().includes('allocating resources') ||
+                       response.status === 503;
+
+        if (isBusy && busyAttempt < MAX_BUSY_RETRIES) {
+          const delay = BUSY_DELAYS[busyAttempt] + Math.random() * 3000;
+          console.warn(`[EvolinkClient] Image service busy, retry ${busyAttempt + 1}/${MAX_BUSY_RETRIES} in ${Math.round(delay)}ms`);
+          await new Promise(r => setTimeout(r, delay));
+          continue;
+        }
+
+        return { success: false, error: errStr };
+      }
+
+      return { success: true, taskId: data.id };
+    } catch (error: any) {
+      if (busyAttempt < MAX_BUSY_RETRIES) {
+        const delay = BUSY_DELAYS[busyAttempt];
+        console.warn(`[EvolinkClient] Image generate error: ${error.message}, retry ${busyAttempt + 1}/${MAX_BUSY_RETRIES}`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+      return { success: false, error: error.message || 'Evolink Image API call failed' };
+    }
+  }
+
+  return { success: false, error: 'Evolink Image API: all busy retries exhausted' };
 }
 
 // ==================== RESILIENT FETCH ====================
