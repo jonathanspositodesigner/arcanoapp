@@ -432,7 +432,8 @@ async function handleRun(req: Request) {
       }
 
       if (rhStatus === 'FAILED') {
-        const failReason = queryData.errorMessage || queryData.failedReason?.exception_message || 'Generation failed on RunningHub';
+        const rawFailReason = queryData.errorMessage || queryData.failedReason?.exception_message || 'Generation failed on RunningHub';
+        const { message: failReason } = (await import("../_shared/error-normalizer.ts")).normalizeAIError(rawFailReason);
         // Refund on generation failure
         await supabase.rpc('refund_upscaler_credits', {
           _user_id: verifiedUserId,
