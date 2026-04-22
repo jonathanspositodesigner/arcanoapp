@@ -96,6 +96,17 @@ const GerarImagemTool = () => {
   // Aspect ratios: GPT Image 2 doesn't support 9:16
   const availableAspectRatios = engine === 'gpt_image_2' ? ASPECT_RATIOS : ASPECT_RATIOS_WITH_STORIES;
 
+  // Reset aspect ratio if switching to GPT Image 2 with unsupported ratio
+  useEffect(() => {
+    if (engine === 'gpt_image_2' && aspectRatio === '9:16') {
+      setAspectRatio('3:4');
+    }
+    // Trim excess reference images when switching to GPT Image 2
+    if (engine === 'gpt_image_2' && referenceImages.length > 4) {
+      setReferenceImages(prev => prev.slice(0, 4));
+    }
+  }, [engine]);
+
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
   // Session cleanup
