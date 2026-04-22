@@ -256,6 +256,7 @@ const GerarImagemTool = () => {
     setQueuePosition(0);
     setProgress(0);
     setShowReconcileButton(false);
+    if (gptPollRef.current) { clearInterval(gptPollRef.current); gptPollRef.current = null; }
   };
 
   // Generate
