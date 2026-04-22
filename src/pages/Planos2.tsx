@@ -410,7 +410,7 @@ const Planos2 = () => {
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-yellow-300" />
               <span className="text-white font-bold tracking-wide text-sm md:text-base">
-                🎉 GPT Image 2 Ilimitado por 7 dias!
+                🎉 GPT Image 2 Ilimitado por 7 dias em qualquer assinatura!
               </span>
             </div>
 
