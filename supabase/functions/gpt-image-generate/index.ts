@@ -10,6 +10,15 @@ const corsHeaders = {
 
 const CREDIT_COST = 80;
 
+async function isUnlimitedUser(supabase: ReturnType<typeof createClient>, userId: string): Promise<boolean> {
+  try {
+    const { data } = await supabase.rpc('is_unlimited_subscriber', { _user_id: userId });
+    return !!data;
+  } catch {
+    return false;
+  }
+}
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -130,23 +139,35 @@ serve(async (req) => {
       if (!job) return json({ success: false, error: "Job not found" }, 404);
       if (job.task_id || job.status === "completed") return json({ success: true, skipped: true, taskId: job.task_id });
 
-      // Charge credits if not yet charged
-      if (!job.credits_charged || job.credits_charged <= 0) {
-        const creditResult = await consumeCredits(supabase, job.user_id, CREDIT_COST, `GPT Image 2`);
-        if (!creditResult.success) {
-          await supabase.from("gpt_image_jobs").update({
-            status: "failed",
-            error_message: creditResult.error || "Créditos insuficientes",
-            credits_charged: 0,
-          }).eq("id", jobId);
-          return json({ success: false, error: creditResult.error || "Créditos insuficientes" }, 400);
-        }
+      // Check if user is IA Unlimited
+      const unlimited = await isUnlimitedUser(supabase, job.user_id);
 
+      if (unlimited) {
+        console.log(`[gpt-image-generate] Unlimited user ${job.user_id} — skipping credit consumption`);
         await supabase.from("gpt_image_jobs").update({
-          credits_charged: CREDIT_COST,
+          credits_charged: 0,
           status: "queued",
           error_message: null,
         }).eq("id", jobId);
+      } else {
+        // Charge credits if not yet charged
+        if (!job.credits_charged || job.credits_charged <= 0) {
+          const creditResult = await consumeCredits(supabase, job.user_id, CREDIT_COST, `GPT Image 2`);
+          if (!creditResult.success) {
+            await supabase.from("gpt_image_jobs").update({
+              status: "failed",
+              error_message: creditResult.error || "Créditos insuficientes",
+              credits_charged: 0,
+            }).eq("id", jobId);
+            return json({ success: false, error: creditResult.error || "Créditos insuficientes" }, 400);
+          }
+
+          await supabase.from("gpt_image_jobs").update({
+            credits_charged: CREDIT_COST,
+            status: "queued",
+            error_message: null,
+          }).eq("id", jobId);
+        }
       }
 
       const normalizedImageUrls = Array.isArray(job.input_image_urls) ? job.input_image_urls.filter(Boolean) : [];
@@ -168,11 +189,14 @@ serve(async (req) => {
       });
 
       if (!result.success) {
-        await refundCredits(supabase, job.user_id, job.credits_charged || CREDIT_COST, `Estorno - GPT Image 2 falhou`);
+        const chargedAmount = unlimited ? 0 : (job.credits_charged || CREDIT_COST);
+        if (chargedAmount > 0) {
+          await refundCredits(supabase, job.user_id, chargedAmount, `Estorno - GPT Image 2 falhou`);
+        }
         await supabase.from("gpt_image_jobs").update({
           status: "failed",
           error_message: result.error,
-          credits_charged: 0,
+          credits_charged: unlimited ? 0 : 0,
         }).eq("id", jobId);
         return json({ success: false, error: result.error }, 400);
       }
