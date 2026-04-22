@@ -54,10 +54,10 @@ const GerarImagemTool = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [aspectDropdownOpen, setAspectDropdownOpen] = useState(false);
   const aspectDropdownRef = useRef<HTMLDivElement>(null);
-  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>(() => {
+  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_2' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_2' : savedEngine === 'gpt_image_evolink' ? 'gpt_image_evolink' : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
@@ -86,24 +86,24 @@ const GerarImagemTool = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>('flux2_klein');
+  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>('flux2_klein');
   const gptPollIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : getCreditCost('gerar_imagem', 100));
+  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : engine === 'gpt_image_evolink' ? 80 : getCreditCost('gerar_imagem', 100));
 
   // Dynamic max refs: 4 for GPT Image 2, 5 for others
-  const maxRefs = engine === 'gpt_image_2' ? 4 : 5;
+  const maxRefs = (engine === 'gpt_image_2' || engine === 'gpt_image_evolink') ? 4 : 5;
 
-  // Aspect ratios: GPT Image 2 doesn't support 9:16
-  const availableAspectRatios = engine === 'gpt_image_2' ? ASPECT_RATIOS : ASPECT_RATIOS_WITH_STORIES;
+  // Aspect ratios: GPT Image engines don't support 9:16
+  const availableAspectRatios = (engine === 'gpt_image_2' || engine === 'gpt_image_evolink') ? ASPECT_RATIOS : ASPECT_RATIOS_WITH_STORIES;
 
   // Reset aspect ratio if switching to GPT Image 2 with unsupported ratio
   useEffect(() => {
-    if (engine === 'gpt_image_2' && aspectRatio === '9:16') {
+    if ((engine === 'gpt_image_2' || engine === 'gpt_image_evolink') && aspectRatio === '9:16') {
       setAspectRatio('3:4');
     }
-    // Trim excess reference images when switching to GPT Image 2
-    if (engine === 'gpt_image_2' && referenceImages.length > 4) {
+    // Trim excess reference images when switching to GPT Image engines
+    if ((engine === 'gpt_image_2' || engine === 'gpt_image_evolink') && referenceImages.length > 4) {
       setReferenceImages(prev => prev.slice(0, 4));
     }
   }, [engine]);
@@ -229,7 +229,8 @@ const GerarImagemTool = () => {
         return;
       }
       try {
-        const { data } = await supabase.functions.invoke('runninghub-gpt-image/poll', {
+        const pollFunction = effectiveEngineRef.current === 'gpt_image_evolink' ? 'evolink-gpt-image/poll' : 'runninghub-gpt-image/poll';
+        const { data } = await supabase.functions.invoke(pollFunction, {
           body: { jobId: pollJobId },
         });
         if (data?.status === 'completed' && data?.outputUrl) {
@@ -530,7 +531,7 @@ const GerarImagemTool = () => {
           toast.info(`Na fila — posição ${result.position}`);
         }
         } else {
-          // ========== GPT IMAGE 2 FLOW (RunningHub, same as Flux2 Klein) ==========
+          // ========== GPT IMAGE FLOW (RunningHub or Evolink) ==========
           const uploadedUrls: string[] = [];
           for (let i = 0; i < referenceImages.length; i++) {
             toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
@@ -630,9 +631,10 @@ const GerarImagemTool = () => {
     if (!jobId) return;
     toast.info('Verificando status...');
     try {
-      if (effectiveEngineRef.current === 'gpt_image_2') {
-        // GPT Image 2: reconcile via RunningHub edge function
-        const { data } = await supabase.functions.invoke('runninghub-gpt-image/reconcile', {
+      if (effectiveEngineRef.current === 'gpt_image_2' || effectiveEngineRef.current === 'gpt_image_evolink') {
+        // GPT Image: reconcile via appropriate edge function
+        const reconcileFunc = effectiveEngineRef.current === 'gpt_image_evolink' ? 'evolink-gpt-image/reconcile' : 'runninghub-gpt-image/reconcile';
+        const { data } = await supabase.functions.invoke(reconcileFunc, {
           body: { jobId },
         });
         if (data?.status === 'completed' && data?.outputUrl) {
@@ -865,7 +867,7 @@ const GerarImagemTool = () => {
                   onClick={() => setEngineDropdownOpen(!engineDropdownOpen)}
                   className="flex items-center gap-1.5 bg-accent border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-muted-foreground font-medium cursor-pointer hover:border-border disabled:opacity-40 transition-colors relative"
                 >
-                  <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : engine === 'gpt_image_2' ? '🎨 GPT Image 2' : '🍌 Nano Banana'}</span>
+                  <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : engine === 'gpt_image_2' ? '🎨 GPT Image 2' : engine === 'gpt_image_evolink' ? '🌐 GPT Image Evolink' : '🍌 Nano Banana'}</span>
                   <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                 </button>
                 {engineDropdownOpen && (
@@ -874,6 +876,7 @@ const GerarImagemTool = () => {
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
                       { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
+                      { value: 'gpt_image_evolink' as const, label: '🌐 GPT Image Evolink' },
                     ]).map((opt) => (
                       <button
                         key={opt.value}
