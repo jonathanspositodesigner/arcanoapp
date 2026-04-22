@@ -888,14 +888,16 @@ const BibliotecaPrompts = () => {
                     if (selectedPrompt.isPremium && !isPremium) {
                       setPremiumModalItem(selectedPrompt);
                       setShowPremiumModal(true);
+                    } else if (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) {
+                      toast.error('Libere o prompt primeiro antes de baixar.');
                     } else {
                       downloadMedia(selectedPrompt.imageUrl, selectedPrompt.title, selectedPrompt.referenceImages, selectedPrompt.isPremium, selectedPrompt.thumbnailUrl);
                     }
                   }} 
                   variant="outline" 
-                  className={`${selectedPrompt.isPremium && !isPremium ? 'bg-accent border-border text-muted-foreground hover:bg-accent' : 'bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground'}`}
+                  className={`${(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? 'bg-accent border-border text-muted-foreground hover:bg-accent' : 'bg-accent border-border text-foreground hover:bg-accent0/20 hover:text-foreground'}`}
                 >
-                  {selectedPrompt.isPremium && !isPremium ? (
+                  {(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? (
                     <><Lock className="h-4 w-4 mr-2" />{t('modal.download')}</>
                   ) : (
                     <><Download className="h-4 w-4 mr-2" />{t('modal.download')}</>
