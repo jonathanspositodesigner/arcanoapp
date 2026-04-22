@@ -315,7 +315,8 @@ serve(async (req) => {
     }
 
     const newStatus = errorMessage ? 'failed' : (outputUrl ? 'completed' : 'failed');
-    const finalError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
+    const rawError = errorMessage || (newStatus === 'failed' ? 'No output received' : null);
+    const finalError = rawError ? normalizeAIError(rawError).message : null;
 
     // ========================================
     // FALLBACK LOGIC: De Longe → Standard
