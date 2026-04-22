@@ -19,6 +19,20 @@ async function isUnlimitedUser(supabase: ReturnType<typeof createClient>, userId
   }
 }
 
+async function isGptImageFreeTrial(supabase: ReturnType<typeof createClient>, userId: string): Promise<boolean> {
+  try {
+    const { data } = await supabase
+      .from('planos2_subscriptions')
+      .select('gpt_image_free_until')
+      .eq('user_id', userId)
+      .maybeSingle();
+    if (!data?.gpt_image_free_until) return false;
+    return new Date(data.gpt_image_free_until) > new Date();
+  } catch {
+    return false;
+  }
+}
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -141,9 +155,17 @@ serve(async (req) => {
 
       // Check if user is IA Unlimited
       const unlimited = await isUnlimitedUser(supabase, job.user_id);
+      const freeTrial = !unlimited && await isGptImageFreeTrial(supabase, job.user_id);
 
       if (unlimited) {
         console.log(`[gpt-image-generate] Unlimited user ${job.user_id} — skipping credit consumption`);
+        await supabase.from("gpt_image_jobs").update({
+          credits_charged: 0,
+          status: "queued",
+          error_message: null,
+        }).eq("id", jobId);
+      } else if (freeTrial) {
+        console.log(`[gpt-image-generate] Free trial user ${job.user_id} — skipping credit consumption (7-day promo)`);
         await supabase.from("gpt_image_jobs").update({
           credits_charged: 0,
           status: "queued",
@@ -189,7 +211,7 @@ serve(async (req) => {
       });
 
       if (!result.success) {
-        const chargedAmount = unlimited ? 0 : (job.credits_charged || CREDIT_COST);
+        const chargedAmount = (unlimited || freeTrial) ? 0 : (job.credits_charged || CREDIT_COST);
         if (chargedAmount > 0) {
           await refundCredits(supabase, job.user_id, chargedAmount, `Estorno - GPT Image 2 falhou`);
         }
