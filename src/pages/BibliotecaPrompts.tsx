@@ -950,6 +950,76 @@ const BibliotecaPrompts = () => {
                   )}
                 </div>
               </div>
+              <div>
+                <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
+                <div className="bg-background border border-border rounded-lg p-4 relative">
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">Assine um plano para acessar</p>
+                          <Button 
+                            onClick={() => navigate("/planos-2")} 
+                            size="sm" 
+                            className="mt-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                            Ver planos
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id)) ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm mb-2">
+                            {premiumLimitReached 
+                              ? 'Você atingiu seu limite diário de prompts premium' 
+                              : 'Libere este prompt para visualizar'}
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              if (premiumLimitReached) {
+                                toast.error('Limite diário de prompts premium atingido. Volte amanhã!');
+                                return;
+                              }
+                              const success = await unlockPrompt(String(selectedPrompt.id));
+                              if (success) {
+                                toast.success('Prompt liberado!');
+                              } else {
+                                toast.error('Não foi possível liberar o prompt.');
+                              }
+                            }}
+                            size="sm"
+                            disabled={premiumLimitReached}
+                            className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            Liberar Prompt {!isPremiumUnlimited && `(${remainingUnlocks} restantes)`}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : revealedPrompts.has(String(selectedPrompt.id)) || isPromptUnlocked(String(selectedPrompt.id)) ? (
+                    <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                  ) : (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">{t('modal.clickToCopy')}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
             </div>
           )}
         </DialogContent>
