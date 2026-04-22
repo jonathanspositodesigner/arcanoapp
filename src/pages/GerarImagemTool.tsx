@@ -183,6 +183,11 @@ const GerarImagemTool = () => {
     return () => { if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current); };
   }, [isProcessing, jobId]);
 
+  // Cleanup GPT poll on unmount
+  useEffect(() => {
+    return () => { if (gptPollRef.current) clearInterval(gptPollRef.current); };
+  }, []);
+
   // File processing
   const processFiles = useCallback((files: File[]) => {
     const remaining = 5 - referenceImages.length;
