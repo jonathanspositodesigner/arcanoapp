@@ -28,6 +28,12 @@ const ASPECT_RATIOS = [
   { ratio: '1:1',   label: 'Quadrado',      w: 12, h: 12 },
   { ratio: '3:4',   label: 'Feed Vertical',  w: 10, h: 13 },
   { ratio: '16:9',  label: 'Wide',           w: 16, h: 9 },
+] as const;
+
+const ASPECT_RATIOS_WITH_STORIES = [
+  { ratio: '1:1',   label: 'Quadrado',      w: 12, h: 12 },
+  { ratio: '3:4',   label: 'Feed Vertical',  w: 10, h: 13 },
+  { ratio: '16:9',  label: 'Wide',           w: 16, h: 9 },
   { ratio: '9:16',  label: 'Stories',         w: 9, h: 16 },
 ] as const;
 
@@ -81,9 +87,25 @@ const GerarImagemTool = () => {
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>('flux2_klein');
-  const gptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : getCreditCost('gerar_imagem', 100));
+
+  // Dynamic max refs: 4 for GPT Image 2, 5 for others
+  const maxRefs = engine === 'gpt_image_2' ? 4 : 5;
+
+  // Aspect ratios: GPT Image 2 doesn't support 9:16
+  const availableAspectRatios = engine === 'gpt_image_2' ? ASPECT_RATIOS : ASPECT_RATIOS_WITH_STORIES;
+
+  // Reset aspect ratio if switching to GPT Image 2 with unsupported ratio
+  useEffect(() => {
+    if (engine === 'gpt_image_2' && aspectRatio === '9:16') {
+      setAspectRatio('3:4');
+    }
+    // Trim excess reference images when switching to GPT Image 2
+    if (engine === 'gpt_image_2' && referenceImages.length > 4) {
+      setReferenceImages(prev => prev.slice(0, 4));
+    }
+  }, [engine]);
 
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
@@ -183,23 +205,18 @@ const GerarImagemTool = () => {
     return () => { if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current); };
   }, [isProcessing, jobId]);
 
-  // Cleanup GPT poll on unmount
-  useEffect(() => {
-    return () => { if (gptPollRef.current) clearInterval(gptPollRef.current); };
-  }, []);
-
   // File processing
   const processFiles = useCallback((files: File[]) => {
-    const remaining = 5 - referenceImages.length;
+    const remaining = maxRefs - referenceImages.length;
     const toProcess = files.filter(f => f.type.startsWith('image/')).slice(0, remaining);
     for (const file of toProcess) {
       const preview = URL.createObjectURL(file);
       setReferenceImages(prev => {
-        if (prev.length >= 5) return prev;
+        if (prev.length >= maxRefs) return prev;
         return [...prev, { file, preview }];
       });
     }
-  }, [referenceImages.length]);
+  }, [referenceImages.length, maxRefs]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -219,8 +236,8 @@ const GerarImagemTool = () => {
   // Drag & drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
-    if (referenceImages.length < 5) setIsDragOver(true);
-  }, [referenceImages.length]);
+    if (referenceImages.length < maxRefs) setIsDragOver(true);
+  }, [referenceImages.length, maxRefs]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -236,7 +253,7 @@ const GerarImagemTool = () => {
   // Ctrl+V paste
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      if (referenceImages.length >= 5) return;
+      if (referenceImages.length >= maxRefs) return;
       const items = e.clipboardData?.items;
       if (!items) return;
       const imageFiles: File[] = [];
@@ -250,7 +267,7 @@ const GerarImagemTool = () => {
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [processFiles, referenceImages.length]);
+  }, [processFiles, referenceImages.length, maxRefs]);
 
   // Reset state for new generation
   const resetJobState = () => {
@@ -261,7 +278,6 @@ const GerarImagemTool = () => {
     setQueuePosition(0);
     setProgress(0);
     setShowReconcileButton(false);
-    if (gptPollRef.current) { clearInterval(gptPollRef.current); gptPollRef.current = null; }
   };
 
   // Generate
@@ -458,7 +474,7 @@ const GerarImagemTool = () => {
           toast.info(`Na fila — posição ${result.position}`);
         }
         } else {
-          // ========== GPT IMAGE 2 FLOW (Evolink polling, like Seedance) ==========
+          // ========== GPT IMAGE 2 FLOW (RunningHub, same as Flux2 Klein) ==========
           const uploadedUrls: string[] = [];
           for (let i = 0; i < referenceImages.length; i++) {
             toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
@@ -469,186 +485,68 @@ const GerarImagemTool = () => {
             setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
           }
 
-          // Create job in gpt_image_jobs table
-          const { data: gptJob, error: gptInsertErr } = await supabase
-            .from('gpt_image_jobs' as any)
-            .insert({
-              user_id: user.id,
-              prompt: prompt.trim(),
-              size: aspectRatio,
-              input_image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
-              status: 'pending',
-            })
-            .select('id')
-            .single();
-
-          if (gptInsertErr || !gptJob) throw new Error('Falha ao criar job GPT Image 2');
-
-          const newJobId = (gptJob as any).id as string;
-          setJobId(newJobId);
-          setStatus('pending');
-          setProgress(20);
-
-          // Call generate edge function
-          const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
-          const { data: genData, error: genError } = await supabase.functions.invoke('gpt-image-generate', {
-            body: { jobId: newJobId, prompt: prompt.trim() },
-            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
+            prompt: prompt.trim(),
+            aspect_ratio: aspectRatio,
+            model: 'gpt_image_2',
+            engine: 'gpt_image_2',
+            input_urls: uploadedUrls,
           });
 
-          if (genError) {
-            setStatus('failed');
-            setErrorMessage(genError.message || 'Erro ao iniciar geração');
-            toast.error('Erro ao iniciar geração GPT Image 2');
-            refetchCredits();
-            endSubmit();
-            return;
-          }
+          if (createError || !newJobId) throw new Error(createError || 'Falha ao criar job');
 
-          if (genData?.error || genData?.success === false) {
+          setJobId(newJobId);
+          registerJob(newJobId, 'image_generator', 'pending');
+          setStatus('running');
+          setProgress(20);
+
+          // Call GPT Image RunningHub edge function directly
+          const { data, error } = await supabase.functions.invoke('runninghub-gpt-image/run', {
+            body: {
+              jobId: newJobId,
+              prompt: prompt.trim(),
+              aspectRatio,
+              creditCost,
+              referenceImageUrls: uploadedUrls,
+            },
+          });
+
+          if (error) {
+            const errMsg = error.message || 'Erro desconhecido';
             setStatus('failed');
-            setErrorMessage(genData.error || 'Erro desconhecido');
-            const errInfo = getAIErrorMessage(genData.error || 'Erro desconhecido');
+            setErrorMessage(errMsg);
+            const errInfo = getAIErrorMessage(errMsg);
             toast.error(errInfo.message);
             refetchCredits();
             endSubmit();
             return;
           }
 
-          setStatus('running');
-          setProgress(30);
+          if (data?.code === 'INSUFFICIENT_CREDITS') {
+            setNoCreditsReason('insufficient');
+            setShowNoCreditsModal(true);
+            resetJobState();
+            refetchCredits();
+            endSubmit();
+            return;
+          }
 
-          // Start polling loop (like Seedance)
-          const pollTaskId = genData?.taskId;
-          if (pollTaskId) {
-            // Inline polling
-            let pollAttempts = 0;
-            const maxPollAttempts = 120; // ~10 min at 5s intervals
-            gptPollRef.current = setInterval(async () => {
-              pollAttempts++;
-              if (pollAttempts > maxPollAttempts) {
-                if (gptPollRef.current) clearInterval(gptPollRef.current);
-                gptPollRef.current = null;
-                setStatus('failed');
-                setErrorMessage('Timeout - geração demorou demais');
-                toast.error('Timeout na geração');
-                refetchCredits();
-                return;
-              }
-              try {
-                const session = await supabase.auth.getSession();
-                const token = session.data.session?.access_token;
-                const { data: pollData } = await supabase.functions.invoke('gpt-image-poll', {
-                  body: { taskId: pollTaskId, jobId: newJobId },
-                  headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                });
+          if (data?.error && !data?.success) {
+            setStatus('failed');
+            setErrorMessage(data.error);
+            const errInfo = getAIErrorMessage(data.error);
+            toast.error(errInfo.message);
+            refetchCredits();
+            endSubmit();
+            return;
+          }
 
-                if (pollData?.status === 'completed' && pollData?.outputUrl) {
-                  if (gptPollRef.current) clearInterval(gptPollRef.current);
-                  gptPollRef.current = null;
-                  setResultUrl(pollData.outputUrl);
-                  setStatus('completed');
-                  setProgress(100);
-                  toast.success('Imagem gerada com sucesso!');
-                  refetchCredits();
-                } else if (pollData?.status === 'failed') {
-                  if (gptPollRef.current) clearInterval(gptPollRef.current);
-                  gptPollRef.current = null;
-                  setStatus('failed');
-                  setErrorMessage(pollData.error || 'Geração falhou');
-                  const errInfo = getAIErrorMessage(pollData.error || 'Erro desconhecido');
-                  toast.error(errInfo.message);
-                  refetchCredits();
-                } else {
-                  // Update progress
-                  const p = pollData?.progress || 0;
-                  setProgress(Math.max(30, Math.min(95, 30 + p * 0.65)));
-                }
-              } catch (err) {
-                console.warn('[GerarImagem] GPT Image poll error:', err);
-              }
-            }, 5000);
-          } else {
-            // No taskId yet, wait for background processing (poll DB)
-            let dbPollAttempts = 0;
-            gptPollRef.current = setInterval(async () => {
-              dbPollAttempts++;
-              if (dbPollAttempts > 120) {
-                if (gptPollRef.current) clearInterval(gptPollRef.current);
-                gptPollRef.current = null;
-                setStatus('failed');
-                setErrorMessage('Timeout');
-                return;
-              }
-              try {
-                const { data: dbJob } = await supabase
-                  .from('gpt_image_jobs' as any)
-                  .select('status, task_id, output_url, error_message')
-                  .eq('id', newJobId)
-                  .single();
-                if (!dbJob) return;
-                const j = dbJob as any;
-                if (j.status === 'completed' && j.output_url) {
-                  if (gptPollRef.current) clearInterval(gptPollRef.current);
-                  gptPollRef.current = null;
-                  setResultUrl(j.output_url);
-                  setStatus('completed');
-                  setProgress(100);
-                  toast.success('Imagem gerada com sucesso!');
-                  refetchCredits();
-                } else if (j.status === 'failed') {
-                  if (gptPollRef.current) clearInterval(gptPollRef.current);
-                  gptPollRef.current = null;
-                  setStatus('failed');
-                  setErrorMessage(j.error_message || 'Falha');
-                  toast.error('Geração falhou');
-                  refetchCredits();
-                } else if (j.task_id && j.status === 'running') {
-                  // Switch to Evolink polling
-                  if (gptPollRef.current) clearInterval(gptPollRef.current);
-                  gptPollRef.current = null;
-                  // Re-start with task_id polling
-                  setProgress(30);
-                  let attempts2 = 0;
-                  gptPollRef.current = setInterval(async () => {
-                    attempts2++;
-                    if (attempts2 > 120) {
-                      if (gptPollRef.current) clearInterval(gptPollRef.current);
-                      gptPollRef.current = null;
-                      setStatus('failed');
-                      setErrorMessage('Timeout');
-                      return;
-                    }
-                    try {
-                      const session = await supabase.auth.getSession();
-                      const token = session.data.session?.access_token;
-                      const { data: pd } = await supabase.functions.invoke('gpt-image-poll', {
-                        body: { taskId: j.task_id, jobId: newJobId },
-                        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-                      });
-                      if (pd?.status === 'completed' && pd?.outputUrl) {
-                        if (gptPollRef.current) clearInterval(gptPollRef.current);
-                        gptPollRef.current = null;
-                        setResultUrl(pd.outputUrl);
-                        setStatus('completed');
-                        setProgress(100);
-                        toast.success('Imagem gerada com sucesso!');
-                        refetchCredits();
-                      } else if (pd?.status === 'failed') {
-                        if (gptPollRef.current) clearInterval(gptPollRef.current);
-                        gptPollRef.current = null;
-                        setStatus('failed');
-                        setErrorMessage(pd.error || 'Falhou');
-                        toast.error('Geração falhou');
-                        refetchCredits();
-                      } else {
-                        setProgress(Math.max(30, Math.min(95, 30 + (pd?.progress || 0) * 0.65)));
-                      }
-                    } catch {}
-                  }, 5000);
-                }
-              } catch {}
-            }, 3000);
+          if (data?.success && data?.outputUrl) {
+            setResultUrl(data.outputUrl);
+            setStatus('completed');
+            setProgress(100);
+            toast.success('Imagem gerada com sucesso!');
+            refetchCredits();
           }
         }
       }
@@ -678,22 +576,19 @@ const GerarImagemTool = () => {
     toast.info('Verificando status...');
     try {
       if (effectiveEngineRef.current === 'gpt_image_2') {
-        // GPT Image 2: check DB directly
-        const { data: dbJob } = await supabase
-          .from('gpt_image_jobs' as any)
-          .select('status, output_url, error_message')
-          .eq('id', jobId)
-          .single();
-        const j = dbJob as any;
-        if (j?.status === 'completed' && j?.output_url) {
+        // GPT Image 2: reconcile via RunningHub edge function
+        const { data } = await supabase.functions.invoke('runninghub-gpt-image/reconcile', {
+          body: { jobId },
+        });
+        if (data?.status === 'completed' && data?.outputUrl) {
           setStatus('completed');
-          setResultUrl(j.output_url);
+          setResultUrl(data.outputUrl);
           setProgress(100);
           toast.success('Imagem recuperada!');
           refetchCredits();
-        } else if (j?.status === 'failed') {
+        } else if (data?.status === 'failed') {
           setStatus('failed');
-          setErrorMessage(j.error_message || 'Falha');
+          setErrorMessage(data.error || 'Falha');
           toast.error('Geração falhou.');
           refetchCredits();
         } else {
@@ -865,7 +760,7 @@ const GerarImagemTool = () => {
                     </button>
                   </div>
                 ))}
-                <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">{referenceImages.length}/5</span>
+                <span className="text-[10px] text-muted-foreground ml-1 flex-shrink-0">{referenceImages.length}/{maxRefs}</span>
               </div>
             </div>
           )}
@@ -876,7 +771,7 @@ const GerarImagemTool = () => {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing || referenceImages.length >= 5}
+                disabled={isProcessing || referenceImages.length >= maxRefs}
                 className="relative flex-shrink-0 w-9 h-9 rounded-full border border-border bg-accent flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-border/60 transition-colors disabled:opacity-40 self-end mb-0.5"
               >
                 <Paperclip className="h-4 w-4" />
@@ -963,7 +858,7 @@ const GerarImagemTool = () => {
                 </button>
                 {aspectDropdownOpen && (
                   <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[140px]">
-                    {ASPECT_RATIOS.map(({ ratio, label, w, h }) => {
+                    {availableAspectRatios.map(({ ratio, label, w, h }) => {
                       const isSelected = aspectRatio === ratio;
                       return (
                         <button
