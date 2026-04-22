@@ -456,6 +456,17 @@ async function handleReconcile(req: Request) {
             output_url: outputUrl,
             completed_at: new Date().toISOString(),
           }).eq('id', jobId);
+          // Trigger thumbnail generation
+          try {
+            await fetch(`${SUPABASE_URL}/functions/v1/generate-thumbnail`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+              },
+              body: JSON.stringify({ jobId, tableName: TABLE_NAME, imageUrl: outputUrl }),
+            });
+          } catch (_) { /* non-critical */ }
           return new Response(JSON.stringify({ status: 'completed', outputUrl }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           });
@@ -564,6 +575,21 @@ async function handlePoll(req: Request) {
         raw_api_response: queryData,
         rh_cost: rhCost,
       }).eq('id', jobId);
+
+      // Trigger thumbnail generation
+      try {
+        await fetch(`${SUPABASE_URL}/functions/v1/generate-thumbnail`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({ jobId, tableName: TABLE_NAME, imageUrl: outputUrl }),
+        });
+        console.log(`[GPTImage] Thumbnail generation triggered for ${jobId}`);
+      } catch (thumbErr) {
+        console.warn('[GPTImage] Thumbnail trigger failed (non-critical):', thumbErr);
+      }
 
       return new Response(JSON.stringify({ status: 'completed', outputUrl }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
