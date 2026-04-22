@@ -60,7 +60,7 @@ interface CardData {
   imagePosition: string;
 }
 
-export const APP_BUILD_VERSION = '1.1.4';
+export const APP_BUILD_VERSION = '1.1.5';
 
 const Index = () => {
   const navigate = useNavigate();
@@ -551,12 +551,15 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Conteúdo principal compacto */}
-      <main className="flex-1 flex flex-col px-3 py-3 pt-14">
+      <div className="px-3 pt-14">
         <div className="w-full max-w-7xl mx-auto">
-
-          {/* Banner GPT Image Promo */}
           <GptImagePromoBanner />
+        </div>
+      </div>
+
+      {/* Conteúdo principal compacto */}
+      <main className="flex-1 flex flex-col px-3 py-3">
+        <div className="w-full max-w-7xl mx-auto">
 
           {/* Títulos compactos */}
           <FadeIn delay={150} duration={600}>
