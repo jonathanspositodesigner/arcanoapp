@@ -630,8 +630,8 @@ const Planos2 = () => {
                 )}
               </div>
 
-              {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
-              {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
+              {/* Seedance 2 Badge for Starter, Pro, Ultimate, Unlimited */}
+              {(plan.name === "Starter" || plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
                 <>
                 <div className="mb-2 mx-auto w-full rounded-lg bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-500 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25">
                     <Video className="w-3.5 h-3.5 text-white" />
