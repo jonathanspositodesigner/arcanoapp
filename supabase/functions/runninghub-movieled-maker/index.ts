@@ -27,6 +27,7 @@ const corsHeaders = {
 const ENGINE_COSTS: Record<string, number> = {
   'veo3.1': 1500,
   'wan2.2': 500,
+  'kling2.5': 900,
 };
 
 // ========== RESILIENT FETCH (for RunningHub only) ==========
@@ -475,7 +476,7 @@ async function handleRun(req: Request) {
 
   const { data: creditResult, error: creditError } = await supabase.rpc(
     'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: `MovieLed Maker (${selectedEngine === 'veo3.1' ? 'Veo 3.1' : 'Wan 2.2'})` }
+    { _user_id: verifiedUserId, _amount: creditCost, _description: `MovieLed Maker (${selectedEngine === 'veo3.1' ? 'Veo 3.1' : selectedEngine === 'kling2.5' ? 'Kling 2.5 Turbo' : 'Wan 2.2'})` }
   );
 
   if (creditError) {
