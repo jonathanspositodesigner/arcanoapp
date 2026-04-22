@@ -671,6 +671,11 @@ const PROMO_DURATION_DAYS = 30;
                             {(feature as any).badge}
                           </span>
                         )}
+                        {(feature as any).promoBadge && !(feature as any).badge && (
+                          <span className="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-bold bg-gradient-to-r from-[#ff0059] to-[#cc0047] text-white leading-none animate-pulse">
+                            {(feature as any).promoBadge}
+                          </span>
+                        )}
                       </span>
                       {(feature as any).isAiTools && (
                         <ChevronDown className={`w-3 h-3 shrink-0 mt-0.5 transition-transform duration-200 ${feature.included ? 'text-foreground' : 'text-foreground/65'} ${expandedAiTools[plan.name] ? 'rotate-180' : ''}`} />
