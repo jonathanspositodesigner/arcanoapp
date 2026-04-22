@@ -28,6 +28,12 @@ const ASPECT_RATIOS = [
   { ratio: '1:1',   label: 'Quadrado',      w: 12, h: 12 },
   { ratio: '3:4',   label: 'Feed Vertical',  w: 10, h: 13 },
   { ratio: '16:9',  label: 'Wide',           w: 16, h: 9 },
+] as const;
+
+const ASPECT_RATIOS_WITH_STORIES = [
+  { ratio: '1:1',   label: 'Quadrado',      w: 12, h: 12 },
+  { ratio: '3:4',   label: 'Feed Vertical',  w: 10, h: 13 },
+  { ratio: '16:9',  label: 'Wide',           w: 16, h: 9 },
   { ratio: '9:16',  label: 'Stories',         w: 9, h: 16 },
 ] as const;
 
@@ -81,9 +87,14 @@ const GerarImagemTool = () => {
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>('flux2_klein');
-  const gptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : getCreditCost('gerar_imagem', 100));
+
+  // Dynamic max refs: 4 for GPT Image 2, 5 for others
+  const maxRefs = engine === 'gpt_image_2' ? 4 : 5;
+
+  // Aspect ratios: GPT Image 2 doesn't support 9:16
+  const availableAspectRatios = engine === 'gpt_image_2' ? ASPECT_RATIOS : ASPECT_RATIOS_WITH_STORIES;
 
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
@@ -183,23 +194,18 @@ const GerarImagemTool = () => {
     return () => { if (reconcileTimerRef.current) clearTimeout(reconcileTimerRef.current); };
   }, [isProcessing, jobId]);
 
-  // Cleanup GPT poll on unmount
-  useEffect(() => {
-    return () => { if (gptPollRef.current) clearInterval(gptPollRef.current); };
-  }, []);
-
   // File processing
   const processFiles = useCallback((files: File[]) => {
-    const remaining = 5 - referenceImages.length;
+    const remaining = maxRefs - referenceImages.length;
     const toProcess = files.filter(f => f.type.startsWith('image/')).slice(0, remaining);
     for (const file of toProcess) {
       const preview = URL.createObjectURL(file);
       setReferenceImages(prev => {
-        if (prev.length >= 5) return prev;
+        if (prev.length >= maxRefs) return prev;
         return [...prev, { file, preview }];
       });
     }
-  }, [referenceImages.length]);
+  }, [referenceImages.length, maxRefs]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -219,8 +225,8 @@ const GerarImagemTool = () => {
   // Drag & drop
   const handleDragOver = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
-    if (referenceImages.length < 5) setIsDragOver(true);
-  }, [referenceImages.length]);
+    if (referenceImages.length < maxRefs) setIsDragOver(true);
+  }, [referenceImages.length, maxRefs]);
 
   const handleDragLeave = useCallback((e: React.DragEvent) => {
     e.preventDefault(); e.stopPropagation();
@@ -236,7 +242,7 @@ const GerarImagemTool = () => {
   // Ctrl+V paste
   useEffect(() => {
     const handlePaste = (e: ClipboardEvent) => {
-      if (referenceImages.length >= 5) return;
+      if (referenceImages.length >= maxRefs) return;
       const items = e.clipboardData?.items;
       if (!items) return;
       const imageFiles: File[] = [];
@@ -250,7 +256,7 @@ const GerarImagemTool = () => {
     };
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
-  }, [processFiles, referenceImages.length]);
+  }, [processFiles, referenceImages.length, maxRefs]);
 
   // Reset state for new generation
   const resetJobState = () => {
@@ -261,7 +267,6 @@ const GerarImagemTool = () => {
     setQueuePosition(0);
     setProgress(0);
     setShowReconcileButton(false);
-    if (gptPollRef.current) { clearInterval(gptPollRef.current); gptPollRef.current = null; }
   };
 
   // Generate
