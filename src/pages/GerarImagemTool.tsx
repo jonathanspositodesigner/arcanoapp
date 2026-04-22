@@ -48,10 +48,10 @@ const GerarImagemTool = () => {
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [aspectDropdownOpen, setAspectDropdownOpen] = useState(false);
   const aspectDropdownRef = useRef<HTMLDivElement>(null);
-  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana'>(() => {
+  const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_2' : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
@@ -80,9 +80,10 @@ const GerarImagemTool = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const sessionIdRef = useRef(crypto.randomUUID());
   const reconcileTimerRef = useRef<ReturnType<typeof setTimeout>>();
-  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana'>('flux2_klein');
+  const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2'>('flux2_klein');
+  const gptPollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : getCreditCost('gerar_imagem', 100));
+  const creditCost = isUnlimited ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : getCreditCost('gerar_imagem', 100));
 
   const isProcessing = ['pending', 'starting', 'running', 'queued'].includes(status);
 
