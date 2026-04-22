@@ -370,7 +370,7 @@ const PROMO_DURATION_DAYS = 7;
         { text: t('planos.features.immediateRelease'), included: true },
         { text: 'Acesso às Ferramentas de IA', included: true, isAiTools: true, badge: 'Ilimitado' },
         { text: t('planos.features.whatsappSupport'), included: true },
-        { text: t('planos.features.unlimitedPrompts'), included: true },
+        { text: t('planos.features.unlimitedPrompts'), included: true, badge: 'Ilimitado' },
         { text: t('planos.features.allPremiumContent'), included: true },
         { text: 'Wan 2.2', iconType: 'video', included: true, badge: 'Ilimitado' },
         { text: 'Flux 2 Klein', iconType: 'image', included: true, badge: 'Ilimitado' },
