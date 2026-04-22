@@ -18,6 +18,7 @@ interface Planos2Subscription {
   has_video_generation: boolean;
   cost_multiplier: number;
   expires_at: string | null;
+  gpt_image_free_until: string | null;
 }
 
 interface AuthContextType {
@@ -153,7 +154,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             .maybeSingle(),
           supabase
             .from('planos2_subscriptions')
-            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier, expires_at')
+            .select('plan_slug, is_active, credits_per_month, daily_prompt_limit, has_image_generation, has_video_generation, cost_multiplier, expires_at, gpt_image_free_until')
             .eq('user_id', userId)
             .maybeSingle(),
         ])
