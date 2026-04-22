@@ -144,7 +144,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: false },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
-        { text: 'GPT Image 2', iconType: 'image', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: false, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -168,7 +168,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -192,7 +192,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -218,7 +218,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -269,7 +269,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: false },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
-        { text: 'GPT Image 2', iconType: 'image', included: false },
+        { text: 'GPT Image 2', iconType: 'image', included: false, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -294,7 +294,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: false },
         { text: 'Veo 3.1', iconType: 'video', included: false },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -320,7 +320,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
@@ -348,7 +348,7 @@ const PROMO_DURATION_DAYS = 30;
         { text: 'Flux 2 Klein', iconType: 'image', included: true },
         { text: 'Nano Banana Pro', iconType: 'image', included: true },
         { text: 'Veo 3.1', iconType: 'video', included: true },
-        { text: 'GPT Image 2', iconType: 'image', included: true },
+        { text: 'GPT Image 2', iconType: 'image', included: true, promoBadge: '7 dias free' },
         { text: 'Fila prioritária nas gerações de IA', included: false }
       ],
       popular: false,
