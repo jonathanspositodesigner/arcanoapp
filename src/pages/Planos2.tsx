@@ -64,27 +64,29 @@ const Planos2 = () => {
     "Gerador de Personagens",
     "E muito mais..."
   ];
-  // Countdown timer state - starting at 48 minutes
+  // GPT Image promo countdown - 7 days
+  const PROMO_START_KEY = "gpt_image_promo_planos2_start";
+  const PROMO_DURATION_DAYS = 7;
+
+  const getPromoStart = (): number => {
+    const stored = localStorage.getItem(PROMO_START_KEY);
+    if (stored) return parseInt(stored, 10);
+    const now = Date.now();
+    localStorage.setItem(PROMO_START_KEY, String(now));
+    return now;
+  };
+
   const [timeLeft, setTimeLeft] = useState(() => {
-    const saved = localStorage.getItem('planos2-countdown');
-    if (saved) {
-      const remaining = parseInt(saved, 10) - Date.now();
-      if (remaining > 0) return remaining;
-    }
-    const initial = 48 * 60 * 1000; // 48 minutes in ms
-    localStorage.setItem('planos2-countdown', String(Date.now() + initial));
-    return initial;
+    const start = getPromoStart();
+    const end = start + PROMO_DURATION_DAYS * 24 * 60 * 60 * 1000;
+    const diff = end - Date.now();
+    return diff > 0 ? diff : 0;
   });
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
-        if (prev <= 1000) {
-          // Reset to 48 minutes when it reaches 0
-          const newTime = 48 * 60 * 1000;
-          localStorage.setItem('planos2-countdown', String(Date.now() + newTime));
-          return newTime;
-        }
+        if (prev <= 1000) return 0;
         return prev - 1000;
       });
     }, 1000);
@@ -93,10 +95,12 @@ const Planos2 = () => {
 
   const formatTime = (ms: number) => {
     const totalSeconds = Math.floor(ms / 1000);
-    const hours = Math.floor(totalSeconds / 3600);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
     const minutes = Math.floor((totalSeconds % 3600) / 60);
     const seconds = totalSeconds % 60;
     return {
+      days: String(days).padStart(2, '0'),
       hours: String(hours).padStart(2, '0'),
       minutes: String(minutes).padStart(2, '0'),
       seconds: String(seconds).padStart(2, '0')
@@ -400,37 +404,42 @@ const Planos2 = () => {
       {/* Main Content */}
       <div className="container mx-auto px-4 pb-16">
         {/* Limited Time Promo Banner with Countdown */}
-        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden border border-primary/30 bg-gradient-to-r from-primary via-primary/90 to-primary/80 shadow-lg shadow-primary/10">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3">
-            {/* Left: Promo text */}
-            <div className="flex items-center gap-2 animate-pulse">
-              <span className="text-lg">🔥</span>
-              <span className="text-primary-foreground font-bold tracking-wide text-sm md:text-base">
-                Promoção por tempo limitado!
+        <div className="max-w-6xl mx-auto mb-6 rounded-xl overflow-hidden shadow-lg relative" style={{ background: "linear-gradient(90deg, #ff0059 0%, #cc0047 50%, #99003a 100%)" }}>
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/15 to-transparent animate-[shimmer_3s_ease-in-out_infinite] -translate-x-full" />
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-4 sm:px-6 py-3 relative">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-yellow-300" />
+              <span className="text-white font-bold tracking-wide text-sm md:text-base">
+                🎉 GPT Image 2 Ilimitado por 7 dias!
               </span>
-              <span className="text-lg">🔥</span>
             </div>
 
             {/* Right: Countdown */}
             <div className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-primary-foreground/80" />
-              <span className="text-primary-foreground/80 text-xs sm:text-sm font-medium">Essa oferta expira em</span>
+              <Clock className="w-4 h-4 text-white/80" />
+              <span className="text-white/80 text-xs sm:text-sm font-medium">Oferta expira em</span>
               <div className="flex items-center gap-1">
-                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
-                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.hours}</span>
+                <div className="bg-black/30 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.days}</span>
                 </div>
-                <span className="text-primary-foreground/80 font-bold text-sm">:</span>
-                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
-                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.minutes}</span>
+                <span className="text-white/70 text-[10px]">d</span>
+                <div className="bg-black/30 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.hours}</span>
                 </div>
-                <span className="text-primary-foreground/80 font-bold text-sm">:</span>
-                <div className="bg-background/15 border border-white/20 rounded-md px-2 py-1 min-w-[28px] text-center backdrop-blur-sm">
-                  <span className="text-primary-foreground font-mono font-bold text-sm">{countdown.seconds}</span>
+                <span className="text-white/70 text-[10px]">h</span>
+                <div className="bg-black/30 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.minutes}</span>
                 </div>
+                <span className="text-white/70 text-[10px]">m</span>
+                <div className="bg-black/30 rounded-md px-2 py-1 min-w-[28px] text-center">
+                  <span className="text-white font-mono font-bold text-sm">{countdown.seconds}</span>
+                </div>
+                <span className="text-white/70 text-[10px]">s</span>
               </div>
             </div>
           </div>
         </div>
+        <p className="text-center text-foreground/70 text-xs mb-4 max-w-6xl mx-auto">Assine qualquer plano e ganhe acesso ao GPT Image 2 ilimitado por 7 dias!</p>
 
         <AnimatedSection animation="fade-up" className="text-center mb-10" as="div">
           <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r dark:from-gray-400 dark:to-pink-400 from-purple-700 to-pink-600 bg-clip-text text-transparent mb-6">
@@ -623,11 +632,18 @@ const Planos2 = () => {
 
               {/* Seedance 2 Badge for Pro, Ultimate, Unlimited */}
               {(plan.name === "Pro" || plan.name === "Ultimate" || plan.name === "IA Unlimited") && (
-                <div className="mb-3 mx-auto w-full rounded-lg bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-500 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25">
+                <>
+                <div className="mb-2 mx-auto w-full rounded-lg bg-gradient-to-r from-emerald-600 via-green-600 to-emerald-500 px-3 py-2 flex items-center justify-center gap-2 shadow-md shadow-emerald-500/25">
                     <Video className="w-3.5 h-3.5 text-white" />
                     <span className="text-[12px] font-extrabold italic text-white tracking-wider">Seedance 2</span>
                     <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">INCLUSO</span>
                 </div>
+                <div className="mb-3 mx-auto w-full rounded-lg px-3 py-2 flex items-center justify-center gap-2 shadow-md" style={{ background: "linear-gradient(90deg, #ff0059, #cc0047)" }}>
+                    <ImageIcon className="w-3.5 h-3.5 text-white" />
+                    <span className="text-[12px] font-extrabold italic text-white tracking-wider">GPT Image 2</span>
+                    <span className="text-[8px] font-extrabold bg-white/15 border border-white/20 text-white px-2 py-0.5 rounded-full leading-none animate-pulse">7 DIAS FREE</span>
+                </div>
+                </>
               )}
 
               <ul className="space-y-2 flex-1">
