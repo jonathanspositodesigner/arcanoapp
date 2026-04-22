@@ -1290,6 +1290,59 @@ const BibliotecaArtes = () => {
                   {selectedArte.description && <p className="text-muted-foreground text-sm mt-2">{selectedArte.description}</p>}
                 </div>
 
+                {/* Criar com IA - Flyer Maker button (always visible) */}
+                {!isVideoUrl(selectedArte.imageUrl) && <Button
+                  onClick={async () => {
+                    let flyerType: string | null = null;
+                    // Try from arte's own flyer_subcategory first
+                    if (selectedArte.flyerSubcategory) {
+                      const slugMap: Record<string, string> = {
+                        'evento': 'evento',
+                        'agenda-de-artista': 'agenda',
+                        'contrate': 'contrate',
+                        'outro': 'outro',
+                      };
+                      flyerType = slugMap[selectedArte.flyerSubcategory] || 'evento';
+                    } else {
+                      // Fallback: query ai_tool_library_items for mapping
+                      const sourceTable = selectedArte.arteType === 'admin' ? 'admin_artes' : 'partner_artes';
+                      const { data: libItem } = await supabase
+                        .from('ai_tool_library_items')
+                        .select('category_id')
+                        .eq('tool_slug', 'flyer_maker')
+                        .eq('source_table', sourceTable)
+                        .eq('source_id', String(selectedArte.id))
+                        .maybeSingle();
+                      if (libItem?.category_id) {
+                        const { data: cat } = await supabase
+                          .from('ai_tool_library_categories')
+                          .select('slug')
+                          .eq('id', libItem.category_id)
+                          .maybeSingle();
+                        if (cat?.slug) {
+                          const slugMap: Record<string, string> = {
+                            'evento': 'evento',
+                            'agenda-de-artista': 'agenda',
+                            'contrate': 'contrate',
+                            'outro': 'outro',
+                          };
+                          flyerType = slugMap[cat.slug] || 'evento';
+                        }
+                      }
+                    }
+                    navigate('/flyer-maker', {
+                      state: {
+                        referenceImageUrl: selectedArte.imageUrl,
+                        flyerType: flyerType || 'evento',
+                      }
+                    });
+                  }}
+                  className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                >
+                  <Wand2 className="h-4 w-4 mr-2" />
+                  Criar com IA
+                </Button>}
+
                 {hasAccess ? <div className="flex flex-col gap-2">
                     {selectedArte.canvaLink && <Button onClick={() => {
                   window.open(selectedArte.canvaLink, '_blank');
