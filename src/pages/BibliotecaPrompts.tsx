@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useDailyPromptLimit } from "@/hooks/useDailyPromptLimit";
+import { usePremiumPromptLimit } from "@/hooks/usePremiumPromptLimit";
 import { useCredits } from "@/contexts/CreditsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { trackPromptClick } from "@/hooks/usePromptClickTracker";
@@ -81,6 +82,14 @@ const BibliotecaPrompts = () => {
     hasReachedLimit,
     recordCopy
   } = useDailyPromptLimit(user, planType, planos2Sub?.daily_prompt_limit);
+  const {
+    remainingUnlocks,
+    dailyLimit: premiumDailyLimit,
+    hasReachedLimit: premiumLimitReached,
+    isUnlimited: isPremiumUnlimited,
+    isPromptUnlocked,
+    unlockPrompt,
+  } = usePremiumPromptLimit(user, isPremium, planType);
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
@@ -301,7 +310,13 @@ const BibliotecaPrompts = () => {
       return;
     }
 
-    if (promptItem.isPremium && hasLimitPlan) {
+    // Block premium prompts that haven't been unlocked today
+    if (promptItem.isPremium && !isPromptUnlocked(String(promptItem.id))) {
+      toast.error('Libere o prompt primeiro antes de copiar.');
+      return;
+    }
+
+    if (!promptItem.isPremium && hasLimitPlan) {
       if (hasReachedLimit) {
         setShowLimitModal(true);
         return;
@@ -335,7 +350,7 @@ const BibliotecaPrompts = () => {
     }
 
     // Record the copy for daily limit tracking AFTER clipboard succeeds
-    if (promptItem.isPremium && hasLimitPlan) {
+    if (!promptItem.isPremium && hasLimitPlan) {
       const recorded = await recordCopy(String(promptItem.id));
       if (!recorded) {
         setShowLimitModal(true);
@@ -927,6 +942,75 @@ const BibliotecaPrompts = () => {
                       </div>
                     </>
                   ) : revealedPrompts.has(String(selectedPrompt.id)) ? (
+                    <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
+                  ) : (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">{t('modal.clickToCopy')}</p>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+              <div>
+                <div className="bg-background border border-border rounded-lg p-4 relative">
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-muted-foreground mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm">Assine um plano para acessar</p>
+                          <Button 
+                            onClick={() => navigate("/planos-2")} 
+                            size="sm" 
+                            className="mt-2 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Star className="h-3 w-3 mr-1" fill="currentColor" />
+                            Ver planos
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id)) ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm mb-2">
+                            {premiumLimitReached 
+                              ? 'Você atingiu seu limite diário de prompts premium' 
+                              : 'Libere este prompt para visualizar'}
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              if (premiumLimitReached) {
+                                toast.error('Limite diário de prompts premium atingido. Volte amanhã!');
+                                return;
+                              }
+                              const success = await unlockPrompt(String(selectedPrompt.id));
+                              if (success) {
+                                toast.success('Prompt liberado!');
+                              } else {
+                                toast.error('Não foi possível liberar o prompt.');
+                              }
+                            }}
+                            size="sm"
+                            disabled={premiumLimitReached}
+                            className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            Liberar Prompt {!isPremiumUnlimited && `(${remainingUnlocks} restantes)`}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : revealedPrompts.has(String(selectedPrompt.id)) || isPromptUnlocked(String(selectedPrompt.id)) ? (
                     <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
