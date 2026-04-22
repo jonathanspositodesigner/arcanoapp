@@ -1070,6 +1070,25 @@ serve(async (req) => {
 
           await supabase.from('planos2_subscriptions').upsert(upsertData, { onConflict: 'user_id' })
 
+          // GPT Image 2 free trial: 7 days for non-unlimited plans (one-time only)
+          if (product.plan_slug !== 'unlimited') {
+            const { data: currentSub } = await supabase
+              .from('planos2_subscriptions')
+              .select('gpt_image_free_until')
+              .eq('user_id', userId)
+              .maybeSingle()
+
+            if (!currentSub?.gpt_image_free_until) {
+              const freeUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+              await supabase.from('planos2_subscriptions')
+                .update({ gpt_image_free_until: freeUntil })
+                .eq('user_id', userId)
+              console.log(`   ├─ 🎁 GPT Image 2 free trial ativado até: ${freeUntil}`)
+            } else {
+              console.log(`   ├─ ℹ️ GPT Image 2 free trial já utilizado, ignorando`)
+            }
+          }
+
           // Reset monthly credits to the plan amount
           const { error: resetError } = await supabase.rpc('reset_upscaler_credits', {
             _user_id: userId,
