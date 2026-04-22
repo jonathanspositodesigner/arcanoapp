@@ -636,9 +636,8 @@ async function processQueue(): Promise<Response> {
             await supabase.from('movieled_maker_jobs').update({
               status: 'failed',
               error_message: 'Limite de uso da API Google atingido (rate limit). Créditos estornados.',
-              credits_refunded: true,
               completed_at: new Date().toISOString(),
-              updated_at: new Date().toISOString(),
+              current_step: 'failed',
             }).eq('session_id', job.id);
           } catch (mirrorErr: any) {
             console.warn(`[GeminiQueue] Mirror update failed (non-fatal): ${mirrorErr.message}`);
@@ -823,7 +822,6 @@ async function processQueue(): Promise<Response> {
             error_message: String(e.message || e).substring(0, 500),
             completed_at: new Date().toISOString(),
             current_step: 'failed',
-            credits_refunded: true,
           })
           .eq('session_id', job.id);
       } catch {}
