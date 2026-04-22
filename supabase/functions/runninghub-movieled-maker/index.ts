@@ -476,7 +476,7 @@ async function handleRun(req: Request) {
 
   const { data: creditResult, error: creditError } = await supabase.rpc(
     'consume_upscaler_credits',
-    { _user_id: verifiedUserId, _amount: creditCost, _description: `MovieLed Maker (${selectedEngine === 'veo3.1' ? 'Veo 3.1' : 'Wan 2.2'})` }
+    { _user_id: verifiedUserId, _amount: creditCost, _description: `MovieLed Maker (${selectedEngine === 'veo3.1' ? 'Veo 3.1' : selectedEngine === 'kling2.5' ? 'Kling 2.5 Turbo' : 'Wan 2.2'})` }
   );
 
   if (creditError) {
