@@ -396,6 +396,7 @@ const GerarImagemTool = () => {
 
       } else {
         // ========== NANO BANANA FLOW (unchanged) ==========
+        if (effectiveEngine === 'nano_banana') {
         // Optimize and upload reference images
         const uploadedUrls: string[] = [];
         for (let i = 0; i < referenceImages.length; i++) {
@@ -450,6 +451,200 @@ const GerarImagemTool = () => {
           setStatus('queued');
           setQueuePosition(result.position || 0);
           toast.info(`Na fila — posição ${result.position}`);
+        }
+        } else {
+          // ========== GPT IMAGE 2 FLOW (Evolink polling, like Seedance) ==========
+          const uploadedUrls: string[] = [];
+          for (let i = 0; i < referenceImages.length; i++) {
+            toast.info(`Otimizando imagem ${i + 1}/${referenceImages.length}...`);
+            const optimized = await optimizeForAI(referenceImages[i].file);
+            const uploadResult = await uploadToStorage(optimized.file, 'image-generator', user.id);
+            if (!uploadResult.url) throw new Error(`Falha ao enviar imagem ${i + 1}`);
+            uploadedUrls.push(uploadResult.url);
+            setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
+          }
+
+          // Create job in gpt_image_jobs table
+          const { data: gptJob, error: gptInsertErr } = await supabase
+            .from('gpt_image_jobs' as any)
+            .insert({
+              user_id: user.id,
+              prompt: prompt.trim(),
+              size: aspectRatio,
+              input_image_urls: uploadedUrls.length > 0 ? uploadedUrls : null,
+              status: 'pending',
+            })
+            .select('id')
+            .single();
+
+          if (gptInsertErr || !gptJob) throw new Error('Falha ao criar job GPT Image 2');
+
+          const newJobId = (gptJob as any).id as string;
+          setJobId(newJobId);
+          setStatus('pending');
+          setProgress(20);
+
+          // Call generate edge function
+          const accessToken = (await supabase.auth.getSession()).data.session?.access_token;
+          const { data: genData, error: genError } = await supabase.functions.invoke('gpt-image-generate', {
+            body: { jobId: newJobId, prompt: prompt.trim() },
+            headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : undefined,
+          });
+
+          if (genError) {
+            setStatus('failed');
+            setErrorMessage(genError.message || 'Erro ao iniciar geração');
+            toast.error('Erro ao iniciar geração GPT Image 2');
+            refetchCredits();
+            endSubmit();
+            return;
+          }
+
+          if (genData?.error || genData?.success === false) {
+            setStatus('failed');
+            setErrorMessage(genData.error || 'Erro desconhecido');
+            const errInfo = getAIErrorMessage(genData.error || 'Erro desconhecido');
+            toast.error(errInfo.message);
+            refetchCredits();
+            endSubmit();
+            return;
+          }
+
+          setStatus('running');
+          setProgress(30);
+
+          // Start polling loop (like Seedance)
+          const pollTaskId = genData?.taskId;
+          if (pollTaskId) {
+            // Inline polling
+            let pollAttempts = 0;
+            const maxPollAttempts = 120; // ~10 min at 5s intervals
+            gptPollRef.current = setInterval(async () => {
+              pollAttempts++;
+              if (pollAttempts > maxPollAttempts) {
+                if (gptPollRef.current) clearInterval(gptPollRef.current);
+                gptPollRef.current = null;
+                setStatus('failed');
+                setErrorMessage('Timeout - geração demorou demais');
+                toast.error('Timeout na geração');
+                refetchCredits();
+                return;
+              }
+              try {
+                const session = await supabase.auth.getSession();
+                const token = session.data.session?.access_token;
+                const { data: pollData } = await supabase.functions.invoke('gpt-image-poll', {
+                  body: { taskId: pollTaskId, jobId: newJobId },
+                  headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                });
+
+                if (pollData?.status === 'completed' && pollData?.outputUrl) {
+                  if (gptPollRef.current) clearInterval(gptPollRef.current);
+                  gptPollRef.current = null;
+                  setResultUrl(pollData.outputUrl);
+                  setStatus('completed');
+                  setProgress(100);
+                  toast.success('Imagem gerada com sucesso!');
+                  refetchCredits();
+                } else if (pollData?.status === 'failed') {
+                  if (gptPollRef.current) clearInterval(gptPollRef.current);
+                  gptPollRef.current = null;
+                  setStatus('failed');
+                  setErrorMessage(pollData.error || 'Geração falhou');
+                  const errInfo = getAIErrorMessage(pollData.error || 'Erro desconhecido');
+                  toast.error(errInfo.message);
+                  refetchCredits();
+                } else {
+                  // Update progress
+                  const p = pollData?.progress || 0;
+                  setProgress(Math.max(30, Math.min(95, 30 + p * 0.65)));
+                }
+              } catch (err) {
+                console.warn('[GerarImagem] GPT Image poll error:', err);
+              }
+            }, 5000);
+          } else {
+            // No taskId yet, wait for background processing (poll DB)
+            let dbPollAttempts = 0;
+            gptPollRef.current = setInterval(async () => {
+              dbPollAttempts++;
+              if (dbPollAttempts > 120) {
+                if (gptPollRef.current) clearInterval(gptPollRef.current);
+                gptPollRef.current = null;
+                setStatus('failed');
+                setErrorMessage('Timeout');
+                return;
+              }
+              try {
+                const { data: dbJob } = await supabase
+                  .from('gpt_image_jobs' as any)
+                  .select('status, task_id, output_url, error_message')
+                  .eq('id', newJobId)
+                  .single();
+                if (!dbJob) return;
+                const j = dbJob as any;
+                if (j.status === 'completed' && j.output_url) {
+                  if (gptPollRef.current) clearInterval(gptPollRef.current);
+                  gptPollRef.current = null;
+                  setResultUrl(j.output_url);
+                  setStatus('completed');
+                  setProgress(100);
+                  toast.success('Imagem gerada com sucesso!');
+                  refetchCredits();
+                } else if (j.status === 'failed') {
+                  if (gptPollRef.current) clearInterval(gptPollRef.current);
+                  gptPollRef.current = null;
+                  setStatus('failed');
+                  setErrorMessage(j.error_message || 'Falha');
+                  toast.error('Geração falhou');
+                  refetchCredits();
+                } else if (j.task_id && j.status === 'running') {
+                  // Switch to Evolink polling
+                  if (gptPollRef.current) clearInterval(gptPollRef.current);
+                  gptPollRef.current = null;
+                  // Re-start with task_id polling
+                  setProgress(30);
+                  let attempts2 = 0;
+                  gptPollRef.current = setInterval(async () => {
+                    attempts2++;
+                    if (attempts2 > 120) {
+                      if (gptPollRef.current) clearInterval(gptPollRef.current);
+                      gptPollRef.current = null;
+                      setStatus('failed');
+                      setErrorMessage('Timeout');
+                      return;
+                    }
+                    try {
+                      const session = await supabase.auth.getSession();
+                      const token = session.data.session?.access_token;
+                      const { data: pd } = await supabase.functions.invoke('gpt-image-poll', {
+                        body: { taskId: j.task_id, jobId: newJobId },
+                        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+                      });
+                      if (pd?.status === 'completed' && pd?.outputUrl) {
+                        if (gptPollRef.current) clearInterval(gptPollRef.current);
+                        gptPollRef.current = null;
+                        setResultUrl(pd.outputUrl);
+                        setStatus('completed');
+                        setProgress(100);
+                        toast.success('Imagem gerada com sucesso!');
+                        refetchCredits();
+                      } else if (pd?.status === 'failed') {
+                        if (gptPollRef.current) clearInterval(gptPollRef.current);
+                        gptPollRef.current = null;
+                        setStatus('failed');
+                        setErrorMessage(pd.error || 'Falhou');
+                        toast.error('Geração falhou');
+                        refetchCredits();
+                      } else {
+                        setProgress(Math.max(30, Math.min(95, 30 + (pd?.progress || 0) * 0.65)));
+                      }
+                    } catch {}
+                  }, 5000);
+                }
+              } catch {}
+            }, 3000);
+          }
         }
       }
 
