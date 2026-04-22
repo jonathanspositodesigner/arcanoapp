@@ -8,6 +8,8 @@ interface CreditsContextType {
   isLoading: boolean;
   hasError: boolean;
   isUnlimited: boolean;
+  isGptImageFreeTrial: boolean;
+  gptImageFreeUntil: string | null;
   refetch: () => Promise<void>;
   consumeCredits: (amount: number, description?: string) => Promise<{ success: boolean; error?: string; newBalance?: number; currentBalance?: number }>;
   checkBalance: () => Promise<number>;
@@ -20,9 +22,11 @@ export const CreditsProvider = ({ children, userId }: { children: ReactNode; use
   const { planos2Subscription } = useAuth();
   
   const isUnlimited = !!(planos2Subscription?.plan_slug === 'unlimited' && planos2Subscription?.is_active);
+  const gptImageFreeUntil = planos2Subscription?.gpt_image_free_until || null;
+  const isGptImageFreeTrial = !isUnlimited && !!gptImageFreeUntil && new Date(gptImageFreeUntil) > new Date();
 
   return (
-    <CreditsContext.Provider value={{ ...creditsData, isUnlimited }}>
+    <CreditsContext.Provider value={{ ...creditsData, isUnlimited, isGptImageFreeTrial, gptImageFreeUntil }}>
       {children}
     </CreditsContext.Provider>
   );
@@ -37,6 +41,8 @@ export const useCredits = (): CreditsContextType => {
       isLoading: true,
       hasError: false,
       isUnlimited: false,
+      isGptImageFreeTrial: false,
+      gptImageFreeUntil: null,
       refetch: async () => {},
       consumeCredits: async () => ({ success: false, error: 'No CreditsProvider' }),
       checkBalance: async () => 0,
