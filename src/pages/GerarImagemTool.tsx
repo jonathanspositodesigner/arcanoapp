@@ -885,14 +885,15 @@ const GerarImagemTool = () => {
                   onClick={() => setEngineDropdownOpen(!engineDropdownOpen)}
                   className="flex items-center gap-1.5 bg-accent border border-slate-500/25 rounded-lg pl-2 pr-5 py-1.5 text-[11px] text-muted-foreground font-medium cursor-pointer hover:border-border disabled:opacity-40 transition-colors relative"
                 >
-                  <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : '🍌 Nano Banana'}</span>
+                  <span>{engine === 'flux2_klein' ? '⚡ Flux2 Klein' : engine === 'gpt_image_2' ? '🎨 GPT Image 2' : '🍌 Nano Banana'}</span>
                   <ChevronDown className="absolute right-1.5 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400" />
                 </button>
                 {engineDropdownOpen && (
-                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[130px]">
+                  <div className="absolute bottom-full mb-1 left-0 z-50 bg-popover border border-border rounded-lg shadow-xl py-1 min-w-[150px]">
                     {([
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
+                      { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
                     ]).map((opt) => (
                       <button
                         key={opt.value}
