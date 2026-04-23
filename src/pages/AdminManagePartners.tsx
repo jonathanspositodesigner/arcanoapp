@@ -88,13 +88,19 @@ const AdminManagePartners = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [createdPartnerData, setCreatedPartnerData] = useState<{ email: string; password: string } | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
   const [newPartner, setNewPartner] = useState({
     name: "",
     email: "",
+    emailConfirm: "",
+    instagram: "",
     phone: "",
+    portfolio: "",
     company: "",
     password: "",
+    passwordConfirm: "",
+    isFounder: false,
   });
 
   const [selectedPlatforms, setSelectedPlatforms] = useState<Record<string, boolean>>({
