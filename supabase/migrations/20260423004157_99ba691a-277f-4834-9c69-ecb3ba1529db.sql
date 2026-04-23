@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Admins can view collaborator requests" ON public.solicitacoes_colaboradores;
