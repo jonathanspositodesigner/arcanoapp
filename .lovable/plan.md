@@ -1,85 +1,110 @@
 
 
-## Auditoria completa: Bugs no sistema de atribuição de créditos ao colaborador
+## Plano: Centralizar atribuição de créditos ao colaborador em um hook único
 
-### Bugs encontrados
+### Problema atual
 
----
+Cada ferramenta implementa a mesma lógica de atribuição de forma diferente:
 
-#### BUG 1 — Crédito fantasma: upload próprio não limpa referencePromptId
-**Afeta**: Arcano Cloner, Pose Changer, Veste AI
+| Ferramenta | Tipo de estado | Inicialização | Limpeza ao upload | Limpeza ao trocar ref | Passa ao job |
+|---|---|---|---|---|---|
+| Arcano Cloner | `useState` | `useEffect` separado | Sim | Sim | `reference_prompt_id` no insert |
+| Pose Changer | `useState` | `useEffect` separado | Sim | Sim | `reference_prompt_id` no insert |
+| Veste AI | `useState` | Manual (sem useEffect) | Sim | Sim | `reference_prompt_id` no insert |
+| Seedance 2 | `useState` com initializer | Inline no `useState` | Sim (parcial) | Sim | `reference_prompt_id` no insert |
+| MovieLed | `useRef` | `useEffect` separado | Sim | Sim | Via body do `invoke` |
 
-**Cenário**: Usuário navega da biblioteca com prompt de parceiro → chega na ferramenta com `referencePromptId` setado → troca a imagem de referência por uma foto própria via upload → gera → colaborador recebe crédito indevidamente.
+Cada ferramenta repete 20-40 linhas de lógica idêntica. Se precisar corrigir algo, tem que mexer em 5 arquivos. Inconsistências geram bugs.
 
-**Causa**: A função `handleUploadFromModal` em cada ferramenta seta a nova imagem mas **não limpa** o `referencePromptId`.
+### Solução
 
-**Correção**: Adicionar `setReferencePromptId(null)` dentro de `handleUploadFromModal` em:
-- `src/pages/ArcanoClonerTool.tsx`
-- `src/pages/PoseChangerTool.tsx`
-- `src/pages/VesteAITool.tsx`
+Criar um hook `useCollaboratorAttribution` que encapsula toda a lógica em um único lugar.
 
----
+### Hook: `src/hooks/useCollaboratorAttribution.ts`
 
-#### BUG 2 — Crédito fantasma no Seedance2: referencePromptId nunca atualiza
-**Afeta**: Seedance 2
+```typescript
+// Retorna:
+{
+  referencePromptId: string | null,  // valor atual para gravar no job
+  setFromLibrary: (meta) => void,    // ao selecionar item da biblioteca
+  setFromNavigation: () => void,     // ao chegar via location.state
+  clear: () => void,                 // ao fazer upload, trocar imagem, limpar form
+}
+```
 
-**Cenário**: Usuário navega da biblioteca com prompt de parceiro → chega no Seedance com `referencePromptId` setado na inicialização → muda o prompt, troca as imagens de referência, faz o que quiser → gera 20 vezes → colaborador recebe pelo primeiro uso do dia, mas o prompt de referência pode não ter nada a ver com o que foi gerado.
+O hook:
+1. Lê `location.state` para inicializar (se `prefillPromptType === 'partner'`)
+2. Expoe `setFromLibrary(meta)` que verifica `meta?.promptType === 'partner'` e seta ou limpa
+3. Expoe `clear()` para chamar em upload, troca de referência, limpeza de form
+4. Retorna `referencePromptId` pronto para ser gravado no insert do job
 
-**Causa**: `setReferencePromptId` é chamado apenas na inicialização do `useState`. Não existe nenhum ponto no código que atualize ou limpe esse estado.
+### Alterações por ferramenta
 
-**Correção**: Limpar `referencePromptId` sempre que o usuário alterar as imagens de referência manualmente ou limpar o formulário, em `src/pages/Seedance2.tsx`.
+Cada ferramenta substitui:
+- O `useState<string | null>(...)` do referencePromptId
+- O `useEffect` de inicialização via location.state
+- As chamadas manuais a `setReferencePromptId(null)` e `setReferencePromptId(meta?.promptId)`
 
----
+Por:
+- `const { referencePromptId, setFromLibrary, clear } = useCollaboratorAttribution();`
+- `clear()` nos pontos de upload/troca
+- `setFromLibrary(meta)` nos pontos de seleção da biblioteca
 
-#### BUG 3 — MovieLed envia ID de prompt admin como referência
-**Afeta**: MovieLed Maker
+#### ArcanoClonerTool.tsx
+- Remover `useState` do `referencePromptId` e `useEffect` de `location.state`
+- `handleSelectFromLibrary` → chamar `setFromLibrary(meta)`
+- `handleUploadFromModal` → chamar `clear()`
+- `handleClearReference` → chamar `clear()`
+- Insert do job: continua usando `reference_prompt_id: referencePromptId`
 
-**Cenário**: Usuário seleciona um item da biblioteca de admin (não de parceiro) → a linha `referencePromptId: partnerPromptIdRef.current || selectedLibraryItem?.id || null` envia o ID do prompt admin → a RPC procura na tabela `partner_prompts`, não encontra, e retorna `invalid_prompt_or_partner` → sem crédito (correto), mas gera log de erro desnecessário.
+#### PoseChangerTool.tsx
+- Mesma substituição que o Arcano Cloner
+- `handleSelectFromLibraryWithMeta` → `setFromLibrary(meta)`
 
-**Causa**: O fallback `selectedLibraryItem?.id` usa IDs de `admin_prompts`, não de `partner_prompts`.
+#### VesteAITool.tsx
+- Mesma substituição
+- `handleSelectFromLibrary` → `setFromLibrary(meta)`
+- `handleUploadFromModal` → `clear()`
+- `handleClearClothing` → `clear()`
 
-**Correção**: Remover o fallback `selectedLibraryItem?.id`. Enviar apenas `partnerPromptIdRef.current || null`.
+#### Seedance2.tsx
+- Remover `useState` com initializer do `referencePromptId`
+- `handleUseLibraryItem` → chamar `clear()` (já faz) — mas também precisa setar se o item for partner
+- Cada `setReferencePromptId(null)` inline nos UploadSlots → `clear()`
+- Insert do job: continua usando `reference_prompt_id: referencePromptId`
 
----
+#### MovieLedMakerTool.tsx
+- Remover `useRef` do `partnerPromptIdRef`
+- `useEffect` de inicialização → hook já faz
+- `onSelectItem` no modal → `clear()` (itens da biblioteca MovieLed são admin, não partner)
+- `onUploadPhoto` → `clear()`
+- Body do invoke: `referencePromptId: referencePromptId` (troca ref por state)
 
-#### BUG 4 — MovieLed nunca limpa partnerPromptIdRef
-**Afeta**: MovieLed Maker
+### O que NÃO muda
 
-**Cenário**: Usuário navega da biblioteca com prompt de parceiro → muda a seleção para outro item da biblioteca (admin) → gera → o `partnerPromptIdRef.current` ainda contém o ID do parceiro antigo → colaborador recebe crédito indevido.
+- Nenhuma tabela, RLS ou migration
+- Nenhuma edge function
+- Nenhuma RPC
+- O fluxo de geração de IA não é alterado
+- O daily limit de earnings permanece intacto
+- A lógica de `register_collaborator_tool_earning` no backend não é tocada
+- A navegação da biblioteca continua passando `prefillPromptType: 'partner'`
 
-**Causa**: `partnerPromptIdRef.current` é setado apenas no `useEffect` de inicialização e nunca mais é limpo ou atualizado.
+### Arquivos envolvidos
 
-**Correção**: Limpar `partnerPromptIdRef.current = null` quando o usuário seleciona um novo item da biblioteca ou faz upload de imagem própria, em `src/pages/MovieLedMakerTool.tsx`.
+| Arquivo | Ação |
+|---|---|
+| `src/hooks/useCollaboratorAttribution.ts` | Criar (novo) |
+| `src/pages/ArcanoClonerTool.tsx` | Refatorar para usar hook |
+| `src/pages/PoseChangerTool.tsx` | Refatorar para usar hook |
+| `src/pages/VesteAITool.tsx` | Refatorar para usar hook |
+| `src/pages/Seedance2.tsx` | Refatorar para usar hook |
+| `src/pages/MovieLedMakerTool.tsx` | Refatorar para usar hook |
 
----
+### Resultado
 
-#### BUG 5 — TABLES_WITH_REFERENCE_PROMPT_ID inclui tabelas sem a coluna
-**Afeta**: Nenhum bug de crédito, mas gera queries desnecessárias
-
-**Causa**: O set `TABLES_WITH_REFERENCE_PROMPT_ID` no `runninghub-queue-manager` inclui `flyer_maker_jobs`, `character_generator_jobs`, `bg_remover_jobs` e `video_generator_jobs`, mas essas tabelas NÃO possuem a coluna `reference_prompt_id`. A query falha silenciosamente no try/catch.
-
-**Correção**: Remover as 4 tabelas do set em `supabase/functions/runninghub-queue-manager/index.ts`.
-
----
-
-### Resumo das correções
-
-| Arquivo | O que corrigir |
-|---------|---------------|
-| `src/pages/ArcanoClonerTool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
-| `src/pages/PoseChangerTool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
-| `src/pages/VesteAITool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
-| `src/pages/Seedance2.tsx` | Limpar `referencePromptId` ao alterar refs/prompt manualmente |
-| `src/pages/MovieLedMakerTool.tsx` | Remover fallback `selectedLibraryItem?.id`, limpar ref ao mudar seleção |
-| `supabase/functions/runninghub-queue-manager/index.ts` | Remover tabelas sem a coluna do set |
-
-### O que NÃO está bugado (confirmado na auditoria)
-
-- A RPC `register_collaborator_tool_earning` está correta (1 overload, daily limit funciona)
-- A navegação da biblioteca passa `prefillPromptType: 'partner'` corretamente
-- O `/finish` do queue-manager tem idempotência correta (não duplica earning)
-- O Seedance-poll e seedance-recovery chamam a RPC corretamente
-- `prompt_clicks` tracking funciona independente dos earnings
-- Bloqueio de auto-uso (`self_usage_blocked`) funciona
-- Nenhuma tabela ou RLS precisa ser alterada
+- Lógica de atribuição ao colaborador em UM lugar
+- Correção de bug futuro = alterar 1 arquivo
+- Todas as ferramentas com comportamento idêntico e previsível
+- Zero risco de regressão: o hook expoe a mesma interface que o código atual já usa
 
