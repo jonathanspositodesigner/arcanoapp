@@ -9,14 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
+import { Instagram, User, Camera, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import imageCompression from 'browser-image-compression';
 
 interface Partner {
   id: string;
   name: string;
   email: string;
+  instagram?: string;
+  avatar_url?: string;
 }
 
 interface PartnerPrompt {
@@ -48,6 +52,17 @@ const PartnerDashboard = () => {
   const [editPromptText, setEditPromptText] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Profile state
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profileInstagram, setProfileInstagram] = useState("");
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
 
@@ -90,7 +105,7 @@ const PartnerDashboard = () => {
     // Fetch partner info
     const { data: partnerData, error: partnerError } = await supabase
       .from('partners')
-      .select('id, name, email')
+      .select('id, name, email, instagram, avatar_url')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -101,6 +116,9 @@ const PartnerDashboard = () => {
     }
 
     setPartner(partnerData);
+    setProfileName(partnerData.name);
+    setProfileInstagram(partnerData.instagram || "");
+    setProfileAvatarUrl(partnerData.avatar_url || "");
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
@@ -248,6 +266,103 @@ const PartnerDashboard = () => {
     deletionRequested: prompts.filter(p => p.deletion_requested).length,
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !partner) return;
+    
+    setIsUploadingAvatar(true);
+    try {
+      // Compress to 100px and convert to webp
+      const compressed = await imageCompression(file, {
+        maxWidthOrHeight: 100,
+        useWebWorker: true,
+        fileType: 'image/webp',
+        initialQuality: 0.85,
+      });
+      
+      const fileName = `partner-avatars/${partner.id}-${Date.now()}.webp`;
+      const webpFile = new File([compressed], fileName.split('/').pop()!, { type: 'image/webp' });
+      
+      const { error: uploadError } = await supabase.storage
+        .from('prompts-cloudinary')
+        .upload(fileName, webpFile, { contentType: 'image/webp', upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: urlData } = supabase.storage
+        .from('prompts-cloudinary')
+        .getPublicUrl(fileName);
+      
+      const avatarUrl = urlData.publicUrl;
+      
+      const { error: updateError } = await supabase
+        .from('partners')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', partner.id);
+      
+      if (updateError) throw updateError;
+      
+      setProfileAvatarUrl(avatarUrl);
+      setPartner({ ...partner, avatar_url: avatarUrl });
+      toast.success("Foto atualizada com sucesso!");
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      toast.error("Erro ao enviar foto");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!partner || !profileName.trim()) {
+      toast.error("Nome é obrigatório");
+      return;
+    }
+    setIsSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({
+          name: profileName.trim(),
+          instagram: profileInstagram.trim() || null,
+        })
+        .eq('id', partner.id);
+      
+      if (error) throw error;
+      
+      setPartner({ ...partner, name: profileName.trim(), instagram: profileInstagram.trim() || undefined });
+      toast.success("Perfil atualizado!");
+    } catch (err) {
+      console.error("Profile save error:", err);
+      toast.error("Erro ao salvar perfil");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Senha alterada com sucesso!");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alterar senha");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -273,12 +388,123 @@ const PartnerDashboard = () => {
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
+            <Button variant="outline" onClick={() => setShowProfile(!showProfile)} className="gap-2">
+              <User className="h-4 w-4" />
+              Perfil
+            </Button>
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />
               Sair
             </Button>
           </div>
         </div>
+
+        {/* Profile Section */}
+        {showProfile && (
+          <Card className="p-6 mb-8 border-primary/20">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Gerenciar Perfil
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Left column - Profile info */}
+              <div className="space-y-4">
+                {/* Avatar */}
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    {profileAvatarUrl ? (
+                      <img src={profileAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
+                      <Camera className="h-3.5 w-3.5 text-primary-foreground" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                        disabled={isUploadingAvatar}
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {isUploadingAvatar ? "Enviando..." : "Clique no ícone para alterar"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Auto-redimensionada para 100px em WebP</p>
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <Label htmlFor="profileName">Nome</Label>
+                  <Input
+                    id="profileName"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+
+                {/* Instagram */}
+                <div>
+                  <Label htmlFor="profileInstagram" className="flex items-center gap-1">
+                    <Instagram className="h-3.5 w-3.5" />
+                    Instagram
+                  </Label>
+                  <Input
+                    id="profileInstagram"
+                    value={profileInstagram}
+                    onChange={(e) => setProfileInstagram(e.target.value)}
+                    placeholder="seu_usuario"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Sem o @, apenas o nome de usuário</p>
+                </div>
+
+                <Button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full">
+                  {isSavingProfile ? "Salvando..." : "Salvar Perfil"}
+                </Button>
+              </div>
+
+              {/* Right column - Password */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <KeyRound className="h-4 w-4" />
+                  Alterar Senha
+                </h3>
+                <div>
+                  <Label htmlFor="newPassword">Nova Senha</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repita a senha"
+                    className="mt-1"
+                  />
+                </div>
+                <Button onClick={handleChangePassword} disabled={isChangingPassword} variant="outline" className="w-full">
+                  {isChangingPassword ? "Alterando..." : "Alterar Senha"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
