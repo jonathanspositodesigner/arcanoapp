@@ -133,43 +133,14 @@ const PartnerConquistas = () => {
   };
 
   const loadWeeklyRanking = async (myPartnerId: string) => {
-    const now = new Date();
-    const day = now.getDay();
-    const monday = new Date(now);
-    monday.setDate(now.getDate() - (day === 0 ? 6 : day - 1));
-    const weekStart = monday.toISOString().split("T")[0];
+    const { data } = await supabase.rpc('get_weekly_ranking' as any);
+    if (!data) return;
 
-    // Get all unlock earnings this week
-    const { data: weekUnlocks } = await supabase
-      .from("collaborator_unlock_earnings")
-      .select("collaborator_id, amount")
-      .gte("unlocked_at", weekStart);
-
-    const { data: weekTools } = await supabase
-      .from("collaborator_tool_earnings")
-      .select("collaborator_id, amount")
-      .gte("created_at", weekStart);
-
-    // Aggregate
-    const totals: Record<string, number> = {};
-    (weekUnlocks || []).forEach(e => { totals[e.collaborator_id] = (totals[e.collaborator_id] || 0) + (e.amount || 0); });
-    (weekTools || []).forEach(e => { totals[e.collaborator_id] = (totals[e.collaborator_id] || 0) + (e.amount || 0); });
-
-    // Get partner names
-    const partnerIds = Object.keys(totals);
-    if (partnerIds.length === 0) return;
-
-    const { data: partners } = await supabase
-      .from("partners")
-      .select("id, name")
-      .in("id", partnerIds);
-
-    const nameMap: Record<string, string> = {};
-    (partners || []).forEach(p => { nameMap[p.id] = p.name || "Colaborador"; });
-
-    const sorted = Object.entries(totals)
-      .map(([pid, total]) => ({ partner_id: pid, partner_name: nameMap[pid] || "Colaborador", week_total: total }))
-      .sort((a, b) => b.week_total - a.week_total);
+    const sorted = (data as any[]).map(r => ({
+      partner_id: r.partner_id,
+      partner_name: r.partner_name,
+      week_total: Number(r.week_total),
+    }));
 
     setRanking(sorted.slice(0, 10));
     const myPos = sorted.findIndex(r => r.partner_id === myPartnerId);
