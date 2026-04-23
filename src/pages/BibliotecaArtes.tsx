@@ -541,7 +541,7 @@ const BibliotecaArtes = () => {
           </>
         )}
 
-        <button onClick={() => navigate("/parceiro-login-artes")} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-2.5 px-3 rounded-lg hover:bg-accent transition-colors">
+        <button onClick={() => { navigate("/tornar-se-colaborador"); setSidebarOpen(false); }} className="w-full flex items-center text-left text-[13px] font-medium text-muted-foreground hover:text-foreground py-2.5 px-3 rounded-lg hover:bg-accent transition-colors">
           <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
           {t('sidebar.collaboratorArea')}
         </button>
