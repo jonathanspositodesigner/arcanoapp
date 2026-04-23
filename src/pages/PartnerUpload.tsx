@@ -701,6 +701,27 @@ const PartnerUpload = () => {
               )}
 
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Zap className={`h-5 w-5 ${!currentMedia.isFree ? 'text-purple-400' : 'text-muted-foreground'}`} />
+                    <Label htmlFor="isFree" className="font-medium">
+                      {currentMedia.isFree ? 'Prompt Gratuito' : 'Prompt Premium'}
+                    </Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1 ml-7">
+                    {currentMedia.isFree 
+                      ? 'Gratuito para todos. Você ganha apenas por usos em ferramentas de IA.' 
+                      : 'Premium: você ganha por cada liberação do prompt.'}
+                  </p>
+                </div>
+                <Switch
+                  id="isFree"
+                  checked={currentMedia.isFree}
+                  onCheckedChange={(checked) => updateMediaData('isFree', checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">
                   <Video className={`h-5 w-5 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
                   <Label htmlFor="hasTutorial" className="font-medium">
