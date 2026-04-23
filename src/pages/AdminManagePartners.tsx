@@ -76,6 +76,19 @@ const generateRandomPassword = (length = 12): string => {
   return password;
 };
 
+const getEmptyPartnerForm = () => ({
+  name: "",
+  email: "",
+  emailConfirm: "",
+  instagram: "",
+  phone: "",
+  portfolio: "",
+  company: "",
+  password: "",
+  passwordConfirm: "",
+  isFounder: false,
+});
+
 const AdminManagePartners = () => {
   const navigate = useNavigate();
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -90,18 +103,7 @@ const AdminManagePartners = () => {
   const [createdPartnerData, setCreatedPartnerData] = useState<{ email: string; password: string } | null>(null);
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
-  const [newPartner, setNewPartner] = useState({
-    name: "",
-    email: "",
-    emailConfirm: "",
-    instagram: "",
-    phone: "",
-    portfolio: "",
-    company: "",
-    password: "",
-    passwordConfirm: "",
-    isFounder: false,
-  });
+  const [newPartner, setNewPartner] = useState(getEmptyPartnerForm());
 
   const [selectedPlatforms, setSelectedPlatforms] = useState<Record<string, boolean>>({
     prompts: false,
