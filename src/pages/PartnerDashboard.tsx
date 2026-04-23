@@ -366,14 +366,13 @@ const PartnerDashboard = () => {
       const { error } = await supabase
         .from('partners')
         .update({
-          name: profileName.trim(),
           instagram: profileInstagram.trim() || null,
         })
         .eq('id', partner.id);
       
       if (error) throw error;
       
-      setPartner({ ...partner, name: profileName.trim(), instagram: profileInstagram.trim() || undefined });
+      setPartner({ ...partner, instagram: profileInstagram.trim() || undefined });
       toast.success("Perfil atualizado!");
     } catch (err) {
       console.error("Profile save error:", err);
