@@ -598,10 +598,8 @@ const PartnerDashboard = () => {
         {/* Stat Chips */}
         <div className="grid grid-cols-2 gap-2.5 px-4 mb-4">
           {[
-            { num: stats.total, label: 'Total Enviados', color: 'text-foreground' },
             { num: stats.approved, label: '✅ Aprovados', color: 'text-green-400' },
             { num: stats.pending, label: '⏳ Pendentes', color: 'text-yellow-400' },
-            { num: stats.rejected, label: '❌ Recusados', color: 'text-red-400' },
             { num: earningsUnlocks, label: '🔓 Desbloqueios', color: 'text-blue-400' },
             { num: toolEarningsCount, label: '🤖 Usos em IA', color: 'text-purple-400' },
           ].map(({ num, label, color }) => (
