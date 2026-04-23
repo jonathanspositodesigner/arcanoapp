@@ -139,26 +139,30 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         partnerAvatarUrl: undefined
       }));
 
-      // Map partner prompts
-      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        prompt: item.prompt,
-        imageUrl: item.image_url,
-        thumbnailUrl: item.thumbnail_url || undefined,
-        category: item.category,
-        isExclusive: true,
-        isPremium: item.is_premium || false,
-        referenceImages: item.reference_images || [],
-        tutorialUrl: item.tutorial_url || null,
-        createdAt: item.created_at || undefined,
-        promptType: 'partner' as const,
-        clickCount: clickCounts[item.id] || 0,
-        bonusClicks: item.bonus_clicks || 0,
-        partnerName: item.partners?.name || undefined,
-        partnerInstagram: item.partners?.instagram || undefined,
-        partnerAvatarUrl: item.partners?.avatar_url || undefined,
-      }));
+      // Map partner prompts - relationship may come as object or array
+      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map((item: any) => {
+        const partner = Array.isArray(item.partners) ? item.partners[0] : item.partners;
+
+        return {
+          id: item.id,
+          title: item.title,
+          prompt: item.prompt,
+          imageUrl: item.image_url,
+          thumbnailUrl: item.thumbnail_url || undefined,
+          category: item.category,
+          isExclusive: true,
+          isPremium: item.is_premium || false,
+          referenceImages: item.reference_images || [],
+          tutorialUrl: item.tutorial_url || null,
+          createdAt: item.created_at || undefined,
+          promptType: 'partner' as const,
+          clickCount: clickCounts[item.id] || 0,
+          bonusClicks: item.bonus_clicks || 0,
+          partnerName: partner?.name || undefined,
+          partnerInstagram: partner?.instagram || undefined,
+          partnerAvatarUrl: partner?.avatar_url || undefined,
+        };
+      });
 
       // Combine all prompts (without date sorting for Ver Tudo)
       const combined = [...adminPrompts, ...partnerPrompts, ...communityPrompts];
