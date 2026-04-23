@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
+import { useLocation } from 'react-router-dom';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { useIsMobile } from '@/hooks/use-mobile';
