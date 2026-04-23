@@ -80,8 +80,8 @@ export function usePartnerGamificationNotifications(partnerId: string | null) {
             const reasonMap: Record<string, string> = {
               prompt_aprovado: "Prompt aprovado",
               bonus_10_desbloqueios_dia: "10 desbloqueios no dia!",
-              milestone_50_desbloqueios: "50 desbloqueios no prompt!",
-              milestone_100_desbloqueios: "100 desbloqueios no prompt!",
+              prompt_50_desbloqueios: "50 desbloqueios em um prompt!",
+              prompt_100_desbloqueios: "100 desbloqueios em um prompt!",
               streak_3_dias: "Streak de 3 dias",
               streak_7_dias: "Streak de 7 dias",
               streak_14_dias: "Streak de 14 dias",
