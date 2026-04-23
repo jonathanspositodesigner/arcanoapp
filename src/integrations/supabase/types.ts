@@ -3540,6 +3540,7 @@ export type Database = {
           created_at: string | null
           deletion_requested: boolean | null
           deletion_requested_at: string | null
+          gender: string | null
           id: string
           image_url: string
           is_premium: boolean | null
@@ -3549,6 +3550,7 @@ export type Database = {
           rejected: boolean | null
           rejected_at: string | null
           rejected_by: string | null
+          tags: string[] | null
           thumbnail_url: string | null
           title: string
           tutorial_url: string | null
@@ -3563,6 +3565,7 @@ export type Database = {
           created_at?: string | null
           deletion_requested?: boolean | null
           deletion_requested_at?: string | null
+          gender?: string | null
           id?: string
           image_url: string
           is_premium?: boolean | null
@@ -3572,6 +3575,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title: string
           tutorial_url?: string | null
@@ -3586,6 +3590,7 @@ export type Database = {
           created_at?: string | null
           deletion_requested?: boolean | null
           deletion_requested_at?: string | null
+          gender?: string | null
           id?: string
           image_url?: string
           is_premium?: boolean | null
@@ -3595,6 +3600,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          tags?: string[] | null
           thumbnail_url?: string | null
           title?: string
           tutorial_url?: string | null
