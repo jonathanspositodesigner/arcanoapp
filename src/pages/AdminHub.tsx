@@ -14,13 +14,11 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import AdminHubSidebar, { HubViewType } from "@/components/AdminHubSidebar";
 import AdminSimpleMetrics from "@/components/AdminSimpleMetrics";
 import PushNotificationsContent from "@/components/PushNotificationsContent";
-import PartnersManagementContent from "@/components/PartnersManagementContent";
 import AbandonedCheckoutsContent from "@/components/AbandonedCheckoutsContent";
 import AdminsManagementContent from "@/components/AdminsManagementContent";
 import SalesManagementContent from "@/components/admin/SalesManagementContent";
 import AdsManagementContent from "@/components/admin/AdsManagementContent";
 import MetaCapiLogsContent from "@/components/admin/MetaCapiLogsContent";
-import CollaboratorRequestsContent from "@/components/admin/CollaboratorRequestsContent";
 import PartnerEarningsAdminContent from "@/components/admin/PartnerEarningsAdminContent";
 
 const AdminHub = () => {
