@@ -71,6 +71,8 @@ const PartnerDashboard = () => {
   const [earningsBalance, setEarningsBalance] = useState(0);
   const [earningsUnlocks, setEarningsUnlocks] = useState(0);
   const [earningsPaidOut, setEarningsPaidOut] = useState(0);
+  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number } | null>(null);
+  const [toolEarningsCount, setToolEarningsCount] = useState(0);
 
   useEffect(() => {
     checkPartnerAndFetchData();
