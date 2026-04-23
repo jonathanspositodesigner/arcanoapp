@@ -4560,6 +4560,42 @@ export type Database = {
         }
         Relationships: []
       }
+      solicitacoes_colaboradores: {
+        Row: {
+          aceite_termo: boolean
+          created_at: string
+          email: string
+          id: string
+          instagram: string
+          nome: string
+          portfolio: string
+          status: string
+          whatsapp: string
+        }
+        Insert: {
+          aceite_termo?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          instagram: string
+          nome: string
+          portfolio: string
+          status?: string
+          whatsapp: string
+        }
+        Update: {
+          aceite_termo?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          instagram?: string
+          nome?: string
+          portfolio?: string
+          status?: string
+          whatsapp?: string
+        }
+        Relationships: []
+      }
       stripe_orders: {
         Row: {
           amount: number
