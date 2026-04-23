@@ -76,16 +76,16 @@ export function usePartnerGamificationNotifications(partnerId: string | null) {
           const xp = payload.new?.xp_amount as number;
           const reason = payload.new?.reason as string;
           // Only notify for notable XP gains (>=20)
-          if (xp >= 20) {
+          if (xp >= 10) {
             const reasonMap: Record<string, string> = {
               prompt_aprovado: "Prompt aprovado",
               bonus_10_desbloqueios_dia: "10 prompts copiados no dia!",
               prompt_50_desbloqueios: "50 cópias em um prompt!",
               prompt_100_desbloqueios: "100 cópias em um prompt!",
-               streak_3_dias: "3 dias seguidos enviando prompts",
-               streak_7_dias: "7 dias seguidos enviando prompts",
-               streak_14_dias: "14 dias seguidos enviando prompts",
-               streak_30_dias: "30 dias seguidos enviando prompts!",
+              streak_3_dias: "3 dias seguidos enviando prompts",
+              streak_7_dias: "7 dias seguidos enviando prompts",
+              streak_14_dias: "14 dias seguidos enviando prompts",
+              streak_30_dias: "30 dias seguidos enviando prompts!",
               uso_ferramenta_seedance_jobs: "Prompt usado no Seedance 2",
             };
             const label = reasonMap[reason] || reason;
