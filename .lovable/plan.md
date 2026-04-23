@@ -1,98 +1,53 @@
 
 
-## Plano: Contabilizar ganhos de colaborador quando prompt é usado em ferramentas de IA
+## Plano: Limitar ganho do colaborador a 1x por usuário/prompt/dia
 
-### Problema identificado
+### Problema atual
 
-Quando o usuário clica "Gerar foto" / "Gerar movie" na Biblioteca de Prompts, o `reference_prompt_id` **NÃO é passado** na navegação para as ferramentas. Resultado: o job é criado com `reference_prompt_id: NULL`, e o sistema de earnings no `runninghub-queue-manager/finish` não contabiliza nada para o colaborador.
+A constraint de unicidade na tabela `collaborator_tool_earnings` é `UNIQUE(job_id, tool_table)` — impede duplicata por job, mas permite que o mesmo usuário gere 20 jobs com o mesmo prompt no mesmo dia e o colaborador receba por todas as 20.
 
-**Seedance 2** é o ÚNICO que já funciona corretamente — passa `prefillPromptId` e `prefillPromptType` no state de navegação.
+### Solução
 
-**Ferramentas quebradas:**
-- Arcano Cloner — não passa promptId no navigate, não lê do location.state
-- MovieLED Maker — não passa partnerId no navigate, o `selectedLibraryItem.id` não é o prompt_id correto da `media_library`
-- Pose Changer / Veste AI — só funcionam via seleção na foto-library interna (que já tem meta), mas se houver navegação direta da biblioteca, não funciona
+Modificar a RPC `register_collaborator_tool_earning` para verificar se já existe um registro para a combinação `user_id + prompt_id + data(hoje)` antes de inserir. Se já existir, retorna sucesso mas sem creditar.
 
-### Correções (4 arquivos, zero impacto no fluxo de geração)
+### Mudança (1 migration SQL)
 
-**1. `src/pages/BibliotecaPrompts.tsx` — Passar promptId/partnerId no state de navegação**
+**Atualizar a função `register_collaborator_tool_earning`** — adicionar check no início:
 
-Em TODOS os botões "Gerar foto", "Gerar movie" (tanto nos cards quanto no modal):
-
-```typescript
-// Arcano Cloner (linhas 833 e 1090)
-navigate('/arcano-cloner-tool', { 
-  state: { 
-    referenceImageUrl: item.imageUrl,
-    prefillPromptId: item.partnerId ? String(item.id) : null,
-    prefillPromptType: item.partnerId ? 'partner' : null,
-  } 
-});
-
-// MovieLED Maker (linhas 847-858)
-navigate('/movieled-maker', {
-  state: {
-    preSelectedItem: { ... },
-    prefillPromptId: item.partnerId ? String(item.id) : null,
-    prefillPromptType: item.partnerId ? 'partner' : null,
-  }
-});
+```sql
+-- Verificar se já foi creditado hoje para este user_id + prompt_id
+IF EXISTS (
+  SELECT 1 FROM collaborator_tool_earnings
+  WHERE user_id = _user_id
+    AND prompt_id = _prompt_id
+    AND created_at::date = CURRENT_DATE
+) THEN
+  RETURN jsonb_build_object(
+    'success', false,
+    'error', 'daily_user_prompt_limit_reached',
+    'message', 'Already credited for this user+prompt today'
+  );
+END IF;
 ```
 
-**2. `src/pages/ArcanoClonerTool.tsx` — Ler promptId do location.state**
+Essa verificação é inserida DEPOIS do check de `self_usage_blocked` e ANTES do `INSERT INTO collaborator_tool_earnings`.
 
-No useEffect que já lê `referenceImageUrl` (linha 144-151), adicionar leitura do `prefillPromptId`:
+### O que NÃO muda
 
-```typescript
-useEffect(() => {
-  const state = location.state as any;
-  if (state?.referenceImageUrl && !referenceImage) {
-    handleReferenceImageChange(state.referenceImageUrl);
-  }
-  if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
-    setReferencePromptId(state.prefillPromptId);
-  }
-}, [location.state]);
-```
+- O fluxo de geração de IA continua idêntico (jobs rodam normalmente)
+- O INSERT com `ON CONFLICT (job_id, tool_table) DO NOTHING` continua como proteção extra
+- Ganhos de unlock (clique para liberar prompt) não são afetados
+- Nenhum arquivo frontend é modificado
+- Nenhuma edge function é modificada
 
-**3. `src/pages/MovieLedMakerTool.tsx` — Ler promptId do location.state**
+### Escopo de cobertura
 
-No useEffect que lê `preSelectedItem` (linha 104-113), adicionar:
+Todas as ferramentas passam pela mesma RPC `register_collaborator_tool_earning`:
+- Arcano Cloner (via `runninghub-queue-manager/finish`)
+- MovieLED Maker (via `runninghub-queue-manager/finish`)
+- Pose Changer (via `runninghub-queue-manager/finish`)
+- Veste AI (via `runninghub-queue-manager/finish`)
+- Seedance 2 (via `seedance-poll` e `seedance-recovery`)
 
-```typescript
-useEffect(() => {
-  const state = location.state as any;
-  if (state?.preSelectedItem) {
-    setSelectedLibraryItem(state.preSelectedItem);
-    // Se veio da biblioteca com prompt de parceiro, guardar o ID correto
-    if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
-      setReferencePromptId(state.prefillPromptId);
-    }
-  }
-}, [location.state]);
-```
-
-E garantir que o `referencePromptId` do state tenha prioridade sobre `selectedLibraryItem?.id` no body da função invoke (linha 435).
-
-**4. Verificar `runninghub-queue-manager` e `runninghub-movieled-maker`**
-
-A edge function `runninghub-movieled-maker` já recebe `referencePromptId` e salva no banco. O `runninghub-queue-manager/finish` já lê `reference_prompt_id` e chama `register_collaborator_tool_earning`. Essas partes estão corretas — o problema é 100% no frontend que não passa o dado.
-
-### O que NÃO será alterado (preservação do fluxo)
-
-- Nenhuma mudança nas edge functions de geração (RunningHub, Evolink)
-- Nenhuma mudança no fluxo de créditos do usuário
-- Nenhuma mudança no webhook ou queue manager
-- A contabilização acontece DEPOIS do job completar (já implementado no `/finish`)
-- Toda lógica é non-blocking (try/catch com console.error)
-
-### Tabela de preços já configurada
-
-| Ferramenta | Valor por uso |
-|---|---|
-| Arcano Cloner | R$ 0,16 |
-| MovieLED Maker | R$ 0,80 |
-| Pose Changer | R$ 0,10 |
-| Veste AI | R$ 0,10 |
-| Seedance 2 | R$ 1,20 |
+A correção na RPC cobre automaticamente todas as ferramentas.
 
