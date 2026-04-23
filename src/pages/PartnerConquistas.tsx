@@ -263,7 +263,7 @@ const PartnerConquistas = () => {
                 <p className="text-2xl font-bold text-orange-400">
                   {gamification?.current_streak || 0} dias
                 </p>
-                <p className="text-sm text-muted-foreground">Streak atual</p>
+                 <p className="text-sm text-muted-foreground">Prompts Enviados</p>
               </div>
             </div>
             <div className="text-right">
