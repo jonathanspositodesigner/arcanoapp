@@ -395,7 +395,7 @@ const TornarSeColaborador = () => {
 // Simulador de ganhos — começa em Elite, 20 cliques/dia + 10 usos Cloner/dia.
 // Slider anima sozinho até o usuário interagir.
 const ELITE_RATE = 0.12; // R$ por liberação no nível Elite
-const ARCANO_CLONER_COMMISSION = 2.0; // 20% de ~R$10 (100 créditos) por uso
+const ARCANO_CLONER_COMMISSION = 0.16; // R$ por uso (taxa real paga ao colaborador)
 
 const EarningsSimulator = () => {
   const [clicks, setClicks] = useState(20);
