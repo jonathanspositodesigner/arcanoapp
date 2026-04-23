@@ -716,8 +716,8 @@ const PartnerUpload = () => {
                 </div>
                 <Switch
                   id="isFree"
-                  checked={currentMedia.isFree}
-                  onCheckedChange={(checked) => updateMediaData('isFree', checked)}
+                  checked={!currentMedia.isFree}
+                  onCheckedChange={(checked) => updateMediaData('isFree', !checked)}
                 />
               </div>
 
