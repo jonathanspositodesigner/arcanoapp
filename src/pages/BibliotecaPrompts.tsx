@@ -264,16 +264,23 @@ const BibliotecaPrompts = () => {
 
   // Compute available subcategories for the selected category
   const availableSubcategories = useMemo(() => {
-    if (!["Fotos"].includes(selectedCategory)) return [];
+    // Show subcategories for any specific category (not meta-categories)
+    const metaCategories = ["Ver Tudo", "Populares", "Novos", "Grátis"];
+    if (metaCategories.includes(selectedCategory)) return [];
     const contentTypePrompts = contentType === 'exclusive'
       ? allPrompts.filter(p => p.isExclusive)
       : allPrompts.filter(p => p.promptType === 'partner');
     const catPrompts = contentTypePrompts.filter(p => p.category === selectedCategory);
-    const subs = new Set<string>();
+    const subsMap = new Map<string, string>();
     catPrompts.forEach(p => {
-      if (p.subcategorySlug) subs.add(p.subcategorySlug);
+      if (p.subcategorySlug && p.subcategoryName) {
+        subsMap.set(p.subcategorySlug, p.subcategoryName);
+      }
     });
-    const sorted = Array.from(subs).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (subsMap.size === 0) return [];
+    const sorted = Array.from(subsMap.entries())
+      .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+      .map(([slug, name]) => ({ slug, name }));
     return sorted;
   }, [selectedCategory, contentType, allPrompts]);
 
