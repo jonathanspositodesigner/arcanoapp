@@ -122,7 +122,7 @@ serve(async (req) => {
         body: JSON.stringify({
           email: {
             subject: "🎉 Sua parceria foi aprovada — Bem-vindo ao Arcano!",
-            from: { name: "Arcano", email: "noreply@arcanolab.voxvisual.com.br" },
+             from: { name: "Arcano App", email: "contato@voxvisual.com.br" },
             to: [{ name: sol.nome, email: sol.email }],
             html: htmlBase64,
             encoding: "base64",
