@@ -600,7 +600,7 @@ const PartnerDashboard = () => {
           {[
             { num: stats.approved, label: '✅ Aprovados', color: 'text-green-400' },
             { num: stats.pending, label: '⏳ Pendentes', color: 'text-yellow-400' },
-            { num: earningsUnlocks, label: '🔓 Desbloqueios', color: 'text-blue-400' },
+            { num: earningsUnlocks, label: '🔓 Prompts Copiados', color: 'text-blue-400' },
             { num: toolEarningsCount, label: '🤖 Usos em IA', color: 'text-purple-400' },
           ].map(({ num, label, color }) => (
             <div key={label} className="bg-card border border-border rounded-xl px-4 py-3">
