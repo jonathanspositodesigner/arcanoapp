@@ -189,7 +189,7 @@ const AdminHub = () => {
       case "push-notifications":
         return <PushNotificationsContent />;
       case "partners":
-        return <PartnersManagementContent />;
+        return <PartnerEarningsAdminContent />;
       case "abandoned-checkouts":
         return <AbandonedCheckoutsContent />;
       case "sales":
@@ -199,8 +199,6 @@ const AdminHub = () => {
       case "pixel":
         return <MetaCapiLogsContent />;
       case "collaborator-requests":
-        return <CollaboratorRequestsContent />;
-      case "partner-earnings":
         return <PartnerEarningsAdminContent />;
       case "admins":
         return <AdminsManagementContent />;
