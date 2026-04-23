@@ -451,16 +451,18 @@ const PartnerDashboard = () => {
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground text-xs gap-1 h-8">
-            <LogOut className="h-3.5 w-3.5" /> Sair
-          </Button>
-          <button
-            onClick={() => navigate('/parceiro-como-ganhar')}
-            className="w-8 h-8 rounded-full bg-accent hover:bg-accent/80 flex items-center justify-center transition-colors ml-1"
-            title="Como ganhar na plataforma"
-          >
-            <HelpCircle className="h-4 w-4 text-muted-foreground" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate('/parceiro-como-ganhar')}
+              className="w-8 h-8 rounded-full bg-accent hover:bg-accent/80 flex items-center justify-center transition-colors"
+              title="Como ganhar na plataforma"
+            >
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground text-xs gap-1 h-8">
+              <LogOut className="h-3.5 w-3.5" /> Sair
+            </Button>
+          </div>
         </div>
       </div>
 
