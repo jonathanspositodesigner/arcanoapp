@@ -96,6 +96,7 @@ const BibliotecaPrompts = () => {
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [dbCategories, setDbCategories] = useState<PromptCategory[]>([]);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
