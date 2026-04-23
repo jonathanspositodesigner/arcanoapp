@@ -378,6 +378,23 @@ const AdminManagePartners = () => {
     }
   };
 
+  const handleToggleFounder = async (partnerId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({ is_founder: !currentStatus })
+        .eq('id', partnerId);
+
+      if (error) throw error;
+
+      toast.success(currentStatus ? "Founder removido" : "Colaborador marcado como Founder");
+      fetchPartners();
+    } catch (error) {
+      console.error("Error toggling founder status:", error);
+      toast.error("Erro ao alterar status Founder");
+    }
+  };
+
   const handleDeletePartner = async (partnerId: string) => {
     if (!confirm("Tem certeza que deseja excluir este colaborador? Esta ação não pode ser desfeita.")) {
       return;
