@@ -419,6 +419,50 @@ export function useJobStatusSync({
       
       if (isCompletedRef.current) return;
       
+      // GUARD: Before forcing failure, check if webhook was already received
+      // If so, the backend fallback will handle completion — don't interfere
+      try {
+        const guardUpdate = await queryJobStatus(toolType, jobId);
+        if (guardUpdate) {
+          if (['completed', 'failed', 'cancelled'].includes(guardUpdate.status)) {
+            console.log(`[JobSync] Guard check: job already terminal (${guardUpdate.status})`);
+            processUpdate({
+              status: guardUpdate.status,
+              output_url: guardUpdate.outputUrl,
+              error_message: guardUpdate.errorMessage,
+              position: guardUpdate.position,
+            }, 'polling');
+            return;
+          }
+          if (guardUpdate.currentStep === 'webhook_received') {
+            console.log('[JobSync] Guard check: webhook_received detected, extending wait 60s...');
+            absoluteTimeoutRef.current = setTimeout(async () => {
+              if (isCompletedRef.current) return;
+              const finalCheck = await queryJobStatus(toolType, jobId);
+              if (finalCheck && ['completed', 'failed', 'cancelled'].includes(finalCheck.status)) {
+                processUpdate({
+                  status: finalCheck.status,
+                  output_url: finalCheck.outputUrl,
+                  error_message: finalCheck.errorMessage,
+                  position: finalCheck.position,
+                }, 'polling');
+              } else {
+                isCompletedRef.current = true;
+                onGlobalStatusChangeRef.current?.('failed');
+                onStatusChangeRef.current({
+                  status: 'failed',
+                  errorMessage: `Tempo limite de processamento excedido. Seus créditos serão estornados automaticamente.`,
+                });
+                doCleanup();
+              }
+            }, 60000);
+            return;
+          }
+        }
+      } catch (guardError) {
+        console.error('[JobSync] Guard check failed:', guardError);
+      }
+      
       console.log(`[JobSync] ❌ Job still active after ${timeoutMinutes} min, forcing server-side cancellation`);
       isCompletedRef.current = true;
       
