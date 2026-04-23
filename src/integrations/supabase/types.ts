@@ -6871,15 +6871,24 @@ export type Database = {
             }
             Returns: Json
           }
-      register_collaborator_unlock: {
-        Args: {
-          _collaborator_id: string
-          _device_fingerprint?: string
-          _prompt_id: string
-          _prompt_title: string
-        }
-        Returns: Json
-      }
+      register_collaborator_unlock:
+        | {
+            Args: {
+              _collaborator_id: string
+              _device_fingerprint?: string
+              _prompt_id: string
+              _prompt_title: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_device_fingerprint?: string
+              p_prompt_id: string
+              p_user_id: string
+            }
+            Returns: boolean
+          }
       register_device_signup: {
         Args: { p_fingerprint: string; p_user_id: string }
         Returns: undefined
