@@ -199,7 +199,7 @@ serve(async (req) => {
     }
 
     // Create partner record
-    const { data: partner, error: partnerError } = await supabaseAdmin
+    const { data: createdPartner, error: partnerError } = await supabaseAdmin
       .from('partners')
       .insert({
         user_id: userId,
@@ -223,6 +223,22 @@ serve(async (req) => {
         JSON.stringify({ error: 'Falha ao criar registro do parceiro' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    let partner = createdPartner;
+    if (partner.is_founder !== isFounder) {
+      const { data: updatedPartner, error: founderError } = await supabaseAdmin
+        .from('partners')
+        .update({ is_founder: isFounder })
+        .eq('id', partner.id)
+        .select()
+        .single();
+
+      if (founderError) {
+        console.error('Founder flag error:', founderError);
+      } else if (updatedPartner) {
+        partner = updatedPartner;
+      }
     }
 
     console.log(`Partner created successfully: ${partner.id}`);
