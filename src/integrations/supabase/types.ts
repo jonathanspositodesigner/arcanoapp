@@ -3581,6 +3581,48 @@ export type Database = {
           },
         ]
       }
+      partner_pix_keys: {
+        Row: {
+          created_at: string
+          id: string
+          partner_id: string
+          pix_key: string
+          pix_key_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          partner_id: string
+          pix_key: string
+          pix_key_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          partner_id?: string
+          pix_key?: string
+          pix_key_type?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_pix_keys_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_pix_keys_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_platforms: {
         Row: {
           created_at: string | null
@@ -3709,6 +3751,60 @@ export type Database = {
           },
           {
             foreignKeyName: "partner_prompts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_withdrawals: {
+        Row: {
+          admin_notes: string | null
+          created_at: string
+          id: string
+          partner_id: string
+          pix_key: string
+          pix_key_type: string
+          processed_at: string | null
+          processed_by: string | null
+          status: string
+          valor_solicitado: number
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          partner_id: string
+          pix_key: string
+          pix_key_type: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          valor_solicitado: number
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string
+          id?: string
+          partner_id?: string
+          pix_key?: string
+          pix_key_type?: string
+          processed_at?: string | null
+          processed_by?: string | null
+          status?: string
+          valor_solicitado?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_withdrawals_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_withdrawals_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
