@@ -294,9 +294,6 @@ const TornarSeColaborador = () => {
           </div>
         </section>
 
-        {/* SEÇÃO — SIMULADOR DE GANHOS */}
-        <EarningsSimulator />
-
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
         <section className="space-y-8">
           <h2 className="text-2xl font-bold text-center text-foreground">O que você pode publicar</h2>
