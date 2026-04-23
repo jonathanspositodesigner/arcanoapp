@@ -1,4 +1,4 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity, RefreshCw, UserPlus, DollarSign } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity, RefreshCw, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
