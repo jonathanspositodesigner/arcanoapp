@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
 import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -47,6 +47,8 @@ const PartnerDashboard = () => {
   const [prompts, setPrompts] = useState<PartnerPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PROMPTS_PER_PAGE = 20;
   
   // Edit modal state
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -295,6 +297,9 @@ const PartnerDashboard = () => {
     if (activeFilter === "rejected") return status === "rejected";
     return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredPrompts.length / PROMPTS_PER_PAGE));
+  const paginatedPrompts = filteredPrompts.slice((currentPage - 1) * PROMPTS_PER_PAGE, currentPage * PROMPTS_PER_PAGE);
 
   const stats = {
     total: prompts.length,
@@ -620,7 +625,7 @@ const PartnerDashboard = () => {
           ].map(({ key, label }) => (
             <button
               key={key}
-              onClick={() => setActiveFilter(key as FilterType)}
+              onClick={() => { setActiveFilter(key as FilterType); setCurrentPage(1); }}
               className={`flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors ${
                 activeFilter === key
                   ? 'bg-primary text-primary-foreground border-primary'
@@ -634,7 +639,7 @@ const PartnerDashboard = () => {
 
         {/* Prompts Grid — 2 col mobile */}
         <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 px-4">
-          {filteredPrompts.map((prompt) => {
+          {paginatedPrompts.map((prompt) => {
             const status = getPromptStatus(prompt);
             return (
               <div key={prompt.id} className="bg-card border border-border rounded-xl overflow-hidden">
@@ -676,8 +681,8 @@ const PartnerDashboard = () => {
                       </button>
                     )}
                     {status === "approved" && (
-                      <button onClick={() => handleRequestDeletion(prompt.id)} className="text-[10px] font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg px-2 py-1.5 transition-colors">
-                        <Trash2 className="h-3 w-3 inline" />
+                      <button onClick={() => handleRequestDeletion(prompt.id)} className="flex-1 text-[10px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-lg px-2 py-1.5 transition-colors">
+                        <XCircle className="h-3 w-3 inline mr-0.5" />Excluir
                       </button>
                     )}
                   </div>
@@ -687,7 +692,30 @@ const PartnerDashboard = () => {
           })}
         </div>
 
-        {filteredPrompts.length === 0 && (
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-center gap-3 px-4 mt-4">
+            <button
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="p-1.5 rounded-lg bg-card border border-border text-muted-foreground disabled:opacity-30 hover:bg-muted transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-xs text-muted-foreground font-medium">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="p-1.5 rounded-lg bg-card border border-border text-muted-foreground disabled:opacity-30 hover:bg-muted transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+        )}
+
+        {paginatedPrompts.length === 0 && filteredPrompts.length === 0 && (
           <div className="text-center py-12 px-4">
             <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
             <p className="text-muted-foreground text-sm mb-4">
