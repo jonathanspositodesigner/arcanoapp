@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumArtesStatus } from "@/hooks/usePremiumArtesStatus";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
+import { PremiumPromptProvider } from "@/contexts/PremiumPromptContext";
 import AppTopBar from "@/components/layout/AppTopBar";
 
 import { SecureImage, SecureVideo, getSecureDownloadUrl } from "@/components/SecureMedia";
@@ -601,6 +602,7 @@ const BibliotecaArtes = () => {
     }
   };
   return (
+    <PremiumPromptProvider user={topBarUser} isPremium={topBarIsPremium} planType={topBarPlanType}>
     <>
       {/* Promo Natal Banner */}
       <PromoNatalBanner />
@@ -1530,6 +1532,7 @@ const BibliotecaArtes = () => {
         </div>{/* flex */}
       </div>{/* min-h-screen */}
     </>
+    </PremiumPromptProvider>
   );
 };
 export default BibliotecaArtes;
