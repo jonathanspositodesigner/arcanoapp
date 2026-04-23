@@ -506,11 +506,9 @@ const BibliotecaPrompts = () => {
     const fallbackPartner = item.partnerId ? partnersById[item.partnerId] : undefined;
     const instagram = item.partnerInstagram || fallbackPartner?.instagram || undefined;
 
-    if (!instagram) return null;
-
     return {
       name: item.partnerName || fallbackPartner?.name || 'Parceiro',
-      instagram,
+      instagram: instagram || null,
       avatarUrl: item.partnerAvatarUrl || fallbackPartner?.avatar_url || undefined,
     };
   };
@@ -735,24 +733,40 @@ const BibliotecaPrompts = () => {
                 </button>
 
                 {/* Author avatar + instagram badge - top left */}
-                {author?.instagram && (
-                  <a
-                    href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
-                  >
-                    {author.avatarUrl ? (
-                      <img src={author.avatarUrl} alt={author.name || ''} className="w-4 h-4 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center">
-                        <span className="text-[7px] font-bold text-white">{(author.name || '?').charAt(0).toUpperCase()}</span>
-                      </div>
-                    )}
-                    <Instagram className="h-2.5 w-2.5 text-white/80" />
-                    <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{author.instagram.replace('@', '')}</span>
-                  </a>
+                {author && (
+                  author.instagram ? (
+                    <a
+                      href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
+                    >
+                      {author.avatarUrl ? (
+                        <img src={author.avatarUrl} alt={author.name || ''} className="w-4 h-4 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center">
+                          <span className="text-[7px] font-bold text-white">{(author.name || '?').charAt(0).toUpperCase()}</span>
+                        </div>
+                      )}
+                      <Instagram className="h-2.5 w-2.5 text-white/80" />
+                      <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{author.instagram.replace('@', '')}</span>
+                    </a>
+                  ) : (
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5"
+                    >
+                      {author.avatarUrl ? (
+                        <img src={author.avatarUrl} alt={author.name || ''} className="w-4 h-4 rounded-full object-cover" />
+                      ) : (
+                        <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center">
+                          <span className="text-[7px] font-bold text-white">{(author.name || '?').charAt(0).toUpperCase()}</span>
+                        </div>
+                      )}
+                      <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">{author.name}</span>
+                    </div>
+                  )
                 )}
 
                 {/* Hover/Touch overlay */}
@@ -904,27 +918,38 @@ const BibliotecaPrompts = () => {
               {/* Author header above image */}
               {(() => {
                 const author = getPromptAuthor(selectedPrompt);
-                if (!author?.instagram) return null;
+                if (!author) return null;
 
-                return (
-                <a
-                  href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-3 hover:opacity-80 transition-opacity"
-                >
-                  {author.avatarUrl ? (
-                    <img src={author.avatarUrl} alt={author.name || ''} className="w-10 h-10 rounded-full object-cover border border-border" />
-                  ) : (
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-border">
-                      <span className="text-base font-bold text-foreground">{(author.name || '?').charAt(0).toUpperCase()}</span>
+                return author.instagram ? (
+                  <a
+                    href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+                  >
+                    {author.avatarUrl ? (
+                      <img src={author.avatarUrl} alt={author.name || ''} className="w-10 h-10 rounded-full object-cover border border-border" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-border">
+                        <span className="text-base font-bold text-foreground">{(author.name || '?').charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center gap-1.5">
+                      <Instagram className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-semibold text-foreground">@{author.instagram.replace('@', '')}</span>
                     </div>
-                  )}
-                  <div className="flex items-center gap-1.5">
-                    <Instagram className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-foreground">@{author.instagram.replace('@', '')}</span>
+                  </a>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    {author.avatarUrl ? (
+                      <img src={author.avatarUrl} alt={author.name || ''} className="w-10 h-10 rounded-full object-cover border border-border" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-border">
+                        <span className="text-base font-bold text-foreground">{(author.name || '?').charAt(0).toUpperCase()}</span>
+                      </div>
+                    )}
+                    <span className="text-sm font-semibold text-foreground">{author.name}</span>
                   </div>
-                </a>
                 );
               })()}
               <div className="rounded-lg overflow-hidden border border-border">
