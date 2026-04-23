@@ -5,6 +5,7 @@ export interface PromptItem {
   id: string;
   title: string;
   prompt: string;
+  partnerId?: string;
   imageUrl: string;
   thumbnailUrl?: string;
   category?: string;
@@ -156,6 +157,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
           id: item.id,
           title: item.title,
           prompt: item.prompt,
+          partnerId: item.partner_id,
           imageUrl: item.image_url,
           thumbnailUrl: item.thumbnail_url || undefined,
           category: item.category,
