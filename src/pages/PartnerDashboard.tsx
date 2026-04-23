@@ -634,6 +634,42 @@ const PartnerDashboard = () => {
           />
         </div>
 
+        {partner?.is_founder && (
+          <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4 space-y-4">
+            <div>
+              <p className="text-sm font-bold text-foreground">✅ Requisitos para manter o Founder</p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Mantenha consistência, qualidade e boa aprovação para preservar o selo e continuar aproveitando a escala especial de pagamentos.
+              </p>
+            </div>
+
+            <div className="space-y-2.5">
+              {[
+                "Publicar prompts originais e com utilidade real para os usuários.",
+                "Evitar rejeições por conteúdo copiado, genérico, incompleto ou fora do padrão.",
+                "Manter desempenho constante com prompts aprovados, bem nomeados e fáceis de encontrar.",
+                "Atualizar ou substituir conteúdos que tiverem baixa performance ou qualidade inferior.",
+              ].map((item) => (
+                <div key={item} className="flex items-start gap-2.5 rounded-lg border border-border/60 bg-muted/30 p-3">
+                  <FileCheck className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                  <p className="text-xs text-foreground/90 leading-relaxed">{item}</p>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <Button variant="outline" size="sm" className="justify-start gap-2" onClick={() => navigate('/biblioteca-prompts')}>
+                <Sparkles className="h-3.5 w-3.5" />
+                Ver exemplos aceitos
+              </Button>
+              <Button variant="outline" size="sm" className="justify-start gap-2" onClick={() => navigate('/parceiro-upload')}>
+                <Upload className="h-3.5 w-3.5" />
+                Enviar prompt no padrão
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Streak Card */}
         {(partnerGamification?.current_streak || 0) > 0 && (
           <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
