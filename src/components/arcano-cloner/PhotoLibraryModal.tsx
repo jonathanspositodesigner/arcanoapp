@@ -14,6 +14,7 @@ interface PhotoLibraryModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectPhoto: (imageUrl: string) => void;
+  onSelectPhotoWithMeta?: (imageUrl: string, meta: { promptId: string; promptType: 'admin' | 'partner' } | null) => void;
   onUploadPhoto?: (dataUrl: string, file: File) => void;
 }
 
@@ -33,6 +34,7 @@ interface PhotoItem {
   image_url: string;
   thumbnail_url?: string | null;
   gender?: string | null;
+  source_type?: 'admin' | 'partner';
 }
 
 const TOOL_SLUG = 'arcano_cloner';
@@ -52,6 +54,7 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   isOpen,
   onClose,
   onSelectPhoto,
+  onSelectPhotoWithMeta,
   onUploadPhoto,
 }) => {
   const [view, setView] = useState<'categories' | 'photos'>('categories');
@@ -106,56 +109,82 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const fetchPhotosForCategory = useCallback(async (category: CategoryItem) => {
     setIsLoading(true);
     try {
-      // Step 1: get all source_ids linked to this category
-      const sourceIds: string[] = [];
+      // Step 1: get all source_ids linked to this category (admin + partner)
+      const adminSourceIds: string[] = [];
+      const partnerSourceIds: string[] = [];
       let from = 0;
       while (true) {
         const { data: items, error: itemsErr } = await supabase
           .from('ai_tool_library_items')
-          .select('source_id')
+          .select('source_id, source_table')
           .eq('tool_slug', TOOL_SLUG)
           .eq('category_id', category.id)
           .eq('is_visible', true)
-          .eq('source_table', 'admin_prompts')
+          .in('source_table', ['admin_prompts', 'partner_prompts'])
           .range(from, from + FETCH_BATCH_SIZE - 1);
         if (itemsErr) {
           console.error('[PhotoLibrary] Error fetching items:', itemsErr);
           break;
         }
         const batch = items || [];
-        sourceIds.push(...batch.map((i) => i.source_id));
+        batch.forEach((i) => {
+          if (i.source_table === 'partner_prompts') {
+            partnerSourceIds.push(i.source_id);
+          } else {
+            adminSourceIds.push(i.source_id);
+          }
+        });
         if (batch.length < FETCH_BATCH_SIZE) break;
         from += FETCH_BATCH_SIZE;
       }
 
-      if (sourceIds.length === 0) {
-        setAllPhotos([]);
-        return;
-      }
-
-      // Step 2: fetch admin_prompts filtered by gender + (optional) search
+      // Step 2: fetch admin_prompts + partner_prompts filtered by gender + (optional) search
       const allData: PhotoItem[] = [];
-      // Chunk IDs to avoid URL length limits
       const CHUNK = 200;
-      for (let i = 0; i < sourceIds.length; i += CHUNK) {
-        const chunk = sourceIds.slice(i, i + CHUNK);
+
+      // Fetch admin prompts
+      for (let i = 0; i < adminSourceIds.length; i += CHUNK) {
+        const chunk = adminSourceIds.slice(i, i + CHUNK);
         let query = supabase
           .from('admin_prompts')
           .select('id, title, image_url, thumbnail_url, gender, tags')
           .in('id', chunk)
           .eq('gender', filter);
-
         if (expandedTerms.length > 0) {
           const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
           query = query.or(orFilter);
         }
-
         const { data, error } = await query;
-        if (error) {
-          console.error('[PhotoLibrary] Error fetching photos:', error);
-          continue;
+        if (error) { console.error('[PhotoLibrary] Error fetching admin photos:', error); continue; }
+        allData.push(...(data || []).map(d => ({ ...d, source_type: 'admin' as const })));
+      }
+
+      // Fetch partner prompts
+      for (let i = 0; i < partnerSourceIds.length; i += CHUNK) {
+        const chunk = partnerSourceIds.slice(i, i + CHUNK);
+        let query = supabase
+          .from('partner_prompts')
+          .select('id, title, image_url, thumbnail_url, gender, tags')
+          .in('id', chunk)
+          .eq('approved', true)
+          .eq('gender', filter);
+        if (expandedTerms.length > 0) {
+          const orFilter = buildSmartSearchFilter(expandedTerms, ['title'], 'tags');
+          query = query.or(orFilter);
         }
-        allData.push(...(data || []));
+        const { data, error } = await query;
+        if (error) { console.error('[PhotoLibrary] Error fetching partner photos:', error); continue; }
+        allData.push(...(data || []).map(d => ({ ...d, source_type: 'partner' as const })));
+      }
+
+      if (allData.length === 0 && adminSourceIds.length === 0 && partnerSourceIds.length === 0) {
+        // No library items at all — also fetch all approved partner prompts directly
+        const { data: partnerData } = await supabase
+          .from('partner_prompts')
+          .select('id, title, image_url, thumbnail_url, gender, tags')
+          .eq('approved', true)
+          .eq('gender', filter);
+        allData.push(...(partnerData || []).map(d => ({ ...d, source_type: 'partner' as const })));
       }
 
       setAllPhotos(shuffleArray(allData));
@@ -194,7 +223,12 @@ const PhotoLibraryModal: React.FC<PhotoLibraryModalProps> = ({
   const handleLoadMore = () => setVisibleCount((p) => p + ITEMS_PER_PAGE);
 
   const handleSelectPhoto = (photo: PhotoItem) => {
-    onSelectPhoto(photo.image_url);
+    if (onSelectPhotoWithMeta) {
+      const meta = photo.source_type === 'partner' ? { promptId: photo.id, promptType: 'partner' as const } : null;
+      onSelectPhotoWithMeta(photo.image_url, meta);
+    } else {
+      onSelectPhoto(photo.image_url);
+    }
     onClose();
   };
 
