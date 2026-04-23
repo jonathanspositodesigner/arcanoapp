@@ -239,10 +239,6 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
             <Home className="h-5 w-5" />
           </button>
         </div>
-        <Button onClick={() => navigate("/tornar-se-colaborador")} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-2">
-          <Users className="h-3.5 w-3.5 mr-1" />
-          Colaborador
-        </Button>
         {!user && (
           <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-muted-foreground hover:bg-accent text-xs">

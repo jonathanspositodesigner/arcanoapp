@@ -58,6 +58,14 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
         {/* Scrollable content */}
         <div className="flex-1 min-h-0 overflow-y-auto space-y-1">
 
+          <button
+            onClick={() => handleNavAndClose("/tornar-se-colaborador")}
+            className="w-full flex items-center text-left text-[13px] font-bold text-primary-foreground py-2.5 px-3 rounded-lg bg-primary hover:bg-primary/90 shadow-sm transition-colors mb-3"
+          >
+            <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
+            Torne-se um colaborador Arcano Founder
+          </button>
+
           {/* PRINCIPAL */}
           <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mb-1">Principal</p>
 
