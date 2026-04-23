@@ -364,6 +364,7 @@ const VesteAITool: React.FC = () => {
       console.log('[VesteAI] Clothing image uploaded:', clothingUrl);
 
       // Step 3: Create job in database ONLY AFTER images are uploaded
+      console.log(`[VesteAI] 🔍 AUDIT reference_prompt_id BEFORE insert: "${referencePromptId}" (type: ${typeof referencePromptId})`);
       // This prevents orphaned jobs if user closes page during upload
       setProgress(40);
       const { data: job, error: jobError } = await supabase
@@ -386,7 +387,7 @@ const VesteAITool: React.FC = () => {
       }
 
       setJobId(job.id);
-      console.log('[VesteAI] Job created with images:', job.id);
+      console.log(`[VesteAI] ✅ Job created: ${job.id} | reference_prompt_id persisted: "${job.reference_prompt_id}"`);
 
       // Step 4: Call edge function
       setProgress(50);

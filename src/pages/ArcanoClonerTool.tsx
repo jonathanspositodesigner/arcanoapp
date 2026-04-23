@@ -475,6 +475,7 @@ const ArcanoClonerTool: React.FC = () => {
       setProgress(50);
       setCurrentStep('creating_job');
 
+      console.log(`[ArcanCloner] 🔍 AUDIT reference_prompt_id BEFORE insert: "${referencePromptId}" (type: ${typeof referencePromptId})`);
       const { jobId: newJobId, error: createError } = await createJob(
         'arcano_cloner',
         verifiedUserId,
@@ -504,6 +505,7 @@ const ArcanoClonerTool: React.FC = () => {
 
       localJobId = newJobId;
       setJobId(newJobId);
+      console.log(`[ArcanCloner] ✅ Job created: ${newJobId} | reference_prompt_id sent: "${referencePromptId}"`);
       registerJob(newJobId, 'Arcano Cloner', 'pending');
 
       setProgress(60);

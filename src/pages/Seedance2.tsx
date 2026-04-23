@@ -475,6 +475,7 @@ export default function Seedance2() {
           status: "queued",
           reference_prompt_id: referencePromptId,
         })
+        // AUDIT LOG
         .select("id")
         .single();
 
@@ -484,6 +485,7 @@ export default function Seedance2() {
       }
 
       createdJobId = jobData.id;
+      console.log(`[Seedance2] 🔍 AUDIT reference_prompt_id: "${referencePromptId}" → Job ${jobData.id} created`);
       setGenerations((prev) => prev.map((g) => g.id === genId ? { ...g, status: "queued" } : g));
 
       // Single invoke (no retry loop) - backend should be idempotent on jobId

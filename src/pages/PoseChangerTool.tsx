@@ -368,6 +368,7 @@ const PoseChangerTool: React.FC = () => {
       console.log('[PoseChanger] Reference image uploaded:', referenceUrl);
 
       // Step 3: Create job in database ONLY AFTER images are uploaded
+      console.log(`[PoseChanger] 🔍 AUDIT reference_prompt_id BEFORE insert: "${referencePromptId}" (type: ${typeof referencePromptId})`);
       // This prevents orphaned jobs if user closes page during upload
       setProgress(40);
       const { data: job, error: jobError } = await supabase
@@ -390,7 +391,7 @@ const PoseChangerTool: React.FC = () => {
       }
 
       setJobId(job.id);
-      console.log('[PoseChanger] Job created with images:', job.id);
+      console.log(`[PoseChanger] ✅ Job created: ${job.id} | reference_prompt_id persisted: "${job.reference_prompt_id}"`);
 
       // Step 4: Call edge function
       setProgress(50);
