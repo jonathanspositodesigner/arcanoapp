@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import PartnerToolRatesAdmin from "./PartnerToolRatesAdmin";
 
 const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -294,6 +295,9 @@ const PartnerEarningsAdminContent = () => {
       {/* TAB: OVERVIEW */}
       {tab === "overview" && (
         <div>
+          {/* Tool Rates Management */}
+          <PartnerToolRatesAdmin />
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <Card className="p-4 bg-green-500/10 border-green-500/20">
               <div className="flex items-center gap-3">
