@@ -91,10 +91,17 @@ serve(async (req) => {
     let userId = authData?.user?.id;
     if (!userId) {
       // User already existed, fetch their ID
-      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find((u: any) => u.email === sol.email);
-      if (!existingUser) throw new Error("Não foi possível encontrar o usuário criado");
-      userId = existingUser.id;
+      const { data: listData } = await adminClient.auth.admin.listUsers({ filter: sol.email });
+      const existingUser = listData?.users?.find((u: any) => u.email === sol.email);
+      if (!existingUser) {
+        // Fallback: try fetching by email via users table or re-creating
+        const { data: { users: searchUsers } } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
+        const found = searchUsers?.find((u: any) => u.email === sol.email);
+        if (!found) throw new Error("Não foi possível encontrar o usuário criado");
+        userId = found.id;
+      } else {
+        userId = existingUser.id;
+      }
     }
 
     // Create partner role
