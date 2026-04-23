@@ -70,7 +70,7 @@ const MovieLedMakerTool = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showLibrary, setShowLibrary] = useState(false);
-  const { referencePromptId, clear: clearAttribution } = useCollaboratorAttribution();
+  const { referencePromptId, setFromLibrary: setAttributionFromLibrary, clear: clearAttribution } = useCollaboratorAttribution();
 
   // Text input
   const [inputText, setInputText] = useState('');
@@ -965,7 +965,9 @@ const MovieLedMakerTool = () => {
           setSelectedLibraryItem(item as unknown as LibraryItem);
           setUploadedImage(null);
           setUploadedFileName('');
-          clearAttribution();
+          // Items from MovieLed library are admin prompts — setFromLibrary will clear attribution.
+          // If partner items are added in the future, this will correctly set attribution.
+          setAttributionFromLibrary({ promptId: item.id, promptType: 'admin' });
         }}
         onUploadPhoto={(dataUrl, file) => {
           setUploadedImage(dataUrl);

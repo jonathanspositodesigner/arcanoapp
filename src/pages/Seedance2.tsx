@@ -749,16 +749,16 @@ export default function Seedance2() {
                     <div className="flex gap-1.5">
                       <UploadSlot
                         url={startImage}
-                        onRemove={() => setStartImage(null)}
-                        onDrop={(e) => handleImageDrop(e, (url) => setStartImage(url))}
-                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setStartImage(url))}
+                        onRemove={() => { setStartImage(null); clearAttribution(); }}
+                        onDrop={(e) => handleImageDrop(e, (url) => { setStartImage(url); clearAttribution(); })}
+                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => { setStartImage(url); clearAttribution(); })}
                         size={48}
                       />
                       <UploadSlot
                         url={endImage}
-                        onRemove={() => setEndImage(null)}
-                        onDrop={(e) => handleImageDrop(e, (url) => setEndImage(url))}
-                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => setEndImage(url))}
+                        onRemove={() => { setEndImage(null); clearAttribution(); }}
+                        onDrop={(e) => handleImageDrop(e, (url) => { setEndImage(url); clearAttribution(); })}
+                        onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => { setEndImage(url); clearAttribution(); })}
                         size={48}
                       />
                     </div>
