@@ -30,8 +30,11 @@ const TornarSeColaborador = () => {
     nome: "",
     instagram: "",
     email: "",
+    emailConfirm: "",
     whatsapp: "",
     portfolio: "",
+    senha: "",
+    senhaConfirm: "",
   });
   const [aceite, setAceite] = useState(false);
   const [aceiteError, setAceiteError] = useState(false);
@@ -45,9 +48,15 @@ const TornarSeColaborador = () => {
     if (!form.instagram.trim()) e.instagram = "Campo obrigatório";
     if (!form.email.trim()) e.email = "Campo obrigatório";
     else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) e.email = "Email inválido";
+    if (!form.emailConfirm.trim()) e.emailConfirm = "Campo obrigatório";
+    else if (form.emailConfirm.trim().toLowerCase() !== form.email.trim().toLowerCase()) e.emailConfirm = "Os e-mails não coincidem";
     if (!form.whatsapp.trim()) e.whatsapp = "Campo obrigatório";
     if (!form.portfolio.trim()) e.portfolio = "Campo obrigatório";
     else if (!/^https?:\/\/.+/.test(form.portfolio)) e.portfolio = "Insira uma URL válida (https://...)";
+    if (!form.senha.trim()) e.senha = "Campo obrigatório";
+    else if (form.senha.length < 6) e.senha = "A senha deve ter no mínimo 6 caracteres";
+    if (!form.senhaConfirm.trim()) e.senhaConfirm = "Campo obrigatório";
+    else if (form.senhaConfirm !== form.senha) e.senhaConfirm = "As senhas não coincidem";
     setErrors(e);
     if (!aceite) setAceiteError(true);
     return Object.keys(e).length === 0 && aceite;
@@ -66,6 +75,7 @@ const TornarSeColaborador = () => {
         whatsapp: form.whatsapp.trim(),
         portfolio: form.portfolio.trim(),
         aceite_termo: true,
+        senha: form.senha,
       });
 
       if (error) throw error;
@@ -208,8 +218,11 @@ const TornarSeColaborador = () => {
               { key: "nome", label: "Nome completo", type: "text", placeholder: "Seu nome completo" },
               { key: "instagram", label: "Instagram", type: "text", placeholder: "@seuinstagram" },
               { key: "email", label: "E-mail", type: "email", placeholder: "seu@email.com" },
+              { key: "emailConfirm", label: "Confirme seu e-mail", type: "email", placeholder: "Digite novamente seu e-mail" },
               { key: "whatsapp", label: "WhatsApp", type: "text", placeholder: "(DDD) 99999-9999" },
               { key: "portfolio", label: "Link do portfólio", type: "url", placeholder: "https://..." },
+              { key: "senha", label: "Senha desejada", type: "password", placeholder: "Mínimo 6 caracteres" },
+              { key: "senhaConfirm", label: "Confirme a senha", type: "password", placeholder: "Digite novamente a senha" },
             ].map(({ key, label, type, placeholder }) => (
               <div key={key} className="space-y-1.5">
                 <Label htmlFor={key} className="text-sm font-medium">{label}</Label>

@@ -4569,6 +4569,7 @@ export type Database = {
           instagram: string
           nome: string
           portfolio: string
+          senha: string | null
           status: string
           whatsapp: string
         }
@@ -4580,6 +4581,7 @@ export type Database = {
           instagram: string
           nome: string
           portfolio: string
+          senha?: string | null
           status?: string
           whatsapp: string
         }
@@ -4591,6 +4593,7 @@ export type Database = {
           instagram?: string
           nome?: string
           portfolio?: string
+          senha?: string | null
           status?: string
           whatsapp?: string
         }
