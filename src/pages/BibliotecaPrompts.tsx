@@ -299,8 +299,11 @@ const BibliotecaPrompts = () => {
     let results = getFilteredPrompts(contentType, selectedCategory);
     
     // Apply smart search filter client-side
-    if (isSearching && expandedTerms.length > 0) {
-      const exactQuery = removeAccents(searchTerm.trim().toLowerCase());
+    const exactQuery = removeAccents(searchTerm.trim().toLowerCase());
+    const hasSearch = exactQuery.length > 0;
+
+    if (hasSearch) {
+      const searchTerms = expandedTerms.length > 0 ? expandedTerms : [searchTerm.trim()];
 
       results = results.filter(prompt => {
         const titleNorm = removeAccents(prompt.title.toLowerCase());
@@ -310,7 +313,7 @@ const BibliotecaPrompts = () => {
           return true;
         }
 
-        return expandedTerms.some(term => {
+        return searchTerms.some(term => {
           const termNorm = removeAccents(term.toLowerCase());
           return titleNorm.includes(termNorm) || categoryNorm.includes(termNorm);
         });
@@ -318,7 +321,7 @@ const BibliotecaPrompts = () => {
     }
     
     return results;
-  }, [contentType, selectedCategory, getFilteredPrompts, isSearching, expandedTerms, searchTerm]);
+  }, [contentType, selectedCategory, getFilteredPrompts, expandedTerms, searchTerm]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
