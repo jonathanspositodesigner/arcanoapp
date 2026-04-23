@@ -57,6 +57,7 @@ const PoseChangerTool: React.FC = () => {
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
@@ -246,8 +247,13 @@ const PoseChangerTool: React.FC = () => {
   };
 
   // Seleção da biblioteca de fotos (recebe URL)
-  const handleSelectFromLibrary = (imageUrl: string) => {
+  const handleSelectFromLibrary = (_imageUrl: string) => {
+    // legacy callback — kept for compatibility
+  };
+
+  const handleSelectFromLibraryWithMeta = (imageUrl: string, meta: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleReferenceImageChange(imageUrl);
+    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
   };
 
   // Upload pelo modal (recebe dataUrl + file)
@@ -258,6 +264,7 @@ const PoseChangerTool: React.FC = () => {
 
   // Limpar referência
   const handleClearReference = () => {
+    setReferencePromptId(null);
     setReferenceImage(null);
     setReferenceFile(null);
   };
@@ -373,6 +380,7 @@ const PoseChangerTool: React.FC = () => {
           reference_file_name: referenceUrl.split('/').pop() || 'reference.webp',
           person_image_url: personUrl,
           reference_image_url: referenceUrl,
+          reference_prompt_id: referencePromptId,
         })
         .select()
         .single();
@@ -829,6 +837,7 @@ const PoseChangerTool: React.FC = () => {
         isOpen={showPhotoLibrary}
         onClose={() => setShowPhotoLibrary(false)}
         onSelectPhoto={handleSelectFromLibrary}
+        onSelectPhotoWithMeta={handleSelectFromLibraryWithMeta}
         onUploadPhoto={handleUploadFromModal}
         
       />

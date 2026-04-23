@@ -61,6 +61,22 @@ serve(async (req) => {
 
       // Credits already charged on generate - no action needed on completion
 
+      // COLLABORATOR TOOL EARNINGS - Register if partner prompt was used
+      try {
+        const { data: jobData } = await supabase.from("seedance_jobs").select("reference_prompt_id").eq("id", jobId).maybeSingle();
+        if (jobData?.reference_prompt_id) {
+          const { data: earningResult } = await supabase.rpc('register_collaborator_tool_earning', {
+            _job_id: jobId,
+            _tool_table: 'seedance_jobs',
+            _prompt_id: jobData.reference_prompt_id,
+            _user_id: user.id,
+          });
+          console.log("[seedance-poll] Tool earning result:", earningResult);
+        }
+      } catch (e) {
+        console.error("[seedance-poll] Error registering tool earning:", e);
+      }
+
       return new Response(JSON.stringify({
         status: "completed",
         outputUrl: pollResult.outputUrl,

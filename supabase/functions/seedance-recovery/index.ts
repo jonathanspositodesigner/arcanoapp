@@ -28,7 +28,7 @@ serve(async (req) => {
     // Find jobs in timeout recovery, running, or orphaned queued/pending state
     const { data: recoveryJobs, error: queryError } = await supabase
       .from("seedance_jobs")
-      .select("id, task_id, user_id, credits_charged, status, created_at")
+      .select("id, task_id, user_id, credits_charged, status, created_at, reference_prompt_id")
       .or("status.eq.timeout_recovery,status.eq.running,status.eq.queued,status.eq.pending")
       .order("created_at", { ascending: true })
       .limit(20);
@@ -139,6 +139,22 @@ serve(async (req) => {
           }
 
           recovered++;
+
+          // COLLABORATOR TOOL EARNINGS
+          try {
+            if (job.reference_prompt_id) {
+              const { data: earningResult } = await supabase.rpc('register_collaborator_tool_earning', {
+                _job_id: job.id,
+                _tool_table: 'seedance_jobs',
+                _prompt_id: job.reference_prompt_id,
+                _user_id: job.user_id,
+              });
+              console.log(`[seedance-recovery] Tool earning result for ${job.id}:`, earningResult);
+            }
+          } catch (e) {
+            console.error(`[seedance-recovery] Error registering tool earning:`, e);
+          }
+
         } else if (pollResult.status === "failed") {
           console.log(`[seedance-recovery] ❌ Job ${job.id} confirmed failed on Evolink`);
           await supabase.from("seedance_jobs").update({

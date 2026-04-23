@@ -771,6 +771,7 @@ export type Database = {
           raw_webhook_payload: Json | null
           reference_file_name: string | null
           reference_image_url: string | null
+          reference_prompt_id: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
@@ -805,6 +806,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
@@ -839,6 +841,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
@@ -1748,6 +1751,90 @@ export type Database = {
           last_payment_at?: string | null
           total_earned?: number
           total_unlocks?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      collaborator_tool_earnings: {
+        Row: {
+          amount: number
+          collaborator_id: string
+          created_at: string
+          earning_type: string
+          id: string
+          job_id: string
+          prompt_id: string
+          prompt_title: string
+          tool_table: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          collaborator_id: string
+          created_at?: string
+          earning_type?: string
+          id?: string
+          job_id: string
+          prompt_id: string
+          prompt_title: string
+          tool_table: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          collaborator_id?: string
+          created_at?: string
+          earning_type?: string
+          id?: string
+          job_id?: string
+          prompt_id?: string
+          prompt_title?: string
+          tool_table?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_tool_earnings_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborator_tool_earnings_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collaborator_tool_rates: {
+        Row: {
+          created_at: string
+          earning_per_use: number
+          id: string
+          is_active: boolean
+          tool_display_name: string
+          tool_table: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          earning_per_use?: number
+          id?: string
+          is_active?: boolean
+          tool_display_name: string
+          tool_table: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          earning_per_use?: number
+          id?: string
+          is_active?: boolean
+          tool_display_name?: string
+          tool_table?: string
           updated_at?: string
         }
         Relationships: []
@@ -3998,6 +4085,7 @@ export type Database = {
           raw_webhook_payload: Json | null
           reference_file_name: string | null
           reference_image_url: string | null
+          reference_prompt_id: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
@@ -4029,6 +4117,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
@@ -4060,6 +4149,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
@@ -4732,6 +4822,7 @@ export type Database = {
           output_url: string | null
           prompt: string
           quality: string | null
+          reference_prompt_id: string | null
           status: string | null
           task_id: string | null
           thumbnail_url: string | null
@@ -4754,6 +4845,7 @@ export type Database = {
           output_url?: string | null
           prompt: string
           quality?: string | null
+          reference_prompt_id?: string | null
           status?: string | null
           task_id?: string | null
           thumbnail_url?: string | null
@@ -4776,6 +4868,7 @@ export type Database = {
           output_url?: string | null
           prompt?: string
           quality?: string | null
+          reference_prompt_id?: string | null
           status?: string | null
           task_id?: string | null
           thumbnail_url?: string | null
@@ -5324,6 +5417,7 @@ export type Database = {
           queue_wait_seconds: number | null
           raw_api_response: Json | null
           raw_webhook_payload: Json | null
+          reference_prompt_id: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
@@ -5355,6 +5449,7 @@ export type Database = {
           queue_wait_seconds?: number | null
           raw_api_response?: Json | null
           raw_webhook_payload?: Json | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
@@ -5386,6 +5481,7 @@ export type Database = {
           queue_wait_seconds?: number | null
           raw_api_response?: Json | null
           raw_webhook_payload?: Json | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
@@ -6425,6 +6521,15 @@ export type Database = {
           new_balance: number
           success: boolean
         }[]
+      }
+      register_collaborator_tool_earning: {
+        Args: {
+          _job_id: string
+          _prompt_id: string
+          _tool_table: string
+          _user_id: string
+        }
+        Returns: Json
       }
       register_collaborator_unlock: {
         Args: {
