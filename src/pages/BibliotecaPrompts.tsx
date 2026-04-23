@@ -740,6 +740,13 @@ const BibliotecaPrompts = () => {
                   </div>
                 )}
 
+                {/* Premium star badge */}
+                {item.isPremium && (
+                  <div className="absolute top-1.5 left-1.5 z-10 bg-yellow-500 rounded-full p-1">
+                    <Star className="h-3 w-3 text-white" fill="white" />
+                  </div>
+                )}
+
                 {/* Like button - top right */}
                 <button
                   onClick={(e) => toggleLike(e, String(item.id))}
