@@ -41,7 +41,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl h-[92vh] sm:h-auto sm:max-h-[92vh] p-0 gap-0 sm:rounded-2xl !flex flex-col overflow-hidden">
+      <DialogContent className="w-full max-w-3xl h-[100dvh] max-h-[100dvh] rounded-none p-0 gap-0 !flex flex-col overflow-hidden sm:h-auto sm:max-h-[92vh] sm:rounded-2xl">
         <DialogHeader className="px-5 pt-5 pb-3 sm:px-7 sm:pt-6 border-b border-border/60 shrink-0 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
