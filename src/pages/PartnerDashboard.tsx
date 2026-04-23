@@ -129,7 +129,7 @@ const PartnerDashboard = () => {
     setProfileAvatarUrl(partnerData.avatar_url || "");
 
     // Fetch earnings balance and paid withdrawals
-    const [balanceRes, withdrawalsRes] = await Promise.all([
+    const [balanceRes, withdrawalsRes, gamRes, toolCountRes] = await Promise.all([
       supabase
         .from('collaborator_balances')
         .select('total_earned, total_unlocks')
@@ -140,12 +140,23 @@ const PartnerDashboard = () => {
         .select('valor_solicitado')
         .eq('partner_id', partnerData.id)
         .eq('status', 'pago'),
+      supabase
+        .from('partner_gamification')
+        .select('xp_total, level, current_streak')
+        .eq('partner_id', partnerData.id)
+        .maybeSingle(),
+      supabase
+        .from('collaborator_tool_earnings')
+        .select('id', { count: 'exact', head: true })
+        .eq('collaborator_id', partnerData.id),
     ]);
     
     setEarningsBalance(balanceRes.data?.total_earned || 0);
     setEarningsUnlocks(balanceRes.data?.total_unlocks || 0);
     const totalPaid = (withdrawalsRes.data || []).reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
     setEarningsPaidOut(totalPaid);
+    setPartnerGamification(gamRes.data || null);
+    setToolEarningsCount(toolCountRes.count || 0);
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
