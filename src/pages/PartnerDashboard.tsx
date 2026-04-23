@@ -71,7 +71,7 @@ const PartnerDashboard = () => {
   const [earningsBalance, setEarningsBalance] = useState(0);
   const [earningsUnlocks, setEarningsUnlocks] = useState(0);
   const [earningsPaidOut, setEarningsPaidOut] = useState(0);
-  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number } | null>(null);
+  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number; best_streak: number; streak_protection_available: boolean } | null>(null);
   const [toolEarningsCount, setToolEarningsCount] = useState(0);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ const PartnerDashboard = () => {
         .eq('status', 'pago'),
       supabase
         .from('partner_gamification')
-        .select('xp_total, level, current_streak')
+        .select('xp_total, level, current_streak, best_streak, streak_protection_available')
         .eq('partner_id', partnerData.id)
         .maybeSingle(),
       supabase
@@ -401,9 +401,21 @@ const PartnerDashboard = () => {
     }
   };
 
-  const LEVEL_NAMES: Record<number, string> = { 1: 'Iniciante', 2: 'Criador', 3: 'Colaborador', 4: 'Especialista', 5: 'Elite' };
   const currentLevel = partnerGamification?.level || 1;
-  const levelName = LEVEL_NAMES[currentLevel] || 'Iniciante';
+  const LEVELS = [
+    { level: 1, name: "Iniciante", minXp: 0, maxXp: 149, unlockRate: 0.05 },
+    { level: 2, name: "Criador", minXp: 150, maxXp: 399, unlockRate: 0.07 },
+    { level: 3, name: "Colaborador", minXp: 400, maxXp: 899, unlockRate: 0.07 },
+    { level: 4, name: "Especialista", minXp: 900, maxXp: 1999, unlockRate: 0.10 },
+    { level: 5, name: "Elite", minXp: 2000, maxXp: Infinity, unlockRate: 0.12 },
+  ];
+  const currentLevelData = LEVELS.find(l => l.level === currentLevel) || LEVELS[0];
+  const levelName = currentLevelData.name;
+  const xpTotal = partnerGamification?.xp_total || 0;
+  const nextLevelData = LEVELS.find(l => l.level === currentLevel + 1);
+  const xpMin = currentLevelData.minXp;
+  const xpMax = nextLevelData ? nextLevelData.minXp : currentLevelData.maxXp;
+  const xpProgress = xpMax === Infinity ? 100 : Math.min(100, ((xpTotal - xpMin) / (xpMax - xpMin)) * 100);
 
   if (isLoading) {
     return (
