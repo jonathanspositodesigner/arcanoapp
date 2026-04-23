@@ -625,6 +625,9 @@ const PartnerEarningsAdminContent = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* TAB: GAMIFICATION */}
+      {tab === "gamification" && <PartnerGamificationAdmin />}
     </div>
   );
 };
