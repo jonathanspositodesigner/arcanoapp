@@ -201,7 +201,7 @@ const TornarSeFounder = () => {
             <span className="text-primary">colaborador Arcano Founder</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Seja um dos 15 criadores fundadores do Arcano e comece com a tabela especial de ganhos: de R$ 0,10 a R$ 0,20 por prompt liberado, além das comissões nas ferramentas de IA.
+            Seja um dos 15 criadores fundadores do Arcano e ganhe <strong className="text-primary font-extrabold">até 2x mais</strong> por prompt liberado do que um colaborador normal, além das comissões nas ferramentas de IA.
           </p>
         </div>
       </div>
