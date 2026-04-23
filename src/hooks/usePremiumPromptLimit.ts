@@ -78,9 +78,8 @@ export const usePremiumPromptLimit = (
 
   const isPromptUnlocked = useCallback((promptId: string): boolean => {
     if (!isPremium) return false;
-    if (isUnlimited) return true;
     return unlockedPromptIds.has(promptId);
-  }, [isPremium, isUnlimited, unlockedPromptIds]);
+ }, [isPremium, unlockedPromptIds]);
 
   const unlockPrompt = async (promptId: string): Promise<boolean> => {
     if (!user || !isPremium) return false;

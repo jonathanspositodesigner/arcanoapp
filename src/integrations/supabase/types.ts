@@ -1719,6 +1719,78 @@ export type Database = {
         }
         Relationships: []
       }
+      collaborator_balances: {
+        Row: {
+          collaborator_id: string
+          created_at: string
+          id: string
+          last_payment_amount: number | null
+          last_payment_at: string | null
+          total_earned: number
+          total_unlocks: number
+          updated_at: string
+        }
+        Insert: {
+          collaborator_id: string
+          created_at?: string
+          id?: string
+          last_payment_amount?: number | null
+          last_payment_at?: string | null
+          total_earned?: number
+          total_unlocks?: number
+          updated_at?: string
+        }
+        Update: {
+          collaborator_id?: string
+          created_at?: string
+          id?: string
+          last_payment_amount?: number | null
+          last_payment_at?: string | null
+          total_earned?: number
+          total_unlocks?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      collaborator_unlock_earnings: {
+        Row: {
+          amount: number
+          collaborator_id: string
+          created_at: string
+          device_fingerprint: string | null
+          id: string
+          prompt_id: string
+          prompt_title: string
+          unlock_date: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          collaborator_id: string
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          prompt_id: string
+          prompt_title: string
+          unlock_date?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          collaborator_id?: string
+          created_at?: string
+          device_fingerprint?: string | null
+          id?: string
+          prompt_id?: string
+          prompt_title?: string
+          unlock_date?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       collection_views: {
         Row: {
           collection_id: string
@@ -6241,6 +6313,15 @@ export type Database = {
           new_balance: number
           success: boolean
         }[]
+      }
+      register_collaborator_unlock: {
+        Args: {
+          _collaborator_id: string
+          _device_fingerprint?: string
+          _prompt_id: string
+          _prompt_title: string
+        }
+        Returns: Json
       }
       register_device_signup: {
         Args: { p_fingerprint: string; p_user_id: string }
