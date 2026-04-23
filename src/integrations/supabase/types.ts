@@ -6286,6 +6286,23 @@ export type Database = {
           success: boolean
         }[]
       }
+      admin_reconcile_tool_earnings: {
+        Args: { _filter_status?: string; _limit?: number; _offset?: number }
+        Returns: {
+          active_rate: number
+          amount_paid: number
+          completed_at: string
+          earning_registered: boolean
+          job_id: string
+          partner_name: string
+          prompt_id: string
+          rate_match: boolean
+          reconciliation_status: string
+          tool_display_name: string
+          tool_table: string
+          user_id: string
+        }[]
+      }
       admin_search_pack_clients: {
         Args: {
           p_pack_filter?: string
