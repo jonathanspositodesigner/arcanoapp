@@ -401,6 +401,10 @@ const PartnerDashboard = () => {
     }
   };
 
+  const LEVEL_NAMES: Record<number, string> = { 1: 'Iniciante', 2: 'Criador', 3: 'Colaborador', 4: 'Especialista', 5: 'Elite' };
+  const currentLevel = partnerGamification?.level || 1;
+  const levelName = LEVEL_NAMES[currentLevel] || 'Iniciante';
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
