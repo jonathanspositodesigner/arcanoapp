@@ -680,6 +680,7 @@ const BibliotecaPrompts = () => {
           {paginatedPrompts.map(item => {
             const isVideo = isVideoUrl(item.imageUrl);
             const canAccess = !item.isPremium || isPremium;
+            const author = getPromptAuthor(item);
             return (
               <div
                 key={item.id}
@@ -724,23 +725,23 @@ const BibliotecaPrompts = () => {
                 </button>
 
                 {/* Author avatar + instagram badge - top left */}
-                {item.partnerInstagram && (
+                {author?.instagram && (
                   <a
-                    href={`https://www.instagram.com/${item.partnerInstagram.replace('@', '')}`}
+                    href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
                     className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
                   >
-                    {(item.partnerAvatarUrl || item.promptType === 'admin') ? (
-                      <img src={item.promptType === 'admin' ? arcanoLogoAvatar : item.partnerAvatarUrl} alt={item.partnerName || ''} className="w-4 h-4 rounded-full object-cover" />
+                    {author.avatarUrl ? (
+                      <img src={author.avatarUrl} alt={author.name || ''} className="w-4 h-4 rounded-full object-cover" />
                     ) : (
                       <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center">
-                        <span className="text-[7px] font-bold text-white">{(item.partnerName || '?').charAt(0).toUpperCase()}</span>
+                        <span className="text-[7px] font-bold text-white">{(author.name || '?').charAt(0).toUpperCase()}</span>
                       </div>
                     )}
                     <Instagram className="h-2.5 w-2.5 text-white/80" />
-                    <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{item.partnerInstagram.replace('@', '')}</span>
+                    <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{author.instagram.replace('@', '')}</span>
                   </a>
                 )}
 
@@ -899,26 +900,31 @@ const BibliotecaPrompts = () => {
                 </Button>
               </div>
               {/* Author header above image */}
-              {selectedPrompt.partnerInstagram && (
+              {(() => {
+                const author = getPromptAuthor(selectedPrompt);
+                if (!author?.instagram) return null;
+
+                return (
                 <a
-                  href={`https://www.instagram.com/${selectedPrompt.partnerInstagram.replace('@', '')}`}
+                  href={`https://www.instagram.com/${author.instagram.replace('@', '')}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-3 hover:opacity-80 transition-opacity"
                 >
-                  {(selectedPrompt.partnerAvatarUrl || selectedPrompt.promptType === 'admin') ? (
-                    <img src={selectedPrompt.promptType === 'admin' ? arcanoLogoAvatar : selectedPrompt.partnerAvatarUrl} alt={selectedPrompt.partnerName || ''} className="w-10 h-10 rounded-full object-cover border border-border" />
+                  {author.avatarUrl ? (
+                    <img src={author.avatarUrl} alt={author.name || ''} className="w-10 h-10 rounded-full object-cover border border-border" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center border border-border">
-                      <span className="text-base font-bold text-foreground">{(selectedPrompt.partnerName || '?').charAt(0).toUpperCase()}</span>
+                      <span className="text-base font-bold text-foreground">{(author.name || '?').charAt(0).toUpperCase()}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-1.5">
                     <Instagram className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-foreground">@{selectedPrompt.partnerInstagram.replace('@', '')}</span>
+                    <span className="text-sm font-semibold text-foreground">@{author.instagram.replace('@', '')}</span>
                   </div>
                 </a>
-              )}
+                );
+              })()}
               <div className="rounded-lg overflow-hidden border border-border">
                 {isVideoUrl(selectedPrompt.imageUrl) ? (
                   <SecureVideo src={selectedPrompt.imageUrl} isPremium={false} className="w-full" controls autoPlay muted loop playsInline poster={selectedPrompt.thumbnailUrl || undefined} />
