@@ -9,14 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
+import { Instagram, User, Camera, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import imageCompression from 'browser-image-compression';
 
 interface Partner {
   id: string;
   name: string;
   email: string;
+  instagram?: string;
+  avatar_url?: string;
 }
 
 interface PartnerPrompt {
@@ -48,6 +52,17 @@ const PartnerDashboard = () => {
   const [editPromptText, setEditPromptText] = useState("");
   const [editCategory, setEditCategory] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Profile state
+  const [showProfile, setShowProfile] = useState(false);
+  const [profileName, setProfileName] = useState("");
+  const [profileInstagram, setProfileInstagram] = useState("");
+  const [profileAvatarUrl, setProfileAvatarUrl] = useState("");
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
 
@@ -90,7 +105,7 @@ const PartnerDashboard = () => {
     // Fetch partner info
     const { data: partnerData, error: partnerError } = await supabase
       .from('partners')
-      .select('id, name, email')
+      .select('id, name, email, instagram, avatar_url')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -101,6 +116,9 @@ const PartnerDashboard = () => {
     }
 
     setPartner(partnerData);
+    setProfileName(partnerData.name);
+    setProfileInstagram(partnerData.instagram || "");
+    setProfileAvatarUrl(partnerData.avatar_url || "");
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
