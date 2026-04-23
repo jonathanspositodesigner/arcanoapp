@@ -204,7 +204,7 @@ const BibliotecaPrompts = () => {
 
     const availablePromptCategories = new Set(
       allPrompts
-        .filter(prompt => contentType === "exclusive" ? prompt.isExclusive : prompt.isCommunity)
+        .filter(prompt => contentType === "exclusive" ? prompt.isExclusive : prompt.promptType === 'partner')
         .map(prompt => prompt.category)
         .filter((category): category is string => Boolean(category))
     );
@@ -507,7 +507,7 @@ const BibliotecaPrompts = () => {
   const getBadgeContent = (item: PromptItem) => {
     return <div className="flex flex-wrap gap-1">
       {item.isCommunity && <Badge variant="secondary" className="bg-accent text-muted-foreground text-[10px] sm:text-xs">
-        {t('badges.community')}
+        Colaborador
       </Badge>}
       {item.category && <Badge variant="outline" className="text-[10px] sm:text-xs text-muted-foreground">
         {getCategoryDisplayName(item.category)}
