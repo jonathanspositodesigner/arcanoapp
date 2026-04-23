@@ -471,7 +471,7 @@ const PartnerGamificationAdmin = () => {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="send_prompts">Enviar prompts</SelectItem>
-                  <SelectItem value="get_unlocks">Receber desbloqueios</SelectItem>
+                  <SelectItem value="get_unlocks">Receber prompts copiados</SelectItem>
                   <SelectItem value="get_tool_uses">Uso em ferramentas</SelectItem>
                   <SelectItem value="earn_tool_value">Ganhar valor em ferramentas</SelectItem>
                   <SelectItem value="send_category">Enviar por categoria</SelectItem>
