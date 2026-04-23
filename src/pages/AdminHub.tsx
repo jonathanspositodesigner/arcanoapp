@@ -188,8 +188,6 @@ const AdminHub = () => {
         return <AdminSimpleMetrics />;
       case "push-notifications":
         return <PushNotificationsContent />;
-      case "partners":
-        return <PartnerEarningsAdminContent />;
       case "abandoned-checkouts":
         return <AbandonedCheckoutsContent />;
       case "sales":
@@ -198,8 +196,6 @@ const AdminHub = () => {
         return <AdsManagementContent />;
       case "pixel":
         return <MetaCapiLogsContent />;
-      case "collaborator-requests":
-        return <PartnerEarningsAdminContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
