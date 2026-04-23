@@ -53,7 +53,7 @@ interface WithdrawalRow {
 
 interface EarningRow {
   id: string; prompt_title: string; amount: number; unlocked_at: string; user_id: string;
-  earning_type: 'unlock' | 'tool_usage'; tool_table?: string;
+  earning_type: 'unlock' | 'tool_usage' | 'bonus'; tool_table?: string;
 }
 
 type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
@@ -140,7 +140,7 @@ const PartnerEarningsAdminContent = () => {
   useEffect(() => {
     if (!selectedPartnerId) return;
     const fetchDetail = async () => {
-      const [unlockRes, toolRes] = await Promise.all([
+      const [unlockRes, toolRes, bonusDetailRes] = await Promise.all([
         supabase
         .from("collaborator_unlock_earnings")
         .select("id, prompt_title, amount, unlocked_at, user_id")
@@ -151,6 +151,11 @@ const PartnerEarningsAdminContent = () => {
           .select("id, prompt_title, amount, created_at, user_id, tool_table")
           .eq("collaborator_id", selectedPartnerId)
           .order("created_at", { ascending: false }),
+        supabase
+          .from('partner_bonus_payments' as any)
+          .select('id, amount, reason, created_at')
+          .eq('partner_id', selectedPartnerId)
+          .order('created_at', { ascending: false }),
       ]);
       const unlocks: EarningRow[] = (unlockRes.data || []).map(e => ({ ...e, earning_type: 'unlock' as const }));
       const tools: EarningRow[] = (toolRes.data || []).map(e => ({
@@ -158,7 +163,15 @@ const PartnerEarningsAdminContent = () => {
         unlocked_at: e.created_at, user_id: e.user_id,
         earning_type: 'tool_usage' as const, tool_table: e.tool_table,
       }));
-      const merged = [...unlocks, ...tools].sort(
+      const bonuses: EarningRow[] = ((bonusDetailRes?.data as any[]) || []).map((b: any) => ({
+        id: b.id,
+        prompt_title: b.reason || 'Bônus Ranking',
+        amount: b.amount,
+        unlocked_at: b.created_at,
+        user_id: '',
+        earning_type: 'bonus' as const,
+      }));
+      const merged = [...unlocks, ...tools, ...bonuses].sort(
         (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
       );
       setDetailEarnings(merged);
@@ -582,6 +595,11 @@ const PartnerEarningsAdminContent = () => {
                           {e.prompt_title}
                           {e.earning_type === 'tool_usage' && (
                             <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
+                          )}
+                          {e.earning_type === 'bonus' && (
+                            <span className="ml-1.5 text-xs font-semibold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+                              🏆 Bônus Ranking
+                            </span>
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground">{format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
