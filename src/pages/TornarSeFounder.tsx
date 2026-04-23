@@ -33,7 +33,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import { Slider } from "@/components/ui/slider";
 
-const TornarSeColaborador = () => {
+const TornarSeFounder = () => {
   const [form, setForm] = useState({
     nome: "",
     instagram: "",
@@ -133,7 +133,7 @@ const TornarSeColaborador = () => {
             <CheckCircle2 className="mx-auto h-16 w-16 text-green-500" />
             <h2 className="text-2xl font-bold text-foreground">Solicitação enviada com sucesso!</h2>
             <p className="text-muted-foreground">
-              Recebemos seu cadastro e entraremos em contato em breve pelo Instagram ou e-mail informado. Fique ligado!
+              Recebemos sua candidatura para o Arcano Founder. Se seu perfil for aprovado entre as 15 vagas, entraremos em contato pelo Instagram ou e-mail informado.
             </p>
             <Button asChild className="mt-4">
               <Link to="/">Voltar para a home</Link>
@@ -152,9 +152,9 @@ const TornarSeColaborador = () => {
             {alreadyCollaborator === "aprovado" ? (
               <>
                 <CheckCircle2 className="mx-auto h-16 w-16 text-primary" />
-                <h2 className="text-2xl font-bold text-foreground">Você já é um colaborador! 🎉</h2>
+                <h2 className="text-2xl font-bold text-foreground">Você já faz parte do Arcano! 🎉</h2>
                 <p className="text-muted-foreground">
-                  Esse e-mail já possui uma conta de colaborador aprovada. Acesse sua conta pelo login de parceiros.
+                  Esse e-mail já possui uma conta aprovada. Acesse sua conta pelo login de parceiros.
                 </p>
                 <Button asChild className="mt-4">
                   <a href="/parceiro-login-unificado">Ir para o login</a>
@@ -194,20 +194,51 @@ const TornarSeColaborador = () => {
         <div className="relative max-w-3xl mx-auto px-4 space-y-6">
           <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-medium text-primary mb-4">
             <Sparkles className="h-3.5 w-3.5" />
-            Programa de Colaboradores
+            Programa Arcano Founder
           </div>
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground tracking-tight">
-            Torne-se um{" "}
-            <span className="text-primary">Colaborador Arcano</span>
+            Entre para o{" "}
+            <span className="text-primary">Arcano Founder</span>
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-            Publique seus prompts e conteúdos criativos na plataforma e seja remunerado
-            toda vez que alguém usar o que você criou.
+            Seja um dos 15 criadores fundadores do Arcano e comece com a tabela especial de ganhos: de R$ 0,10 a R$ 0,20 por prompt liberado, além das comissões nas ferramentas de IA.
           </p>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pb-16 space-y-20">
+
+        {/* SEÇÃO — VAGAS E TABELA FOUNDER */}
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-primary/25 bg-card p-6 md:p-8">
+            <div className="text-center space-y-3 mb-6">
+              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold text-primary">
+                <Crown className="h-3.5 w-3.5" />
+                Só 15 vagas Founder
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                Ganhe mais desde o primeiro prompt
+              </h2>
+              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
+                O Arcano Founder é para quem quer entrar cedo, ocupar espaço e transformar prompt bom em renda recorrente. A tabela especial começa em R$ 0,10 e chega a R$ 0,20 por liberação.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {[
+                { title: "Criador", value: "R$ 0,10", desc: "por prompt" },
+                { title: "Founder Pro", value: "R$ 0,12", desc: "por prompt" },
+                { title: "Especialista", value: "R$ 0,15", desc: "por prompt" },
+                { title: "Elite", value: "R$ 0,20", desc: "por prompt" },
+              ].map((item) => (
+                <div key={item.title} className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
+                  <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
+                  <p className="text-2xl font-bold text-primary mt-1">{item.value}</p>
+                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
 
         {/* SEÇÃO — SOCIAL PROOF / ALCANCE DA PLATAFORMA */}
         <section className="space-y-6">
@@ -216,7 +247,7 @@ const TornarSeColaborador = () => {
               Uma plataforma com <span className="text-primary">alcance real</span>
             </h2>
             <p className="text-center text-muted-foreground text-sm mb-8 max-w-xl mx-auto">
-              Seu conteúdo será visto por milhares de pessoas todos os dias. Ao se tornar colaborador, você ganha visibilidade orgânica e remuneração automática.
+              Seu conteúdo entra na frente de uma comunidade que já usa IA todos os dias. Como Arcano Founder, você ganha status, vitrine e uma escala de pagamento superior desde o primeiro nível.
             </p>
             <div className="grid sm:grid-cols-3 gap-6">
               <div className="flex flex-col items-center gap-2 p-4">
@@ -238,12 +269,12 @@ const TornarSeColaborador = () => {
                   <Instagram className="h-6 w-6 text-primary" />
                 </div>
                 <span className="text-3xl font-bold text-foreground">Seu perfil</span>
-                <span className="text-sm text-muted-foreground text-center">exibido na plataforma, trazendo divulgação orgânica pro seu Instagram</span>
+                <span className="text-sm text-muted-foreground text-center">destacado na plataforma, trazendo divulgação orgânica pro seu Instagram</span>
               </div>
             </div>
             <div className="mt-8 rounded-lg border border-primary/15 bg-primary/5 p-4 text-center">
               <p className="text-sm text-foreground/80">
-                🚀 Ao publicar seus prompts, <strong className="text-foreground">seu @ do Instagram aparece junto ao conteúdo</strong> — cada uso é uma vitrine gratuita para o seu perfil.
+                👑 Apenas <strong className="text-foreground">15 Arcano Founders</strong> serão aceitos nesta fase — quem entra agora garante o selo especial e a tabela premium de ganhos.
               </p>
             </div>
           </div>
@@ -252,7 +283,7 @@ const TornarSeColaborador = () => {
         {/* SEÇÃO 2 — COMO VOCÊ GANHA */}
         <section className="space-y-10">
           <h2 className="text-2xl font-bold text-center text-foreground">
-            Como funciona a remuneração
+            Ganhos especiais de Founder
           </h2>
           <div className="grid md:grid-cols-2 gap-6">
             <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent hover:border-primary/40 transition-colors">
@@ -262,7 +293,7 @@ const TornarSeColaborador = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Clique no prompt</h3>
                 <p className="text-sm text-muted-foreground">
-                  Toda vez que um usuário copiar o seu prompt dentro da plataforma, você recebe uma remuneração automática.
+                  Toda vez que um usuário liberar seu prompt, você recebe pela tabela Founder: começa em R$ 0,10 e pode chegar a R$ 0,20 por liberação no Elite.
                 </p>
               </CardContent>
             </Card>
@@ -273,16 +304,17 @@ const TornarSeColaborador = () => {
                 </div>
                 <h3 className="text-lg font-semibold text-foreground">Geração com o seu conteúdo</h3>
                 <p className="text-sm text-muted-foreground">
-                  Quando um usuário usar o seu prompt para gerar imagens ou vídeos nas ferramentas do Arcano, você recebe uma remuneração proporcional ao tipo de ferramenta utilizada.
+                  Quando seu prompt vira referência nas ferramentas do Arcano, você também ganha comissão sobre o uso em créditos — uma segunda linha de receita além das liberações.
                 </p>
               </CardContent>
             </Card>
           </div>
           <p className="text-xs text-muted-foreground text-center max-w-xl mx-auto">
-            Os valores são calculados automaticamente e acumulados no seu painel de contribuidor. O saque fica disponível a partir de um saldo mínimo.
+            Os ganhos acumulam automaticamente no seu painel Founder. Quanto mais conteúdo aprovado, mais vitrine, mais XP e mais potencial de recorrência.
           </p>
           <div className="flex justify-center">
             <EarningsGuideModal
+              isFounder
               hideFirstPromptCta
               trigger={
                 <Button variant="outline" className="gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
@@ -296,13 +328,13 @@ const TornarSeColaborador = () => {
 
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
         <section className="space-y-8">
-          <h2 className="text-2xl font-bold text-center text-foreground">O que você pode publicar</h2>
+          <h2 className="text-2xl font-bold text-center text-foreground">O que um Founder pode publicar</h2>
           <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
             {[
               { icon: ImageIcon, text: "Prompts de geração de imagem com IA" },
               { icon: Video, text: "Prompts de geração de vídeo com IA (incluindo Seedance 2)" },
               { icon: Palette, text: "Conteúdos para ferramentas como Pose Changer, Veste AI, Arcano Cloner, MovieLED Maker" },
-              { icon: Wand2, text: "Qualquer prompt criativo e original gerado por você" },
+              { icon: Wand2, text: "Prompts autorais com potencial de uso recorrente pela comunidade" },
             ].map((item, i) => (
               <div key={i} className="flex items-start gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
                 <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -323,8 +355,8 @@ const TornarSeColaborador = () => {
         {/* SEÇÃO 4 — FORMULÁRIO */}
         <section className="space-y-8">
           <div className="text-center space-y-2">
-            <h2 className="text-2xl font-bold text-foreground">Envie sua solicitação</h2>
-            <p className="text-sm text-muted-foreground">Preencha os campos abaixo para se candidatar</p>
+            <h2 className="text-2xl font-bold text-foreground">Candidate-se a uma das 15 vagas Founder</h2>
+            <p className="text-sm text-muted-foreground">Mostre seu perfil criativo e entre na seleção dos primeiros Arcano Founders</p>
           </div>
           <form onSubmit={handleSubmit} className="max-w-lg mx-auto space-y-5">
             {[
@@ -363,7 +395,7 @@ const TornarSeColaborador = () => {
               />
               <div>
                 <Label htmlFor="aceite-termo" className="text-sm text-foreground cursor-pointer">
-                  Li e concordo com o Termo de Compromisso do Colaborador Arcano
+                  Li e concordo com o Termo de Compromisso do Arcano Founder
                 </Label>
                 {aceiteError && (
                   <p className="text-xs text-destructive mt-1">
@@ -378,7 +410,7 @@ const TornarSeColaborador = () => {
               className="w-full h-12 text-base font-semibold"
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Enviando..." : "Enviar solicitação para ser colaborador"}
+              {isSubmitting ? "Enviando..." : "Enviar candidatura Founder"}
             </Button>
 
             <TermoDialog />
@@ -391,8 +423,8 @@ const TornarSeColaborador = () => {
 
 // Simulador de ganhos — começa em Elite, 20 cliques/dia + 10 usos Cloner/dia.
 // Slider anima sozinho até o usuário interagir.
-const ELITE_RATE = 0.12; // R$ por liberação no nível Elite
-const ARCANO_CLONER_COMMISSION = 0.16; // R$ por uso (taxa real paga ao colaborador)
+const ELITE_RATE = 0.20; // R$ por liberação no nível Elite Founder
+const ARCANO_CLONER_COMMISSION = 0.16; // R$ por uso
 
 const EarningsSimulator = () => {
   const [clicks, setClicks] = useState(20);
@@ -440,13 +472,13 @@ const EarningsSimulator = () => {
       <div className="text-center space-y-2">
         <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-medium text-primary">
           <Crown className="h-3.5 w-3.5" />
-          Simulador de Ganhos — Nível Elite
+          Simulador de Ganhos Founder — Elite
         </div>
         <h2 className="text-2xl md:text-3xl font-bold text-foreground">
           Quanto você pode <span className="text-primary">ganhar por mês</span>
         </h2>
         <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-          Mexa nos sliders e veja sua estimativa de ganho mensal mudar em tempo real. A simulação assume que você já está no nível Elite (R$ 0,12 por liberação).
+          Mexa nos sliders e veja sua estimativa de ganho mensal mudar em tempo real. A simulação assume a tabela Founder no nível Elite (R$ 0,20 por liberação).
         </p>
       </div>
 
@@ -460,7 +492,7 @@ const EarningsSimulator = () => {
               </div>
               <div>
                 <p className="text-sm font-semibold text-foreground">Liberações de prompts por dia</p>
-                <p className="text-[11px] text-muted-foreground">R$ 0,12 por liberação (nível Elite)</p>
+                <p className="text-[11px] text-muted-foreground">R$ 0,20 por liberação (Founder Elite)</p>
               </div>
             </div>
             <div className="text-right">
@@ -553,20 +585,20 @@ const TermoDialog = () => (
   <Dialog>
     <DialogTrigger asChild>
       <button type="button" className="w-full text-center text-xs text-muted-foreground hover:text-primary underline underline-offset-4 transition-colors cursor-pointer">
-        Ler o Termo de Compromisso do Colaborador
+        Ler o Termo de Compromisso do Arcano Founder
       </button>
     </DialogTrigger>
     <DialogContent className="max-w-2xl max-h-[80vh]">
       <DialogHeader>
-        <DialogTitle>Termo de Compromisso do Colaborador</DialogTitle>
+        <DialogTitle>Termo de Compromisso do Arcano Founder</DialogTitle>
       </DialogHeader>
       <ScrollArea className="h-[60vh] pr-4">
         <div className="text-sm text-muted-foreground leading-relaxed space-y-4">
-          <p className="font-semibold text-foreground">TERMO DE COMPROMISSO E LICENÇA DE USO — COLABORADOR ARCANO</p>
-          <p>Ao submeter este formulário e marcar a caixa de aceite abaixo, você ("Colaborador") declara ter lido, compreendido e concordado integralmente com os termos a seguir, celebrado com ARCANO / VOXVISUAL ("Plataforma").</p>
+          <p className="font-semibold text-foreground">TERMO DE COMPROMISSO E LICENÇA DE USO — ARCANO FOUNDER</p>
+          <p>Ao submeter este formulário e marcar a caixa de aceite abaixo, você ("Arcano Founder") declara ter lido, compreendido e concordado integralmente com os termos a seguir, celebrado com ARCANO / VOXVISUAL ("Plataforma").</p>
 
           <p className="font-semibold text-foreground">1. AUTORIA E ORIGINALIDADE</p>
-          <p>O Colaborador declara que todos os conteúdos enviados à Plataforma — incluindo prompts, descrições, imagens, vídeos e quaisquer outros materiais ("Conteúdo") — são de sua criação original e autoral. Fica expressamente vedado o envio de:</p>
+          <p>O Arcano Founder declara que todos os conteúdos enviados à Plataforma — incluindo prompts, descrições, imagens, vídeos e quaisquer outros materiais ("Conteúdo") — são de sua criação original e autoral. Fica expressamente vedado o envio de:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Conteúdo copiado, adaptado ou derivado de terceiros sem autorização;</li>
             <li>Imagens, ilustrações ou vetores provenientes de bancos de imagens genéricos (gratuitos ou pagos), como Freepik, Shutterstock, Getty Images, Adobe Stock e similares;</li>
@@ -575,19 +607,19 @@ const TermoDialog = () => (
           </ul>
 
           <p className="font-semibold text-foreground">2. LICENÇA À PLATAFORMA</p>
-          <p>Ao publicar Conteúdo na Plataforma, o Colaborador concede à Arcano/VoxVisual uma licença não exclusiva, irrevogável, global, gratuita e sublicenciável para usar, reproduzir, adaptar, distribuir, exibir e criar trabalhos derivados do Conteúdo para fins operacionais, promocionais e de marketing da Plataforma, sem necessidade de aviso prévio ou pagamento adicional.</p>
+          <p>Ao publicar Conteúdo na Plataforma, o Arcano Founder concede à Arcano/VoxVisual uma licença não exclusiva, irrevogável, global, gratuita e sublicenciável para usar, reproduzir, adaptar, distribuir, exibir e criar trabalhos derivados do Conteúdo para fins operacionais, promocionais e de marketing da Plataforma, sem necessidade de aviso prévio ou pagamento adicional.</p>
 
           <p className="font-semibold text-foreground">3. COPROPRIEDADE PARA USO INSTITUCIONAL</p>
-          <p>O Colaborador reconhece e aceita que a Plataforma passa a ter copropriedade sobre o Conteúdo publicado exclusivamente para fins de uso interno, campanhas institucionais, divulgação da plataforma e materiais de marketing da Arcano/VoxVisual. Tal copropriedade não transfere a titularidade criativa do Colaborador sobre sua obra original.</p>
+          <p>O Arcano Founder reconhece e aceita que a Plataforma passa a ter copropriedade sobre o Conteúdo publicado exclusivamente para fins de uso interno, campanhas institucionais, divulgação da plataforma e materiais de marketing da Arcano/VoxVisual. Tal copropriedade não transfere a titularidade criativa do Arcano Founder sobre sua obra original.</p>
 
-          <p className="font-semibold text-foreground">4. RESPONSABILIDADE DO COLABORADOR</p>
-          <p>O Colaborador é integralmente responsável pelo Conteúdo que publica. Em caso de reclamação, notificação ou ação judicial por parte de terceiros relacionada ao Conteúdo enviado, o Colaborador se compromete a responder por eventuais danos, isentando a Plataforma de qualquer responsabilidade.</p>
+          <p className="font-semibold text-foreground">4. RESPONSABILIDADE DO ARCANO FOUNDER</p>
+          <p>O Arcano Founder é integralmente responsável pelo Conteúdo que publica. Em caso de reclamação, notificação ou ação judicial por parte de terceiros relacionada ao Conteúdo enviado, o Arcano Founder se compromete a responder por eventuais danos, isentando a Plataforma de qualquer responsabilidade.</p>
 
           <p className="font-semibold text-foreground">5. REMUNERAÇÃO</p>
-          <p>A remuneração ao Colaborador é condicionada ao uso efetivo de seu Conteúdo por usuários da Plataforma, conforme política de remuneração vigente disponível no painel do colaborador. A Plataforma se reserva o direito de ajustar os valores e critérios de remuneração mediante comunicação prévia de 15 (quinze) dias.</p>
+          <p>A remuneração ao Arcano Founder é condicionada ao uso efetivo de seu Conteúdo por usuários da Plataforma, conforme política de remuneração vigente disponível no painel Founder. A Plataforma se reserva o direito de ajustar os valores e critérios de remuneração mediante comunicação prévia de 15 (quinze) dias.</p>
 
           <p className="font-semibold text-foreground">6. SUSPENSÃO E REMOÇÃO DE CONTEÚDO</p>
-          <p>A Plataforma se reserva o direito de remover, sem aviso prévio, qualquer Conteúdo que viole estes termos, as leis brasileiras vigentes ou as diretrizes editoriais da Plataforma. A violação reiterada poderá resultar no encerramento da conta do Colaborador e cancelamento dos ganhos pendentes.</p>
+          <p>A Plataforma se reserva o direito de remover, sem aviso prévio, qualquer Conteúdo que viole estes termos, as leis brasileiras vigentes ou as diretrizes editoriais da Plataforma. A violação reiterada poderá resultar no encerramento da conta do Arcano Founder e cancelamento dos ganhos pendentes.</p>
 
           <p className="font-semibold text-foreground">7. PRIVACIDADE</p>
           <p>Os dados pessoais fornecidos no cadastro serão tratados conforme a Lei Geral de Proteção de Dados (LGPD — Lei nº 13.709/2018) e utilizados exclusivamente para fins operacionais da Plataforma.</p>
@@ -600,4 +632,4 @@ const TermoDialog = () => (
   </Dialog>
 );
 
-export default TornarSeColaborador;
+export default TornarSeFounder;
