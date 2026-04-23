@@ -9,6 +9,8 @@ export interface PromptItem {
   imageUrl: string;
   thumbnailUrl?: string;
   category?: string;
+  gender?: string;
+  tags?: string[];
   isCommunity?: boolean;
   isExclusive?: boolean;
   isPremium?: boolean;
@@ -78,12 +80,12 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         
         supabase
           .from('admin_prompts')
-          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
+          .select('id, title, prompt, image_url, thumbnail_url, category, gender, tags, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
           .order('created_at', { ascending: false }),
         
         supabase
           .from('partner_prompts')
-          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks, partner_id')
+          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks, partner_id, subcategory_slug')
           .eq('approved', true)
           .order('created_at', { ascending: false }),
         
@@ -131,6 +133,8 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         imageUrl: item.image_url,
         thumbnailUrl: item.thumbnail_url || undefined,
         category: item.category,
+        gender: item.gender || undefined,
+        tags: item.tags || undefined,
         isExclusive: true,
         isPremium: item.is_premium || false,
         referenceImages: item.reference_images || [],
@@ -160,6 +164,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
           imageUrl: item.image_url,
           thumbnailUrl: item.thumbnail_url || undefined,
           category: item.category,
+          gender: item.subcategory_slug || undefined,
           isExclusive: true,
           isPremium: item.is_premium || false,
           referenceImages: item.reference_images || [],
