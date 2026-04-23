@@ -69,6 +69,7 @@ const MovieLedMakerTool = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showLibrary, setShowLibrary] = useState(false);
+  const partnerPromptIdRef = useRef<string | null>(null);
 
   // Text input
   const [inputText, setInputText] = useState('');
@@ -436,7 +437,7 @@ const MovieLedMakerTool = () => {
             fallbackImageUrl,
             inputText: inputText.trim(),
             engine: selectedEngine,
-            referencePromptId: selectedLibraryItem?.id || null,
+            referencePromptId: partnerPromptIdRef.current || selectedLibraryItem?.id || null,
           },
         }
       );
