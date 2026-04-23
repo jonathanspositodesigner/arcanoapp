@@ -2,6 +2,7 @@ import { useState, useEffect, ReactNode } from "react";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
 import { useMetaPixelAdvancedMatching } from "@/hooks/useMetaPixelAdvancedMatching";
 import { supabase } from "@/integrations/supabase/client";
+import { PremiumPromptProvider } from "@/contexts/PremiumPromptContext";
 import AppSidebar from "./AppSidebar";
 import AppTopBar from "./AppTopBar";
 
@@ -31,6 +32,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
   }, [user]);
 
   return (
+    <PremiumPromptProvider user={user} isPremium={isPremium} planType={planType}>
     <div className={`${fullScreen ? 'h-screen flex flex-col overflow-hidden' : 'min-h-screen'} bg-background`}>
       <AppTopBar
         user={user}
@@ -53,6 +55,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
         </main>
       </div>
     </div>
+    </PremiumPromptProvider>
   );
 };
 

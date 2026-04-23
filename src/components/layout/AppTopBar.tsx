@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
-import { usePremiumPromptLimit } from "@/hooks/usePremiumPromptLimit";
+import { usePremiumPromptContext } from "@/contexts/PremiumPromptContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -38,7 +38,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
     remainingUnlocks,
     dailyLimit: premiumDailyLimit,
     isUnlimited: isPremiumUnlimited,
-  } = usePremiumPromptLimit(user, isPremium, planType);
+  } = usePremiumPromptContext();
 
   const PremiumCounter = () => (
     isPremium ? (
