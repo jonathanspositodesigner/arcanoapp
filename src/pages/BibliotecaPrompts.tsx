@@ -643,7 +643,7 @@ const BibliotecaPrompts = () => {
             </Button>
             <Button variant={contentType === "community" ? "default" : "outline"} onClick={() => { setContentType("community"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "community" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
               <Users className="h-3.5 w-3.5 mr-1.5" />
-              {t('library.community')}
+              Colaboradores
             </Button>
           </div>
 
