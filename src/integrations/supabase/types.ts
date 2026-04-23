@@ -1789,7 +1789,22 @@ export type Database = {
           unlocked_at?: string
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "collaborator_unlock_earnings_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "collaborator_unlock_earnings_collaborator_id_fkey"
+            columns: ["collaborator_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       collection_views: {
         Row: {
