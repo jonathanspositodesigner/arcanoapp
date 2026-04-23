@@ -2,10 +2,9 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, Heart } from "lucide-react";
 import { Instagram } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { usePremiumStatus } from "@/hooks/usePremiumStatus";
@@ -96,6 +95,7 @@ const BibliotecaPrompts = () => {
   const [contentType, setContentType] = useState<"exclusive" | "community">("exclusive");
   const [selectedCategory, setSelectedCategory] = useState<string>("Ver Tudo");
   const [selectedPrompt, setSelectedPrompt] = useState<PromptItem | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [showPremiumModal, setShowPremiumModal] = useState(false);
   const [dbCategories, setDbCategories] = useState<PromptCategory[]>([]);
   const [premiumModalItem, setPremiumModalItem] = useState<PromptItem | null>(null);
@@ -255,7 +255,27 @@ const BibliotecaPrompts = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType, expandedTerms]);
+  }, [selectedCategory, selectedSubcategory, contentType, expandedTerms]);
+
+  // Reset subcategory when category changes
+  useEffect(() => {
+    setSelectedSubcategory(null);
+  }, [selectedCategory]);
+
+  // Compute available subcategories for the selected category
+  const availableSubcategories = useMemo(() => {
+    if (!["Fotos"].includes(selectedCategory)) return [];
+    const contentTypePrompts = contentType === 'exclusive'
+      ? allPrompts.filter(p => p.isExclusive)
+      : allPrompts.filter(p => p.promptType === 'partner');
+    const catPrompts = contentTypePrompts.filter(p => p.category === selectedCategory);
+    const subs = new Set<string>();
+    catPrompts.forEach(p => {
+      if (p.gender) subs.add(p.gender);
+    });
+    const sorted = Array.from(subs).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    return sorted;
+  }, [selectedCategory, contentType, allPrompts]);
 
   const getCategoryDisplayName = (category: string): string => {
     const categoryMap: Record<string, string> = {
@@ -286,6 +306,7 @@ const BibliotecaPrompts = () => {
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
+    setSelectedSubcategory(null);
     const newParams = new URLSearchParams(searchParams);
     if (category === 'Ver Tudo') {
       newParams.delete('categoria');
@@ -298,6 +319,11 @@ const BibliotecaPrompts = () => {
   const filteredPrompts = useMemo(() => {
     let results = getFilteredPrompts(contentType, selectedCategory);
     
+    // Apply subcategory filter
+    if (selectedSubcategory) {
+      results = results.filter(prompt => prompt.gender === selectedSubcategory);
+    }
+
     // Apply smart search filter client-side
     const exactQuery = removeAccents(searchTerm.trim().toLowerCase());
     const hasSearch = exactQuery.length > 0;
@@ -321,7 +347,7 @@ const BibliotecaPrompts = () => {
     }
     
     return results;
-  }, [contentType, selectedCategory, getFilteredPrompts, expandedTerms, searchTerm]);
+  }, [contentType, selectedCategory, selectedSubcategory, getFilteredPrompts, expandedTerms, searchTerm]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -647,49 +673,66 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>
 
-          {/* Category Dropdown + Seedance 2 Button */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs bg-accent hover:bg-accent0/20 border-border text-muted-foreground">
-                  {getCategoryDisplayName(selectedCategory)}
-                  <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-card border-border min-w-[160px]">
-                {categories.map(cat => (
-                  <DropdownMenuItem
-                    key={cat}
-                    onClick={() => handleCategorySelect(cat)}
-                    className={`text-xs cursor-pointer ${
-                      selectedCategory === cat
-                        ? "bg-secondary text-foreground"
-                        : "text-muted-foreground hover:bg-accent0/20"
-                    }`}
-                  >
-                    {getCategoryDisplayName(cat)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCategorySelect("Seedance 2")}
-              className={`text-xs font-bold border-0 text-white ${
-                selectedCategory === "Seedance 2"
-                  ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
-                  : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
-              }`}
-            >
-              <Video className="h-3.5 w-3.5 mr-1.5" />
-              Prompts Seedance 2
-              <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 rounded-full animate-pulse leading-none text-secondary-foreground">
-                NOVO
-              </span>
-            </Button>
+          {/* Category Scrollable Chips */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {categories.map(cat => {
+              const isSelected = selectedCategory === cat;
+              const isSeedance = cat === "Seedance 2";
+              return (
+                <button
+                  key={cat}
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    isSeedance
+                      ? isSelected
+                        ? "bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30"
+                        : "bg-gradient-to-r from-green-700 to-green-500 text-white hover:from-green-600 hover:to-green-400"
+                      : isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-accent text-muted-foreground hover:bg-accent/80 hover:text-foreground"
+                  }`}
+                >
+                  {cat === "Populares" && <Flame className="h-3 w-3 mr-1 inline" />}
+                  {isSeedance && <Video className="h-3 w-3 mr-1 inline" />}
+                  {getCategoryDisplayName(cat)}
+                  {isSeedance && (
+                    <span className="ml-1 px-1 py-0.5 text-[8px] font-bold bg-yellow-400 rounded-full animate-pulse leading-none text-secondary-foreground">
+                      NOVO
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Subcategory Chips (shown when category has subcategories) */}
+          {availableSubcategories.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 mt-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <button
+                onClick={() => setSelectedSubcategory(null)}
+                className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                  !selectedSubcategory
+                    ? "bg-secondary text-foreground"
+                    : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                Todos
+              </button>
+              {availableSubcategories.map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => setSelectedSubcategory(sub)}
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-all ${
+                    selectedSubcategory === sub
+                      ? "bg-secondary text-foreground"
+                      : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Search Input */}
           <div className="relative mt-3">
