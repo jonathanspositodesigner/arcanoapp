@@ -596,6 +596,11 @@ const PartnerEarningsAdminContent = () => {
                           {e.earning_type === 'tool_usage' && (
                             <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
                           )}
+                          {e.earning_type === 'bonus' && (
+                            <span className="ml-1.5 text-xs font-semibold text-yellow-400 bg-yellow-500/10 px-2 py-0.5 rounded-full">
+                              🏆 Bônus Ranking
+                            </span>
+                          )}
                         </p>
                         <p className="text-xs text-muted-foreground">{format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                       </div>
