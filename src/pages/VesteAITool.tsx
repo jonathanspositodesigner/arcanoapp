@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, Shirt, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ const VesteAITool: React.FC = () => {
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const [clothingFile, setClothingFile] = useState<File | null>(null);
-  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
+  const { referencePromptId, setFromLibrary: setAttributionFromLibrary, clear: clearAttribution } = useCollaboratorAttribution();
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
@@ -249,21 +250,21 @@ const VesteAITool: React.FC = () => {
   // Seleção da biblioteca de fotos (com meta para ganhos de parceiro)
   const handleSelectFromLibrary = (imageUrl: string, meta?: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleClothingImageChange(imageUrl);
-    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
+    setAttributionFromLibrary(meta);
   };
 
   // Upload pelo modal (recebe dataUrl + file)
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setClothingImage(dataUrl);
     setClothingFile(file);
-    setReferencePromptId(null);
+    clearAttribution();
   };
 
   // Limpar referência
   const handleClearClothing = () => {
     setClothingImage(null);
     setClothingFile(null);
-    setReferencePromptId(null);
+    clearAttribution();
   };
 
   // Compress image before upload using centralized AI optimizer (1536px limit)

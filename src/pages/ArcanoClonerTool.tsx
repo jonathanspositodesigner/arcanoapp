@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { ResilientImage } from '@/components/upscaler/ResilientImage';
 import { useLocation } from 'react-router-dom';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, RefreshCw, Wand2, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
@@ -64,7 +65,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [userFile, setUserFile] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
-  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
+  const { referencePromptId, setFromLibrary: setAttributionFromLibrary, clear: clearAttribution } = useCollaboratorAttribution();
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // Aspect ratio state
@@ -146,10 +147,6 @@ const ArcanoClonerTool: React.FC = () => {
     const refUrl = (location.state as any)?.referenceImageUrl;
     if (refUrl && !referenceImage) {
       handleReferenceImageChange(refUrl);
-    }
-    const state = location.state as any;
-    if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
-      setReferencePromptId(state.prefillPromptId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
@@ -343,21 +340,21 @@ const ArcanoClonerTool: React.FC = () => {
   // Handle reference from library (with meta for partner earnings)
   const handleSelectFromLibrary = (imageUrl: string, meta?: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleReferenceImageChange(imageUrl);
-    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
+    setAttributionFromLibrary(meta);
   };
 
   // Handle upload from modal
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setReferenceImage(dataUrl);
     setReferenceFile(file);
-    setReferencePromptId(null);
+    clearAttribution();
   };
 
   // Clear reference image
   const handleClearReference = () => {
     setReferenceImage(null);
     setReferenceFile(null);
-    setReferencePromptId(null);
+    clearAttribution();
   };
 
   // Compress image before upload

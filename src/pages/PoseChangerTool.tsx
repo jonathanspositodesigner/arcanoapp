@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, ImageIcon, XCircle, AlertTriangle, Coins, Settings, ChevronDown, ChevronUp } from 'lucide-react';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { TransformWrapper, TransformComponent, ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
 import { Button } from '@/components/ui/button';
@@ -57,7 +58,7 @@ const PoseChangerTool: React.FC = () => {
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
-  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
+  const { referencePromptId, setFromLibrary: setAttributionFromLibrary, clear: clearAttribution } = useCollaboratorAttribution();
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
@@ -253,19 +254,19 @@ const PoseChangerTool: React.FC = () => {
 
   const handleSelectFromLibraryWithMeta = (imageUrl: string, meta: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleReferenceImageChange(imageUrl);
-    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
+    setAttributionFromLibrary(meta);
   };
 
   // Upload pelo modal (recebe dataUrl + file)
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setReferenceImage(dataUrl);
     setReferenceFile(file);
-    setReferencePromptId(null);
+    clearAttribution();
   };
 
   // Limpar referência
   const handleClearReference = () => {
-    setReferencePromptId(null);
+    clearAttribution();
     setReferenceImage(null);
     setReferenceFile(null);
   };
