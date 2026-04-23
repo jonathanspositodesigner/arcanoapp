@@ -6777,6 +6777,14 @@ export type Database = {
           waivers: Json
         }[]
       }
+      get_weekly_ranking: {
+        Args: never
+        Returns: {
+          partner_id: string
+          partner_name: string
+          week_total: number
+        }[]
+      }
       has_bonus_access: { Args: { _user_id: string }; Returns: boolean }
       has_pack_access: {
         Args: { _pack_slug: string; _user_id: string }
