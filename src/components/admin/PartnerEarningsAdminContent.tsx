@@ -16,6 +16,7 @@ import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import PartnerToolRatesAdmin from "./PartnerToolRatesAdmin";
 import PartnerGamificationAdmin from "./PartnerGamificationAdmin";
+import PartnerReconciliationAdmin from "./PartnerReconciliationAdmin";
 
 const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -53,7 +54,7 @@ interface EarningRow {
   earning_type: 'unlock' | 'tool_usage'; tool_table?: string;
 }
 
-type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification";
+type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 type RankCriteria = "earnings" | "unlocks" | "prompts";
 type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts";
@@ -273,6 +274,7 @@ const PartnerEarningsAdminContent = () => {
     { id: "ranking", label: "Ranking" },
     { id: "detail", label: "Extrato por Colaborador" },
     { id: "gamification", label: "🎮 Gamificação" },
+    { id: "reconciliation", label: "🔍 Reconciliação" },
   ];
 
   const SortHeader = ({ label, sk }: { label: string; sk: SortKey }) => (
@@ -628,6 +630,9 @@ const PartnerEarningsAdminContent = () => {
 
       {/* TAB: GAMIFICATION */}
       {tab === "gamification" && <PartnerGamificationAdmin />}
+
+      {/* TAB: RECONCILIATION */}
+      {tab === "reconciliation" && <PartnerReconciliationAdmin />}
     </div>
   );
 };
