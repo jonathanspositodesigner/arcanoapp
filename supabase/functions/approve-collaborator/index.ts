@@ -91,29 +91,16 @@ serve(async (req) => {
     let userId = authData?.user?.id;
     if (!userId) {
       // User already existed, fetch their ID
-      // Query auth.users directly via service role
-      const { data: foundUser, error: findError } = await adminClient
-        .from("profiles")
-        .select("id")
-        .eq("email", sol.email)
-        .maybeSingle();
-      
-      if (!foundUser) {
-        // Last resort: list users with pagination
-        let page = 1;
-        let found = false;
-        while (!found) {
-          const { data: listData } = await adminClient.auth.admin.listUsers({ page, perPage: 100 });
-          if (!listData?.users?.length) break;
-          const match = listData.users.find((u: any) => u.email === sol.email);
-          if (match) { userId = match.id; found = true; }
-          if (listData.users.length < 100) break;
-          page++;
-        }
-        if (!found) throw new Error("Não foi possível encontrar o usuário criado");
-      } else {
-        userId = foundUser.id;
-      }
+      // Use the admin API to get user by email directly via REST
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const resp = await fetch(`${supabaseUrl}/auth/v1/admin/users?filter=${encodeURIComponent(sol.email)}&page=1&per_page=10`, {
+        headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey },
+      });
+      const usersResult = await resp.json();
+      const matchedUser = (usersResult?.users || usersResult || []).find?.((u: any) => u.email === sol.email);
+      if (!matchedUser) throw new Error("Não foi possível encontrar o usuário criado");
+      userId = matchedUser.id;
     }
 
     // Create partner role
