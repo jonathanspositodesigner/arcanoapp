@@ -18,6 +18,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { createJob, startJob, checkActiveJob, cancelJob as centralCancelJob } from '@/ai/JobManager';
 import { uploadToStorage } from '@/ai/JobManager';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import runninghubFallbackPixel from '@/assets/runninghub-fallback-pixel.png';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -57,7 +58,7 @@ const GerarImagemTool = () => {
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_evolink' : savedEngine === 'gpt_image_evolink' ? 'gpt_image_evolink' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' || savedEngine === 'gpt_image_evolink' ? 'gpt_image_2' : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
