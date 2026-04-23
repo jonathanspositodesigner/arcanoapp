@@ -1,70 +1,98 @@
 
 
-## Plano: Corrigir bug — Instagram do colaborador não aparece nos prompts
+## Plano: Contabilizar ganhos de colaborador quando prompt é usado em ferramentas de IA
 
-### Problema real
+### Problema identificado
 
-A edge function `approve-collaborator/index.ts` busca todos os dados da `solicitacoes_colaboradores` (incluindo `instagram`), mas na **linha 118** ao criar o registro na tabela `partners`, **não inclui o campo `instagram`**. Resultado: o parceiro é criado com `instagram: NULL`.
+Quando o usuário clica "Gerar foto" / "Gerar movie" na Biblioteca de Prompts, o `reference_prompt_id` **NÃO é passado** na navegação para as ferramentas. Resultado: o job é criado com `reference_prompt_id: NULL`, e o sistema de earnings no `runninghub-queue-manager/finish` não contabiliza nada para o colaborador.
 
-Na `BibliotecaPrompts.tsx` (linha 509), quando `instagram` é null, o `getPromptAuthor` retorna `null`, ocultando completamente o badge do autor no prompt.
+**Seedance 2** é o ÚNICO que já funciona corretamente — passa `prefillPromptId` e `prefillPromptType` no state de navegação.
 
-### Mudanças
+**Ferramentas quebradas:**
+- Arcano Cloner — não passa promptId no navigate, não lê do location.state
+- MovieLED Maker — não passa partnerId no navigate, o `selectedLibraryItem.id` não é o prompt_id correto da `media_library`
+- Pose Changer / Veste AI — só funcionam via seleção na foto-library interna (que já tem meta), mas se houver navegação direta da biblioteca, não funciona
 
-**1. Corrigir `approve-collaborator/index.ts` — incluir instagram no upsert**
+### Correções (4 arquivos, zero impacto no fluxo de geração)
 
-Linha 118, adicionar `instagram: sol.instagram || null` ao objeto de upsert:
+**1. `src/pages/BibliotecaPrompts.tsx` — Passar promptId/partnerId no state de navegação**
 
-```typescript
-.upsert({
-  user_id: userId,
-  name: sol.nome,
-  email: sol.email,
-  phone: sol.whatsapp || null,
-  instagram: sol.instagram || null,  // ← FALTAVA
-  is_active: true,
-}, { onConflict: "user_id" })
-```
-
-**2. Corrigir dados da colaboradora no banco (correção imediata)**
-
-Atualizar o registro da parceira `hericanagila53@gmail.com` para copiar o instagram que já existe na `solicitacoes_colaboradores`:
-
-```sql
-UPDATE partners SET instagram = 'Herica.nagila' 
-WHERE email = 'hericanagila53@gmail.com';
-```
-
-**3. Corrigir `BibliotecaPrompts.tsx` — exibir autor mesmo sem Instagram**
-
-Na função `getPromptAuthor` (linha 509), em vez de retornar `null` quando não há Instagram, retornar o autor com `instagram: null` para que pelo menos o nome e avatar (ou placeholder) apareçam no prompt:
+Em TODOS os botões "Gerar foto", "Gerar movie" (tanto nos cards quanto no modal):
 
 ```typescript
-// ANTES: if (!instagram) return null;
-// DEPOIS: retorna o autor sempre para prompts de parceiros
-return {
-  name: item.partnerName || fallbackPartner?.name || 'Colaborador',
-  instagram: instagram || null,
-  avatarUrl: item.partnerAvatarUrl || fallbackPartner?.avatar_url || undefined,
-};
+// Arcano Cloner (linhas 833 e 1090)
+navigate('/arcano-cloner-tool', { 
+  state: { 
+    referenceImageUrl: item.imageUrl,
+    prefillPromptId: item.partnerId ? String(item.id) : null,
+    prefillPromptType: item.partnerId ? 'partner' : null,
+  } 
+});
+
+// MovieLED Maker (linhas 847-858)
+navigate('/movieled-maker', {
+  state: {
+    preSelectedItem: { ... },
+    prefillPromptId: item.partnerId ? String(item.id) : null,
+    prefillPromptType: item.partnerId ? 'partner' : null,
+  }
+});
 ```
 
-E ajustar os renders (linhas 738 e 907) para exibir o badge do autor com placeholder quando não houver Instagram — mostrando o nome/avatar sem o link do Instagram.
+**2. `src/pages/ArcanoClonerTool.tsx` — Ler promptId do location.state**
 
-**4. Corrigir retroativamente todos os parceiros sem Instagram**
+No useEffect que já lê `referenceImageUrl` (linha 144-151), adicionar leitura do `prefillPromptId`:
 
-Executar query para copiar o Instagram de `solicitacoes_colaboradores` para todos os `partners` que estejam com campo NULL:
-
-```sql
-UPDATE partners p 
-SET instagram = sc.instagram 
-FROM solicitacoes_colaboradores sc 
-WHERE sc.email = p.email 
-  AND p.instagram IS NULL 
-  AND sc.instagram IS NOT NULL;
+```typescript
+useEffect(() => {
+  const state = location.state as any;
+  if (state?.referenceImageUrl && !referenceImage) {
+    handleReferenceImageChange(state.referenceImageUrl);
+  }
+  if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
+    setReferencePromptId(state.prefillPromptId);
+  }
+}, [location.state]);
 ```
 
-### Arquivos editados
-- `supabase/functions/approve-collaborator/index.ts` — adicionar campo `instagram` no upsert
-- `src/pages/BibliotecaPrompts.tsx` — nunca ocultar autor por falta de Instagram
-- Banco de dados — correção retroativa dos dados
+**3. `src/pages/MovieLedMakerTool.tsx` — Ler promptId do location.state**
+
+No useEffect que lê `preSelectedItem` (linha 104-113), adicionar:
+
+```typescript
+useEffect(() => {
+  const state = location.state as any;
+  if (state?.preSelectedItem) {
+    setSelectedLibraryItem(state.preSelectedItem);
+    // Se veio da biblioteca com prompt de parceiro, guardar o ID correto
+    if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
+      setReferencePromptId(state.prefillPromptId);
+    }
+  }
+}, [location.state]);
+```
+
+E garantir que o `referencePromptId` do state tenha prioridade sobre `selectedLibraryItem?.id` no body da função invoke (linha 435).
+
+**4. Verificar `runninghub-queue-manager` e `runninghub-movieled-maker`**
+
+A edge function `runninghub-movieled-maker` já recebe `referencePromptId` e salva no banco. O `runninghub-queue-manager/finish` já lê `reference_prompt_id` e chama `register_collaborator_tool_earning`. Essas partes estão corretas — o problema é 100% no frontend que não passa o dado.
+
+### O que NÃO será alterado (preservação do fluxo)
+
+- Nenhuma mudança nas edge functions de geração (RunningHub, Evolink)
+- Nenhuma mudança no fluxo de créditos do usuário
+- Nenhuma mudança no webhook ou queue manager
+- A contabilização acontece DEPOIS do job completar (já implementado no `/finish`)
+- Toda lógica é non-blocking (try/catch com console.error)
+
+### Tabela de preços já configurada
+
+| Ferramenta | Valor por uso |
+|---|---|
+| Arcano Cloner | R$ 0,16 |
+| MovieLED Maker | R$ 0,80 |
+| Pose Changer | R$ 0,10 |
+| Veste AI | R$ 0,10 |
+| Seedance 2 | R$ 1,20 |
 
