@@ -416,12 +416,53 @@ serve(async (req) => {
         }),
       });
       
-      const result = await response.json();
-      console.log('[Webhook] Queue Manager /finish response:', JSON.stringify(result));
+      if (response.ok) {
+        const result = await response.json();
+        console.log('[Webhook] Queue Manager /finish response:', JSON.stringify(result));
+      } else {
+        const errorBody = await response.text();
+        console.error(`[Webhook] /finish FAILED for ${jobTable}/${jobData.id}. HTTP ${response.status}: ${errorBody}`);
+        
+        // FALLBACK: Persist completed/failed status directly when /finish fails
+        console.log(`[Webhook] Applying direct fallback update for ${jobTable}/${jobData.id} -> ${newStatus}`);
+        const fallbackData: Record<string, any> = {
+          status: newStatus,
+          current_step: newStatus,
+          completed_at: completedAt.toISOString(),
+          rh_cost: rhCost > 0 ? rhCost : null,
+        };
+        if (outputUrl) fallbackData.output_url = outputUrl;
+        if (finalError) {
+          fallbackData.error_message = finalError;
+          fallbackData.failed_at_step = 'webhook_received';
+        }
+        
+        const { error: fallbackError } = await supabase
+          .from(jobTable)
+          .update(fallbackData)
+          .eq('id', jobData.id);
+        
+        if (fallbackError) {
+          console.error(`[Webhook] Fallback update ALSO failed for ${jobData.id}:`, fallbackError.message);
+        } else {
+          console.log(`[Webhook] Fallback update SUCCESS for ${jobData.id} -> ${newStatus}`);
+          await logStep(jobTable, jobData.id, newStatus, { outputUrl, error: finalError, via: 'webhook_fallback' });
+        }
+        
+        // Still trigger process-next even on fallback
+        fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          },
+          body: JSON.stringify({}),
+        }).catch(e => console.error('[Webhook] process-next trigger failed:', e));
+      }
     } catch (queueError) {
-      console.error('[Webhook] Error calling Queue Manager:', queueError);
+      console.error('[Webhook] Error calling Queue Manager /finish:', queueError);
       
-      // Fallback: atualizar diretamente
+      // Fallback: atualizar diretamente (network-level failure)
       await supabase
         .from(jobTable)
         .update({
@@ -435,7 +476,17 @@ serve(async (req) => {
         })
         .eq('task_id', taskId);
       
-      await logStep(jobTable, jobData.id, newStatus, { outputUrl, error: finalError });
+      await logStep(jobTable, jobData.id, newStatus, { outputUrl, error: finalError, via: 'webhook_network_fallback' });
+      
+      // Trigger process-next
+      fetch(`${SUPABASE_URL}/functions/v1/runninghub-queue-manager/process-next`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        },
+        body: JSON.stringify({}),
+      }).catch(() => {});
     }
 
     return new Response(JSON.stringify({ success: true }), {
