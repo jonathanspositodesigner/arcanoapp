@@ -64,6 +64,7 @@ const PartnerLoginUnified = () => {
     loginRoute: '/parceiro-login-unificado',
     forgotPasswordRoute: '/forgot-password',
     defaultRedirect: '/parceiro-plataformas', // Default, will be overridden
+    authMode: 'partner',
     postLoginValidation: validatePartnerUnified,
     onLoginSuccess: () => {
       const platforms = (window as any).__partnerPlatforms || [];
