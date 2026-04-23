@@ -259,29 +259,29 @@ const PartnerEarnings = () => {
           </div>
         )}
 
-        {/* Hero Card verde */}
-        <div className="mx-4 mt-3 mb-3 rounded-2xl bg-gradient-to-br from-green-900/60 via-emerald-900/40 to-transparent border border-green-500/20 p-5">
-          <p className="text-xs font-semibold text-green-400/60 tracking-wide mb-1">SALDO DISPONÍVEL</p>
-          <p className="text-3xl font-extrabold text-green-400 leading-none">{formatBRL(saldoDisponivel)}</p>
-          <p className="text-xs text-muted-foreground mt-1.5">
+        {/* Hero Card */}
+        <div className="mx-4 mt-3 mb-3 rounded-2xl bg-card border border-border p-5 overflow-hidden">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Saldo Disponível</p>
+          <p className="text-3xl font-extrabold text-foreground leading-none">{formatBRL(saldoDisponivel)}</p>
+          <p className="text-xs text-muted-foreground mt-1.5 break-words">
             Total bruto: {formatBRL(totalBalance)} • Já sacado: {formatBRL(totalPago)}
           </p>
           <div className="grid grid-cols-2 gap-2.5 mt-4">
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground mb-1">🖱️ Prompts Copiados</p>
-              <p className="text-base font-bold text-foreground">{formatBRL(unlockTotal)}</p>
-              <p className="text-[10px] text-muted-foreground">{unlockCount} prompts copiados</p>
+            <div className="bg-muted/50 rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground mb-0.5">🖱️ Prompts Copiados</p>
+              <p className="text-base font-bold text-primary">{formatBRL(unlockTotal)}</p>
+              <p className="text-[10px] text-muted-foreground">{unlockCount} cópias</p>
             </div>
-            <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground mb-1">🤖 Ferramentas</p>
-              <p className="text-base font-bold text-foreground">{formatBRL(toolTotal)}</p>
+            <div className="bg-muted/50 rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground mb-0.5">🤖 Ferramentas</p>
+              <p className="text-base font-bold text-primary">{formatBRL(toolTotal)}</p>
               <p className="text-[10px] text-muted-foreground">{toolCount} jobs</p>
             </div>
           </div>
         </div>
 
         {/* Ganho no Período */}
-        <div className="mx-4 mb-3 bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+        <div className="mx-4 mb-3 bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between gap-2">
           <div>
             <p className="text-xs text-muted-foreground">Ganho no Período</p>
             <p className="text-xl font-bold text-primary">{formatBRL(periodTotal)}</p>
@@ -361,8 +361,8 @@ const PartnerEarnings = () => {
                       {e.earning_type === 'bonus' && <span className="text-[10px] text-yellow-400">Bônus Ranking</span>}
                     </div>
                   </div>
-                  <span className={`text-sm font-bold flex-shrink-0 ${e.earning_type === 'bonus' ? 'text-yellow-400' : 'text-green-400'}`}>
-                    +R$ {Number(e.amount).toFixed(2).replace('.', ',')}
+          <span className={`text-sm font-bold flex-shrink-0 ${e.earning_type === 'bonus' ? 'text-yellow-500' : 'text-primary'}`}>
+                    +{formatBRL(Number(e.amount))}
                   </span>
                 </div>
               ))
