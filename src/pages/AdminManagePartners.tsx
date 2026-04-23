@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings, Crown, Instagram } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminPartnerWithdrawals from "@/components/admin/AdminPartnerWithdrawals";
+import { z } from "zod";
 
 interface Partner {
   id: string;
@@ -19,9 +20,26 @@ interface Partner {
   email: string;
   phone: string | null;
   company: string | null;
+  instagram: string | null;
+  portfolio: string | null;
+  is_founder: boolean;
   is_active: boolean;
   created_at: string;
 }
+
+const adminPartnerSchema = z.object({
+  name: z.string().trim().min(1, "Nome é obrigatório").max(120, "Nome muito longo"),
+  instagram: z.string().trim().min(1, "Instagram é obrigatório").max(80, "Instagram muito longo"),
+  email: z.string().trim().email("Email inválido").max(255, "Email muito longo"),
+  phone: z.string().trim().min(1, "WhatsApp é obrigatório").max(30, "WhatsApp muito longo"),
+  portfolio: z.string().trim().url("Portfólio inválido. Use https://...").max(500, "Link muito longo").optional().or(z.literal("")),
+  company: z.string().trim().max(120, "Empresa muito longa").optional(),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres").max(128, "Senha muito longa"),
+  passwordConfirm: z.string().min(1, "Confirme a senha"),
+}).refine((data) => data.password === data.passwordConfirm, {
+  path: ["passwordConfirm"],
+  message: "As senhas não coincidem",
+});
 
 interface PartnerPlatform {
   id: string;
@@ -58,6 +76,19 @@ const generateRandomPassword = (length = 12): string => {
   return password;
 };
 
+const getEmptyPartnerForm = () => ({
+  name: "",
+  email: "",
+  emailConfirm: "",
+  instagram: "",
+  phone: "",
+  portfolio: "",
+  company: "",
+  password: "",
+  passwordConfirm: "",
+  isFounder: false,
+});
+
 const AdminManagePartners = () => {
   const navigate = useNavigate();
   const [partners, setPartners] = useState<Partner[]>([]);
@@ -70,14 +101,9 @@ const AdminManagePartners = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [createdPartnerData, setCreatedPartnerData] = useState<{ email: string; password: string } | null>(null);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   
-  const [newPartner, setNewPartner] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    company: "",
-    password: "",
-  });
+  const [newPartner, setNewPartner] = useState(getEmptyPartnerForm());
 
   const [selectedPlatforms, setSelectedPlatforms] = useState<Record<string, boolean>>({
     prompts: false,
@@ -155,7 +181,8 @@ const AdminManagePartners = () => {
   };
 
   const handleGenerateNewPassword = () => {
-    setNewPartner(prev => ({ ...prev, password: generateRandomPassword() }));
+    const password = generateRandomPassword();
+    setNewPartner(prev => ({ ...prev, password, passwordConfirm: password }));
   };
 
   const handleCopyPassword = async (password: string) => {
@@ -179,15 +206,25 @@ const AdminManagePartners = () => {
   };
 
   const handleAddPartner = async () => {
-    if (!newPartner.name || !newPartner.email) {
-      toast.error("Nome e email são obrigatórios");
+    const parsed = adminPartnerSchema.safeParse(newPartner);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.errors.forEach((error) => {
+        const key = String(error.path[0] || "form");
+        fieldErrors[key] = error.message;
+      });
+      setFormErrors(fieldErrors);
+      toast.error(parsed.error.errors[0]?.message || "Revise os dados do colaborador");
       return;
     }
 
-    if (!newPartner.password) {
-      toast.error("Senha é obrigatória");
+    if (newPartner.email.trim().toLowerCase() !== newPartner.emailConfirm.trim().toLowerCase()) {
+      setFormErrors({ emailConfirm: "Os e-mails não coincidem" });
+      toast.error("Os e-mails não coincidem");
       return;
     }
+
+    setFormErrors({});
 
     // Check if at least one platform is selected
     const hasSelectedPlatform = Object.values(selectedPlatforms).some(v => v);
@@ -210,10 +247,13 @@ const AdminManagePartners = () => {
       const response = await supabase.functions.invoke('create-partner', {
         body: {
           name: newPartner.name,
-          email: newPartner.email,
+          email: newPartner.email.trim().toLowerCase(),
           phone: newPartner.phone || null,
           company: newPartner.company || null,
+          instagram: newPartner.instagram,
+          portfolio: newPartner.portfolio || null,
           password: newPartner.password,
+          isFounder: newPartner.isFounder,
         },
       });
 
@@ -249,13 +289,13 @@ const AdminManagePartners = () => {
       }
 
       setCreatedPartnerData({
-        email: newPartner.email,
+        email: newPartner.email.trim().toLowerCase(),
         password: response.data.password || newPartner.password,
       });
 
       setShowAddModal(false);
       setShowSuccessModal(true);
-      setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
+      setNewPartner(getEmptyPartnerForm());
       setSelectedPlatforms({ prompts: false, artes_eventos: false, artes_musicos: false });
       fetchPartners();
     } catch (error: any) {
@@ -338,6 +378,23 @@ const AdminManagePartners = () => {
     }
   };
 
+  const handleToggleFounder = async (partnerId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({ is_founder: !currentStatus })
+        .eq('id', partnerId);
+
+      if (error) throw error;
+
+      toast.success(currentStatus ? "Founder removido" : "Colaborador marcado como Founder");
+      fetchPartners();
+    } catch (error) {
+      console.error("Error toggling founder status:", error);
+      toast.error("Erro ao alterar status Founder");
+    }
+  };
+
   const handleDeletePartner = async (partnerId: string) => {
     if (!confirm("Tem certeza que deseja excluir este colaborador? Esta ação não pode ser desfeita.")) {
       return;
@@ -409,7 +466,8 @@ const AdminManagePartners = () => {
           <Dialog open={showAddModal} onOpenChange={(open) => {
             setShowAddModal(open);
             if (!open) {
-              setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
+              setNewPartner(getEmptyPartnerForm());
+              setFormErrors({});
               setSelectedPlatforms({ prompts: false, artes_eventos: false, artes_musicos: false });
               setShowPassword(false);
             }
@@ -420,7 +478,7 @@ const AdminManagePartners = () => {
                 Adicionar Colaborador
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Cadastrar Novo Colaborador</DialogTitle>
               </DialogHeader>
@@ -434,6 +492,18 @@ const AdminManagePartners = () => {
                     placeholder="Nome do colaborador"
                     className="mt-1"
                   />
+                  {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="instagram">Instagram *</Label>
+                  <Input
+                    id="instagram"
+                    value={newPartner.instagram}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, instagram: e.target.value }))}
+                    placeholder="@seuinstagram"
+                    className="mt-1"
+                  />
+                  {formErrors.instagram && <p className="text-xs text-destructive mt-1">{formErrors.instagram}</p>}
                 </div>
                 <div>
                   <Label htmlFor="email">Email *</Label>
@@ -445,6 +515,19 @@ const AdminManagePartners = () => {
                     placeholder="email@exemplo.com"
                     className="mt-1"
                   />
+                  {formErrors.email && <p className="text-xs text-destructive mt-1">{formErrors.email}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="emailConfirm">Confirme o email *</Label>
+                  <Input
+                    id="emailConfirm"
+                    type="email"
+                    value={newPartner.emailConfirm}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, emailConfirm: e.target.value }))}
+                    placeholder="Digite novamente o email"
+                    className="mt-1"
+                  />
+                  {formErrors.emailConfirm && <p className="text-xs text-destructive mt-1">{formErrors.emailConfirm}</p>}
                 </div>
                 <div>
                   <Label htmlFor="password">Senha *</Label>
@@ -487,9 +570,22 @@ const AdminManagePartners = () => {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+                  {formErrors.password && <p className="text-xs text-destructive mt-1">{formErrors.password}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="phone">Telefone</Label>
+                  <Label htmlFor="passwordConfirm">Confirme a senha *</Label>
+                  <Input
+                    id="passwordConfirm"
+                    type={showPassword ? "text" : "password"}
+                    value={newPartner.passwordConfirm}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, passwordConfirm: e.target.value }))}
+                    placeholder="Digite novamente a senha"
+                    className="mt-1"
+                  />
+                  {formErrors.passwordConfirm && <p className="text-xs text-destructive mt-1">{formErrors.passwordConfirm}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="phone">WhatsApp *</Label>
                   <Input
                     id="phone"
                     value={newPartner.phone}
@@ -497,6 +593,19 @@ const AdminManagePartners = () => {
                     placeholder="(11) 99999-9999"
                     className="mt-1"
                   />
+                  {formErrors.phone && <p className="text-xs text-destructive mt-1">{formErrors.phone}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="portfolio">Link do portfólio</Label>
+                  <Input
+                    id="portfolio"
+                    type="url"
+                    value={newPartner.portfolio}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, portfolio: e.target.value }))}
+                    placeholder="https://..."
+                    className="mt-1"
+                  />
+                  {formErrors.portfolio && <p className="text-xs text-destructive mt-1">{formErrors.portfolio}</p>}
                 </div>
                 <div>
                   <Label htmlFor="company">Empresa</Label>
@@ -507,6 +616,26 @@ const AdminManagePartners = () => {
                     placeholder="Nome da empresa (opcional)"
                     className="mt-1"
                   />
+                </div>
+
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="isFounder"
+                      checked={newPartner.isFounder}
+                      onCheckedChange={(checked) => setNewPartner(prev => ({ ...prev, isFounder: !!checked }))}
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <Label htmlFor="isFounder" className="flex items-center gap-2 cursor-pointer font-semibold">
+                        <Crown className="h-4 w-4 text-primary" />
+                        Marcar como Arcano Founder
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        O colaborador já entra com a escala especial de pagamentos Founder.
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Platform Selection */}
@@ -650,9 +779,16 @@ const AdminManagePartners = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-foreground">{partner.name}</h3>
-                    <Badge variant={partner.is_active ? "default" : "secondary"}>
-                      {partner.is_active ? "Ativo" : "Inativo"}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <Badge variant={partner.is_active ? "default" : "secondary"}>
+                        {partner.is_active ? "Ativo" : "Inativo"}
+                      </Badge>
+                      {partner.is_founder && (
+                        <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10">
+                          <Crown className="h-3 w-3 mr-1" /> Founder
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -666,6 +802,12 @@ const AdminManagePartners = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="h-4 w-4" />
                     <span>{partner.phone}</span>
+                  </div>
+                )}
+                {partner.instagram && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Instagram className="h-4 w-4" />
+                    <span>{partner.instagram}</span>
                   </div>
                 )}
                 {partner.company && (
@@ -690,6 +832,14 @@ const AdminManagePartners = () => {
                 >
                   <Settings className="h-4 w-4 mr-1" />
                   Plataformas
+                </Button>
+                <Button
+                  variant={partner.is_founder ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleToggleFounder(partner.id, partner.is_founder)}
+                  title={partner.is_founder ? "Remover Founder" : "Marcar como Founder"}
+                >
+                  <Crown className="h-4 w-4" />
                 </Button>
                 <Button
                   variant="outline"

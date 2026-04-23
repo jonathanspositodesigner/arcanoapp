@@ -4209,6 +4209,7 @@ export type Database = {
           is_founder: boolean
           name: string
           phone: string | null
+          portfolio: string | null
           updated_at: string | null
           user_id: string
         }
@@ -4223,6 +4224,7 @@ export type Database = {
           is_founder?: boolean
           name: string
           phone?: string | null
+          portfolio?: string | null
           updated_at?: string | null
           user_id: string
         }
@@ -4237,6 +4239,7 @@ export type Database = {
           is_founder?: boolean
           name?: string
           phone?: string | null
+          portfolio?: string | null
           updated_at?: string | null
           user_id?: string
         }

@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { z } from "https://deno.land/x/zod@v3.22.4/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,6 +16,17 @@ function generatePassword(length = 12): string {
   }
   return password;
 }
+
+const createPartnerSchema = z.object({
+  name: z.string().trim().min(1, "Nome é obrigatório").max(120),
+  email: z.string().trim().email("Email inválido").max(255).transform((value) => value.toLowerCase()),
+  phone: z.string().trim().max(30).optional().nullable(),
+  company: z.string().trim().max(120).optional().nullable(),
+  instagram: z.string().trim().max(80).optional().nullable(),
+  portfolio: z.string().trim().url("Portfólio inválido").max(500).optional().nullable().or(z.literal("")),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres").max(128).optional(),
+  isFounder: z.boolean().optional().default(false),
+});
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -68,14 +80,16 @@ serve(async (req) => {
       );
     }
 
-    const { name, email, phone, company, password: customPassword } = await req.json();
+    const parsedBody = createPartnerSchema.safeParse(await req.json());
 
-    if (!name || !email) {
+    if (!parsedBody.success) {
       return new Response(
-        JSON.stringify({ error: 'Nome e email são obrigatórios' }),
+        JSON.stringify({ error: parsedBody.error.errors[0]?.message || 'Dados inválidos' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    const { name, email, phone, company, instagram, portfolio, password: customPassword, isFounder } = parsedBody.data;
 
     console.log(`Creating partner: ${name} (${email})`);
 
@@ -185,14 +199,17 @@ serve(async (req) => {
     }
 
     // Create partner record
-    const { data: partner, error: partnerError } = await supabaseAdmin
+    const { data: createdPartner, error: partnerError } = await supabaseAdmin
       .from('partners')
       .insert({
         user_id: userId,
         name,
         email,
         phone: phone || null,
-        company: company || null
+        company: company || null,
+        instagram: instagram || null,
+        portfolio: portfolio || null,
+        is_founder: isFounder
       })
       .select()
       .single();
@@ -206,6 +223,22 @@ serve(async (req) => {
         JSON.stringify({ error: 'Falha ao criar registro do parceiro' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    let partner = createdPartner;
+    if (partner.is_founder !== isFounder) {
+      const { data: updatedPartner, error: founderError } = await supabaseAdmin
+        .from('partners')
+        .update({ is_founder: isFounder })
+        .eq('id', partner.id)
+        .select()
+        .single();
+
+      if (founderError) {
+        console.error('Founder flag error:', founderError);
+      } else if (updatedPartner) {
+        partner = updatedPartner;
+      }
     }
 
     console.log(`Partner created successfully: ${partner.id}`);
