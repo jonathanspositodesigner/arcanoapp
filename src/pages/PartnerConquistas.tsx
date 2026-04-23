@@ -254,7 +254,7 @@ const PartnerConquistas = () => {
           </div>
         </div>
 
-        {/* Streak */}
+        {/* Sequência de envios */}
         <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
@@ -263,7 +263,7 @@ const PartnerConquistas = () => {
                 <p className="text-2xl font-bold text-orange-400">
                   {gamification?.current_streak || 0} dias
                 </p>
-                 <p className="text-sm text-muted-foreground">Prompts Enviados</p>
+                 <p className="text-sm text-muted-foreground">Dias seguidos enviando</p>
               </div>
             </div>
             <div className="text-right">
@@ -274,7 +274,7 @@ const PartnerConquistas = () => {
           <div className="mt-3 flex items-center gap-2">
             <Shield className="h-4 w-4 text-primary" />
             <p className="text-xs text-muted-foreground">
-              Proteção mensal: {gamification?.streak_protection_available
+               Proteção de sequência: {gamification?.streak_protection_available
                 ? <span className="text-green-400 font-medium">Disponível ✓</span>
                 : <span className="text-red-400 font-medium">Usada este mês</span>}
             </p>
