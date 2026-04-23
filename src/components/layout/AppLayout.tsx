@@ -55,6 +55,7 @@ const AppLayout = ({ children, fullScreen = false }: AppLayoutProps) => {
         </main>
       </div>
     </div>
+    </PremiumPromptProvider>
   );
 };
 
