@@ -674,49 +674,66 @@ const BibliotecaPrompts = () => {
             </Button>
           </div>
 
-          {/* Category Dropdown + Seedance 2 Button */}
-          <div className="flex items-center gap-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="text-xs bg-accent hover:bg-accent0/20 border-border text-muted-foreground">
-                  {getCategoryDisplayName(selectedCategory)}
-                  <ChevronDown className="h-3.5 w-3.5 ml-1.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="bg-card border-border min-w-[160px]">
-                {categories.map(cat => (
-                  <DropdownMenuItem
-                    key={cat}
-                    onClick={() => handleCategorySelect(cat)}
-                    className={`text-xs cursor-pointer ${
-                      selectedCategory === cat
-                        ? "bg-secondary text-foreground"
-                        : "text-muted-foreground hover:bg-accent0/20"
-                    }`}
-                  >
-                    {getCategoryDisplayName(cat)}
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleCategorySelect("Seedance 2")}
-              className={`text-xs font-bold border-0 text-white ${
-                selectedCategory === "Seedance 2"
-                  ? "bg-gradient-to-r from-green-600 to-green-500 shadow-lg shadow-green-500/30"
-                  : "bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400"
-              }`}
-            >
-              <Video className="h-3.5 w-3.5 mr-1.5" />
-              Prompts Seedance 2
-              <span className="ml-1.5 px-1.5 py-0.5 text-[9px] font-bold bg-yellow-400 rounded-full animate-pulse leading-none text-secondary-foreground">
-                NOVO
-              </span>
-            </Button>
+          {/* Category Scrollable Chips */}
+          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            {categories.map(cat => {
+              const isSelected = selectedCategory === cat;
+              const isSeedance = cat === "Seedance 2";
+              return (
+                <button
+                  key={cat}
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold transition-all duration-200 ${
+                    isSeedance
+                      ? isSelected
+                        ? "bg-gradient-to-r from-green-600 to-green-500 text-white shadow-lg shadow-green-500/30"
+                        : "bg-gradient-to-r from-green-700 to-green-500 text-white hover:from-green-600 hover:to-green-400"
+                      : isSelected
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "bg-accent text-muted-foreground hover:bg-accent/80 hover:text-foreground"
+                  }`}
+                >
+                  {cat === "Populares" && <Flame className="h-3 w-3 mr-1 inline" />}
+                  {isSeedance && <Video className="h-3 w-3 mr-1 inline" />}
+                  {getCategoryDisplayName(cat)}
+                  {isSeedance && (
+                    <span className="ml-1 px-1 py-0.5 text-[8px] font-bold bg-yellow-400 rounded-full animate-pulse leading-none text-secondary-foreground">
+                      NOVO
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
+
+          {/* Subcategory Chips (shown when category has subcategories) */}
+          {availableSubcategories.length > 0 && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 mt-1 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+              <button
+                onClick={() => setSelectedSubcategory(null)}
+                className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${
+                  !selectedSubcategory
+                    ? "bg-secondary text-foreground"
+                    : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+                }`}
+              >
+                Todos
+              </button>
+              {availableSubcategories.map(sub => (
+                <button
+                  key={sub}
+                  onClick={() => setSelectedSubcategory(sub)}
+                  className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-all ${
+                    selectedSubcategory === sub
+                      ? "bg-secondary text-foreground"
+                      : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  }`}
+                >
+                  {sub}
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Search Input */}
           <div className="relative mt-3">
