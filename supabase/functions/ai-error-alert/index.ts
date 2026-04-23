@@ -206,28 +206,32 @@ serve(async (req) => {
         .maybeSingle();
 
       const lastSent = recentAlerts?.value as any;
-      const lastSentTime = lastSent?.sent_at ? new Date(lastSent.sent_at).getTime() : 0;
-      const lastSentTools = lastSent?.tools || [];
-      const cooldownMs = 55 * 60 * 1000; // 55 min cooldown
+      const perToolCooldowns: Record<string, number> = lastSent?.per_tool || {};
+      const cooldownMs = 60 * 60 * 1000; // 1 hour cooldown per tool
 
       // Filter out tools that were already alerted within cooldown
       const newAlerts = toolAlerts.filter(t => {
-        if (Date.now() - lastSentTime > cooldownMs) return true;
-        return !lastSentTools.includes(t.name);
+        const lastAlertedAt = perToolCooldowns[t.name] || 0;
+        return Date.now() - lastAlertedAt > cooldownMs;
       });
 
       if (newAlerts.length > 0) {
         const token = await getSendPulseToken();
         await sendAlertEmail(token, newAlerts);
 
-        // Save last sent timestamp and tools
+        // Update per-tool cooldown timestamps (preserve existing, update alerted ones)
+        const updatedCooldowns = { ...perToolCooldowns };
+        for (const t of newAlerts) {
+          updatedCooldowns[t.name] = Date.now();
+        }
+
         await supabase
           .from("app_settings")
           .upsert({
             id: "ai_error_alert_last_sent",
             value: {
               sent_at: new Date().toISOString(),
-              tools: newAlerts.map(t => t.name),
+              per_tool: updatedCooldowns,
             },
             updated_at: new Date().toISOString(),
           });
