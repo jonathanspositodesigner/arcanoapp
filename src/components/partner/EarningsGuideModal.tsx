@@ -59,7 +59,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
           </DialogTitle>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
             {isFounder
-              ? "Entenda as regras, requisitos e a escala especial de pagamentos para Founders."
+              ? "Veja como a tabela Founder transforma prompts aprovados em ganhos maiores desde o primeiro nível."
               : "Entenda todas as formas de ganhar dinheiro publicando seu conteúdo no Arcano."}
           </p>
         </DialogHeader>
@@ -80,7 +80,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                 <strong className="text-foreground">Premium</strong>, você recebe um valor fixo
                 conforme o seu <strong className="text-foreground">nível na plataforma</strong>.
                 {isFounder
-                  ? " Como Arcano Founder, sua tabela começa em R$ 0,10 por prompt e chega a R$ 0,20 no Elite."
+                  ? "  Como Arcano Founder, você começa ganhando R$ 0,10 por prompt liberado, sobe para R$ 0,12, R$ 0,15 e pode chegar a R$ 0,20 no Elite."
                   : " Quanto mais alto o seu nível, maior o valor por liberação."}
               </p>
 
@@ -138,7 +138,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                   <Trophy className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  3. Suba de nível e ganhe mais
+                  3. Escale como Arcano Founder
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
@@ -149,9 +149,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
               </p>
               {isFounder && (
                 <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground leading-relaxed">
-                  <strong className="text-foreground">Requisito Founder:</strong> o selo é exclusivo
-                  para os 15 primeiros colaboradores aceitos no programa. Para manter e aumentar os
-                  ganhos, continue publicando prompts originais, aprovados e com boa performance.
+                  <strong className="text-foreground">Exclusivo:</strong> apenas 15 criadores serão aceitos como Arcano Founder. Para manter o selo e crescer na tabela, publique prompts originais, evite rejeições e mantenha boa performance.
                 </div>
               )}
               <div className="grid sm:grid-cols-2 gap-2.5">
@@ -187,7 +185,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                   <div>
                     <p className="text-sm font-medium text-foreground">Ranking público</p>
                     <p className="text-xs text-muted-foreground">
-                      Os melhores colaboradores ganham destaque na plataforma.
+                      Os Arcano Founders com melhor desempenho ganham mais destaque na plataforma.
                     </p>
                   </div>
                 </div>
@@ -206,7 +204,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
               </div>
               <div className="rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-5 space-y-3">
                 <p className="text-sm text-foreground/90 leading-relaxed">
-                  Um colaborador <strong>nível Especialista</strong> com{" "}
+                  Um Arcano Founder <strong>nível Especialista</strong> com{" "}
                   <strong>20 prompts populares</strong> liberados em média 50× por dia pode chegar a:
                 </p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
@@ -225,7 +223,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                 </div>
                 <p className="text-[11px] text-muted-foreground italic">
                   *Valores simulados. Os ganhos reais variam conforme volume e qualidade do
-                  conteúdo, engajamento dos usuários e nível do colaborador.
+                  conteúdo, engajamento dos usuários e nível Founder.
                 </p>
               </div>
             </section>
@@ -237,14 +235,14 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                   <Zap className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Dicas para ganhar mais
+                  Dicas para virar um Founder desejado
                 </h3>
               </div>
               <ul className="text-sm text-muted-foreground space-y-1.5 pl-1">
-                <li>✅ Publique conteúdos originais e de alta qualidade visual.</li>
-                <li>✅ Capriche no título e na imagem de capa — isso aumenta as liberações.</li>
+                <li>✅ Publique prompts originais, específicos e com resultado visual forte.</li>
+                <li>✅ Venda o clique pelo título e pela capa — prompt bom precisa parecer irresistível.</li>
                 <li>✅ Use tags e categorias certas para aparecer nas buscas internas.</li>
-                <li>✅ Mantenha um ritmo constante de publicações para subir de nível mais rápido.</li>
+                <li>✅ Mantenha consistência: Founder que publica sempre tem mais chance de dominar categorias.</li>
                 <li>✅ Vincule seus prompts às ferramentas de IA — você ganha em dobro.</li>
               </ul>
             </section>
