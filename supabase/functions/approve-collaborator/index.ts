@@ -91,16 +91,28 @@ serve(async (req) => {
     let userId = authData?.user?.id;
     if (!userId) {
       // User already existed, fetch their ID
-      const { data: listData } = await adminClient.auth.admin.listUsers({ filter: sol.email });
-      const existingUser = listData?.users?.find((u: any) => u.email === sol.email);
-      if (!existingUser) {
-        // Fallback: try fetching by email via users table or re-creating
-        const { data: { users: searchUsers } } = await adminClient.auth.admin.listUsers({ page: 1, perPage: 1000 });
-        const found = searchUsers?.find((u: any) => u.email === sol.email);
+      // Query auth.users directly via service role
+      const { data: foundUser, error: findError } = await adminClient
+        .from("profiles")
+        .select("id")
+        .eq("email", sol.email)
+        .maybeSingle();
+      
+      if (!foundUser) {
+        // Last resort: list users with pagination
+        let page = 1;
+        let found = false;
+        while (!found) {
+          const { data: listData } = await adminClient.auth.admin.listUsers({ page, perPage: 100 });
+          if (!listData?.users?.length) break;
+          const match = listData.users.find((u: any) => u.email === sol.email);
+          if (match) { userId = match.id; found = true; }
+          if (listData.users.length < 100) break;
+          page++;
+        }
         if (!found) throw new Error("Não foi possível encontrar o usuário criado");
-        userId = found.id;
       } else {
-        userId = existingUser.id;
+        userId = foundUser.id;
       }
     }
 
