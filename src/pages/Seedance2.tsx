@@ -1,6 +1,7 @@
 import { useState, useRef, useCallback, useEffect, Fragment } from "react";
 import { useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { supabase } from "@/integrations/supabase/client";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import AppLayout from "@/components/layout/AppLayout";
@@ -105,10 +106,7 @@ export default function Seedance2() {
     }
     return null;
   });
-  const [referencePromptId, setReferencePromptId] = useState<string | null>(() => {
-    const state = location.state as { prefillPromptId?: string; prefillPromptType?: string } | null;
-    return state?.prefillPromptType === 'partner' ? state.prefillPromptId || null : null;
-  });
+  const { referencePromptId, setFromLibrary: setAttributionFromLibrary, clear: clearAttribution } = useCollaboratorAttribution();
 
   // Load prefill reference images from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
@@ -261,7 +259,7 @@ export default function Seedance2() {
   const handleUseLibraryItem = useCallback((item: Generation) => {
     setPrompt(item.prompt);
     // Clear previous partner prompt attribution — will be set below only if this is a partner item
-    setReferencePromptId(null);
+    clearAttribution();
     if (item.referenceImage) {
       setMode("multiref");
       // Clear previous library refs, add reference image
@@ -772,12 +770,12 @@ export default function Seedance2() {
                     <span className="text-[10px] uppercase tracking-wider text-muted-foreground">Refs</span>
                     <div className="flex flex-wrap gap-1">
                       {refImages.map((url, index) => (
-                        <UploadSlot key={index} url={url} onRemove={() => { setRefImages((prev) => prev.filter((_, i) => i !== index)); setReferencePromptId(null); }} size={40} />
+                        <UploadSlot key={index} url={url} onRemove={() => { setRefImages((prev) => prev.filter((_, i) => i !== index)); clearAttribution(); }} size={40} />
                       ))}
                       {refImages.length < 8 && (
                         <UploadSlot
                           url={null}
-                          onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => { setRefImages((prev) => [...prev, url]); setReferencePromptId(null); })}
+                          onClickUpload={() => openFilePicker("image/jpeg,image/png,image/webp", (url) => { setRefImages((prev) => [...prev, url]); clearAttribution(); })}
                           onDrop={(e) => handleImageDrop(e, (url) => setRefImages((prev) => [...prev, url]))}
                           size={40}
                         />

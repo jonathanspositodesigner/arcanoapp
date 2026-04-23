@@ -1,7 +1,8 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
@@ -69,7 +70,7 @@ const MovieLedMakerTool = () => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [uploadedFileName, setUploadedFileName] = useState<string>('');
   const [showLibrary, setShowLibrary] = useState(false);
-  const partnerPromptIdRef = useRef<string | null>(null);
+  const { referencePromptId, clear: clearAttribution } = useCollaboratorAttribution();
 
   // Text input
   const [inputText, setInputText] = useState('');
@@ -108,10 +109,7 @@ const MovieLedMakerTool = () => {
     if (state?.preSelectedItem) {
       setSelectedLibraryItem(state.preSelectedItem);
       setShowTutorial(false);
-      // If coming from biblioteca with a partner prompt, store the correct prompt ID
-      if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
-        partnerPromptIdRef.current = state.prefillPromptId;
-      }
+      // Attribution is now handled by useCollaboratorAttribution hook via location.state
       // Clear the state so it doesn't re-apply on re-render
       window.history.replaceState({}, document.title);
     }
@@ -437,7 +435,7 @@ const MovieLedMakerTool = () => {
             fallbackImageUrl,
             inputText: inputText.trim(),
             engine: selectedEngine,
-            referencePromptId: partnerPromptIdRef.current || null,
+            referencePromptId: referencePromptId,
           },
         }
       );
@@ -967,13 +965,13 @@ const MovieLedMakerTool = () => {
           setSelectedLibraryItem(item as unknown as LibraryItem);
           setUploadedImage(null);
           setUploadedFileName('');
-          partnerPromptIdRef.current = null;
+          clearAttribution();
         }}
         onUploadPhoto={(dataUrl, file) => {
           setUploadedImage(dataUrl);
           setUploadedFileName(file.name);
           setSelectedLibraryItem(null);
-          partnerPromptIdRef.current = null;
+          clearAttribution();
         }}
       />
 
