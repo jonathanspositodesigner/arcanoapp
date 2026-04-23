@@ -23,6 +23,7 @@ interface Partner {
   email: string;
   instagram?: string;
   avatar_url?: string;
+  is_founder?: boolean;
 }
 
 interface PartnerPrompt {
@@ -115,7 +116,7 @@ const PartnerDashboard = () => {
     // Fetch partner info
     const { data: partnerData, error: partnerError } = await supabase
       .from('partners')
-      .select('id, name, email, instagram, avatar_url')
+      .select('id, name, email, instagram, avatar_url, is_founder')
       .eq('user_id', user.id)
       .maybeSingle();
 
@@ -445,7 +446,15 @@ const PartnerDashboard = () => {
               )}
             </button>
             <div>
-              <p className="text-sm font-bold text-foreground leading-tight">{partner?.name}</p>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <p className="text-sm font-bold text-foreground leading-tight">{partner?.name}</p>
+                {partner?.is_founder && (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-gradient-to-r from-amber-500 to-yellow-300 text-black border border-amber-600 shadow-sm">
+                    <Trophy className="h-2.5 w-2.5" />
+                    Arcano Founder
+                  </span>
+                )}
+              </div>
               <p className="text-xs text-muted-foreground">
                 Nível {currentLevel} — <span className="text-primary">{levelName}</span>
               </p>
