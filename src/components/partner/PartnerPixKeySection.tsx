@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Key, Edit2 } from "lucide-react";
+import { Key, Edit2, AlertTriangle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -137,6 +137,12 @@ const PartnerPixKeySection = ({ partnerId, pixKey, onPixKeyChange }: Props) => {
                 onChange={(e) => setPixValue(e.target.value)}
                 placeholder={pixType === "cpf" ? "000.000.000-00" : pixType === "email" ? "email@exemplo.com" : pixType === "telefone" ? "+5511999999999" : "Chave aleatória"}
               />
+            </div>
+            <div className="flex items-start gap-2 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20">
+              <AlertTriangle className="h-4 w-4 text-yellow-500 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-yellow-500">
+                A conta que recebe o PIX <strong>deve estar no mesmo nome</strong> do titular colaborador. Pagamentos para contas de terceiros não serão processados.
+              </p>
             </div>
           </div>
           <DialogFooter>
