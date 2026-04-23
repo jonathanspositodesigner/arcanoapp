@@ -27,6 +27,7 @@ import removerFundoCover from "@/assets/removedor-fundo-capa.png";
 import flyerMakerCover from "@/assets/flyer-maker-preview.webp";
 import upscalerHeroCover from "@/assets/upscaler-hero-depois.webp";
 import gerarImagemCover from "@/assets/gerar-imagem-cover.jpg";
+import arcanoLogoAvatar from "@/assets/arcano-logo-avatar.png";
 
 import { useOptimizedPrompts, PromptItem } from "@/hooks/useOptimizedPrompts";
 import AppLayout from "@/components/layout/AppLayout";
@@ -679,20 +680,25 @@ const BibliotecaPrompts = () => {
                   </span>
                 </button>
 
-                {/* Partner avatar + instagram badge */}
-                {item.promptType === 'partner' && item.partnerName && (
-                  <div className="absolute bottom-1.5 right-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5">
-                    {item.partnerAvatarUrl ? (
-                      <img src={item.partnerAvatarUrl} alt={item.partnerName} className="w-4 h-4 rounded-full object-cover" />
+                {/* Author avatar + instagram badge */}
+                {item.partnerInstagram && (
+                  <a
+                    href={`https://www.instagram.com/${item.partnerInstagram.replace('@', '')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    className="absolute bottom-1.5 right-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
+                  >
+                    {(item.partnerAvatarUrl || item.promptType === 'admin') ? (
+                      <img src={item.promptType === 'admin' ? arcanoLogoAvatar : item.partnerAvatarUrl} alt={item.partnerName || ''} className="w-4 h-4 rounded-full object-cover" />
                     ) : (
                       <div className="w-4 h-4 rounded-full bg-primary/30 flex items-center justify-center">
-                        <span className="text-[7px] font-bold text-white">{item.partnerName.charAt(0).toUpperCase()}</span>
+                        <span className="text-[7px] font-bold text-white">{(item.partnerName || '?').charAt(0).toUpperCase()}</span>
                       </div>
                     )}
-                    {item.partnerInstagram && (
-                      <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{item.partnerInstagram.replace('@', '')}</span>
-                    )}
-                  </div>
+                    <Instagram className="h-2.5 w-2.5 text-white/80" />
+                    <span className="text-[8px] sm:text-[9px] text-white/80 font-medium">@{item.partnerInstagram.replace('@', '')}</span>
+                  </a>
                 )}
 
                 {/* Hover/Touch overlay */}
