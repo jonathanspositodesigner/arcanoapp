@@ -901,7 +901,7 @@ const GerarImagemTool = () => {
               </div>
 
               {/* GPT Image Free Trial indicator */}
-              {isGptEngine && isGptImageFreeTrial && gptImageFreeUntil && (
+              {isRunningHubGptImage && isGptImageFreeTrial && gptImageFreeUntil && (
                 <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold animate-pulse">
                   🎁 Grátis por {Math.max(1, Math.ceil((new Date(gptImageFreeUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} dia{Math.ceil((new Date(gptImageFreeUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                 </span>
@@ -989,7 +989,7 @@ const GerarImagemTool = () => {
                     Gerar Imagem
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
-                      {isUnlimited ? '∞' : (isGptEngine && isGptImageFreeTrial) ? '🎁 FREE' : creditCost}
+                      {isRunningHubGptImage && isUnlimited ? '∞' : isRunningHubGptImage && isGptImageFreeTrial ? '🎁 FREE' : creditCost}
                     </span>
                   </>
                 )}
