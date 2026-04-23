@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { 
   RefreshCw, Pencil, Coins, ArrowUpDown, ArrowUp, ArrowDown,
   Plus, Minus, UserPlus, Search, User, AlertCircle, History,
-  ArrowDownCircle, ArrowUpCircle
+  ArrowDownCircle, ArrowUpCircle, ShieldAlert
 } from "lucide-react";
 import {
   Pagination,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import AdminCreditAuditModal from "./AdminCreditAuditModal";
 
 interface CreditUser {
   user_id: string;
@@ -81,6 +82,8 @@ const AdminCreditsTab = () => {
 
   // Add User Modal State
   const [isAddUserModalOpen, setIsAddUserModalOpen] = useState(false);
+  const [isAuditOpen, setIsAuditOpen] = useState(false);
+  const [auditUser, setAuditUser] = useState<CreditUser | null>(null);
   const [addUserModalState, setAddUserModalState] = useState<AddUserModalState>('idle');
   const [searchEmail, setSearchEmail] = useState("");
   const [foundUser, setFoundUser] = useState<SearchedUser | null>(null);
@@ -141,6 +144,11 @@ const AdminCreditsTab = () => {
     setTxPage(1);
     setIsHistoryOpen(true);
     fetchTransactions(user.user_id, 1);
+  };
+
+  const openAudit = (user: CreditUser) => {
+    setAuditUser(user);
+    setIsAuditOpen(true);
   };
 
   const filteredUsers = useMemo(() => {
@@ -546,6 +554,14 @@ const AdminCreditsTab = () => {
                           <Button
                             variant="ghost"
                             size="icon"
+                            onClick={() => openAudit(user)}
+                            title="Auditoria de créditos"
+                          >
+                            <ShieldAlert className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
                             onClick={() => openHistory(user)}
                             title="Histórico de transações"
                           >
@@ -616,6 +632,13 @@ const AdminCreditsTab = () => {
       <p className="text-sm text-muted-foreground text-center">
         Mostrando {paginatedUsers.length} de {filteredUsers.length} usuários
       </p>
+
+      {/* Credit Audit Modal */}
+      <AdminCreditAuditModal
+        open={isAuditOpen}
+        onOpenChange={setIsAuditOpen}
+        user={auditUser}
+      />
 
       {/* Transaction History Modal */}
       <Dialog open={isHistoryOpen} onOpenChange={setIsHistoryOpen}>
