@@ -478,7 +478,7 @@ const AdminManagePartners = () => {
                 Adicionar Colaborador
               </Button>
             </DialogTrigger>
-            <DialogContent className="max-w-md">
+            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Cadastrar Novo Colaborador</DialogTitle>
               </DialogHeader>
@@ -492,6 +492,18 @@ const AdminManagePartners = () => {
                     placeholder="Nome do colaborador"
                     className="mt-1"
                   />
+                  {formErrors.name && <p className="text-xs text-destructive mt-1">{formErrors.name}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="instagram">Instagram *</Label>
+                  <Input
+                    id="instagram"
+                    value={newPartner.instagram}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, instagram: e.target.value }))}
+                    placeholder="@seuinstagram"
+                    className="mt-1"
+                  />
+                  {formErrors.instagram && <p className="text-xs text-destructive mt-1">{formErrors.instagram}</p>}
                 </div>
                 <div>
                   <Label htmlFor="email">Email *</Label>
@@ -503,6 +515,19 @@ const AdminManagePartners = () => {
                     placeholder="email@exemplo.com"
                     className="mt-1"
                   />
+                  {formErrors.email && <p className="text-xs text-destructive mt-1">{formErrors.email}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="emailConfirm">Confirme o email *</Label>
+                  <Input
+                    id="emailConfirm"
+                    type="email"
+                    value={newPartner.emailConfirm}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, emailConfirm: e.target.value }))}
+                    placeholder="Digite novamente o email"
+                    className="mt-1"
+                  />
+                  {formErrors.emailConfirm && <p className="text-xs text-destructive mt-1">{formErrors.emailConfirm}</p>}
                 </div>
                 <div>
                   <Label htmlFor="password">Senha *</Label>
