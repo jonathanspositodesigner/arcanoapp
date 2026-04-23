@@ -409,6 +409,7 @@ const PartnerUpload = () => {
             is_premium: !media.isFree,
             gender: media.category === 'Fotos' ? media.gender : null,
             tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
+            subcategory_slug: media.category === 'Fotos' ? media.subcategorySlug : null,
           });
 
         if (insertError) throw insertError;
