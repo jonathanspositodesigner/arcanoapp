@@ -6,7 +6,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -42,7 +41,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl h-[92vh] sm:h-auto sm:max-h-[92vh] p-0 gap-0 sm:rounded-2xl flex flex-col overflow-hidden">
+      <DialogContent className="max-w-3xl h-[92vh] sm:h-auto sm:max-h-[92vh] p-0 gap-0 sm:rounded-2xl !flex flex-col overflow-hidden">
         <DialogHeader className="px-5 pt-5 pb-3 sm:px-7 sm:pt-6 border-b border-border/60 shrink-0 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
@@ -53,8 +52,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
           </p>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 min-h-0">
-          <div className="px-5 py-5 sm:px-7 sm:py-6 space-y-8">
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7 sm:py-6 space-y-8">
             {/* Forma 1 — Cliques de liberação */}
             <section className="space-y-3">
               <div className="flex items-center gap-2">
@@ -250,8 +248,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
                 <li>✅ Vincule seus prompts às ferramentas de IA — você ganha em dobro.</li>
               </ul>
             </section>
-          </div>
-        </ScrollArea>
+        </div>
 
         <div className="px-5 py-3 sm:px-7 sm:py-4 border-t border-border/60 bg-background shrink-0">
           <Button
