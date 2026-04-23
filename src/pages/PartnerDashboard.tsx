@@ -8,8 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
-import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight, HelpCircle } from "lucide-react";
+import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home, Info } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
@@ -451,9 +451,18 @@ const PartnerDashboard = () => {
               </p>
             </div>
           </div>
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground text-xs gap-1 h-8">
-            <LogOut className="h-3.5 w-3.5" /> Sair
-          </Button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => navigate('/parceiro-como-ganhar')}
+              className="w-8 h-8 rounded-full bg-accent hover:bg-accent/80 flex items-center justify-center transition-colors"
+              title="Como ganhar na plataforma"
+            >
+              <HelpCircle className="h-4 w-4 text-muted-foreground" />
+            </button>
+            <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground text-xs gap-1 h-8">
+              <LogOut className="h-3.5 w-3.5" /> Sair
+            </Button>
+          </div>
         </div>
       </div>
 
