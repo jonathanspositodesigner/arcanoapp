@@ -5,12 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick } from "lucide-react";
+import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick, Banknote, Wallet } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
+import PartnerPixKeySection from "@/components/partner/PartnerPixKeySection";
+import PartnerWithdrawalHistory from "@/components/partner/PartnerWithdrawalHistory";
+import WithdrawalRequestModal from "@/components/partner/WithdrawalRequestModal";
 
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 
