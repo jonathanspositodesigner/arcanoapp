@@ -266,6 +266,103 @@ const PartnerDashboard = () => {
     deletionRequested: prompts.filter(p => p.deletion_requested).length,
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !partner) return;
+    
+    setIsUploadingAvatar(true);
+    try {
+      // Compress to 100px and convert to webp
+      const compressed = await imageCompression(file, {
+        maxWidthOrHeight: 100,
+        useWebWorker: true,
+        fileType: 'image/webp',
+        initialQuality: 0.85,
+      });
+      
+      const fileName = `partner-avatars/${partner.id}-${Date.now()}.webp`;
+      const webpFile = new File([compressed], fileName.split('/').pop()!, { type: 'image/webp' });
+      
+      const { error: uploadError } = await supabase.storage
+        .from('prompts-cloudinary')
+        .upload(fileName, webpFile, { contentType: 'image/webp', upsert: true });
+      
+      if (uploadError) throw uploadError;
+      
+      const { data: urlData } = supabase.storage
+        .from('prompts-cloudinary')
+        .getPublicUrl(fileName);
+      
+      const avatarUrl = urlData.publicUrl;
+      
+      const { error: updateError } = await supabase
+        .from('partners')
+        .update({ avatar_url: avatarUrl })
+        .eq('id', partner.id);
+      
+      if (updateError) throw updateError;
+      
+      setProfileAvatarUrl(avatarUrl);
+      setPartner({ ...partner, avatar_url: avatarUrl });
+      toast.success("Foto atualizada com sucesso!");
+    } catch (err) {
+      console.error("Avatar upload error:", err);
+      toast.error("Erro ao enviar foto");
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  const handleSaveProfile = async () => {
+    if (!partner || !profileName.trim()) {
+      toast.error("Nome é obrigatório");
+      return;
+    }
+    setIsSavingProfile(true);
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({
+          name: profileName.trim(),
+          instagram: profileInstagram.trim() || null,
+        })
+        .eq('id', partner.id);
+      
+      if (error) throw error;
+      
+      setPartner({ ...partner, name: profileName.trim(), instagram: profileInstagram.trim() || undefined });
+      toast.success("Perfil atualizado!");
+    } catch (err) {
+      console.error("Profile save error:", err);
+      toast.error("Erro ao salvar perfil");
+    } finally {
+      setIsSavingProfile(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!newPassword || newPassword.length < 6) {
+      toast.error("A senha deve ter pelo menos 6 caracteres");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("As senhas não coincidem");
+      return;
+    }
+    setIsChangingPassword(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      toast.success("Senha alterada com sucesso!");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      toast.error(err.message || "Erro ao alterar senha");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
