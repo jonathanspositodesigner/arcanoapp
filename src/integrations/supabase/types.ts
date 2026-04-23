@@ -5670,6 +5670,7 @@ export type Database = {
         }
         Returns: Json
       }
+      check_collaborator_email: { Args: { p_email: string }; Returns: Json }
       check_device_signup_limit: {
         Args: { p_fingerprint: string }
         Returns: boolean
