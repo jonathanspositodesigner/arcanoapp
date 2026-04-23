@@ -63,7 +63,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
             className="w-full flex items-center text-left text-[13px] font-bold text-primary-foreground py-2.5 px-3 rounded-lg bg-primary hover:bg-primary/90 shadow-sm transition-colors mb-3"
           >
             <Users className="h-4 w-4 mr-2.5 flex-shrink-0" />
-            Torne-se um colaborador Arcano Founder
+            Tonar-se Colaborador
           </button>
 
           {/* PRINCIPAL */}
