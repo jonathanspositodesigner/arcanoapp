@@ -398,11 +398,11 @@ const PartnerEarnings = () => {
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center">
           {[
-            { icon: Home, label: 'Home', path: '/parceiro', active: false },
+            { icon: Home, label: 'Home', path: '/parceiro-dashboard', active: false },
             { icon: Upload, label: 'Enviar', path: '/parceiro-upload', active: false },
             { icon: Trophy, label: 'Conquistas', path: '/parceiro-conquistas', active: false },
             { icon: DollarSign, label: 'Extrato', path: '/parceiro-extrato', active: true },
-            { icon: User, label: 'Perfil', path: '/parceiro', active: false },
+            { icon: User, label: 'Perfil', path: '/parceiro-dashboard', active: false },
           ].map(({ icon: NavIcon, label, path, active }) => (
             <button
               key={label}
