@@ -76,6 +76,18 @@ const WEBAPP_IDS = {
   },
 };
 
+// Tables that have the reference_prompt_id column for collaborator earnings
+const TABLES_WITH_REFERENCE_PROMPT_ID = new Set([
+  'arcano_cloner_jobs',
+  'pose_changer_jobs',
+  'veste_ai_jobs',
+  'movieled_maker_jobs',
+  'flyer_maker_jobs',
+  'character_generator_jobs',
+  'bg_remover_jobs',
+  'video_generator_jobs',
+]);
+
 const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs', 'movieled_maker_jobs'] as const;
 type JobTable = typeof JOB_TABLES[number];
 
@@ -788,15 +800,28 @@ async function handleFinish(req: Request): Promise<Response> {
     
     console.log(`[QueueManager] /finish: ${table}/${jobId} status=${status}`);
     
-    // Buscar dados do job INCLUDING current status for idempotency check
-    console.log(`[QueueManager] 🔍 AUDIT: Fetching reference_prompt_id for ${table}/${jobId}`);
+    // Stage 1: Fetch universal fields (schema-safe for ALL tables)
     const { data: job } = await supabase
       .from(table)
-      .select('user_id, user_credit_cost, credits_charged, credits_refunded, status, reference_prompt_id')
+      .select('user_id, user_credit_cost, credits_charged, credits_refunded, status')
       .eq('id', jobId)
       .maybeSingle();
     
-    console.log(`[QueueManager] 🔍 AUDIT: Job ${jobId} reference_prompt_id = "${job?.reference_prompt_id}" | user_id = "${job?.user_id}"`);
+    // Stage 2: Conditionally fetch reference_prompt_id only for supported tables
+    let referencePromptId: string | null = null;
+    if (job && TABLES_WITH_REFERENCE_PROMPT_ID.has(table)) {
+      try {
+        const { data: promptData } = await supabase
+          .from(table)
+          .select('reference_prompt_id')
+          .eq('id', jobId)
+          .maybeSingle();
+        referencePromptId = promptData?.reference_prompt_id || null;
+        console.log(`[QueueManager] /finish: reference_prompt_id="${referencePromptId}" for ${table}/${jobId}`);
+      } catch (e) {
+        console.error(`[QueueManager] /finish: Error fetching reference_prompt_id:`, e);
+      }
+    }
     
     if (!job) {
       return new Response(JSON.stringify({ error: 'Job not found' }), {
@@ -923,14 +948,13 @@ async function handleFinish(req: Request): Promise<Response> {
     }
     
     // COLLABORATOR TOOL EARNINGS - Register earning if job used a partner prompt as reference
-    console.log(`[QueueManager] 🔍 AUDIT EARNINGS CHECK: status=${status} | ref_prompt_id="${job?.reference_prompt_id}" | user_id="${job?.user_id}" | will_register=${status === 'completed' && !!job?.reference_prompt_id && !!job?.user_id}`);
-    if (status === 'completed' && job?.reference_prompt_id && job?.user_id) {
+    if (status === 'completed' && referencePromptId && job?.user_id) {
       try {
-        console.log(`[QueueManager] /finish: Registering tool earning for prompt ${job.reference_prompt_id} on ${table}`);
+        console.log(`[QueueManager] /finish: Registering tool earning for prompt ${referencePromptId} on ${table}`);
         const { data: earningResult } = await supabase.rpc('register_collaborator_tool_earning', {
           _job_id: jobId,
           _tool_table: table,
-          _prompt_id: job.reference_prompt_id,
+          _prompt_id: referencePromptId,
           _user_id: job.user_id,
         });
         console.log(`[QueueManager] /finish: Tool earning result:`, earningResult);
