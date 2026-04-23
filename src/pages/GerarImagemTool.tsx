@@ -877,6 +877,7 @@ const GerarImagemTool = () => {
                     {([
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
+                      { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
                       { value: 'gpt_image_evolink' as const, label: '🌐 GPT Image Evolink' },
                     ]).map((opt) => (
                       <button
