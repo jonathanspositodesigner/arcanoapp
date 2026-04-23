@@ -120,6 +120,7 @@ serve(async (req) => {
         name: sol.nome,
         email: sol.email,
         phone: sol.whatsapp || null,
+        instagram: sol.instagram || null,
         is_active: true,
       }, { onConflict: "user_id" })
       .select("id")
