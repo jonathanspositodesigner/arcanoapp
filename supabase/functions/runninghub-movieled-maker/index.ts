@@ -445,6 +445,7 @@ async function handleRun(req: Request) {
 
   // Create job
   const sessionId = crypto.randomUUID();
+  console.log(`[MovieLedMaker] 🔍 AUDIT reference_prompt_id BEFORE insert: "${referencePromptId}"`);
   const { data: jobData, error: jobError } = await supabase
     .from(TABLE_NAME)
     .insert({
@@ -469,6 +470,7 @@ async function handleRun(req: Request) {
   }
 
   const jobId = jobData.id;
+  console.log(`[MovieLedMaker] ✅ Job created: ${jobId} | reference_prompt_id: "${referencePromptId}"`);
   await logStep(jobId, 'created', { engine: selectedEngine, creditCost, provider: isEvolink ? 'evolink' : 'runninghub' });
 
   // Consume credits
