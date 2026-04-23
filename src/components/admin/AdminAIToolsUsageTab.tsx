@@ -93,7 +93,7 @@ interface ToolRegistryEntry {
   enabled: boolean;
 }
 
-type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
+type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits' | 'unlimited' | 'gpt_free_trial';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -102,12 +102,14 @@ const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
 const RECEITA_POR_CREDITO_PADRAO = 0.007;
 const RECEITA_POR_CREDITO_HISTORICA = 0.007;
 const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
-const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial"]);
+const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited", "gpt_free_trial"]);
 
 const API_COST_FALLBACK_MAP: Record<string, number> = {
   "Arcano Cloner": 0.36,
   "Gerador Avatar": 0.18,
   "Gerar Imagem - Nano Banana": 0.36,
+  "GPT Image": 0.05,
+  "GPT Image Evolink": 0.05,
 };
 
 const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
@@ -115,6 +117,9 @@ const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
   "Gerador Avatar": ["Gerador Avatar"],
   "Gerar Imagem - Nano Banana": ["gerar_imagem_nano2", "gerar_imagem"],
   "Gerar Imagem - Flux 2": ["gerar_imagem", "gerar_imagem_nano2"],
+  "GPT Image": ["GPT Image"],
+  "GPT Image Evolink": ["GPT Image Evolink"],
+  "MovieLed Maker": ["MovieLed Maker"],
 };
 
 const getApiCostFromSettings = (
@@ -144,6 +149,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "mlj:wan2.2": 0,
   "mlj:gemini-lite": 0.294,
   "mlj:veo3.1": 0.504,
+  "mlj:kling2.5": 0.25,
   "sdj:fast:480p:i2v": 0.344,
   "sdj:fast:480p:t2v": 0.374,
   "sdj:fast:720p:i2v": 0.724,
@@ -154,7 +160,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "sdj:standard:720p:t2v": 0.974,
 };
 
-const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8 };
+const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8, "kling2.5": 8 };
 
 interface VideoJobDetail {
   id: string;
