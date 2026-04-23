@@ -118,7 +118,7 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     const fetchPartners = async () => {
       const { data, error } = await supabase
-        .from('partners')
+        .from('partner_public_profiles')
         .select('id, name, instagram, avatar_url');
 
       if (error) {
