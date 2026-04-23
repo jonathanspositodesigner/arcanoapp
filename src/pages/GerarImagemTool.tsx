@@ -544,6 +544,10 @@ const GerarImagemTool = () => {
             setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
           }
 
+          if (effectiveEngine === 'gpt_image_2' && uploadedUrls.length === 0) {
+            uploadedUrls.push(runninghubFallbackPixel);
+          }
+
           const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
             prompt: prompt.trim(),
             aspect_ratio: aspectRatio,
