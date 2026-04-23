@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick, Banknote, Wallet } from "lucide-react";
+import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick, Banknote, Wallet, Home, Upload, Trophy, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
@@ -199,111 +199,122 @@ const PartnerEarnings = () => {
     { key: "custom", label: "Personalizado" },
   ];
 
+  const navigate_path = (p: string) => navigate(p);
+
+  // Compute breakdown from earnings
+  const unlockTotal = earnings.filter(e => e.earning_type === 'unlock').reduce((s, e) => s + Number(e.amount), 0);
+  const unlockCount = earnings.filter(e => e.earning_type === 'unlock').length;
+  const toolTotal = earnings.filter(e => e.earning_type === 'tool_usage').reduce((s, e) => s + Number(e.amount), 0);
+  const toolCount = earnings.filter(e => e.earning_type === 'tool_usage').length;
+
+  const getEarningIcon = (e: EarningRecord) => {
+    if (e.earning_type === 'bonus') return '🏆';
+    if (e.earning_type === 'tool_usage') {
+      if (e.tool_table?.includes('seedance')) return '🎬';
+      if (e.tool_table?.includes('cloner')) return '🎭';
+      if (e.tool_table?.includes('upscaler')) return '🔍';
+      if (e.tool_table?.includes('flyer')) return '🎨';
+      return '🤖';
+    }
+    return '🖱️';
+  };
+
+  const getEarningBg = (e: EarningRecord) => {
+    if (e.earning_type === 'bonus') return 'bg-yellow-500/10';
+    if (e.earning_type === 'tool_usage') return 'bg-green-500/10';
+    return 'bg-primary/10';
+  };
+
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-4xl mx-auto py-8 px-4">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+      {/* TopBar */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Extrato de Ganhos</h1>
-            <p className="text-muted-foreground">Acompanhe seus ganhos por desbloqueios de prompts</p>
+            <button onClick={() => navigate(-1)} className="text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-5 w-5" />
+            </button>
+            <h1 className="text-base font-bold text-foreground">💰 Extrato de Ganhos</h1>
           </div>
-          </div>
-          <Button onClick={() => setShowWithdrawalModal(true)} disabled={!canRequestWithdrawal} className="shrink-0">
-            <Banknote className="h-4 w-4 mr-2" /> Solicitar Saque
-          </Button>
+          {canRequestWithdrawal && (
+            <button
+              onClick={() => setShowWithdrawalModal(true)}
+              className="text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-full hover:bg-green-500/20 transition-colors"
+            >
+              Solicitar Saque
+            </button>
+          )}
         </div>
+      </div>
 
+      <div className="max-w-2xl mx-auto pb-20 md:pb-8">
         {!pixKey && (
-          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
+          <div className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
             ⚠️ Cadastre sua chave PIX para poder solicitar saques.
           </div>
         )}
         {hasPendingWithdrawal && (
-          <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-400">
+          <div className="mx-4 mt-3 p-3 rounded-xl bg-primary/10 border border-primary/20 text-sm text-primary">
             ⏳ Você já possui uma solicitação de saque pendente. Aguarde o processamento.
           </div>
         )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <Card className="p-5 bg-green-500/10 border-green-500/20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
-                <DollarSign className="h-5 w-5 text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Saldo Total</p>
-                <p className="text-2xl font-bold text-green-400">
-                  {formatBRL(totalBalance)}
-                </p>
-              </div>
+        {/* Hero Card verde */}
+        <div className="mx-4 mt-3 mb-3 rounded-2xl bg-gradient-to-br from-green-900/60 via-emerald-900/40 to-transparent border border-green-500/20 p-5">
+          <p className="text-xs font-semibold text-green-400/60 tracking-wide mb-1">SALDO DISPONÍVEL</p>
+          <p className="text-3xl font-extrabold text-green-400 leading-none">{formatBRL(saldoDisponivel)}</p>
+          <p className="text-xs text-muted-foreground mt-1.5">
+            Total bruto: {formatBRL(totalBalance)} • Já sacado: {formatBRL(totalPago)}
+          </p>
+          <div className="grid grid-cols-2 gap-2.5 mt-4">
+            <div className="bg-white/5 rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground mb-1">🖱️ Desbloqueios</p>
+              <p className="text-base font-bold text-foreground">{formatBRL(unlockTotal)}</p>
+              <p className="text-[10px] text-muted-foreground">{unlockCount} desbloqueios</p>
             </div>
-          </Card>
-          <Card className="p-5 bg-emerald-500/10 border-emerald-500/20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
-                <Wallet className="h-5 w-5 text-emerald-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Disponível p/ Saque</p>
-                <p className="text-2xl font-bold text-emerald-400">{formatBRL(saldoDisponivel)}</p>
-              </div>
+            <div className="bg-white/5 rounded-xl p-3">
+              <p className="text-[10px] text-muted-foreground mb-1">🤖 Ferramentas</p>
+              <p className="text-base font-bold text-foreground">{formatBRL(toolTotal)}</p>
+              <p className="text-[10px] text-muted-foreground">{toolCount} jobs</p>
             </div>
-          </Card>
-          <Card className="p-5 bg-primary/10 border-primary/20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                <TrendingUp className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Ganho no Período</p>
-                <p className="text-2xl font-bold text-primary">
-                  {formatBRL(periodTotal)}
-                </p>
-              </div>
-            </div>
-          </Card>
-          <Card className="p-5 bg-blue-500/10 border-blue-500/20">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-blue-500/20 flex items-center justify-center">
-                <MousePointerClick className="h-5 w-5 text-blue-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Desbloqueios no Período</p>
-                <p className="text-2xl font-bold text-blue-400">{filteredEarnings.length}</p>
-              </div>
-            </div>
-          </Card>
+          </div>
         </div>
 
-        {partnerId && <PartnerPixKeySection partnerId={partnerId} pixKey={pixKey} onPixKeyChange={setPixKey} />}
+        {/* Ganho no Período */}
+        <div className="mx-4 mb-3 bg-card border border-border rounded-xl px-4 py-3 flex items-center justify-between">
+          <div>
+            <p className="text-xs text-muted-foreground">Ganho no Período</p>
+            <p className="text-xl font-bold text-primary">{formatBRL(periodTotal)}</p>
+          </div>
+          <p className="text-xs text-muted-foreground">{filteredEarnings.length} registros</p>
+        </div>
 
-        {/* Filter Buttons */}
-        <div className="flex flex-wrap gap-2 mb-4">
+        {partnerId && <div className="px-4"><PartnerPixKeySection partnerId={partnerId} pixKey={pixKey} onPixKeyChange={setPixKey} /></div>}
+
+        {/* Filter Pills */}
+        <div className="flex gap-2 px-4 mb-3 overflow-x-auto scrollbar-hide pb-1">
           {filterButtons.map(fb => (
-            <Button
+            <button
               key={fb.key}
-              variant={periodFilter === fb.key ? "default" : "outline"}
-              size="sm"
               onClick={() => setPeriodFilter(fb.key)}
+              className={`flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors ${
+                periodFilter === fb.key
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+              }`}
             >
               {fb.label}
-            </Button>
+            </button>
           ))}
         </div>
 
         {/* Custom Date Pickers */}
         {periodFilter === "custom" && (
-          <div className="flex flex-wrap gap-3 mb-6 items-center">
+          <div className="flex flex-wrap gap-3 mb-4 px-4 items-center">
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-[180px] justify-start text-left font-normal", !customFrom && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal text-xs", !customFrom && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {customFrom ? format(customFrom, "dd/MM/yyyy") : "Data início"}
                 </Button>
               </PopoverTrigger>
@@ -311,11 +322,11 @@ const PartnerEarnings = () => {
                 <Calendar mode="single" selected={customFrom} onSelect={setCustomFrom} locale={ptBR} className="p-3 pointer-events-auto" />
               </PopoverContent>
             </Popover>
-            <span className="text-muted-foreground">até</span>
+            <span className="text-muted-foreground text-xs">até</span>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" className={cn("w-[180px] justify-start text-left font-normal", !customTo && "text-muted-foreground")}>
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                <Button variant="outline" size="sm" className={cn("w-[150px] justify-start text-left font-normal text-xs", !customTo && "text-muted-foreground")}>
+                  <CalendarIcon className="mr-2 h-3.5 w-3.5" />
                   {customTo ? format(customTo, "dd/MM/yyyy") : "Data fim"}
                 </Button>
               </PopoverTrigger>
@@ -327,46 +338,47 @@ const PartnerEarnings = () => {
         )}
 
         {/* Earnings List */}
-        <Card className="overflow-hidden">
+        <div className="bg-card border border-border rounded-2xl mx-4 overflow-hidden">
           <div className="divide-y divide-border">
             {filteredEarnings.length === 0 ? (
               <div className="py-12 text-center text-muted-foreground">
-                <MousePointerClick className="h-12 w-12 mx-auto mb-3 opacity-30" />
-                <p>Nenhum desbloqueio neste período</p>
+                <MousePointerClick className="h-10 w-10 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">Nenhum registro neste período</p>
               </div>
             ) : (
               filteredEarnings.map(e => (
-                <div key={e.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">
-                      {e.prompt_title}
-                      {e.earning_type === 'tool_usage' && (
-                        <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
-                      )}
-                      {e.earning_type === 'bonus' && (
-                        <span className="ml-1.5 text-xs text-yellow-400">🏆 Bônus Ranking</span>
-                      )}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-                    </p>
+                <div key={e.id} className="flex items-center gap-3 px-4 py-3">
+                  <div className={`w-8 h-8 rounded-full ${getEarningBg(e)} flex items-center justify-center text-sm flex-shrink-0`}>
+                    {getEarningIcon(e)}
                   </div>
-                  <Badge className={`ml-3 shrink-0 ${e.earning_type === 'bonus' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' : 'bg-green-500/20 text-green-400 border-green-500/30'}`}>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-foreground text-sm truncate">{e.prompt_title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-[10px] text-muted-foreground">
+                        {format(new Date(e.unlocked_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                      </p>
+                      {e.earning_type === 'tool_usage' && <span className="text-[10px] text-primary">Ferramenta</span>}
+                      {e.earning_type === 'bonus' && <span className="text-[10px] text-yellow-400">Bônus Ranking</span>}
+                    </div>
+                  </div>
+                  <span className={`text-sm font-bold flex-shrink-0 ${e.earning_type === 'bonus' ? 'text-yellow-400' : 'text-green-400'}`}>
                     +R$ {Number(e.amount).toFixed(2).replace('.', ',')}
-                  </Badge>
+                  </span>
                 </div>
               ))
             )}
           </div>
-        </Card>
+        </div>
 
         {filteredEarnings.length > 0 && (
-          <div className="mt-4 text-right text-sm text-muted-foreground">
+          <div className="mt-3 px-4 text-right text-xs text-muted-foreground">
             {filteredEarnings.length} registro{filteredEarnings.length !== 1 ? 's' : ''} • Total: {formatBRL(periodTotal)}
           </div>
         )}
 
-        <PartnerWithdrawalHistory withdrawals={withdrawals} />
+        <div className="px-4">
+          <PartnerWithdrawalHistory withdrawals={withdrawals} />
+        </div>
 
         {partnerId && pixKey && (
           <WithdrawalRequestModal
@@ -381,8 +393,32 @@ const PartnerEarnings = () => {
           />
         )}
       </div>
+
+      {/* Bottom Navigation — mobile only */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
+        <div className="flex items-center">
+          {[
+            { icon: Home, label: 'Home', path: '/parceiro', active: false },
+            { icon: Upload, label: 'Enviar', path: '/parceiro-upload', active: false },
+            { icon: Trophy, label: 'Conquistas', path: '/parceiro-conquistas', active: false },
+            { icon: DollarSign, label: 'Extrato', path: '/parceiro-extrato', active: true },
+            { icon: User, label: 'Perfil', path: '/parceiro', active: false },
+          ].map(({ icon: NavIcon, label, path, active }) => (
+            <button
+              key={label}
+              onClick={() => navigate_path(path)}
+              className="flex-1 flex flex-col items-center gap-1 py-2.5"
+            >
+              <NavIcon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
+              {active && <div className="w-1 h-1 rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 };
+
 
 export default PartnerEarnings;
