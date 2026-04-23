@@ -7,13 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Upload, ArrowLeft, X, CheckCircle, ImagePlus, Video } from "lucide-react";
+import { Upload, ArrowLeft, X, CheckCircle, ImagePlus, Video, FileText } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { fetchFotosSubcategories, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 const promptSchema = z.object({
   title: z.string().trim().min(1, "Título é obrigatório").max(200, "Título deve ter no máximo 200 caracteres"),
@@ -50,6 +51,10 @@ interface MediaData {
   referenceImages: ReferenceImage[];
   hasTutorial: boolean;
   tutorialUrl: string;
+  txtFileName?: string;
+  gender: string | null;
+  tags: string[];
+  subcategorySlug: string | null;
 }
 
 const PartnerUpload = () => {
@@ -62,10 +67,12 @@ const PartnerUpload = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
 
   useEffect(() => {
     checkPartnerAccess();
     fetchCategories();
+    fetchFotosSubcategories().then(setSubcategories);
   }, []);
 
   const fetchCategories = async () => {
@@ -76,6 +83,16 @@ const PartnerUpload = () => {
       .order('display_order', { ascending: true });
     if (data) setCategories(data);
   };
+
+  // Safeguard: keep currentIndex within valid bounds
+  useEffect(() => {
+    if (mediaFiles.length === 0) {
+      setShowModal(false);
+      setCurrentIndex(0);
+    } else if (currentIndex >= mediaFiles.length) {
+      setCurrentIndex(mediaFiles.length - 1);
+    }
+  }, [mediaFiles.length, currentIndex]);
 
   const checkPartnerAccess = async () => {
     const { data: { user } } = await supabase.auth.getUser();
@@ -101,7 +118,7 @@ const PartnerUpload = () => {
     setIsLoading(false);
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     processFiles(files);
   };
@@ -115,38 +132,73 @@ const PartnerUpload = () => {
     e.preventDefault();
     e.stopPropagation();
     
-    const files = Array.from(e.dataTransfer.files).filter(file => 
-      file.type.startsWith('image/') || file.type.startsWith('video/')
+    const files = Array.from(e.dataTransfer.files).filter(file =>
+      file.type.startsWith('image/') ||
+      file.type.startsWith('video/') ||
+      file.name.toLowerCase().endsWith('.txt') ||
+      file.type === 'text/plain'
     );
     
     if (files.length === 0) {
-      toast.error("Por favor, envie apenas imagens ou vídeos");
+      toast.error("Por favor, envie imagens, vídeos ou arquivos .txt");
       return;
     }
     
     processFiles(files);
   };
 
+  const getFileNameWithoutExtension = (fileName: string): string => {
+    return fileName.replace(/\.[^/.]+$/, '').toLowerCase();
+  };
+
+  const readTxtFile = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve((e.target?.result as string)?.trim() || '');
+      reader.onerror = () => reject(new Error('Failed to read file'));
+      reader.readAsText(file, 'UTF-8');
+    });
+  };
+
   const processFiles = async (files: File[]) => {
-    const validFiles: File[] = [];
-    
+    // Separate media files from TXT files
+    const txtFiles: File[] = [];
+    const mediaFilesToProcess: File[] = [];
+
     for (const file of files) {
-      const validationError = validateFile(file);
-      if (validationError) {
-        toast.error(validationError);
-        continue;
+      if (file.name.toLowerCase().endsWith('.txt') || file.type === 'text/plain') {
+        txtFiles.push(file);
+      } else {
+        const validationError = validateFile(file);
+        if (validationError) {
+          toast.error(validationError);
+          continue;
+        }
+        mediaFilesToProcess.push(file);
       }
-      validFiles.push(file);
     }
-    
-    if (validFiles.length === 0) return;
-    
+
+    if (mediaFilesToProcess.length === 0) {
+      if (txtFiles.length > 0) {
+        toast.error("Envie imagens/vídeos junto com os arquivos TXT para vincular automaticamente");
+      }
+      return;
+    }
+
+    // Create a map of TXT files by base name for quick lookup
+    const txtMap = new Map<string, File>();
+    for (const txt of txtFiles) {
+      const baseName = getFileNameWithoutExtension(txt.name);
+      txtMap.set(baseName, txt);
+    }
+
     const newMedia: MediaData[] = [];
-    
-    for (const file of validFiles) {
+    let matchedCount = 0;
+
+    for (const file of mediaFilesToProcess) {
       const isVideo = file.type.startsWith('video/');
-      
-      // Optimize images before adding
+      const baseName = getFileNameWithoutExtension(file.name);
+
       let processedFile = file;
       if (isImageFile(file)) {
         const result = await optimizeImage(file);
@@ -155,22 +207,44 @@ const PartnerUpload = () => {
           console.log(`Optimized ${file.name}: ${formatBytes(result.originalSize)} → ${formatBytes(result.optimizedSize)} (${result.savingsPercent}% saved)`);
         }
       }
-      
+
+      // Check if there's a matching TXT file
+      let prompt = '';
+      let txtFileName: string | undefined;
+      const matchingTxt = txtMap.get(baseName);
+      if (matchingTxt) {
+        try {
+          prompt = await readTxtFile(matchingTxt);
+          txtFileName = matchingTxt.name;
+          matchedCount++;
+        } catch (e) {
+          console.error(`Failed to read TXT for ${file.name}:`, e);
+        }
+      }
+
       newMedia.push({
         file: processedFile,
         preview: URL.createObjectURL(processedFile),
         title: "",
-        prompt: "",
+        prompt,
         category: "",
         isVideo,
         referenceImages: [],
         hasTutorial: false,
-        tutorialUrl: ""
+        tutorialUrl: "",
+        txtFileName,
+        gender: null,
+        tags: [],
+        subcategorySlug: null,
       });
     }
-    
+
     if (newMedia.length > 0) {
-      toast.success(`${newMedia.length} arquivo(s) otimizado(s) e adicionado(s)`);
+      let message = `${newMedia.length} arquivo(s) adicionado(s)`;
+      if (matchedCount > 0) {
+        message += ` (${matchedCount} prompt(s) vinculado(s) automaticamente)`;
+      }
+      toast.success(message);
       setMediaFiles(prev => [...prev, ...newMedia]);
       setShowModal(true);
       setCurrentIndex(0);
@@ -207,7 +281,7 @@ const PartnerUpload = () => {
   };
 
   const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
-    setMediaFiles(prev => prev.map((media, idx) => 
+    setMediaFiles(prev => prev.map((media, idx) =>
       idx === currentIndex ? { ...media, [field]: value } : media
     ));
   };
@@ -222,6 +296,46 @@ const PartnerUpload = () => {
     if (currentIndex > 0) {
       setCurrentIndex(currentIndex - 1);
     }
+  };
+
+  const handleTxtUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.txt') && file.type !== 'text/plain') {
+      toast.error("Por favor, selecione um arquivo .txt");
+      return;
+    }
+
+    if (file.size > 1024 * 1024) {
+      toast.error("Arquivo TXT muito grande. Máximo 1MB.");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const content = event.target?.result as string;
+      setMediaFiles(prev => prev.map((media, idx) =>
+        idx === currentIndex
+          ? { ...media, prompt: content.trim(), txtFileName: file.name }
+          : media
+      ));
+      toast.success(`Prompt carregado de "${file.name}"`);
+    };
+    reader.onerror = () => {
+      toast.error("Erro ao ler o arquivo");
+    };
+    reader.readAsText(file, 'UTF-8');
+
+    e.target.value = '';
+  };
+
+  const clearTxtFile = () => {
+    setMediaFiles(prev => prev.map((media, idx) =>
+      idx === currentIndex
+        ? { ...media, txtFileName: undefined }
+        : media
+    ));
   };
 
   const allFieldsFilled = mediaFiles.every(media => 
@@ -291,6 +405,8 @@ const PartnerUpload = () => {
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
             is_premium: true,
+            gender: media.category === 'Fotos' ? media.gender : null,
+            tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
           });
 
         if (insertError) throw insertError;
@@ -347,7 +463,7 @@ const PartnerUpload = () => {
             <input
               id="media"
               type="file"
-              accept="image/*,video/*"
+              accept="image/*,video/*,.txt,text/plain"
               multiple
               onChange={handleFileSelect}
               className="hidden"
@@ -370,7 +486,14 @@ const PartnerUpload = () => {
               </h3>
               <div className="grid grid-cols-4 gap-4">
                 {mediaFiles.map((media, idx) => (
-                  <div key={idx} className="relative group">
+                  <div
+                    key={idx}
+                    className="relative group cursor-pointer"
+                    onClick={() => {
+                      setCurrentIndex(idx);
+                      setShowModal(true);
+                    }}
+                  >
                     {media.isVideo ? (
                       <video
                         src={media.preview}
@@ -388,7 +511,10 @@ const PartnerUpload = () => {
                       />
                     )}
                     <button
-                      onClick={() => removeMedia(idx)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removeMedia(idx);
+                      }}
                       className="absolute top-2 right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                     >
                       <X className="h-4 w-4" />
@@ -404,7 +530,11 @@ const PartnerUpload = () => {
                 ))}
               </div>
               <Button
-                onClick={() => setShowModal(true)}
+                onClick={() => {
+                  const pendingIdx = mediaFiles.findIndex(m => !m.title || !m.prompt || !m.category);
+                  setCurrentIndex(pendingIdx >= 0 ? pendingIdx : 0);
+                  setShowModal(true);
+                }}
                 className="w-full mt-6 bg-gradient-primary hover:opacity-90"
               >
                 Preencher Informações
@@ -422,7 +552,7 @@ const PartnerUpload = () => {
             </DialogTitle>
           </DialogHeader>
 
-          {currentMedia && (
+          {currentMedia ? (
             <div className="space-y-4 sm:space-y-6">
               <div className="flex justify-center">
                 {currentMedia.isVideo ? (
@@ -471,6 +601,103 @@ const PartnerUpload = () => {
                 </Select>
               </div>
 
+              {/* Gender + Subcategoria - only shows when category is 'Fotos' */}
+              {currentMedia.category === 'Fotos' && (
+                <>
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">👤</span>
+                      <Label className="font-medium">Gênero da Foto</Label>
+                    </div>
+                    <Select
+                      value={currentMedia.gender || ''}
+                      onValueChange={(value) => updateMediaData('gender', value || null)}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="masculino">Masculino</SelectItem>
+                        <SelectItem value="feminino">Feminino</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">🗂️</span>
+                      <div>
+                        <Label className="font-medium">Subcategoria</Label>
+                        <p className="text-xs text-muted-foreground">Aplicada em Cloner, Veste AI e Pose Maker</p>
+                      </div>
+                    </div>
+                    <Select
+                      value={currentMedia.subcategorySlug || ''}
+                      onValueChange={(value) => updateMediaData('subcategorySlug', value || null)}
+                    >
+                      <SelectTrigger className="w-48">
+                        <SelectValue placeholder="Selecionar..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {subcategories.map((sc) => (
+                          <SelectItem key={sc.id} value={sc.slug}>{sc.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  {/* Tags field for 'Fotos' category */}
+                  <div className="space-y-2">
+                    <Label className="font-medium">Tags de Busca (até 10)</Label>
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {currentMedia.tags.map((tag, idx) => (
+                        <span
+                          key={idx}
+                          className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-sm"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setMediaFiles(prev => prev.map((media, i) =>
+                                i === currentIndex
+                                  ? { ...media, tags: media.tags.filter((_, tagIdx) => tagIdx !== idx) }
+                                  : media
+                              ));
+                            }}
+                            className="ml-1 text-muted-foreground hover:text-foreground"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                    {currentMedia.tags.length < 10 && (
+                      <Input
+                        placeholder="Digite uma tag e pressione Enter"
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const value = e.currentTarget.value.trim().substring(0, 30);
+                            if (value && !currentMedia.tags.includes(value)) {
+                              setMediaFiles(prev => prev.map((media, i) =>
+                                i === currentIndex
+                                  ? { ...media, tags: [...media.tags, value] }
+                                  : media
+                              ));
+                              e.currentTarget.value = '';
+                            }
+                          }
+                        }}
+                      />
+                    )}
+                    <p className="text-xs text-muted-foreground">
+                      {currentMedia.tags.length}/10 tags • Use palavras como: formal, cantor, estúdio, etc.
+                    </p>
+                  </div>
+                </>
+              )}
+
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">
                   <Video className={`h-5 w-5 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -510,7 +737,7 @@ const PartnerUpload = () => {
                         <img src={ref.preview} alt={`Ref ${idx + 1}`} className="w-16 h-16 object-cover rounded-lg" />
                         <button
                           onClick={() => removeReferenceImage(idx)}
-                          className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
                         >
                           <X className="h-3 w-3" />
                         </button>
@@ -529,6 +756,39 @@ const PartnerUpload = () => {
                   </div>
                 </div>
               )}
+
+              <div>
+                <Label className="text-muted-foreground text-sm">Carregar Prompt de Arquivo TXT (opcional)</Label>
+                <div className="flex items-center gap-2 mt-2">
+                  <input
+                    type="file"
+                    id="txtFile"
+                    accept=".txt,text/plain"
+                    onChange={handleTxtUpload}
+                    className="hidden"
+                  />
+                  <label
+                    htmlFor="txtFile"
+                    className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg cursor-pointer hover:bg-secondary transition-colors flex-1"
+                  >
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm truncate">
+                      {currentMedia.txtFileName || "Selecionar arquivo .txt"}
+                    </span>
+                  </label>
+                  {currentMedia.txtFileName && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={clearTxtFile}
+                      className="h-9 w-9"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+              </div>
 
               <div>
                 <Label htmlFor="prompt">Prompt</Label>
@@ -550,22 +810,38 @@ const PartnerUpload = () => {
                 >
                   Anterior
                 </Button>
-                {currentIndex < mediaFiles.length - 1 ? (
-                  <Button
-                    onClick={goToNext}
-                    className="flex-1 bg-gradient-primary hover:opacity-90"
-                  >
-                    Próximo
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={handleSubmitAll}
-                    disabled={!allFieldsFilled || isSubmitting}
-                    className="flex-1 bg-gradient-primary hover:opacity-90"
-                  >
-                    {isSubmitting ? "Enviando..." : "Enviar Todos"}
+                <Button
+                  onClick={goToNext}
+                  disabled={currentIndex === mediaFiles.length - 1}
+                  variant="outline"
+                  className="flex-1"
+                >
+                  Próximo
+                </Button>
+              </div>
+
+              {allFieldsFilled && (
+                <Button
+                  onClick={handleSubmitAll}
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6"
+                >
+                  {isSubmitting ? "Enviando..." : "Enviar Todos"}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="text-center py-8 space-y-4">
+              <p className="text-muted-foreground">Nenhum item selecionado ou índice inválido.</p>
+              <div className="flex gap-2 justify-center">
+                {mediaFiles.length > 0 && (
+                  <Button onClick={() => setCurrentIndex(0)} variant="outline">
+                    Ir para o primeiro item
                   </Button>
                 )}
+                <Button onClick={() => setShowModal(false)} variant="secondary">
+                  Fechar
+                </Button>
               </div>
             </div>
           )}
