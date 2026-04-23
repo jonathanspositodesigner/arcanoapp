@@ -71,6 +71,8 @@ const PartnerEarningsAdminContent = () => {
   const [sortAsc, setSortAsc] = useState(false);
   const [wdFilter, setWdFilter] = useState("todos");
   const [rankBy, setRankBy] = useState<RankCriteria>("earnings");
+  const [rankPage, setRankPage] = useState(1);
+  const RANK_PER_PAGE = 20;
 
   // Detail tab state
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
@@ -262,6 +264,9 @@ const PartnerEarningsAdminContent = () => {
     return list;
   }, [partners, rankBy]);
 
+  const rankTotalPages = Math.max(1, Math.ceil(ranked.length / RANK_PER_PAGE));
+  const rankedPage = ranked.slice((rankPage - 1) * RANK_PER_PAGE, rankPage * RANK_PER_PAGE);
+
   const MEDAL_COLORS = ["text-yellow-400", "text-gray-400", "text-amber-600"];
 
   if (isLoading) return <p className="text-muted-foreground text-center py-12">Carregando...</p>;
@@ -436,13 +441,15 @@ const PartnerEarningsAdminContent = () => {
       {/* TAB: RANKING */}
       {tab === "ranking" && (
         <div>
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-4">
             {([["earnings", "Por Ganhos"], ["unlocks", "Por Desbloqueios"], ["prompts", "Por Prompts"]] as [RankCriteria, string][]).map(([k, l]) => (
-              <Button key={k} variant={rankBy === k ? "default" : "outline"} size="sm" onClick={() => setRankBy(k)}>{l}</Button>
+              <Button key={k} variant={rankBy === k ? "default" : "outline"} size="sm" onClick={() => { setRankBy(k); setRankPage(1); }}>{l}</Button>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground mb-4">{ranked.length} colaboradores • Página {rankPage} de {rankTotalPages}</p>
           <div className="space-y-3">
-            {ranked.map((p, i) => {
+            {rankedPage.map((p, idx) => {
+              const i = (rankPage - 1) * RANK_PER_PAGE + idx;
               const mainValue = rankBy === "earnings" ? formatBRL(p.total_earned) : rankBy === "unlocks" ? `${p.total_unlocks} desbloqueios` : `${p.approved_prompts} prompts`;
               const isTop3 = i < 3;
               return (
@@ -464,6 +471,32 @@ const PartnerEarningsAdminContent = () => {
             })}
             {ranked.length === 0 && <p className="text-center text-muted-foreground py-8">Nenhum colaborador com ganhos</p>}
           </div>
+          {rankTotalPages > 1 && (
+            <div className="flex items-center justify-center gap-2 mt-6">
+              <Button variant="outline" size="sm" disabled={rankPage <= 1} onClick={() => setRankPage(p => p - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              {Array.from({ length: rankTotalPages }, (_, i) => i + 1)
+                .filter(p => p === 1 || p === rankTotalPages || Math.abs(p - rankPage) <= 2)
+                .reduce<(number | string)[]>((acc, p, idx, arr) => {
+                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push('...');
+                  acc.push(p);
+                  return acc;
+                }, [])
+                .map((p, idx) =>
+                  typeof p === 'string' ? (
+                    <span key={`ellipsis-${idx}`} className="text-muted-foreground px-1">…</span>
+                  ) : (
+                    <Button key={p} variant={p === rankPage ? "default" : "outline"} size="sm" className="w-9 h-9" onClick={() => setRankPage(p)}>
+                      {p}
+                    </Button>
+                  )
+                )}
+              <Button variant="outline" size="sm" disabled={rankPage >= rankTotalPages} onClick={() => setRankPage(p => p + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          )}
         </div>
       )}
 
