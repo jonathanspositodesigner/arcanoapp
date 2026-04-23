@@ -93,7 +93,7 @@ interface ToolRegistryEntry {
   enabled: boolean;
 }
 
-type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits';
+type UserClientType = 'free' | 'bought_credits' | 'redeemed_credits' | 'free_trial' | 'premium' | 'premium_credits' | 'unlimited' | 'gpt_free_trial';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -102,12 +102,14 @@ const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
 const RECEITA_POR_CREDITO_PADRAO = 0.007;
 const RECEITA_POR_CREDITO_HISTORICA = 0.007;
 const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
-const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial"]);
+const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited", "gpt_free_trial"]);
 
 const API_COST_FALLBACK_MAP: Record<string, number> = {
   "Arcano Cloner": 0.36,
   "Gerador Avatar": 0.18,
   "Gerar Imagem - Nano Banana": 0.36,
+  "GPT Image": 0.05,
+  "GPT Image Evolink": 0.05,
 };
 
 const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
@@ -115,6 +117,9 @@ const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
   "Gerador Avatar": ["Gerador Avatar"],
   "Gerar Imagem - Nano Banana": ["gerar_imagem_nano2", "gerar_imagem"],
   "Gerar Imagem - Flux 2": ["gerar_imagem", "gerar_imagem_nano2"],
+  "GPT Image": ["GPT Image"],
+  "GPT Image Evolink": ["GPT Image Evolink"],
+  "MovieLed Maker": ["MovieLed Maker"],
 };
 
 const getApiCostFromSettings = (
@@ -144,6 +149,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "mlj:wan2.2": 0,
   "mlj:gemini-lite": 0.294,
   "mlj:veo3.1": 0.504,
+  "mlj:kling2.5": 0.25,
   "sdj:fast:480p:i2v": 0.344,
   "sdj:fast:480p:t2v": 0.374,
   "sdj:fast:720p:i2v": 0.724,
@@ -154,7 +160,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "sdj:standard:720p:t2v": 0.974,
 };
 
-const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8 };
+const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8, "kling2.5": 8 };
 
 interface VideoJobDetail {
   id: string;
@@ -457,13 +463,16 @@ const AdminAIToolsUsageTab = () => {
       const userIds = [...new Set((records || []).map((r: UsageRecord) => r.user_id).filter(Boolean))] as string[];
       if (userIds.length > 0) {
         const [subsRes, creditsRes, promoRes, trialRes] = await Promise.all([
-          supabase.from('planos2_subscriptions').select('user_id').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds as string[]),
+          supabase.from('planos2_subscriptions').select('user_id, plan_slug, gpt_image_free_until').eq('is_active', true).neq('plan_slug', 'free').in('user_id', userIds as string[]),
           supabase.from('upscaler_credits').select('user_id, lifetime_balance').gt('lifetime_balance', 0).in('user_id', userIds as string[]),
           supabase.from('promo_claims').select('user_id').eq('promo_code', 'UPSCALER_1500').in('user_id', userIds as string[]),
           supabase.from('arcano_cloner_free_trials').select('user_id').in('user_id', userIds as string[]),
         ]);
 
-        const premiumSet = new Set((subsRes.data || []).map((s: any) => s.user_id as string));
+        const subsData = (subsRes.data || []) as any[];
+        const unlimitedSet = new Set(subsData.filter((s: any) => s.plan_slug === 'unlimited').map((s: any) => s.user_id as string));
+        const gptFreeSet = new Set(subsData.filter((s: any) => s.gpt_image_free_until && new Date(s.gpt_image_free_until) > new Date()).map((s: any) => s.user_id as string));
+        const premiumSet = new Set(subsData.map((s: any) => s.user_id as string));
         const lifetimeSet = new Set((creditsRes.data || []).map((c: any) => c.user_id as string));
         const promoSet = new Set((promoRes.data || []).map((p: any) => p.user_id as string));
         const trialSet = new Set((trialRes.data || []).map((t: any) => t.user_id as string));
@@ -475,6 +484,8 @@ const AdminAIToolsUsageTab = () => {
           const hasPromo = promoSet.has(uid);
           const hasTrial = trialSet.has(uid);
           if (isPremium && hasLifetime) typeMap[uid] = 'premium_credits';
+          else if (unlimitedSet.has(uid)) typeMap[uid] = 'unlimited';
+          else if (gptFreeSet.has(uid)) typeMap[uid] = 'gpt_free_trial';
           else if (isPremium) typeMap[uid] = 'premium';
           else if (hasPromo) typeMap[uid] = 'redeemed_credits';
           else if (hasLifetime) typeMap[uid] = 'bought_credits';
@@ -627,7 +638,7 @@ const AdminAIToolsUsageTab = () => {
       if (VIDEO_TOOL_NAMES.has(toolName)) {
         const avgVideoCostMap: Record<string, number> = {
           "Gerar Vídeo": 0.504,      // average Veo 3.1 fast cost per job (~8s)
-          "MovieLed Maker": 0.294 * 8, // average gemini-lite cost
+          "MovieLed Maker": 2.00,     // Kling 2.5 = R$2.00 per job
           "Seedance 2.0": 0.424 * 8,   // average standard 480p i2v cost
           "Video Upscaler": 0,
         };
@@ -691,6 +702,10 @@ const AdminAIToolsUsageTab = () => {
         return <Badge className="bg-accent0/20 text-muted-foreground border-border">Premium</Badge>;
       case 'premium_credits':
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
+      case 'unlimited':
+        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Unlimited</Badge>;
+      case 'gpt_free_trial':
+        return <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">GPT Grátis 7d</Badge>;
     }
   };
 
