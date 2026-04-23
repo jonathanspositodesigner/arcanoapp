@@ -721,6 +721,18 @@ const PartnerUpload = () => {
                 />
               </div>
 
+              <div className="p-3 rounded-lg border border-border/50 bg-muted/30 text-xs text-muted-foreground space-y-1.5">
+                <p className="font-semibold text-foreground text-sm">💰 Como você ganha:</p>
+                <div className="flex items-start gap-2">
+                  <Zap className="h-3.5 w-3.5 text-purple-400 mt-0.5 shrink-0" />
+                  <p><span className="font-medium text-foreground">Premium:</span> Você recebe por cada clique de liberação do prompt <span className="font-medium">+</span> por cada uso como referência nas ferramentas de IA.</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <CheckCircle className="h-3.5 w-3.5 text-green-400 mt-0.5 shrink-0" />
+                  <p><span className="font-medium text-foreground">Gratuito:</span> Você recebe apenas por cada uso como referência nas ferramentas de IA.</p>
+                </div>
+              </div>
+
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-secondary/50">
                 <div className="flex items-center gap-2">
                   <Video className={`h-5 w-5 ${currentMedia.hasTutorial ? 'text-primary' : 'text-muted-foreground'}`} />
