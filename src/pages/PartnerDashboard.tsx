@@ -538,6 +538,8 @@ const PartnerDashboard = () => {
             { num: stats.approved, label: '✅ Aprovados', color: 'text-green-400' },
             { num: stats.pending, label: '⏳ Pendentes', color: 'text-yellow-400' },
             { num: stats.rejected, label: '❌ Recusados', color: 'text-red-400' },
+            { num: earningsUnlocks, label: '🔓 Desbloqueios', color: 'text-blue-400' },
+            { num: toolEarningsCount, label: '🤖 Usos em IA', color: 'text-purple-400' },
           ].map(({ num, label, color }) => (
             <div key={label} className="bg-card border border-border rounded-xl px-4 py-3">
               <p className={`text-2xl font-extrabold ${color} leading-none`}>{num}</p>
@@ -645,7 +647,7 @@ const PartnerDashboard = () => {
       <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
         <div className="flex items-center">
           {[
-            { icon: Home, label: 'Home', path: '/parceiro' as string | null, active: true },
+            { icon: Home, label: 'Home', path: '/parceiro-dashboard' as string | null, active: true },
             { icon: Upload, label: 'Enviar', path: '/parceiro-upload' as string | null, active: false },
             { icon: Trophy, label: 'Conquistas', path: '/parceiro-conquistas' as string | null, active: false },
             { icon: DollarSign, label: 'Extrato', path: '/parceiro-extrato' as string | null, active: false },
