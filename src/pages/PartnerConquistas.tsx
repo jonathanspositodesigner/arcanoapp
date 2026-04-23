@@ -292,18 +292,18 @@ const PartnerConquistas = () => {
               return (
                 <div
                   key={b.slug}
-                  className={`text-center p-3 rounded-xl border transition-all ${
+                  className={`text-center p-2.5 rounded-xl border transition-all overflow-hidden ${
                     earned
                       ? "bg-yellow-500/[0.08] border-yellow-500/25"
                       : "bg-card border-border opacity-45"
                   }`}
                 >
-                  <div className="text-2xl mb-1">{b.icon}</div>
-                  <p className={`text-xs font-medium ${earned ? "text-foreground" : "text-muted-foreground"}`}>
+                  <div className="text-xl mb-1">{b.icon}</div>
+                  <p className={`text-[11px] font-medium leading-tight ${earned ? "text-foreground" : "text-muted-foreground"}`}>
                     {b.name.replace(/[🔥💎⚡🏆💰👑🤖🎬]/g, '').trim()}
                   </p>
                   {!earned && (
-                    <p className="text-[10px] text-muted-foreground mt-1">{b.hint}</p>
+                    <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight break-words hyphens-auto">{b.hint}</p>
                   )}
                 </div>
               );
