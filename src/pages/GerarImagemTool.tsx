@@ -57,7 +57,7 @@ const GerarImagemTool = () => {
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_2' : savedEngine === 'gpt_image_evolink' ? 'gpt_image_evolink' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_evolink' : savedEngine === 'gpt_image_evolink' ? 'gpt_image_evolink' : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
@@ -547,7 +547,7 @@ const GerarImagemTool = () => {
             prompt: prompt.trim(),
             aspect_ratio: aspectRatio,
             model: 'gpt_image_2',
-            engine: 'gpt_image_2',
+            engine: effectiveEngine,
             input_urls: uploadedUrls,
           });
 
@@ -558,8 +558,9 @@ const GerarImagemTool = () => {
           setStatus('running');
           setProgress(20);
 
-          // Call GPT Image RunningHub edge function (submit only — returns immediately)
-          const { data: runData, error: runError } = await supabase.functions.invoke('runninghub-gpt-image/run', {
+          // Call GPT Image edge function (submit only — returns immediately)
+          const runFunction = effectiveEngine === 'gpt_image_evolink' ? 'evolink-gpt-image/run' : 'runninghub-gpt-image/run';
+          const { data: runData, error: runError } = await supabase.functions.invoke(runFunction, {
             body: {
               jobId: newJobId,
               prompt: prompt.trim(),
@@ -876,7 +877,7 @@ const GerarImagemTool = () => {
                     {([
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
-                      { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
+                      { value: 'gpt_image_evolink' as const, label: '🌐 GPT Image Evolink' },
                     ]).map((opt) => (
                       <button
                         key={opt.value}
