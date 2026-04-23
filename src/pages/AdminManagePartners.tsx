@@ -449,7 +449,8 @@ const AdminManagePartners = () => {
           <Dialog open={showAddModal} onOpenChange={(open) => {
             setShowAddModal(open);
             if (!open) {
-              setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
+              setNewPartner(getEmptyPartnerForm());
+              setFormErrors({});
               setSelectedPlatforms({ prompts: false, artes_eventos: false, artes_musicos: false });
               setShowPassword(false);
             }
