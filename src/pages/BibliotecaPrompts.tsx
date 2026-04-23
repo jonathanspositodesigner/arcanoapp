@@ -782,13 +782,8 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (item.isPremium && !isPremium) {
-                          setPremiumModalItem(item);
-                          setShowPremiumModal(true);
-                        } else {
-                          trackPromptClick(String(item.id), item.title, !!item.isExclusive);
-                          navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
-                        }
+                        trackPromptClick(String(item.id), item.title, !!item.isExclusive);
+                        navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
                       }}
                       size="sm"
                       className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
@@ -801,24 +796,19 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (item.isPremium && !isPremium) {
-                          setPremiumModalItem(item);
-                          setShowPremiumModal(true);
-                        } else {
-                          trackPromptClick(String(item.id), item.title, !!item.isExclusive);
-                          navigate('/movieled-maker', {
-                            state: {
-                              preSelectedItem: {
-                                id: String(item.id),
-                                title: item.title,
-                                image_url: item.imageUrl,
-                                thumbnail_url: item.thumbnailUrl || null,
-                                reference_images: item.referenceImages || null,
-                                prompt: item.prompt,
-                              }
+                        trackPromptClick(String(item.id), item.title, !!item.isExclusive);
+                        navigate('/movieled-maker', {
+                          state: {
+                            preSelectedItem: {
+                              id: String(item.id),
+                              title: item.title,
+                              image_url: item.imageUrl,
+                              thumbnail_url: item.thumbnailUrl || null,
+                              reference_images: item.referenceImages || null,
+                              prompt: item.prompt,
                             }
-                          });
-                        }
+                          }
+                        });
                       }}
                       size="sm"
                       className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white min-w-0"
@@ -991,21 +981,12 @@ const BibliotecaPrompts = () => {
                 {selectedPrompt.category === 'Fotos' && !isVideoUrl(selectedPrompt.imageUrl) && (
                   <Button
                     onClick={() => {
-                      if (selectedPrompt.isPremium && !isPremium) {
-                        setPremiumModalItem(selectedPrompt);
-                        setShowPremiumModal(true);
-                      } else {
-                        trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, !!selectedPrompt.isExclusive);
-                        navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
-                      }
+                      trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, !!selectedPrompt.isExclusive);
+                      navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
                     }}
-                    className={`w-full ${selectedPrompt.isPremium && !isPremium ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white'}`}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white"
                   >
-                    {selectedPrompt.isPremium && !isPremium ? (
-                      <><Lock className="h-4 w-4 mr-2" />Exclusivo Premium</>
-                    ) : (
-                      <><Sparkles className="h-4 w-4 mr-2" />Gerar sua foto</>
-                    )}
+                    <Sparkles className="h-4 w-4 mr-2" />Gerar sua foto
                   </Button>
                 )}
                 {selectedPrompt.category === 'Seedance 2' && (
