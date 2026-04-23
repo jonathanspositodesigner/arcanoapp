@@ -327,7 +327,7 @@ const PartnerEarningsAdminContent = () => {
             <Card className="p-4 bg-blue-500/10 border-blue-500/20">
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
-                <div><p className="text-xs text-muted-foreground">Desbloqueios Totais</p><p className="text-xl font-bold text-blue-400">{totalUnlocksAll}</p></div>
+                <div><p className="text-xs text-muted-foreground">Prompts Copiados Totais</p><p className="text-xl font-bold text-blue-400">{totalUnlocksAll}</p></div>
               </div>
             </Card>
             <Card className="p-4 bg-primary/10 border-primary/20">
@@ -353,7 +353,7 @@ const PartnerEarningsAdminContent = () => {
                   <th className="text-right py-2 px-2"><SortHeader label="Saldo Bruto" sk="total_earned" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Saques Pagos" sk="total_paid" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Disponível" sk="available" /></th>
-                  <th className="text-right py-2 px-2"><SortHeader label="Desbloqueios" sk="total_unlocks" /></th>
+                   <th className="text-right py-2 px-2"><SortHeader label="P. Copiados" sk="total_unlocks" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Prompts" sk="approved_prompts" /></th>
                   <th className="text-left py-2 px-2 text-xs font-semibold text-muted-foreground">PIX</th>
                   <th className="text-right py-2 px-2"></th>
@@ -442,7 +442,7 @@ const PartnerEarningsAdminContent = () => {
       {tab === "ranking" && (
         <div>
           <div className="flex flex-wrap gap-2 mb-4">
-            {([["earnings", "Por Ganhos"], ["unlocks", "Por Desbloqueios"], ["prompts", "Por Prompts"]] as [RankCriteria, string][]).map(([k, l]) => (
+             {([["earnings", "Por Ganhos"], ["unlocks", "Por Prompts Copiados"], ["prompts", "Por Prompts"]] as [RankCriteria, string][]).map(([k, l]) => (
               <Button key={k} variant={rankBy === k ? "default" : "outline"} size="sm" onClick={() => { setRankBy(k); setRankPage(1); }}>{l}</Button>
             ))}
           </div>
@@ -450,7 +450,7 @@ const PartnerEarningsAdminContent = () => {
           <div className="space-y-3">
             {rankedPage.map((p, idx) => {
               const i = (rankPage - 1) * RANK_PER_PAGE + idx;
-              const mainValue = rankBy === "earnings" ? formatBRL(p.total_earned) : rankBy === "unlocks" ? `${p.total_unlocks} desbloqueios` : `${p.approved_prompts} prompts`;
+               const mainValue = rankBy === "earnings" ? formatBRL(p.total_earned) : rankBy === "unlocks" ? `${p.total_unlocks} prompts copiados` : `${p.approved_prompts} prompts`;
               const isTop3 = i < 3;
               return (
                 <Card key={p.id} className={cn("p-4 flex items-center gap-4", isTop3 && "border-2", i === 0 && "border-yellow-500/40", i === 1 && "border-gray-400/40", i === 2 && "border-amber-600/40")}>
@@ -463,7 +463,7 @@ const PartnerEarningsAdminContent = () => {
                   </div>
                   <div className="text-right text-xs text-muted-foreground space-y-0.5">
                     {rankBy !== "earnings" && <p>{formatBRL(p.total_earned)}</p>}
-                    {rankBy !== "unlocks" && <p>{p.total_unlocks} desbloqueios</p>}
+                     {rankBy !== "unlocks" && <p>{p.total_unlocks} prompts copiados</p>}
                     {rankBy !== "prompts" && <p>{p.approved_prompts} prompts</p>}
                   </div>
                 </Card>
@@ -525,7 +525,7 @@ const PartnerEarningsAdminContent = () => {
                   <p className="text-xl font-bold text-emerald-400">{formatBRL(selectedPartner.total_earned - selectedPartner.total_paid)}</p>
                 </Card>
                 <Card className="p-4 bg-blue-500/10 border-blue-500/20">
-                  <p className="text-xs text-muted-foreground">Desbloqueios</p>
+                   <p className="text-xs text-muted-foreground">Prompts Copiados</p>
                   <p className="text-xl font-bold text-blue-400">{selectedPartner.total_unlocks}</p>
                 </Card>
                 <Card className="p-4">
@@ -574,7 +574,7 @@ const PartnerEarningsAdminContent = () => {
               <Card className="overflow-hidden mb-4">
                 <div className="divide-y divide-border">
                   {pagedDetailEarnings.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">Nenhum desbloqueio neste período</p>
+                     <p className="text-center text-muted-foreground py-8">Nenhum prompt copiado neste período</p>
                   ) : pagedDetailEarnings.map(e => (
                     <div key={e.id} className="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
                       <div className="flex-1 min-w-0">
@@ -601,7 +601,7 @@ const PartnerEarningsAdminContent = () => {
               )}
 
               <div className="text-right text-sm text-muted-foreground mb-6">
-                {filteredDetailEarnings.length} desbloqueio{filteredDetailEarnings.length !== 1 ? "s" : ""} • Total: {formatBRL(detailPeriodTotal)}
+                {filteredDetailEarnings.length} prompt{filteredDetailEarnings.length !== 1 ? "s" : ""} copiado{filteredDetailEarnings.length !== 1 ? "s" : ""} • Total: {formatBRL(detailPeriodTotal)}
               </div>
 
               {/* Partner's withdrawal history */}
