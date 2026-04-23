@@ -55,6 +55,7 @@ interface MediaData {
   gender: string | null;
   tags: string[];
   subcategorySlug: string | null;
+  isFree: boolean;
 }
 
 const PartnerUpload = () => {
@@ -236,6 +237,7 @@ const PartnerUpload = () => {
         gender: null,
         tags: [],
         subcategorySlug: null,
+        isFree: false,
       });
     }
 
@@ -404,7 +406,7 @@ const PartnerUpload = () => {
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
-            is_premium: true,
+            is_premium: !media.isFree,
             gender: media.category === 'Fotos' ? media.gender : null,
             tags: media.category === 'Fotos' && media.tags.length > 0 ? media.tags : null,
           });
