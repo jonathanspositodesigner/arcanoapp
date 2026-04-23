@@ -7,6 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { ArrowLeft, Trophy, Flame, Star, Target, Crown, Zap, Award, Sparkles, Shield, Film, Cpu, DollarSign, MousePointerClick } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
 
 // Level definitions
 const LEVELS = [
@@ -68,6 +69,7 @@ interface RankingEntry {
 const PartnerConquistas = () => {
   const navigate = useNavigate();
   const [partnerId, setPartnerId] = useState<string | null>(null);
+  usePartnerGamificationNotifications(partnerId);
   const [gamification, setGamification] = useState<GamificationData | null>(null);
   const [badges, setBadges] = useState<BadgeData[]>([]);
   const [challenges, setChallenges] = useState<ChallengeData[]>([]);

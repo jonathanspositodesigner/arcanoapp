@@ -12,6 +12,7 @@ import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCir
 import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import imageCompression from 'browser-image-compression';
 
@@ -41,6 +42,7 @@ type FilterType = "all" | "approved" | "pending" | "rejected";
 const PartnerDashboard = () => {
   const navigate = useNavigate();
   const [partner, setPartner] = useState<Partner | null>(null);
+  usePartnerGamificationNotifications(partner?.id ?? null);
   const [prompts, setPrompts] = useState<PartnerPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<FilterType>("all");
