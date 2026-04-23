@@ -606,22 +606,6 @@ const PartnerDashboard = () => {
             )}
           </div>
 
-          {partner?.is_founder && (
-            <div className="grid grid-cols-4 gap-1.5 text-center">
-              {[
-                ["Criador", "R$ 0,10"],
-                ["Colab.", "R$ 0,12"],
-                ["Esp.", "R$ 0,15"],
-                ["Elite", "R$ 0,20"],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-lg border border-primary/15 bg-primary/5 px-2 py-2">
-                  <p className="text-[10px] text-muted-foreground">{label}</p>
-                  <p className="text-xs font-extrabold text-primary">{value}</p>
-                </div>
-              ))}
-            </div>
-          )}
-
           <EarningsGuideModal
             isFounder={!!partner?.is_founder}
             hideFirstPromptCta
