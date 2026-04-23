@@ -51,8 +51,7 @@ const TornarSeColaborador = () => {
     if (!form.emailConfirm.trim()) e.emailConfirm = "Campo obrigatório";
     else if (form.emailConfirm.trim().toLowerCase() !== form.email.trim().toLowerCase()) e.emailConfirm = "Os e-mails não coincidem";
     if (!form.whatsapp.trim()) e.whatsapp = "Campo obrigatório";
-    if (!form.portfolio.trim()) e.portfolio = "Campo obrigatório";
-    else if (!/^https?:\/\/.+/.test(form.portfolio)) e.portfolio = "Insira uma URL válida (https://...)";
+    if (form.portfolio.trim() && !/^https?:\/\/.+/.test(form.portfolio)) e.portfolio = "Insira uma URL válida (https://...)";
     if (!form.senha.trim()) e.senha = "Campo obrigatório";
     else if (form.senha.length < 6) e.senha = "A senha deve ter no mínimo 6 caracteres";
     if (!form.senhaConfirm.trim()) e.senhaConfirm = "Campo obrigatório";
