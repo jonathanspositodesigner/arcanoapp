@@ -35,6 +35,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
+import { getDeviceFingerprint } from "@/lib/deviceFingerprint";
 
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -1046,17 +1047,31 @@ const BibliotecaPrompts = () => {
                               }
                               const success = await unlockPrompt(String(selectedPrompt.id));
                               if (success) {
+                                // Register collaborator earning if it's a partner prompt
+                                if (selectedPrompt.partnerId) {
+                                  try {
+                                    const fp = getDeviceFingerprint();
+                                    await supabase.rpc('register_collaborator_unlock', {
+                                      _collaborator_id: selectedPrompt.partnerId,
+                                      _prompt_id: String(selectedPrompt.id),
+                                      _prompt_title: selectedPrompt.title,
+                                      _device_fingerprint: fp,
+                                    });
+                                  } catch (err) {
+                                    console.error('Error registering collaborator unlock:', err);
+                                  }
+                                }
                                 toast.success('Prompt liberado!');
                               } else {
                                 toast.error('Não foi possível liberar o prompt.');
                               }
                             }}
                             size="sm"
-                            disabled={premiumLimitReached}
+                            disabled={premiumLimitReached && !isPremiumUnlimited}
                             className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
                           >
                             <Zap className="h-3 w-3 mr-1" />
-                            Liberar Prompt {!isPremiumUnlimited && `(${remainingUnlocks} restantes)`}
+                            Liberar Prompt {!isPremiumUnlimited ? `(${remainingUnlocks} restantes)` : ''}
                           </Button>
                         </div>
                       </div>
