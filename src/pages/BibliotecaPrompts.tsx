@@ -271,7 +271,7 @@ const BibliotecaPrompts = () => {
     const catPrompts = contentTypePrompts.filter(p => p.category === selectedCategory);
     const subs = new Set<string>();
     catPrompts.forEach(p => {
-      if (p.gender) subs.add(p.gender);
+      if (p.subcategorySlug) subs.add(p.subcategorySlug);
     });
     const sorted = Array.from(subs).sort((a, b) => a.localeCompare(b, 'pt-BR'));
     return sorted;
@@ -321,7 +321,7 @@ const BibliotecaPrompts = () => {
     
     // Apply subcategory filter
     if (selectedSubcategory) {
-      results = results.filter(prompt => prompt.gender === selectedSubcategory);
+      results = results.filter(prompt => prompt.subcategorySlug === selectedSubcategory);
     }
 
     // Apply smart search filter client-side
