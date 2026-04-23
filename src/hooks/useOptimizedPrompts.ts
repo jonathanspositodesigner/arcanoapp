@@ -118,7 +118,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         bonusClicks: item.bonus_clicks || 0
       }));
 
-      // Map admin prompts
+      // Map admin prompts - default author is Arcano App
       const adminPrompts: PromptItem[] = (adminResult.data || []).map(item => ({
         id: item.id,
         title: item.title,
@@ -133,7 +133,10 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         createdAt: item.created_at || undefined,
         promptType: 'admin' as const,
         clickCount: clickCounts[item.id] || 0,
-        bonusClicks: item.bonus_clicks || 0
+        bonusClicks: item.bonus_clicks || 0,
+        partnerName: 'Arcano App',
+        partnerInstagram: 'arcanoapp',
+        partnerAvatarUrl: undefined
       }));
 
       // Map partner prompts
