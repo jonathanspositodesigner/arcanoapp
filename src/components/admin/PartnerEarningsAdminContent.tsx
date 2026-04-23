@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 import PartnerToolRatesAdmin from "./PartnerToolRatesAdmin";
 import PartnerGamificationAdmin from "./PartnerGamificationAdmin";
 import PartnerReconciliationAdmin from "./PartnerReconciliationAdmin";
+import PartnersManagementContent from "@/components/PartnersManagementContent";
+import CollaboratorRequestsContent from "./CollaboratorRequestsContent";
 
 const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -54,7 +56,7 @@ interface EarningRow {
   earning_type: 'unlock' | 'tool_usage'; tool_table?: string;
 }
 
-type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation";
+type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 type RankCriteria = "earnings" | "unlocks" | "prompts";
 type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts";
@@ -269,6 +271,8 @@ const PartnerEarningsAdminContent = () => {
   const selectedPendingWd = selectedPartnerWithdrawals.find(w => w.status === "pendente");
 
   const tabs: { id: Tab; label: string }[] = [
+    { id: "manage-partners", label: "👥 Gerenciar Parceiros" },
+    { id: "requests", label: "📋 Solicitações" },
     { id: "overview", label: "Visão Geral" },
     { id: "withdrawals", label: "Saques" },
     { id: "ranking", label: "Ranking" },
@@ -285,7 +289,7 @@ const PartnerEarningsAdminContent = () => {
 
   return (
     <div className="max-w-7xl mx-auto">
-      <h1 className="text-2xl font-bold text-foreground mb-6">Financeiro Colaboradores</h1>
+      <h1 className="text-2xl font-bold text-foreground mb-6">Painel de Colaboradores</h1>
 
       {/* Tabs */}
       <div className="flex flex-wrap gap-2 mb-6">
@@ -633,6 +637,12 @@ const PartnerEarningsAdminContent = () => {
 
       {/* TAB: RECONCILIATION */}
       {tab === "reconciliation" && <PartnerReconciliationAdmin />}
+
+      {/* TAB: MANAGE PARTNERS */}
+      {tab === "manage-partners" && <PartnersManagementContent />}
+
+      {/* TAB: REQUESTS */}
+      {tab === "requests" && <CollaboratorRequestsContent />}
     </div>
   );
 };
