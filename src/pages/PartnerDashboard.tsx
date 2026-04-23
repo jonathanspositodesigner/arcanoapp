@@ -543,6 +543,58 @@ const PartnerDashboard = () => {
           </button>
         </div>
 
+        {/* XP Progress Section */}
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-bold text-foreground">
+              ⚡ {xpTotal} XP · Nível {currentLevel} — {levelName}
+            </p>
+            {nextLevelData && (
+              <p className="text-xs text-muted-foreground">meta: {xpMax}</p>
+            )}
+          </div>
+          <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden mb-1.5">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-purple-400 rounded-full transition-all duration-500"
+              style={{ width: `${xpProgress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground mb-3">
+            <span>{xpMin}</span>
+            <span>{xpMax === Infinity ? '∞' : xpMax} XP</span>
+          </div>
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+            <p className="text-xs font-semibold text-green-400">
+              💰 Taxa por desbloqueio: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentLevelData.unlockRate)}
+            </p>
+          </div>
+        </div>
+
+        {/* Streak Card */}
+        {(partnerGamification?.current_streak || 0) > 0 && (
+          <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🔥</span>
+              <div>
+                <p className="text-2xl font-extrabold text-foreground leading-none">
+                  {partnerGamification?.current_streak} dias
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Streak · Recorde: {partnerGamification?.best_streak || 0} dias
+                </p>
+              </div>
+            </div>
+            {partnerGamification?.streak_protection_available && (
+              <span className="text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-full">
+                Proteção ✓
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Section Header */}
+        <p className="text-xs font-bold text-muted-foreground tracking-wider px-4 mb-2 mt-1">SEUS PROMPTS</p>
+
         {/* Stat Chips */}
         <div className="grid grid-cols-2 gap-2.5 px-4 mb-4">
           {[
