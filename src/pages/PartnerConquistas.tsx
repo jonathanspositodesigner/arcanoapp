@@ -22,7 +22,7 @@ const ALL_BADGES = [
   { slug: "first_prompt", name: "Primeira Contribuição", icon: "⭐", hint: "Tenha 1 prompt aprovado" },
   { slug: "on_fire", name: "Em Chamas 🔥", icon: "🔥", hint: "Streak de 7 dias" },
   { slug: "diamond", name: "Diamante 💎", icon: "💎", hint: "50 prompts aprovados" },
-  { slug: "viral", name: "Viral ⚡", icon: "⚡", hint: "1 prompt com 100+ desbloqueios" },
+  { slug: "viral", name: "Viral ⚡", icon: "⚡", hint: "1 prompt com 100+ cópias" },
   { slug: "top3", name: "Pódio 🏆", icon: "🏆", hint: "Top 3 no ranking semanal" },
   { slug: "millionaire", name: "R$50 Ganhos 💰", icon: "💰", hint: "Ganhar R$50+ no total" },
   { slug: "legendary", name: "Lendário 👑", icon: "👑", hint: "Atingir nível 5 (Elite)" },
@@ -235,12 +235,12 @@ const PartnerConquistas = () => {
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <MousePointerClick className="h-4 w-4 text-green-400" />
-              <p className="text-xs text-muted-foreground">Desbloqueios</p>
+              <p className="text-xs text-muted-foreground">Prompts Copiados</p>
             </div>
             <p className="text-xl font-bold text-green-400">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(unlockEarnings.total)}
             </p>
-            <p className="text-xs text-muted-foreground">{unlockEarnings.count} desbloqueios</p>
+             <p className="text-xs text-muted-foreground">{unlockEarnings.count} prompts copiados</p>
           </div>
           <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
