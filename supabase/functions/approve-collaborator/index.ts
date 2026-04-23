@@ -91,10 +91,16 @@ serve(async (req) => {
     let userId = authData?.user?.id;
     if (!userId) {
       // User already existed, fetch their ID
-      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
-      const existingUser = existingUsers?.users?.find((u: any) => u.email === sol.email);
-      if (!existingUser) throw new Error("Não foi possível encontrar o usuário criado");
-      userId = existingUser.id;
+      // Use the admin API to get user by email directly via REST
+      const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+      const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+      const resp = await fetch(`${supabaseUrl}/auth/v1/admin/users?filter=${encodeURIComponent(sol.email)}&page=1&per_page=10`, {
+        headers: { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey },
+      });
+      const usersResult = await resp.json();
+      const matchedUser = (usersResult?.users || usersResult || []).find?.((u: any) => u.email === sol.email);
+      if (!matchedUser) throw new Error("Não foi possível encontrar o usuário criado");
+      userId = matchedUser.id;
     }
 
     // Create partner role
