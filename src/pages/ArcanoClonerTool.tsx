@@ -64,6 +64,7 @@ const ArcanoClonerTool: React.FC = () => {
   const [userFile, setUserFile] = useState<File | null>(null);
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
+  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
 
   // Aspect ratio state
@@ -335,9 +336,10 @@ const ArcanoClonerTool: React.FC = () => {
     }
   };
 
-  // Handle reference from library (just URL)
-  const handleSelectFromLibrary = (imageUrl: string) => {
+  // Handle reference from library (with meta for partner earnings)
+  const handleSelectFromLibrary = (imageUrl: string, meta?: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleReferenceImageChange(imageUrl);
+    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
   };
 
   // Handle upload from modal
@@ -350,6 +352,7 @@ const ArcanoClonerTool: React.FC = () => {
   const handleClearReference = () => {
     setReferenceImage(null);
     setReferenceFile(null);
+    setReferencePromptId(null);
   };
 
   // Compress image before upload
@@ -483,6 +486,7 @@ const ArcanoClonerTool: React.FC = () => {
           aspect_ratio: aspectRatio,
           user_image_url: userUrl,
           reference_image_url: referenceUrl,
+          reference_prompt_id: referencePromptId,
         }
       );
 
@@ -1253,9 +1257,9 @@ const ArcanoClonerTool: React.FC = () => {
       <PhotoLibraryModal
         isOpen={showPhotoLibrary}
         onClose={() => setShowPhotoLibrary(false)}
-        onSelectPhoto={handleSelectFromLibrary}
+        onSelectPhoto={(url) => handleSelectFromLibrary(url)}
+        onSelectPhotoWithMeta={(url, meta) => handleSelectFromLibrary(url, meta)}
         onUploadPhoto={handleUploadFromModal}
-        
       />
 
       {/* No Credits Modal */}
