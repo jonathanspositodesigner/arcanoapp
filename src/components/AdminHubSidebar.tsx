@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel" | "collaborator-requests" | "partner-earnings";
+export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel" | "partner-earnings";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
@@ -42,22 +42,10 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout, onForceUpdate, is
       description: "Logs e monitoramento Meta"
     },
     {
-      id: "partners" as const,
-      label: "GERENCIAR PARCEIROS",
-      icon: Users,
-      description: "Cadastrar e gerenciar colaboradores"
-    },
-    {
-      id: "collaborator-requests" as const,
-      label: "SOLICITAÇÕES COLABORADORES",
-      icon: UserPlus,
-      description: "Aprovar/rejeitar novos colaboradores"
-    },
-    {
       id: "partner-earnings" as const,
-      label: "FINANCEIRO COLABORADORES",
+      label: "COLABORADORES",
       icon: DollarSign,
-      description: "Ganhos, saques e ranking"
+      description: "Parceiros, solicitações e financeiro"
     },
     {
       id: "abandoned-checkouts" as const,
