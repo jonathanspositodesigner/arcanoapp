@@ -76,7 +76,6 @@ const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
 const PartnerUpload = lazy(() => import("./pages/PartnerUpload"));
 const PartnerEarnings = lazy(() => import("./pages/PartnerEarnings"));
 const PartnerConquistas = lazy(() => import("./pages/PartnerConquistas"));
-const PartnerComoGanhar = lazy(() => import("./pages/PartnerComoGanhar"));
 const UpscalerArcanoVersionSelect = lazy(() => import("./pages/UpscalerArcanoVersionSelect"));
 const ToolVersionLessons = lazy(() => import("./pages/ToolVersionLessons"));
 const ForjaSelos3D = lazy(() => import("./pages/ForjaSelos3D"));
@@ -290,7 +289,6 @@ const AppContent = () => {
           <Route path="/parceiro-upload" element={<PartnerUpload />} />
           <Route path="/parceiro-extrato" element={<PartnerEarnings />} />
           <Route path="/parceiro-conquistas" element={<PartnerConquistas />} />
-          <Route path="/parceiro-como-ganhar" element={<PartnerComoGanhar />} />
           <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v1" replace />} />

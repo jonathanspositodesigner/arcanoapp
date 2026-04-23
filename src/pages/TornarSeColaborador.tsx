@@ -29,6 +29,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 
 const TornarSeColaborador = () => {
   const [form, setForm] = useState({
@@ -278,11 +279,17 @@ const TornarSeColaborador = () => {
           <p className="text-xs text-muted-foreground text-center max-w-xl mx-auto">
             Os valores são calculados automaticamente e acumulados no seu painel de contribuidor. O saque fica disponível a partir de um saldo mínimo.
           </p>
-          <Button asChild variant="outline" className="mt-4 border-primary/30 text-primary hover:bg-primary/10">
-            <Link to="/parceiro-como-ganhar">
-              Saiba mais sobre como ganhar →
-            </Link>
-          </Button>
+          <div className="flex justify-center">
+            <EarningsGuideModal
+              hideFirstPromptCta
+              trigger={
+                <Button variant="outline" className="gap-2 border-primary/40 text-primary hover:bg-primary/10 hover:text-primary">
+                  <Sparkles className="h-4 w-4" />
+                  Saiba mais sobre como ganhar
+                </Button>
+              }
+            />
+          </div>
         </section>
 
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
