@@ -15,7 +15,9 @@ import {
   Wand2,
   CheckCircle2,
   AlertCircle,
+  ArrowLeft,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -166,6 +168,15 @@ const TornarSeColaborador = () => {
 
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
+      {/* Back to home button */}
+      <div className="absolute top-4 left-4 z-20">
+        <Button variant="ghost" size="sm" asChild className="gap-2 text-muted-foreground hover:text-foreground">
+          <Link to="/">
+            <ArrowLeft className="h-4 w-4" />
+            Voltar
+          </Link>
+        </Button>
+      </div>
       {/* Hero section with gradient */}
       <div className="relative py-20 md:py-28 text-center overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent pointer-events-none" />
