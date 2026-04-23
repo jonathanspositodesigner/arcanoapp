@@ -561,30 +561,6 @@ const BibliotecaPrompts = () => {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
 
-          {/* Premium Prompt Counter */}
-          {user && isPremium && (
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                <Lock className="h-3.5 w-3.5 text-purple-400" />
-                <span className="text-xs font-medium text-foreground">
-                  Prompts Premium:
-                </span>
-                <span className="text-xs font-bold text-purple-400 tabular-nums">
-                  {isPremiumUnlimited ? '∞' : `${remainingUnlocks}/${premiumDailyLimit}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                <Coins className="h-3.5 w-3.5 text-yellow-400" />
-                <span className="text-xs font-medium text-foreground">
-                  Créditos:
-                </span>
-                <span className="text-xs font-bold text-yellow-400 tabular-nums">
-                  {creditsLoading ? '...' : credits.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
-
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
             <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
