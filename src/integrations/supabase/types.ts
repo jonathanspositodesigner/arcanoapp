@@ -3404,6 +3404,13 @@ export type Database = {
             foreignKeyName: "partner_artes_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_artes_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
             referencedRelation: "partners"
             referencedColumns: ["id"]
           },
@@ -3490,6 +3497,13 @@ export type Database = {
             foreignKeyName: "partner_artes_musicos_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_artes_musicos_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
             referencedRelation: "partners"
             referencedColumns: ["id"]
           },
@@ -3521,6 +3535,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "partner_platforms_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "partner_platforms_partner_id_fkey"
             columns: ["partner_id"]
@@ -3607,6 +3628,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "partner_prompts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "partner_prompts_partner_id_fkey"
             columns: ["partner_id"]
@@ -5645,7 +5673,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      partner_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          id: string | null
+          instagram: string | null
+          name: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          id?: string | null
+          instagram?: string | null
+          name?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          id?: string | null
+          instagram?: string | null
+          name?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       add_lifetime_credits: {
