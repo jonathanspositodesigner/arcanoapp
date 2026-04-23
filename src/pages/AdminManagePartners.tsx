@@ -570,9 +570,22 @@ const AdminManagePartners = () => {
                       <Copy className="h-4 w-4" />
                     </Button>
                   </div>
+                  {formErrors.password && <p className="text-xs text-destructive mt-1">{formErrors.password}</p>}
                 </div>
                 <div>
-                  <Label htmlFor="phone">Telefone</Label>
+                  <Label htmlFor="passwordConfirm">Confirme a senha *</Label>
+                  <Input
+                    id="passwordConfirm"
+                    type={showPassword ? "text" : "password"}
+                    value={newPartner.passwordConfirm}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, passwordConfirm: e.target.value }))}
+                    placeholder="Digite novamente a senha"
+                    className="mt-1"
+                  />
+                  {formErrors.passwordConfirm && <p className="text-xs text-destructive mt-1">{formErrors.passwordConfirm}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="phone">WhatsApp *</Label>
                   <Input
                     id="phone"
                     value={newPartner.phone}
@@ -580,6 +593,19 @@ const AdminManagePartners = () => {
                     placeholder="(11) 99999-9999"
                     className="mt-1"
                   />
+                  {formErrors.phone && <p className="text-xs text-destructive mt-1">{formErrors.phone}</p>}
+                </div>
+                <div>
+                  <Label htmlFor="portfolio">Link do portfólio</Label>
+                  <Input
+                    id="portfolio"
+                    type="url"
+                    value={newPartner.portfolio}
+                    onChange={(e) => setNewPartner(prev => ({ ...prev, portfolio: e.target.value }))}
+                    placeholder="https://..."
+                    className="mt-1"
+                  />
+                  {formErrors.portfolio && <p className="text-xs text-destructive mt-1">{formErrors.portfolio}</p>}
                 </div>
                 <div>
                   <Label htmlFor="company">Empresa</Label>
