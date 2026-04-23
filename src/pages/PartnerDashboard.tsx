@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
-import { Instagram, User, Camera, KeyRound } from "lucide-react";
+import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -65,6 +65,8 @@ const PartnerDashboard = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
+  const [earningsBalance, setEarningsBalance] = useState(0);
+  const [earningsUnlocks, setEarningsUnlocks] = useState(0);
 
   useEffect(() => {
     checkPartnerAndFetchData();
@@ -119,6 +121,16 @@ const PartnerDashboard = () => {
     setProfileName(partnerData.name);
     setProfileInstagram(partnerData.instagram || "");
     setProfileAvatarUrl(partnerData.avatar_url || "");
+
+    // Fetch earnings balance
+    const { data: balanceData } = await supabase
+      .from('collaborator_balances')
+      .select('total_earned, total_unlocks')
+      .eq('collaborator_id', partnerData.id)
+      .maybeSingle();
+    
+    setEarningsBalance(balanceData?.total_earned || 0);
+    setEarningsUnlocks(balanceData?.total_unlocks || 0);
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
@@ -507,6 +519,31 @@ const PartnerDashboard = () => {
         )}
 
         {/* Stats Cards */}
+        {/* Earnings Balance Card */}
+        <Card
+          className="p-5 mb-6 bg-green-500/10 border-green-500/20 cursor-pointer hover:bg-green-500/15 transition-colors"
+          onClick={() => navigate('/parceiro-extrato')}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
+                <DollarSign className="h-6 w-6 text-green-400" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Saldo de Ganhos</p>
+                <p className="text-3xl font-bold text-green-400">
+                  R$ {earningsBalance.toFixed(2).replace('.', ',')}
+                </p>
+                <p className="text-xs text-muted-foreground">{earningsUnlocks} desbloqueio{earningsUnlocks !== 1 ? 's' : ''} total</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-primary">
+              <TrendingUp className="h-5 w-5" />
+              <span className="text-sm font-medium">Ver Extrato</span>
+            </div>
+          </div>
+        </Card>
+
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <Card className="p-4">
             <div className="text-center">
