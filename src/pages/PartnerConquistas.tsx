@@ -88,7 +88,7 @@ const PartnerConquistas = () => {
   const loadData = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { navigate("/login"); return; }
+      if (!user) { navigate("/parceiro-login"); return; }
 
       const { data: partner } = await supabase
         .from("partners")
