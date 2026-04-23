@@ -66,6 +66,7 @@ const CreditHistory = lazy(() => import("./pages/CreditHistory"));
 const InstallApp = lazy(() => import("./pages/InstallApp"));
 const Planos = lazy(() => import("./pages/Planos"));
 const Planos2 = lazy(() => import("./pages/Planos2"));
+const TornarSeColaborador = lazy(() => import("./pages/TornarSeColaborador"));
 
 const AdminInstallStats = lazy(() => import("./pages/AdminInstallStats"));
 const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
@@ -312,6 +313,7 @@ const AppContent = () => {
           <Route path="/parceiro-dashboard-artes" element={<PartnerDashboardArtes />} />
           <Route path="/parceiro-upload-artes" element={<PartnerUploadArtes />} />
           <Route path="/parceiro-login-unificado" element={<PartnerLoginUnified />} />
+          <Route path="/tornar-se-colaborador" element={<TornarSeColaborador />} />
           <Route path="/parceiro-plataformas" element={<PartnerPlatformSelect />} />
           <Route path="/parceiro-dashboard-musicos" element={<PartnerDashboardMusicos />} />
           <Route path="/parceiro-upload-musicos" element={<PartnerUploadMusicos />} />
