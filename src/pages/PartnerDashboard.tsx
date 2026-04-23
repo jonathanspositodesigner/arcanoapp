@@ -641,12 +641,6 @@ const PartnerDashboard = () => {
               ))}
             </div>
 
-            <div className="grid grid-cols-1 gap-2">
-              <Button variant="outline" size="sm" className="justify-start gap-2" onClick={() => navigate('/parceiro-upload')}>
-                <Upload className="h-3.5 w-3.5" />
-                Enviar prompt no padrão
-              </Button>
-            </div>
           </div>
         )}
 
