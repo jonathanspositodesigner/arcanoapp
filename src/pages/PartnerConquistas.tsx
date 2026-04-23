@@ -223,7 +223,7 @@ const PartnerConquistas = () => {
           )}
           <div className="mt-3 p-2.5 rounded-xl bg-primary/10 border border-primary/20">
             <p className="text-sm text-foreground">
-              💰 Sua taxa por desbloqueio: <span className="font-bold text-green-400">
+              💰 Seu ganho por prompt copiado: <span className="font-bold text-green-400">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentLevel.unlockRate)}
               </span>
             </p>
