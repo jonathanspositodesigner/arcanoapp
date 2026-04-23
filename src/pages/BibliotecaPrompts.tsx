@@ -264,16 +264,23 @@ const BibliotecaPrompts = () => {
 
   // Compute available subcategories for the selected category
   const availableSubcategories = useMemo(() => {
-    if (!["Fotos"].includes(selectedCategory)) return [];
+    // Show subcategories for any specific category (not meta-categories)
+    const metaCategories = ["Ver Tudo", "Populares", "Novos", "Grátis"];
+    if (metaCategories.includes(selectedCategory)) return [];
     const contentTypePrompts = contentType === 'exclusive'
       ? allPrompts.filter(p => p.isExclusive)
       : allPrompts.filter(p => p.promptType === 'partner');
     const catPrompts = contentTypePrompts.filter(p => p.category === selectedCategory);
-    const subs = new Set<string>();
+    const subsMap = new Map<string, string>();
     catPrompts.forEach(p => {
-      if (p.gender) subs.add(p.gender);
+      if (p.subcategorySlug && p.subcategoryName) {
+        subsMap.set(p.subcategorySlug, p.subcategoryName);
+      }
     });
-    const sorted = Array.from(subs).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    if (subsMap.size === 0) return [];
+    const sorted = Array.from(subsMap.entries())
+      .sort((a, b) => a[1].localeCompare(b[1], 'pt-BR'))
+      .map(([slug, name]) => ({ slug, name }));
     return sorted;
   }, [selectedCategory, contentType, allPrompts]);
 
@@ -321,7 +328,7 @@ const BibliotecaPrompts = () => {
     
     // Apply subcategory filter
     if (selectedSubcategory) {
-      results = results.filter(prompt => prompt.gender === selectedSubcategory);
+      results = results.filter(prompt => prompt.subcategorySlug === selectedSubcategory);
     }
 
     // Apply smart search filter client-side
@@ -720,15 +727,15 @@ const BibliotecaPrompts = () => {
               </button>
               {availableSubcategories.map(sub => (
                 <button
-                  key={sub}
-                  onClick={() => setSelectedSubcategory(sub)}
+                  key={sub.slug}
+                  onClick={() => setSelectedSubcategory(sub.slug)}
                   className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-all ${
-                    selectedSubcategory === sub
+                    selectedSubcategory === sub.slug
                       ? "bg-secondary text-foreground"
                       : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
-                  {sub}
+                  {sub.name}
                 </button>
               ))}
             </div>

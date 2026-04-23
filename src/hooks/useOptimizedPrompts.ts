@@ -9,8 +9,8 @@ export interface PromptItem {
   imageUrl: string;
   thumbnailUrl?: string;
   category?: string;
-  gender?: string;
-  tags?: string[];
+  subcategorySlug?: string;
+  subcategoryName?: string;
   isCommunity?: boolean;
   isExclusive?: boolean;
   isPremium?: boolean;
@@ -70,7 +70,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
 
     try {
       // Fetch all data in parallel with optimized column selection
-      const [communityResult, adminResult, partnerResult, clicksResult, partnersResult] = await Promise.all([
+      const [communityResult, adminResult, partnerResult, clicksResult, partnersResult, libItemsResult, libCatsResult] = await Promise.all([
         // Only select needed columns
         supabase
           .from('community_prompts')
@@ -93,7 +93,18 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         supabase.rpc('get_prompt_click_counts'),
 
         supabase
-          .rpc('get_public_partner_profiles')
+          .rpc('get_public_partner_profiles'),
+
+        // Fetch library items mapping prompt -> category
+        supabase
+          .from('ai_tool_library_items')
+          .select('source_id, category_id, source_table')
+          .in('source_table', ['admin_prompts', 'partner_prompts']),
+
+        // Fetch library categories (subcategories)
+        supabase
+          .from('ai_tool_library_categories')
+          .select('id, slug, name')
       ]);
 
       // Check for errors
@@ -102,6 +113,20 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
       if (partnerResult.error) throw partnerResult.error;
       if (partnersResult.error) throw partnersResult.error;
       
+      // Build subcategory map: promptId -> { slug, name }
+      const catMap: Record<string, { slug: string; name: string }> = {};
+      if (libCatsResult.data) {
+        libCatsResult.data.forEach((c: any) => { catMap[c.id] = { slug: c.slug, name: c.name }; });
+      }
+      const promptSubcategoryMap: Record<string, { slug: string; name: string }> = {};
+      if (libItemsResult.data) {
+        libItemsResult.data.forEach((item: any) => {
+          if (item.category_id && catMap[item.category_id] && !promptSubcategoryMap[item.source_id]) {
+            promptSubcategoryMap[item.source_id] = catMap[item.category_id];
+          }
+        });
+      }
+
       // Build click counts map from aggregated data
       const clickCounts: Record<string, number> = {};
       if (clicksResult.data) {
@@ -133,8 +158,8 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         imageUrl: item.image_url,
         thumbnailUrl: item.thumbnail_url || undefined,
         category: item.category,
-        gender: item.gender || undefined,
-        tags: item.tags || undefined,
+        subcategorySlug: promptSubcategoryMap[item.id]?.slug || undefined,
+        subcategoryName: promptSubcategoryMap[item.id]?.name || undefined,
         isExclusive: true,
         isPremium: item.is_premium || false,
         referenceImages: item.reference_images || [],
@@ -164,7 +189,8 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
           imageUrl: item.image_url,
           thumbnailUrl: item.thumbnail_url || undefined,
           category: item.category,
-          gender: item.subcategory_slug || undefined,
+          subcategorySlug: promptSubcategoryMap[item.id]?.slug || item.subcategory_slug || undefined,
+          subcategoryName: promptSubcategoryMap[item.id]?.name || undefined,
           isExclusive: true,
           isPremium: item.is_premium || false,
           referenceImages: item.reference_images || [],
