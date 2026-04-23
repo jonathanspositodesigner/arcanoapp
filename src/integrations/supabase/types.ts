@@ -6397,6 +6397,7 @@ export type Database = {
           updated_count: number
         }[]
       }
+      reconcile_collaborator_balances: { Args: never; Returns: Json }
       reconcile_stuck_gemini_video_jobs: { Args: never; Returns: undefined }
       record_warranty_waiver: {
         Args: { _tool_slug: string; _version_slug?: string }
