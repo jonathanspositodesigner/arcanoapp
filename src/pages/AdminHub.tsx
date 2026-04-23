@@ -21,6 +21,7 @@ import SalesManagementContent from "@/components/admin/SalesManagementContent";
 import AdsManagementContent from "@/components/admin/AdsManagementContent";
 import MetaCapiLogsContent from "@/components/admin/MetaCapiLogsContent";
 import CollaboratorRequestsContent from "@/components/admin/CollaboratorRequestsContent";
+import PartnerEarningsAdminContent from "@/components/admin/PartnerEarningsAdminContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -199,6 +200,8 @@ const AdminHub = () => {
         return <MetaCapiLogsContent />;
       case "collaborator-requests":
         return <CollaboratorRequestsContent />;
+      case "partner-earnings":
+        return <PartnerEarningsAdminContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
