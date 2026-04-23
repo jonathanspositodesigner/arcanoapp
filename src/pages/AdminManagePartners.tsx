@@ -618,6 +618,26 @@ const AdminManagePartners = () => {
                   />
                 </div>
 
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      id="isFounder"
+                      checked={newPartner.isFounder}
+                      onCheckedChange={(checked) => setNewPartner(prev => ({ ...prev, isFounder: !!checked }))}
+                      className="mt-0.5"
+                    />
+                    <div>
+                      <Label htmlFor="isFounder" className="flex items-center gap-2 cursor-pointer font-semibold">
+                        <Crown className="h-4 w-4 text-primary" />
+                        Marcar como Arcano Founder
+                      </Label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        O colaborador já entra com a escala especial de pagamentos Founder.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Platform Selection */}
                 <div>
                   <Label>Plataformas *</Label>
