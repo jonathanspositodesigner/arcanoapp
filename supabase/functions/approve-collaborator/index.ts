@@ -87,6 +87,54 @@ serve(async (req) => {
       }
     }
 
+    // Get the user ID (either from newly created user or existing one)
+    let userId = authData?.user?.id;
+    if (!userId) {
+      // User already existed, fetch their ID
+      const { data: existingUsers } = await adminClient.auth.admin.listUsers();
+      const existingUser = existingUsers?.users?.find((u: any) => u.email === sol.email);
+      if (!existingUser) throw new Error("Não foi possível encontrar o usuário criado");
+      userId = existingUser.id;
+    }
+
+    // Create partner role
+    const { error: roleError } = await adminClient
+      .from("user_roles")
+      .upsert({ user_id: userId, role: "partner" }, { onConflict: "user_id,role" });
+    if (roleError) {
+      console.error("[approve-collaborator] Role creation error:", roleError);
+      throw new Error(`Erro ao criar role: ${roleError.message}`);
+    }
+
+    // Create partner record
+    const { data: partnerRecord, error: partnerError } = await adminClient
+      .from("partners")
+      .upsert({
+        user_id: userId,
+        name: sol.nome,
+        email: sol.email,
+        phone: sol.whatsapp || null,
+        is_active: true,
+      }, { onConflict: "user_id" })
+      .select("id")
+      .single();
+    if (partnerError) {
+      console.error("[approve-collaborator] Partner creation error:", partnerError);
+      throw new Error(`Erro ao criar parceiro: ${partnerError.message}`);
+    }
+
+    // Create partner platform (default to prompts)
+    const { error: platformError } = await adminClient
+      .from("partner_platforms")
+      .upsert({
+        partner_id: partnerRecord.id,
+        platform: "prompts",
+        is_active: true,
+      }, { onConflict: "partner_id,platform" });
+    if (platformError) {
+      console.error("[approve-collaborator] Platform creation error:", platformError);
+    }
+
     // Update status to approved
     const { error: updateError } = await adminClient
       .from("solicitacoes_colaboradores")
