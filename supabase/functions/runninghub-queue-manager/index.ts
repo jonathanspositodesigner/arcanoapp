@@ -791,7 +791,7 @@ async function handleFinish(req: Request): Promise<Response> {
     // Buscar dados do job INCLUDING current status for idempotency check
     const { data: job } = await supabase
       .from(table)
-      .select('user_id, user_credit_cost, credits_charged, credits_refunded, status')
+      .select('user_id, user_credit_cost, credits_charged, credits_refunded, status, reference_prompt_id')
       .eq('id', jobId)
       .maybeSingle();
     
@@ -916,6 +916,23 @@ async function handleFinish(req: Request): Promise<Response> {
       } catch (e) {
         // Não bloquear se falhar - notificação é nice-to-have
         console.error('[QueueManager] Error sending push notification:', e);
+      }
+    }
+    
+    // COLLABORATOR TOOL EARNINGS - Register earning if job used a partner prompt as reference
+    if (status === 'completed' && job?.reference_prompt_id && job?.user_id) {
+      try {
+        console.log(`[QueueManager] /finish: Registering tool earning for prompt ${job.reference_prompt_id} on ${table}`);
+        const { data: earningResult } = await supabase.rpc('register_collaborator_tool_earning', {
+          _job_id: jobId,
+          _tool_table: table,
+          _prompt_id: job.reference_prompt_id,
+          _user_id: job.user_id,
+        });
+        console.log(`[QueueManager] /finish: Tool earning result:`, earningResult);
+      } catch (e) {
+        // Non-blocking - earning registration is best-effort
+        console.error('[QueueManager] /finish: Error registering tool earning:', e);
       }
     }
     
