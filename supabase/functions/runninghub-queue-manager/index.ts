@@ -789,11 +789,14 @@ async function handleFinish(req: Request): Promise<Response> {
     console.log(`[QueueManager] /finish: ${table}/${jobId} status=${status}`);
     
     // Buscar dados do job INCLUDING current status for idempotency check
+    console.log(`[QueueManager] 🔍 AUDIT: Fetching reference_prompt_id for ${table}/${jobId}`);
     const { data: job } = await supabase
       .from(table)
       .select('user_id, user_credit_cost, credits_charged, credits_refunded, status, reference_prompt_id')
       .eq('id', jobId)
       .maybeSingle();
+    
+    console.log(`[QueueManager] 🔍 AUDIT: Job ${jobId} reference_prompt_id = "${job?.reference_prompt_id}" | user_id = "${job?.user_id}"`);
     
     if (!job) {
       return new Response(JSON.stringify({ error: 'Job not found' }), {
@@ -920,6 +923,7 @@ async function handleFinish(req: Request): Promise<Response> {
     }
     
     // COLLABORATOR TOOL EARNINGS - Register earning if job used a partner prompt as reference
+    console.log(`[QueueManager] 🔍 AUDIT EARNINGS CHECK: status=${status} | ref_prompt_id="${job?.reference_prompt_id}" | user_id="${job?.user_id}" | will_register=${status === 'completed' && !!job?.reference_prompt_id && !!job?.user_id}`);
     if (status === 'completed' && job?.reference_prompt_id && job?.user_id) {
       try {
         console.log(`[QueueManager] /finish: Registering tool earning for prompt ${job.reference_prompt_id} on ${table}`);
