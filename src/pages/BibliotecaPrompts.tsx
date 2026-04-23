@@ -843,6 +843,32 @@ const BibliotecaPrompts = () => {
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">{selectedPrompt.title}</h2>
                   <div className="mt-2">{getBadgeContent(selectedPrompt)}</div>
+                  {/* Partner info */}
+                  {selectedPrompt.promptType === 'partner' && selectedPrompt.partnerName && (
+                    <div className="mt-3 flex items-center gap-2 bg-accent/50 rounded-lg px-3 py-2">
+                      {selectedPrompt.partnerAvatarUrl ? (
+                        <img src={selectedPrompt.partnerAvatarUrl} alt={selectedPrompt.partnerName} className="w-8 h-8 rounded-full object-cover border border-border" />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center border border-border">
+                          <span className="text-sm font-bold text-foreground">{selectedPrompt.partnerName.charAt(0).toUpperCase()}</span>
+                        </div>
+                      )}
+                      <div className="flex flex-col">
+                        <span className="text-sm font-semibold text-foreground">{selectedPrompt.partnerName}</span>
+                        {selectedPrompt.partnerInstagram && (
+                          <a
+                            href={`https://instagram.com/${selectedPrompt.partnerInstagram.replace('@', '')}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            <Instagram className="h-3 w-3" />
+                            @{selectedPrompt.partnerInstagram.replace('@', '')}
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
                 <Button variant="ghost" size="icon" onClick={handleCloseModal} className="text-muted-foreground hover:text-foreground hover:bg-accent0/20">
                   <X className="h-5 w-5" />
