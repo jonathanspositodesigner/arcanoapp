@@ -133,6 +133,37 @@ const TornarSeColaborador = () => {
     );
   }
 
+  if (alreadyCollaborator) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg text-center">
+          <CardContent className="py-16 space-y-4">
+            {alreadyCollaborator === "aprovado" ? (
+              <>
+                <CheckCircle2 className="mx-auto h-16 w-16 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Você já é um colaborador! 🎉</h2>
+                <p className="text-muted-foreground">
+                  Esse e-mail já possui uma conta de colaborador aprovada. Acesse sua conta pelo login de parceiros.
+                </p>
+                <Button asChild className="mt-4">
+                  <a href="/parceiro-login-unificado">Ir para o login</a>
+                </Button>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="mx-auto h-16 w-16 text-yellow-500" />
+                <h2 className="text-2xl font-bold text-foreground">Solicitação já enviada</h2>
+                <p className="text-muted-foreground">
+                  Esse e-mail já possui uma solicitação pendente de análise. Aguarde nosso retorno pelo Instagram ou e-mail informado.
+                </p>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background overflow-x-hidden">
       {/* Hero section with gradient */}
