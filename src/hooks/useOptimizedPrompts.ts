@@ -205,7 +205,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
     // Filter by content type first
     const contentTypePrompts = contentType === 'exclusive' 
       ? allPrompts.filter(p => p.isExclusive) 
-      : allPrompts.filter(p => p.isCommunity);
+      : allPrompts.filter(p => p.promptType === 'partner');
 
     // Sort functions
     const sortByClicks = (a: PromptItem, b: PromptItem) => {
@@ -228,7 +228,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
       }
       return contentType === 'exclusive'
         ? shuffledPromptsRef.current.filter(p => p.isExclusive)
-        : shuffledPromptsRef.current.filter(p => p.isCommunity);
+        : shuffledPromptsRef.current.filter(p => p.promptType === 'partner');
     }
 
     if (category === "Novos") {
