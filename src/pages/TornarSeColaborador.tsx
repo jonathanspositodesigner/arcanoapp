@@ -71,9 +71,9 @@ const TornarSeColaborador = () => {
       // Check if email already has a request
       const { data: checkData } = await supabase.rpc("check_collaborator_email", {
         p_email: form.email.trim().toLowerCase(),
-      });
+      }) as { data: { exists: boolean; status: string } | null };
       if (checkData?.exists) {
-        setAlreadyCollaborator(checkData.status);
+        setAlreadyCollaborator(checkData.status as "pendente" | "aprovado");
         setIsSubmitting(false);
         return;
       }
