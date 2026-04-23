@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Trophy, Flame, Star, Target, Crown, Zap, Award, Sparkles, Shield, Film, Cpu, DollarSign, MousePointerClick } from "lucide-react";
+import { ArrowLeft, Trophy, Flame, Star, Target, Crown, Zap, Award, Sparkles, Shield, Film, Cpu, DollarSign, MousePointerClick, Home, Upload, User } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
@@ -183,35 +183,28 @@ const PartnerConquistas = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="max-w-2xl mx-auto p-4 pb-24">
-        {/* Header */}
-        <div className="flex items-center gap-3 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/parceiro")}>
+      {/* TopBar */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center gap-3 px-4 py-3 max-w-2xl mx-auto">
+          <button onClick={() => navigate('/parceiro')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <div>
-            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              🎮 Conquistas
-            </h1>
-            <p className="text-sm text-muted-foreground">Seu progresso como colaborador</p>
-          </div>
+          </button>
+          <h1 className="text-base font-bold text-foreground">🎮 Conquistas</h1>
         </div>
+      </div>
 
+      <div className="max-w-2xl mx-auto pb-20 md:pb-8">
         {/* Level & XP Card */}
-        <Card className="p-5 mb-4 bg-purple-500/10 border-purple-500/20">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center">
-                <Crown className="h-6 w-6 text-purple-400" />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-foreground">
-                  Nível {currentLevel.level} — {currentLevel.name}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  {gamification?.xp_total || 0} XP total
-                </p>
-              </div>
+        <div className="mx-4 mt-3 mb-3 bg-card border border-border rounded-2xl p-5">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="text-2xl">👑</div>
+            <div>
+              <p className="text-lg font-bold text-foreground">
+                Nível {currentLevel.level} — {currentLevel.name}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {gamification?.xp_total || 0} XP total
+              </p>
             </div>
           </div>
           {nextLevel ? (
@@ -226,20 +219,20 @@ const PartnerConquistas = () => {
               </p>
             </div>
           ) : (
-            <p className="text-sm text-purple-400 font-medium">Nível máximo atingido 👑</p>
+            <p className="text-sm text-primary font-medium">Nível máximo atingido 👑</p>
           )}
-          <div className="mt-3 p-2 rounded-lg bg-purple-500/10">
+          <div className="mt-3 p-2.5 rounded-xl bg-primary/10 border border-primary/20">
             <p className="text-sm text-foreground">
               💰 Sua taxa por desbloqueio: <span className="font-bold text-green-400">
                 {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentLevel.unlockRate)}
               </span>
             </p>
           </div>
-        </Card>
+        </div>
 
-        {/* Earnings Cards */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
-          <Card className="p-4 bg-green-500/10 border-green-500/20">
+        {/* Earnings Cards — 2 cols */}
+        <div className="grid grid-cols-2 gap-2.5 mx-4 mb-3">
+          <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
               <MousePointerClick className="h-4 w-4 text-green-400" />
               <p className="text-xs text-muted-foreground">Desbloqueios</p>
@@ -248,21 +241,21 @@ const PartnerConquistas = () => {
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(unlockEarnings.total)}
             </p>
             <p className="text-xs text-muted-foreground">{unlockEarnings.count} desbloqueios</p>
-          </Card>
-          <Card className="p-4 bg-emerald-500/10 border-emerald-500/20">
+          </div>
+          <div className="bg-card border border-border rounded-xl p-4">
             <div className="flex items-center gap-2 mb-1">
-              <Cpu className="h-4 w-4 text-emerald-400" />
-              <p className="text-xs text-muted-foreground">Uso em Ferramentas</p>
+              <Cpu className="h-4 w-4 text-primary" />
+              <p className="text-xs text-muted-foreground">Ferramentas</p>
             </div>
-            <p className="text-xl font-bold text-emerald-400">
+            <p className="text-xl font-bold text-primary">
               {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(toolEarnings.total)}
             </p>
             <p className="text-xs text-muted-foreground">{toolEarnings.count} jobs</p>
-          </Card>
+          </div>
         </div>
 
         {/* Streak */}
-        <Card className="p-5 mb-4 bg-orange-500/10 border-orange-500/20">
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-5">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="text-3xl">🔥</div>
@@ -279,21 +272,21 @@ const PartnerConquistas = () => {
             </div>
           </div>
           <div className="mt-3 flex items-center gap-2">
-            <Shield className="h-4 w-4 text-blue-400" />
+            <Shield className="h-4 w-4 text-primary" />
             <p className="text-xs text-muted-foreground">
               Proteção mensal: {gamification?.streak_protection_available
                 ? <span className="text-green-400 font-medium">Disponível ✓</span>
                 : <span className="text-red-400 font-medium">Usada este mês</span>}
             </p>
           </div>
-        </Card>
+        </div>
 
         {/* Badges */}
-        <Card className="p-5 mb-4">
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-5">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
             <Award className="h-5 w-5 text-yellow-400" /> Badges
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2.5">
             {ALL_BADGES.map(b => {
               const earned = badges.some(eb => eb.badge_slug === b.slug);
               return (
@@ -301,8 +294,8 @@ const PartnerConquistas = () => {
                   key={b.slug}
                   className={`text-center p-3 rounded-xl border transition-all ${
                     earned
-                      ? "bg-yellow-500/10 border-yellow-500/30 shadow-[0_0_12px_rgba(234,179,8,0.15)]"
-                      : "bg-muted/30 border-border opacity-50"
+                      ? "bg-yellow-500/[0.08] border-yellow-500/25"
+                      : "bg-card border-border opacity-45"
                   }`}
                 >
                   <div className="text-2xl mb-1">{b.icon}</div>
@@ -316,12 +309,12 @@ const PartnerConquistas = () => {
               );
             })}
           </div>
-        </Card>
+        </div>
 
         {/* Weekly Challenges */}
-        <Card className="p-5 mb-4">
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-5">
           <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-            <Target className="h-5 w-5 text-blue-400" /> Desafios da Semana
+            <Target className="h-5 w-5 text-primary" /> Desafios da Semana
           </h2>
           <div className="space-y-3">
             {challenges.length === 0 ? (
@@ -335,7 +328,7 @@ const PartnerConquistas = () => {
               const done = prog?.completed || false;
 
               return (
-                <div key={ch.id} className={`p-3 rounded-lg border ${done ? "bg-green-500/10 border-green-500/20" : "bg-blue-500/5 border-blue-500/10"}`}>
+                <div key={ch.id} className={`p-3 rounded-xl border ${done ? "bg-green-500/10 border-green-500/20" : "bg-card border-border"}`}>
                   <div className="flex items-center justify-between mb-1">
                     <p className="text-sm font-medium text-foreground">{ch.title}</p>
                     <Badge variant={done ? "default" : "outline"} className={done ? "bg-green-600 text-white" : ""}>
@@ -353,11 +346,11 @@ const PartnerConquistas = () => {
               );
             })}
           </div>
-        </Card>
+        </div>
 
         {/* Weekly Ranking */}
         {totalPartners >= 20 && (
-          <Card className="p-5 mb-4">
+          <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-5">
             <h2 className="text-lg font-bold text-foreground mb-2 flex items-center gap-2">
               <Trophy className="h-5 w-5 text-yellow-400" /> Ranking Semanal
             </h2>
@@ -375,14 +368,14 @@ const PartnerConquistas = () => {
                 return (
                   <div
                     key={entry.partner_id}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      isMine ? "bg-purple-500/10 border-purple-500/30 ring-1 ring-purple-500/30" :
-                      idx < 3 ? "bg-yellow-500/5 border-yellow-500/10" : "bg-muted/20 border-border"
+                    className={`flex items-center justify-between p-3 rounded-xl border ${
+                      isMine ? "bg-primary/10 border-primary/30 ring-1 ring-primary/30" :
+                      idx < 3 ? "bg-yellow-500/5 border-yellow-500/10" : "bg-card border-border"
                     }`}
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-lg min-w-[2rem] text-center">{medal}</span>
-                      <span className={`text-sm font-medium ${isMine ? "text-purple-400" : "text-foreground"}`}>
+                      <span className={`text-sm font-medium ${isMine ? "text-primary" : "text-foreground"}`}>
                         {isMine ? "👉 Você" : entry.partner_name}
                       </span>
                     </div>
@@ -395,17 +388,41 @@ const PartnerConquistas = () => {
             </div>
 
             {myRankPosition && myRankPosition > 10 && (
-              <div className="mt-3 p-3 rounded-lg bg-purple-500/10 border border-purple-500/20">
+              <div className="mt-3 p-3 rounded-xl bg-primary/10 border border-primary/20">
                 <p className="text-sm text-foreground">
-                  Sua posição: <span className="font-bold text-purple-400">{myRankPosition}º lugar</span>
+                  Sua posição: <span className="font-bold text-primary">{myRankPosition}º lugar</span>
                 </p>
               </div>
             )}
-          </Card>
+          </div>
         )}
       </div>
+
+      {/* Bottom Navigation — mobile only */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
+        <div className="flex items-center">
+          {[
+            { icon: Home, label: 'Home', path: '/parceiro', active: false },
+            { icon: Upload, label: 'Enviar', path: '/parceiro-upload', active: false },
+            { icon: Trophy, label: 'Conquistas', path: '/parceiro-conquistas', active: true },
+            { icon: DollarSign, label: 'Extrato', path: '/parceiro-extrato', active: false },
+            { icon: User, label: 'Perfil', path: '/parceiro', active: false },
+          ].map(({ icon: NavIcon, label, path, active }) => (
+            <button
+              key={label}
+              onClick={() => navigate(path)}
+              className="flex-1 flex flex-col items-center gap-1 py-2.5"
+            >
+              <NavIcon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
+              {active && <div className="w-1 h-1 rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
+      </nav>
     </div>
   );
 };
+
 
 export default PartnerConquistas;

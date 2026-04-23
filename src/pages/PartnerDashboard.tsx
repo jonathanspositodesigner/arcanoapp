@@ -9,11 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
-import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy } from "lucide-react";
+import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { Dialog as ProfileDialog, DialogContent as ProfileDialogContent } from "@/components/ui/dialog";
 import imageCompression from 'browser-image-compression';
 
 interface Partner {
@@ -70,6 +71,8 @@ const PartnerDashboard = () => {
   const [earningsBalance, setEarningsBalance] = useState(0);
   const [earningsUnlocks, setEarningsUnlocks] = useState(0);
   const [earningsPaidOut, setEarningsPaidOut] = useState(0);
+  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number } | null>(null);
+  const [toolEarningsCount, setToolEarningsCount] = useState(0);
 
   useEffect(() => {
     checkPartnerAndFetchData();
@@ -126,7 +129,7 @@ const PartnerDashboard = () => {
     setProfileAvatarUrl(partnerData.avatar_url || "");
 
     // Fetch earnings balance and paid withdrawals
-    const [balanceRes, withdrawalsRes] = await Promise.all([
+    const [balanceRes, withdrawalsRes, gamRes, toolCountRes] = await Promise.all([
       supabase
         .from('collaborator_balances')
         .select('total_earned, total_unlocks')
@@ -137,12 +140,23 @@ const PartnerDashboard = () => {
         .select('valor_solicitado')
         .eq('partner_id', partnerData.id)
         .eq('status', 'pago'),
+      supabase
+        .from('partner_gamification')
+        .select('xp_total, level, current_streak')
+        .eq('partner_id', partnerData.id)
+        .maybeSingle(),
+      supabase
+        .from('collaborator_tool_earnings')
+        .select('id', { count: 'exact', head: true })
+        .eq('collaborator_id', partnerData.id),
     ]);
     
     setEarningsBalance(balanceRes.data?.total_earned || 0);
     setEarningsUnlocks(balanceRes.data?.total_unlocks || 0);
     const totalPaid = (withdrawalsRes.data || []).reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
     setEarningsPaidOut(totalPaid);
+    setPartnerGamification(gamRes.data || null);
+    setToolEarningsCount(toolCountRes.count || 0);
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
@@ -387,6 +401,10 @@ const PartnerDashboard = () => {
     }
   };
 
+  const LEVEL_NAMES: Record<number, string> = { 1: 'Iniciante', 2: 'Criador', 3: 'Colaborador', 4: 'Especialista', 5: 'Elite' };
+  const currentLevel = partnerGamification?.level || 1;
+  const levelName = LEVEL_NAMES[currentLevel] || 'Iniciante';
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -397,268 +415,170 @@ const PartnerDashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="container max-w-6xl mx-auto py-8 px-4">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">
-              Olá, {partner?.name}!
-            </h1>
-            <p className="text-muted-foreground text-lg">
-              Gerencie seus arquivos enviados
-            </p>
+      {/* TopBar */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+        <div className="flex items-center justify-between px-4 py-3 max-w-2xl mx-auto">
+          <div className="flex items-center gap-3">
+            <button onClick={() => setShowProfile(!showProfile)} className="relative">
+              {profileAvatarUrl ? (
+                <img src={profileAvatarUrl} className="w-9 h-9 rounded-full object-cover border-2 border-primary/40" />
+              ) : (
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary to-purple-900 flex items-center justify-center text-primary-foreground font-bold text-sm border-2 border-primary/40">
+                  {partner?.name?.charAt(0) || 'C'}
+                </div>
+              )}
+            </button>
+            <div>
+              <p className="text-sm font-bold text-foreground leading-tight">{partner?.name}</p>
+              <p className="text-xs text-muted-foreground">
+                Nível {currentLevel} — <span className="text-primary">{levelName}</span>
+              </p>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={() => navigate('/parceiro-plataformas')} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              Voltar
-            </Button>
-            <Button variant="outline" onClick={() => setShowProfile(!showProfile)} className="gap-2">
-              <User className="h-4 w-4" />
-              Perfil
-            </Button>
-            <Button variant="outline" onClick={handleLogout} className="gap-2">
-              <LogOut className="h-4 w-4" />
-              Sair
-            </Button>
-          </div>
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="text-muted-foreground text-xs gap-1 h-8">
+            <LogOut className="h-3.5 w-3.5" /> Sair
+          </Button>
         </div>
+      </div>
 
-        {/* Profile Section */}
-        {showProfile && (
-          <Card className="p-6 mb-8 border-primary/20">
-            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Gerenciar Perfil
+      <div className="max-w-2xl mx-auto pb-20 md:pb-8">
+        {/* Profile Dialog */}
+        <ProfileDialog open={showProfile} onOpenChange={setShowProfile}>
+          <ProfileDialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+            <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <User className="h-5 w-5" /> Gerenciar Perfil
             </h2>
-            <div className="grid md:grid-cols-2 gap-8">
-              {/* Left column - Profile info */}
-              <div className="space-y-4">
-                {/* Avatar */}
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    {profileAvatarUrl ? (
-                      <img src={profileAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
-                    ) : (
-                      <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
-                        <User className="h-8 w-8 text-muted-foreground" />
-                      </div>
-                    )}
-                    <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
-                      <Camera className="h-3.5 w-3.5 text-primary-foreground" />
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleAvatarUpload}
-                        disabled={isUploadingAvatar}
-                      />
-                    </label>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">
-                      {isUploadingAvatar ? "Enviando..." : "Clique no ícone para alterar"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">Auto-redimensionada para 100px em WebP</p>
-                  </div>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="relative">
+                  {profileAvatarUrl ? (
+                    <img src={profileAvatarUrl} alt="Avatar" className="w-16 h-16 rounded-full object-cover border-2 border-border" />
+                  ) : (
+                    <div className="w-16 h-16 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
+                      <User className="h-7 w-7 text-muted-foreground" />
+                    </div>
+                  )}
+                  <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
+                    <Camera className="h-3.5 w-3.5 text-primary-foreground" />
+                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} disabled={isUploadingAvatar} />
+                  </label>
                 </div>
-
-                {/* Name */}
-                <div>
-                  <Label htmlFor="profileName">Nome</Label>
-                  <Input
-                    id="profileName"
-                    value={profileName}
-                    onChange={(e) => setProfileName(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-
-                {/* Instagram */}
-                <div>
-                  <Label htmlFor="profileInstagram" className="flex items-center gap-1">
-                    <Instagram className="h-3.5 w-3.5" />
-                    Instagram
-                  </Label>
-                  <Input
-                    id="profileInstagram"
-                    value={profileInstagram}
-                    onChange={(e) => setProfileInstagram(e.target.value)}
-                    placeholder="seu_usuario"
-                    className="mt-1"
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Sem o @, apenas o nome de usuário</p>
-                </div>
-
-                <Button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full">
-                  {isSavingProfile ? "Salvando..." : "Salvar Perfil"}
-                </Button>
+                <p className="text-sm text-muted-foreground">{isUploadingAvatar ? "Enviando..." : "Clique no ícone para alterar"}</p>
               </div>
-
-              {/* Right column - Password */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-foreground flex items-center gap-2">
-                  <KeyRound className="h-4 w-4" />
-                  Alterar Senha
-                </h3>
-                <div>
-                  <Label htmlFor="newPassword">Nova Senha</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Mínimo 6 caracteres"
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repita a senha"
-                    className="mt-1"
-                  />
-                </div>
+              <div>
+                <Label htmlFor="profileName">Nome</Label>
+                <Input id="profileName" value={profileName} onChange={(e) => setProfileName(e.target.value)} className="mt-1" />
+              </div>
+              <div>
+                <Label htmlFor="profileInstagram" className="flex items-center gap-1"><Instagram className="h-3.5 w-3.5" /> Instagram</Label>
+                <Input id="profileInstagram" value={profileInstagram} onChange={(e) => setProfileInstagram(e.target.value)} placeholder="seu_usuario" className="mt-1" />
+                <p className="text-xs text-muted-foreground mt-1">Sem o @, apenas o nome de usuário</p>
+              </div>
+              <Button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full">
+                {isSavingProfile ? "Salvando..." : "Salvar Perfil"}
+              </Button>
+              <div className="border-t border-border pt-4 space-y-3">
+                <h3 className="font-semibold text-foreground text-sm flex items-center gap-2"><KeyRound className="h-4 w-4" /> Alterar Senha</h3>
+                <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Nova senha (mín. 6 caracteres)" />
+                <Input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Confirmar senha" />
                 <Button onClick={handleChangePassword} disabled={isChangingPassword} variant="outline" className="w-full">
                   {isChangingPassword ? "Alterando..." : "Alterar Senha"}
                 </Button>
               </div>
             </div>
-          </Card>
-        )}
+          </ProfileDialogContent>
+        </ProfileDialog>
 
-        {/* Stats Cards */}
-        {/* Earnings Balance Card */}
-        <Card
-          className="p-5 mb-6 bg-green-500/10 border-green-500/20 cursor-pointer hover:bg-green-500/15 transition-colors"
-          onClick={() => navigate('/parceiro-extrato')}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center">
-                <DollarSign className="h-6 w-6 text-green-400" />
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Saldo Disponível</p>
-                <p className="text-3xl font-bold text-green-400">
-                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earningsBalance - earningsPaidOut)}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {earningsUnlocks} desbloqueio{earningsUnlocks !== 1 ? 's' : ''} • Total bruto: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earningsBalance)}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-primary">
-              <TrendingUp className="h-5 w-5" />
-              <span className="text-sm font-medium">Ver Extrato</span>
+        {/* Hero Card */}
+        <div className="mx-4 mt-3 mb-3 rounded-2xl bg-gradient-to-br from-purple-900 via-purple-800 to-primary p-5 relative overflow-hidden">
+          <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-white/5 pointer-events-none" />
+          <div className="absolute -bottom-6 left-2 w-20 h-20 rounded-full bg-white/[0.03] pointer-events-none" />
+          <p className="text-xs font-semibold text-white/60 tracking-wide mb-1">SALDO DISPONÍVEL</p>
+          <p className="text-3xl font-extrabold text-white leading-none">
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, earningsBalance - earningsPaidOut))}
+          </p>
+          <p className="text-xs text-white/50 mt-1">{earningsUnlocks} desbloqueios • {toolEarningsCount} usos em ferramentas</p>
+          <div className="flex items-center justify-between mt-4">
+            <button onClick={() => navigate('/parceiro-extrato')} className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 transition-colors rounded-full px-3 py-1.5 text-xs font-semibold text-white">
+              <TrendingUp className="h-3 w-3" /> Ver Extrato
+            </button>
+            <div className="flex items-center gap-2">
+              {(partnerGamification?.current_streak || 0) > 0 && (
+                <span className="bg-orange-500/30 text-orange-200 text-xs font-bold px-2.5 py-1 rounded-full">
+                  🔥 {partnerGamification?.current_streak} dias
+                </span>
+              )}
+              <span className="bg-white/15 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                Nível {currentLevel}
+              </span>
             </div>
           </div>
-        </Card>
-
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
-          <Card className="p-4">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-foreground">{stats.total}</p>
-              <p className="text-sm text-muted-foreground">Total Enviados</p>
-            </div>
-          </Card>
-          <Card className="p-4 bg-green-500/10 border-green-500/20">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-green-400">{stats.approved}</p>
-              <p className="text-sm text-muted-foreground">Aprovados</p>
-            </div>
-          </Card>
-          <Card className="p-4 bg-yellow-500/10 border-yellow-500/20">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-yellow-600">{stats.pending}</p>
-              <p className="text-sm text-muted-foreground">Pendentes</p>
-            </div>
-          </Card>
-          <Card className="p-4 bg-red-500/10 border-red-500/20">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-red-400">{stats.rejected}</p>
-              <p className="text-sm text-muted-foreground">Recusados</p>
-            </div>
-          </Card>
-          <Card className="p-4 bg-orange-500/10 border-orange-500/20">
-            <div className="text-center">
-              <p className="text-3xl font-bold text-orange-600">{stats.deletionRequested}</p>
-              <p className="text-sm text-muted-foreground">Exclusão Solicitada</p>
-            </div>
-          </Card>
         </div>
 
-        {/* Upload Button */}
-        <Button 
-          onClick={() => navigate('/parceiro-upload')}
-          className="w-full mb-6 h-16 text-lg bg-gradient-primary hover:opacity-90 gap-2"
-        >
-          <Upload className="h-6 w-6" />
-          Enviar Novo Arquivo
-        </Button>
-
-        {/* Conquistas Button */}
-        <Button
-          onClick={() => navigate('/parceiro-conquistas')}
-          variant="outline"
-          className="w-full mb-6 h-14 text-base gap-2 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
-        >
-          <Trophy className="h-5 w-5" />
-          🎮 Conquistas & Ranking
-        </Button>
-
-        {/* Filter Tabs */}
-        <div className="flex gap-2 mb-6 flex-wrap">
-          <Button
-            variant={activeFilter === "all" ? "default" : "outline"}
-            onClick={() => setActiveFilter("all")}
-            size="sm"
-          >
-            Todos ({stats.total})
-          </Button>
-          <Button
-            variant={activeFilter === "approved" ? "default" : "outline"}
-            onClick={() => setActiveFilter("approved")}
-            size="sm"
-            className={activeFilter === "approved" ? "bg-green-600 hover:bg-green-700" : "text-green-400 border-green-600"}
-          >
-            <FileCheck className="h-4 w-4 mr-1" />
-            Aprovados ({stats.approved})
-          </Button>
-          <Button
-            variant={activeFilter === "pending" ? "default" : "outline"}
-            onClick={() => setActiveFilter("pending")}
-            size="sm"
-            className={activeFilter === "pending" ? "bg-yellow-600 hover:bg-yellow-700" : "text-yellow-600 border-yellow-600"}
-          >
-            <Clock className="h-4 w-4 mr-1" />
-            Pendentes ({stats.pending})
-          </Button>
-          <Button
-            variant={activeFilter === "rejected" ? "default" : "outline"}
-            onClick={() => setActiveFilter("rejected")}
-            size="sm"
-            className={activeFilter === "rejected" ? "bg-red-600 hover:bg-red-700" : "text-red-400 border-red-600"}
-          >
-            <XCircle className="h-4 w-4 mr-1" />
-            Recusados ({stats.rejected})
-          </Button>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-3 gap-2.5 px-4 mb-3">
+          <button onClick={() => navigate('/parceiro-upload')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-primary hover:bg-primary/90 transition-colors">
+            <Upload className="h-5 w-5 text-primary-foreground" />
+            <span className="text-[11px] font-bold text-primary-foreground leading-tight text-center">Enviar Prompt</span>
+          </button>
+          <button onClick={() => navigate('/parceiro-extrato')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+            <DollarSign className="h-5 w-5 text-green-400" />
+            <span className="text-[11px] font-semibold text-muted-foreground leading-tight text-center">Saldo & Saques</span>
+          </button>
+          <button onClick={() => navigate('/parceiro-conquistas')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+            <Trophy className="h-5 w-5 text-yellow-400" />
+            <span className="text-[11px] font-semibold text-muted-foreground leading-tight text-center">Conquistas</span>
+          </button>
         </div>
 
-        {/* Prompts Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Stat Chips */}
+        <div className="grid grid-cols-2 gap-2.5 px-4 mb-4">
+          {[
+            { num: stats.total, label: 'Total Enviados', color: 'text-foreground' },
+            { num: stats.approved, label: '✅ Aprovados', color: 'text-green-400' },
+            { num: stats.pending, label: '⏳ Pendentes', color: 'text-yellow-400' },
+            { num: stats.rejected, label: '❌ Recusados', color: 'text-red-400' },
+          ].map(({ num, label, color }) => (
+            <div key={label} className="bg-card border border-border rounded-xl px-4 py-3">
+              <p className={`text-2xl font-extrabold ${color} leading-none`}>{num}</p>
+              <p className="text-xs text-muted-foreground mt-1">{label}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Filter Pills */}
+        <div className="flex gap-2 px-4 mb-3 overflow-x-auto scrollbar-hide pb-1">
+          {[
+            { key: 'all', label: `Todos (${stats.total})` },
+            { key: 'approved', label: `✅ (${stats.approved})` },
+            { key: 'pending', label: `⏳ (${stats.pending})` },
+            { key: 'rejected', label: `❌ (${stats.rejected})` },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => setActiveFilter(key as FilterType)}
+              className={`flex-shrink-0 text-xs font-semibold px-3.5 py-1.5 rounded-full border transition-colors ${
+                activeFilter === key
+                  ? 'bg-primary text-primary-foreground border-primary'
+                  : 'bg-card border-border text-muted-foreground hover:border-primary/30'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
+        {/* Prompts Grid — 2 col mobile */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 px-4">
           {filteredPrompts.map((prompt) => {
             const status = getPromptStatus(prompt);
             return (
-              <Card key={prompt.id} className="overflow-hidden">
+              <div key={prompt.id} className="bg-card border border-border rounded-xl overflow-hidden">
                 <div className="relative">
                   {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
                     <SecureVideo
                       src={prompt.image_url}
-                      className="w-full h-48 object-cover"
+                      className="w-full aspect-[3/4] object-cover"
                       isPremium={false}
                       autoPlay
                       muted
@@ -668,118 +588,81 @@ const PartnerDashboard = () => {
                     <SecureImage
                       src={prompt.image_url}
                       alt={prompt.title}
-                      className="w-full h-48 object-cover"
+                      className="w-full aspect-[3/4] object-cover"
                       isPremium={false}
                     />
                   )}
-                  <div className="absolute top-2 right-2 flex gap-1">
+                  <div className="absolute top-1.5 right-1.5 flex gap-1">
+                    {status === "approved" && <Badge className="bg-green-600 text-[10px] px-1.5 py-0.5">✓</Badge>}
+                    {status === "deletion" && <Badge variant="destructive" className="text-[10px] px-1.5 py-0.5">Exclusão</Badge>}
+                    {status === "pending" && <Badge variant="secondary" className="bg-yellow-500 text-foreground text-[10px] px-1.5 py-0.5">⏳</Badge>}
+                    {status === "rejected" && <Badge variant="destructive" className="bg-red-600 text-[10px] px-1.5 py-0.5">✗</Badge>}
+                  </div>
+                </div>
+                <div className="px-3 py-2.5">
+                  <h3 className="font-bold text-xs text-foreground leading-tight truncate">{prompt.title}</h3>
+                  <div className="flex items-center justify-between mt-1.5">
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">{prompt.category}</Badge>
+                    <span className="text-[10px] text-primary font-semibold flex items-center gap-0.5"><Copy className="h-2.5 w-2.5" />{prompt.click_count || 0}</span>
+                  </div>
+                  <div className="flex gap-1.5 mt-2">
+                    {(status === "pending" || status === "rejected" || status === "approved") && (
+                      <button onClick={() => openEditModal(prompt)} className="flex-1 text-[10px] font-semibold text-muted-foreground bg-muted/50 hover:bg-muted rounded-lg py-1.5 transition-colors">
+                        <Pencil className="h-3 w-3 inline mr-0.5" />Editar
+                      </button>
+                    )}
                     {status === "approved" && (
-                      <Badge className="bg-green-500">
-                        <FileCheck className="h-3 w-3 mr-1" />
-                        Aprovado
-                      </Badge>
-                    )}
-                    {status === "deletion" && (
-                      <Badge variant="destructive">
-                        <Trash2 className="h-3 w-3 mr-1" />
-                        Exclusão Solicitada
-                      </Badge>
-                    )}
-                    {status === "pending" && (
-                      <Badge variant="secondary" className="bg-yellow-500 text-foreground">
-                        <Clock className="h-3 w-3 mr-1" />
-                        Pendente
-                      </Badge>
-                    )}
-                    {status === "rejected" && (
-                      <Badge variant="destructive" className="bg-red-600">
-                        <XCircle className="h-3 w-3 mr-1" />
-                        Recusado
-                      </Badge>
+                      <button onClick={() => handleRequestDeletion(prompt.id)} className="text-[10px] font-semibold text-red-400 bg-red-500/10 hover:bg-red-500/20 rounded-lg px-2 py-1.5 transition-colors">
+                        <Trash2 className="h-3 w-3 inline" />
+                      </button>
                     )}
                   </div>
                 </div>
-                <div className="p-4 space-y-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="font-bold text-lg text-foreground">{prompt.title}</h3>
-                      <Badge variant="outline" className="mt-1">{prompt.category}</Badge>
-                    </div>
-                    <Badge variant="secondary" className="bg-primary/10 text-primary flex items-center gap-1">
-                      <Copy className="h-3 w-3" />
-                      {prompt.click_count || 0}
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{prompt.prompt}</p>
-                  
-                  <div className="flex gap-2">
-                    {/* Edit button - available for pending and rejected prompts */}
-                    {(status === "pending" || status === "rejected") && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditModal(prompt)}
-                        className="flex-1"
-                      >
-                        <Pencil className="h-4 w-4 mr-2" />
-                        Editar
-                      </Button>
-                    )}
-                    
-                    {/* Deletion request - available for approved prompts */}
-                    {status === "approved" && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => openEditModal(prompt)}
-                          className="flex-1"
-                        >
-                          <Pencil className="h-4 w-4 mr-2" />
-                          Editar
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleRequestDeletion(prompt.id)}
-                          className="flex-1 text-destructive hover:bg-destructive hover:text-destructive-foreground"
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Excluir
-                        </Button>
-                      </>
-                    )}
-                  </div>
-
-                  {status === "rejected" && (
-                    <p className="text-xs text-red-500 mt-2">
-                      Este arquivo foi recusado. Você pode editá-lo e reenviar para aprovação.
-                    </p>
-                  )}
-                </div>
-              </Card>
+              </div>
             );
           })}
         </div>
 
         {filteredPrompts.length === 0 && (
-          <div className="text-center py-12">
-            <Upload className="h-16 w-16 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground text-lg mb-4">
+          <div className="text-center py-12 px-4">
+            <Upload className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+            <p className="text-muted-foreground text-sm mb-4">
               {activeFilter === "all" 
                 ? "Você ainda não enviou nenhum arquivo"
                 : `Nenhum arquivo ${activeFilter === "approved" ? "aprovado" : activeFilter === "pending" ? "pendente" : "recusado"}`
               }
             </p>
             {activeFilter === "all" && (
-              <Button onClick={() => navigate('/parceiro-upload')} className="gap-2">
-                <Upload className="h-4 w-4" />
-                Enviar Primeiro Arquivo
+              <Button onClick={() => navigate('/parceiro-upload')} size="sm" className="gap-2">
+                <Upload className="h-3.5 w-3.5" /> Enviar Primeiro Arquivo
               </Button>
             )}
           </div>
         )}
       </div>
+
+      {/* Bottom Navigation — mobile only */}
+      <nav className="fixed bottom-0 left-0 right-0 z-40 md:hidden bg-background/95 backdrop-blur-md border-t border-border">
+        <div className="flex items-center">
+          {[
+            { icon: Home, label: 'Home', path: '/parceiro' as string | null, active: true },
+            { icon: Upload, label: 'Enviar', path: '/parceiro-upload' as string | null, active: false },
+            { icon: Trophy, label: 'Conquistas', path: '/parceiro-conquistas' as string | null, active: false },
+            { icon: DollarSign, label: 'Extrato', path: '/parceiro-extrato' as string | null, active: false },
+            { icon: User, label: 'Perfil', path: null as string | null, active: false },
+          ].map(({ icon: NavIcon, label, path, active }) => (
+            <button
+              key={label}
+              onClick={() => path ? navigate(path) : setShowProfile(true)}
+              className="flex-1 flex flex-col items-center gap-1 py-2.5"
+            >
+              <NavIcon className={`h-5 w-5 ${active ? 'text-primary' : 'text-muted-foreground'}`} />
+              <span className={`text-[10px] font-semibold ${active ? 'text-primary' : 'text-muted-foreground'}`}>{label}</span>
+              {active && <div className="w-1 h-1 rounded-full bg-primary" />}
+            </button>
+          ))}
+        </div>
+      </nav>
 
       {/* Edit Modal */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
