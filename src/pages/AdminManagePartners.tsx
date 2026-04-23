@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import AdminPartnerWithdrawals from "@/components/admin/AdminPartnerWithdrawals";
 
 interface Partner {
   id: string;
@@ -724,6 +725,8 @@ const AdminManagePartners = () => {
             </p>
           </div>
         )}
+
+        <AdminPartnerWithdrawals />
       </div>
     </div>
   );
