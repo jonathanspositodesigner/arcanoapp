@@ -220,13 +220,13 @@ const TornarSeFounder = () => {
                 Ganhe mais desde o primeiro prompt
               </h2>
               <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                O Arcano Founder é para quem quer entrar cedo, ocupar espaço e transformar prompt bom em renda recorrente. A tabela começa no dobro do colaborador comum e chega a R$ 0,20 por liberação.
+                O Arcano Founder é para quem quer entrar cedo, ocupar espaço e transformar prompt bom em renda recorrente. A tabela especial começa em R$ 0,10 e chega a R$ 0,20 por liberação.
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
                 { title: "Criador", value: "R$ 0,10", desc: "por prompt" },
-                { title: "Colaborador", value: "R$ 0,12", desc: "por prompt" },
+                { title: "Founder Pro", value: "R$ 0,12", desc: "por prompt" },
                 { title: "Especialista", value: "R$ 0,15", desc: "por prompt" },
                 { title: "Elite", value: "R$ 0,20", desc: "por prompt" },
               ].map((item) => (
@@ -424,7 +424,7 @@ const TornarSeFounder = () => {
 // Simulador de ganhos — começa em Elite, 20 cliques/dia + 10 usos Cloner/dia.
 // Slider anima sozinho até o usuário interagir.
 const ELITE_RATE = 0.20; // R$ por liberação no nível Elite Founder
-const ARCANO_CLONER_COMMISSION = 0.16; // R$ por uso (taxa real paga ao colaborador)
+const ARCANO_CLONER_COMMISSION = 0.16; // R$ por uso
 
 const EarningsSimulator = () => {
   const [clicks, setClicks] = useState(20);
@@ -612,7 +612,7 @@ const TermoDialog = () => (
           <p className="font-semibold text-foreground">3. COPROPRIEDADE PARA USO INSTITUCIONAL</p>
           <p>O Arcano Founder reconhece e aceita que a Plataforma passa a ter copropriedade sobre o Conteúdo publicado exclusivamente para fins de uso interno, campanhas institucionais, divulgação da plataforma e materiais de marketing da Arcano/VoxVisual. Tal copropriedade não transfere a titularidade criativa do Arcano Founder sobre sua obra original.</p>
 
-          <p className="font-semibold text-foreground">4. RESPONSABILIDADE DO COLABORADOR</p>
+          <p className="font-semibold text-foreground">4. RESPONSABILIDADE DO ARCANO FOUNDER</p>
           <p>O Arcano Founder é integralmente responsável pelo Conteúdo que publica. Em caso de reclamação, notificação ou ação judicial por parte de terceiros relacionada ao Conteúdo enviado, o Arcano Founder se compromete a responder por eventuais danos, isentando a Plataforma de qualquer responsabilidade.</p>
 
           <p className="font-semibold text-foreground">5. REMUNERAÇÃO</p>
