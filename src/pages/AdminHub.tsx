@@ -198,6 +198,8 @@ const AdminHub = () => {
         return <AdminsManagementContent />;
       case "emails":
         return <WelcomeEmailsMonitor />;
+      case "partner-earnings":
+        return <PartnerEarningsAdminContent />;
       default:
         return null;
     }
