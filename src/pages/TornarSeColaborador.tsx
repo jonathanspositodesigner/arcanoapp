@@ -20,7 +20,6 @@ import {
   TrendingUp,
   Instagram,
   Crown,
-  Wand2 as WandIcon,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
