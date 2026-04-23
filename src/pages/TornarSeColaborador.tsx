@@ -89,6 +89,7 @@ const TornarSeColaborador = () => {
           whatsapp: form.whatsapp.trim(),
           portfolio: form.portfolio.trim(),
           created_at: new Date().toISOString(),
+          aceite_at: new Date().toISOString(),
         },
       }).catch(err => console.error("Email notification error:", err));
 
