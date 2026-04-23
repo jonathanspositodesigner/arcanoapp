@@ -736,7 +736,7 @@ const BibliotecaPrompts = () => {
                 {/* Premium lock icon (always visible) */}
                 {item.isPremium && !isPremium && (
                   <div className="absolute top-8 right-1.5 bg-black/60 rounded-full p-1.5 z-10">
-                    <Lock className="h-3.5 w-3.5 text-foreground" />
+                    <Lock className="h-3.5 w-3.5 text-destructive-foreground" />
                   </div>
                 )}
 
