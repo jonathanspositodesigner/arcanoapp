@@ -1,110 +1,83 @@
 
 
-## Plano: Centralizar atribuição de créditos ao colaborador em um hook único
+## Resumo da lógica atual
 
-### Problema atual
+O hook `useCollaboratorAttribution` centraliza a atribuição de créditos ao colaborador:
 
-Cada ferramenta implementa a mesma lógica de atribuição de forma diferente:
+1. **Inicialização**: Quando o usuário navega da Biblioteca de Prompts para uma ferramenta, o `location.state` traz `prefillPromptId` + `prefillPromptType: 'partner'`. O hook inicializa `referencePromptId` automaticamente.
+2. **Seleção na biblioteca interna**: Ao selecionar um item da biblioteca dentro da ferramenta, chama-se `setFromLibrary(meta)` — se `meta.promptType === 'partner'`, seta o ID; senão, limpa.
+3. **Upload manual / remoção**: Chama `clear()` para zerar a atribuição.
+4. **Gravação no job**: O `referencePromptId` é gravado no insert do job (DB direto ou via body do invoke).
+5. **Backend**: O `runninghub-queue-manager`, `seedance-poll` e `seedance-recovery` leem o `reference_prompt_id` do job e chamam a RPC `register_collaborator_tool_earning`.
 
-| Ferramenta | Tipo de estado | Inicialização | Limpeza ao upload | Limpeza ao trocar ref | Passa ao job |
-|---|---|---|---|---|---|
-| Arcano Cloner | `useState` | `useEffect` separado | Sim | Sim | `reference_prompt_id` no insert |
-| Pose Changer | `useState` | `useEffect` separado | Sim | Sim | `reference_prompt_id` no insert |
-| Veste AI | `useState` | Manual (sem useEffect) | Sim | Sim | `reference_prompt_id` no insert |
-| Seedance 2 | `useState` com initializer | Inline no `useState` | Sim (parcial) | Sim | `reference_prompt_id` no insert |
-| MovieLed | `useRef` | `useEffect` separado | Sim | Sim | Via body do `invoke` |
+### Estado por ferramenta
 
-Cada ferramenta repete 20-40 linhas de lógica idêntica. Se precisar corrigir algo, tem que mexer em 5 arquivos. Inconsistências geram bugs.
+| Ferramenta | Inicialização (nav) | setFromLibrary | clear | Gravação |
+|---|---|---|---|---|
+| Arcano Cloner | OK | OK | OK | OK |
+| Pose Changer | OK | OK | OK | OK |
+| Veste AI | OK | OK | OK | OK |
+| **Seedance 2** | OK | **NUNCA CHAMADO** | OK | OK |
+| **MovieLed** | OK | **NEM EXTRAÍDO** | OK | OK |
 
-### Solução
+---
 
-Criar um hook `useCollaboratorAttribution` que encapsula toda a lógica em um único lugar.
+## Bugs encontrados
 
-### Hook: `src/hooks/useCollaboratorAttribution.ts`
+### BUG 1 — Seedance2: `setAttributionFromLibrary` nunca é chamado
 
-```typescript
-// Retorna:
-{
-  referencePromptId: string | null,  // valor atual para gravar no job
-  setFromLibrary: (meta) => void,    // ao selecionar item da biblioteca
-  setFromNavigation: () => void,     // ao chegar via location.state
-  clear: () => void,                 // ao fazer upload, trocar imagem, limpar form
-}
-```
+**Cenário**: Usuário abre o Seedance, seleciona um item da galeria interna que é de parceiro, gera o vídeo. O colaborador **não recebe crédito**.
 
-O hook:
-1. Lê `location.state` para inicializar (se `prefillPromptType === 'partner'`)
-2. Expoe `setFromLibrary(meta)` que verifica `meta?.promptType === 'partner'` e seta ou limpa
-3. Expoe `clear()` para chamar em upload, troca de referência, limpeza de form
-4. Retorna `referencePromptId` pronto para ser gravado no insert do job
+**Causa**: A função `handleUseLibraryItem` chama `clearAttribution()` e nunca chama `setAttributionFromLibrary()`. Além disso, a interface `Generation` do Seedance não carrega metadados de `promptType` nem `promptId` — não tem como saber se o item veio de um parceiro.
 
-### Alterações por ferramenta
+**Impacto**: Atribuição só funciona se o usuário chegar via navegação da BibliotecaPrompts. Se o usuário escolher um item de parceiro pela galeria interna do Seedance, o colaborador perde o crédito.
 
-Cada ferramenta substitui:
-- O `useState<string | null>(...)` do referencePromptId
-- O `useEffect` de inicialização via location.state
-- As chamadas manuais a `setReferencePromptId(null)` e `setReferencePromptId(meta?.promptId)`
+**Nota**: Hoje os itens da galeria interna do Seedance são criações do próprio usuário (completadas anteriormente), então esse bug só afetaria um cenário futuro onde prompts de parceiro apareçam na galeria interna. Mas a arquitetura está errada — se itens de parceiro forem adicionados, o bug já está lá esperando.
 
-Por:
-- `const { referencePromptId, setFromLibrary, clear } = useCollaboratorAttribution();`
-- `clear()` nos pontos de upload/troca
-- `setFromLibrary(meta)` nos pontos de seleção da biblioteca
+### BUG 2 — MovieLed: `setFromLibrary` não é nem extraído do hook
 
-#### ArcanoClonerTool.tsx
-- Remover `useState` do `referencePromptId` e `useEffect` de `location.state`
-- `handleSelectFromLibrary` → chamar `setFromLibrary(meta)`
-- `handleUploadFromModal` → chamar `clear()`
-- `handleClearReference` → chamar `clear()`
-- Insert do job: continua usando `reference_prompt_id: referencePromptId`
+**Cenário**: Igual ao bug 1, mas no MovieLed. A biblioteca interna (`MovieLedLibraryModal`) lista itens admin. Se no futuro forem adicionados itens de parceiro nessa biblioteca, a atribuição nunca será setada.
 
-#### PoseChangerTool.tsx
-- Mesma substituição que o Arcano Cloner
-- `handleSelectFromLibraryWithMeta` → `setFromLibrary(meta)`
+**Estado atual**: O `onSelectItem` do modal sempre chama `clearAttribution()`. Correto para itens admin, mas não tem caminho para setar atribuição se o item for de parceiro.
 
-#### VesteAITool.tsx
-- Mesma substituição
-- `handleSelectFromLibrary` → `setFromLibrary(meta)`
-- `handleUploadFromModal` → `clear()`
-- `handleClearClothing` → `clear()`
+**Impacto real agora**: Baixo, porque a biblioteca do MovieLed hoje só tem itens admin. Mas a arquitetura não está preparada.
 
-#### Seedance2.tsx
-- Remover `useState` com initializer do `referencePromptId`
-- `handleUseLibraryItem` → chamar `clear()` (já faz) — mas também precisa setar se o item for partner
-- Cada `setReferencePromptId(null)` inline nos UploadSlots → `clear()`
-- Insert do job: continua usando `reference_prompt_id: referencePromptId`
+### BUG 3 — Seedance2: upload de imagem de referência NÃO limpa atribuição em todos os caminhos
 
-#### MovieLedMakerTool.tsx
-- Remover `useRef` do `partnerPromptIdRef`
-- `useEffect` de inicialização → hook já faz
-- `onSelectItem` no modal → `clear()` (itens da biblioteca MovieLed são admin, não partner)
-- `onUploadPhoto` → `clear()`
-- Body do invoke: `referencePromptId: referencePromptId` (troca ref por state)
+**Cenário**: Usuário chega via BibliotecaPrompts com prompt de parceiro (atribuição setada). No modo `startend`, faz upload de `startImage` e `endImage` manualmente. O `clearAttribution()` só é chamado no modo `multiref` (ao adicionar/remover `refImages`). Nos uploads de `startImage`/`endImage`, a atribuição **permanece**.
 
-### O que NÃO muda
+**Causa**: Os UploadSlots de `startImage` e `endImage` (linhas 748-763) NÃO chamam `clearAttribution()` em nenhum evento (onRemove, onClickUpload, onDrop).
 
-- Nenhuma tabela, RLS ou migration
-- Nenhuma edge function
-- Nenhuma RPC
-- O fluxo de geração de IA não é alterado
-- O daily limit de earnings permanece intacto
-- A lógica de `register_collaborator_tool_earning` no backend não é tocada
-- A navegação da biblioteca continua passando `prefillPromptType: 'partner'`
+**Impacto**: Crédito fantasma — o colaborador recebe crédito mesmo que o usuário tenha trocado todas as imagens de referência no modo startend.
 
-### Arquivos envolvidos
+---
+
+## Plano de correção
+
+### 1. Seedance2 — Limpar atribuição ao alterar startImage/endImage
+
+Nos UploadSlots de `startImage` e `endImage` (modo `startend`), adicionar `clearAttribution()` nos callbacks `onRemove`, `onClickUpload` e `onDrop`, da mesma forma que já é feito para `refImages` no modo `multiref`.
+
+### 2. Seedance2 e MovieLed — Preparar `setFromLibrary` para itens de parceiro
+
+Embora hoje as galerias internas dessas ferramentas não tenham itens de parceiro, a arquitetura deve ser consistente:
+
+- **MovieLed**: Extrair `setFromLibrary` do hook. No `onSelectItem` do modal, chamar `setFromLibrary(meta)` em vez de `clearAttribution()`, onde `meta` deve ser construído a partir dos dados do item (se tiver `promptType === 'partner'`, seta; senão o hook limpa automaticamente).
+
+- **Seedance2**: No `handleUseLibraryItem`, se no futuro a `Generation` carregar metadados de parceiro, chamar `setAttributionFromLibrary(meta)` em vez de `clearAttribution()`. Por agora, manter o `clearAttribution()` mas documentar que precisa ser trocado quando itens de parceiro forem adicionados à galeria.
+
+### 3. Tabela de ações
 
 | Arquivo | Ação |
 |---|---|
-| `src/hooks/useCollaboratorAttribution.ts` | Criar (novo) |
-| `src/pages/ArcanoClonerTool.tsx` | Refatorar para usar hook |
-| `src/pages/PoseChangerTool.tsx` | Refatorar para usar hook |
-| `src/pages/VesteAITool.tsx` | Refatorar para usar hook |
-| `src/pages/Seedance2.tsx` | Refatorar para usar hook |
-| `src/pages/MovieLedMakerTool.tsx` | Refatorar para usar hook |
+| `src/pages/Seedance2.tsx` | Adicionar `clearAttribution()` nos UploadSlots de `startImage`/`endImage` (modo startend) |
+| `src/pages/MovieLedMakerTool.tsx` | Extrair `setFromLibrary` do hook; usar no `onSelectItem` do modal |
+| Nenhum outro arquivo | — |
 
-### Resultado
+### O que NÃO muda
 
-- Lógica de atribuição ao colaborador em UM lugar
-- Correção de bug futuro = alterar 1 arquivo
-- Todas as ferramentas com comportamento idêntico e previsível
-- Zero risco de regressão: o hook expoe a mesma interface que o código atual já usa
+- Nenhuma migration, RLS, edge function ou RPC
+- Arcano Cloner, Pose Changer e Veste AI estão corretos
+- O hook `useCollaboratorAttribution` permanece igual
+- O fluxo de navegação da BibliotecaPrompts continua funcionando
 
