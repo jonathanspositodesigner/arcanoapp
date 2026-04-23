@@ -4206,6 +4206,7 @@ export type Database = {
           id: string
           instagram: string | null
           is_active: boolean | null
+          is_founder: boolean
           name: string
           phone: string | null
           updated_at: string | null
@@ -4219,6 +4220,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           is_active?: boolean | null
+          is_founder?: boolean
           name: string
           phone?: string | null
           updated_at?: string | null
@@ -4232,6 +4234,7 @@ export type Database = {
           id?: string
           instagram?: string | null
           is_active?: boolean | null
+          is_founder?: boolean
           name?: string
           phone?: string | null
           updated_at?: string | null
