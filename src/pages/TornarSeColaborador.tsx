@@ -278,6 +278,11 @@ const TornarSeColaborador = () => {
           <p className="text-xs text-muted-foreground text-center max-w-xl mx-auto">
             Os valores são calculados automaticamente e acumulados no seu painel de contribuidor. O saque fica disponível a partir de um saldo mínimo.
           </p>
+          <Button asChild variant="outline" className="mt-4 border-primary/30 text-primary hover:bg-primary/10">
+            <Link to="/parceiro-como-ganhar">
+              Saiba mais sobre como ganhar →
+            </Link>
+          </Button>
         </section>
 
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
