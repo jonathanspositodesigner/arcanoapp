@@ -41,6 +41,7 @@ const TornarSeColaborador = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [alreadyCollaborator, setAlreadyCollaborator] = useState<null | "pendente" | "aprovado">(null);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -67,6 +68,16 @@ const TornarSeColaborador = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if email already has a request
+      const { data: checkData } = await supabase.rpc("check_collaborator_email", {
+        p_email: form.email.trim().toLowerCase(),
+      }) as { data: { exists: boolean; status: string } | null };
+      if (checkData?.exists) {
+        setAlreadyCollaborator(checkData.status as "pendente" | "aprovado");
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase.from("solicitacoes_colaboradores").insert({
         nome: form.nome.trim(),
         instagram: form.instagram.trim(),
@@ -116,6 +127,37 @@ const TornarSeColaborador = () => {
             <p className="text-muted-foreground">
               Recebemos seu cadastro e entraremos em contato em breve pelo Instagram ou e-mail informado. Fique ligado!
             </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (alreadyCollaborator) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg text-center">
+          <CardContent className="py-16 space-y-4">
+            {alreadyCollaborator === "aprovado" ? (
+              <>
+                <CheckCircle2 className="mx-auto h-16 w-16 text-primary" />
+                <h2 className="text-2xl font-bold text-foreground">Você já é um colaborador! 🎉</h2>
+                <p className="text-muted-foreground">
+                  Esse e-mail já possui uma conta de colaborador aprovada. Acesse sua conta pelo login de parceiros.
+                </p>
+                <Button asChild className="mt-4">
+                  <a href="/parceiro-login-unificado">Ir para o login</a>
+                </Button>
+              </>
+            ) : (
+              <>
+                <AlertCircle className="mx-auto h-16 w-16 text-yellow-500" />
+                <h2 className="text-2xl font-bold text-foreground">Solicitação já enviada</h2>
+                <p className="text-muted-foreground">
+                  Esse e-mail já possui uma solicitação pendente de análise. Aguarde nosso retorno pelo Instagram ou e-mail informado.
+                </p>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>
