@@ -407,11 +407,11 @@ const PartnerDashboard = () => {
 
   const currentLevel = partnerGamification?.level || 1;
   const LEVELS = [
-    { level: 1, name: "Iniciante", minXp: 0, maxXp: 149, unlockRate: 0.05 },
-    { level: 2, name: "Criador", minXp: 150, maxXp: 399, unlockRate: 0.07 },
-    { level: 3, name: "Colaborador", minXp: 400, maxXp: 899, unlockRate: 0.07 },
-    { level: 4, name: "Especialista", minXp: 900, maxXp: 1999, unlockRate: 0.10 },
-    { level: 5, name: "Elite", minXp: 2000, maxXp: Infinity, unlockRate: 0.12 },
+    { level: 1, name: "Iniciante", minXp: 0, maxXp: 399, unlockRate: 0.05 },
+    { level: 2, name: "Criador", minXp: 400, maxXp: 899, unlockRate: 0.07 },
+    { level: 3, name: "Colaborador", minXp: 900, maxXp: 1999, unlockRate: 0.07 },
+    { level: 4, name: "Especialista", minXp: 2000, maxXp: 5999, unlockRate: 0.10 },
+    { level: 5, name: "Elite", minXp: 6000, maxXp: Infinity, unlockRate: 0.12 },
   ];
   const currentLevelData = LEVELS.find(l => l.level === currentLevel) || LEVELS[0];
   const levelName = currentLevelData.name;

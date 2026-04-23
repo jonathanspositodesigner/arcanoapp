@@ -76,7 +76,7 @@ export function usePartnerGamificationNotifications(partnerId: string | null) {
           const xp = payload.new?.xp_amount as number;
           const reason = payload.new?.reason as string;
           // Only notify for notable XP gains (>=20)
-          if (xp >= 20) {
+          if (xp >= 10) {
             const reasonMap: Record<string, string> = {
               prompt_aprovado: "Prompt aprovado",
               bonus_10_desbloqueios_dia: "10 prompts copiados no dia!",
