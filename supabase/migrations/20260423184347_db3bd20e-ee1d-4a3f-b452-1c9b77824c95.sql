@@ -1,0 +1,1 @@
+ALTER TABLE public.partner_prompts ADD COLUMN subcategory_slug TEXT NULL;
