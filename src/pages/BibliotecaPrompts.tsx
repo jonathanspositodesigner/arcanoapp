@@ -944,11 +944,56 @@ const BibliotecaPrompts = () => {
               )}
               <div className="flex flex-wrap gap-3">
                 <Button 
-                  onClick={() => copyToClipboard(selectedPrompt)} 
-                  className={`flex-1 ${(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? 'bg-accent hover:bg-accent text-muted-foreground' : 'bg-secondary hover:bg-secondary text-foreground'}`}
+                  onClick={async () => {
+                    const promptId = String(selectedPrompt.id);
+                    // Not premium subscriber -> upsell
+                    if (selectedPrompt.isPremium && !isPremium) {
+                      setPremiumModalItem(selectedPrompt);
+                      setShowPremiumModal(true);
+                      return;
+                    }
+                    // Premium but not unlocked -> unlock it
+                    if (selectedPrompt.isPremium && !isPromptUnlocked(promptId)) {
+                      if (premiumLimitReached && !isPremiumUnlimited) {
+                        toast.error('Limite diário de prompts premium atingido. Volte amanhã!');
+                        return;
+                      }
+                      const success = await unlockPrompt(promptId);
+                      if (success) {
+                        if (selectedPrompt.partnerId) {
+                          try {
+                            const fp = getDeviceFingerprint();
+                            await supabase.rpc('register_collaborator_unlock', {
+                              _collaborator_id: selectedPrompt.partnerId,
+                              _prompt_id: promptId,
+                              _prompt_title: selectedPrompt.title,
+                              _device_fingerprint: fp,
+                            });
+                          } catch (err) {
+                            console.error('Error registering collaborator unlock:', err);
+                          }
+                        }
+                        toast.success('Prompt liberado! Agora clique para copiar.');
+                      } else {
+                        toast.error('Não foi possível liberar o prompt.');
+                      }
+                      return;
+                    }
+                    // Already unlocked or free -> copy
+                    copyToClipboard(selectedPrompt);
+                  }}
+                  className={`flex-1 ${
+                    selectedPrompt.isPremium && !isPremium
+                      ? 'bg-accent hover:bg-accent text-muted-foreground'
+                      : selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))
+                        ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
+                        : 'bg-secondary hover:bg-secondary text-foreground'
+                  }`}
                 >
-                  {(selectedPrompt.isPremium && !isPremium) || (selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id))) ? (
-                    <><Lock className="h-4 w-4 mr-2" />{selectedPrompt.isPremium && isPremium ? 'Libere o prompt primeiro' : 'Exclusivo Assinantes'}</>
+                  {selectedPrompt.isPremium && !isPremium ? (
+                    <><Lock className="h-4 w-4 mr-2" />Exclusivo Assinantes</>
+                  ) : selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id)) ? (
+                    <><Zap className="h-4 w-4 mr-2" />Liberar Prompt {!isPremiumUnlimited ? `(${remainingUnlocks})` : ''}</>
                   ) : (
                     <><Copy className="h-4 w-4 mr-2" />{t('modal.copyPrompt')}</>
                   )}
