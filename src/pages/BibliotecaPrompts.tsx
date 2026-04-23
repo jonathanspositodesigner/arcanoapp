@@ -118,8 +118,7 @@ const BibliotecaPrompts = () => {
   useEffect(() => {
     const fetchPartners = async () => {
       const { data, error } = await supabase
-        .from('partner_public_profiles')
-        .select('id, name, instagram, avatar_url');
+        .rpc('get_public_partner_profiles');
 
       if (error) {
         console.error('Error loading partners:', error);

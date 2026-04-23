@@ -6106,6 +6106,15 @@ export type Database = {
           prompt_id: string
         }[]
       }
+      get_public_partner_profiles: {
+        Args: never
+        Returns: {
+          avatar_url: string
+          id: string
+          instagram: string
+          name: string
+        }[]
+      }
       get_receita_por_credito: { Args: never; Returns: Json }
       get_unified_dashboard_orders: {
         Args: { _end: string; _start: string }

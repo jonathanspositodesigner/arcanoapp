@@ -91,8 +91,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         supabase.rpc('get_prompt_click_counts'),
 
         supabase
-          .from('partner_public_profiles')
-          .select('id, name, instagram, avatar_url')
+          .rpc('get_public_partner_profiles')
       ]);
 
       // Check for errors
