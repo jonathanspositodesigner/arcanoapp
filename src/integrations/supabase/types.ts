@@ -3683,6 +3683,196 @@ export type Database = {
           },
         ]
       }
+      partner_badges: {
+        Row: {
+          badge_slug: string
+          earned_at: string | null
+          id: string
+          partner_id: string
+        }
+        Insert: {
+          badge_slug: string
+          earned_at?: string | null
+          id?: string
+          partner_id: string
+        }
+        Update: {
+          badge_slug?: string
+          earned_at?: string | null
+          id?: string
+          partner_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_badges_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_badges_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_bonus_payments: {
+        Row: {
+          added_by: string | null
+          amount: number
+          created_at: string | null
+          id: string
+          partner_id: string
+          reason: string
+          week_start: string
+        }
+        Insert: {
+          added_by?: string | null
+          amount: number
+          created_at?: string | null
+          id?: string
+          partner_id: string
+          reason: string
+          week_start: string
+        }
+        Update: {
+          added_by?: string | null
+          amount?: number
+          created_at?: string | null
+          id?: string
+          partner_id?: string
+          reason?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_bonus_payments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_bonus_payments_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_challenge_progress: {
+        Row: {
+          challenge_id: string
+          completed: boolean
+          completed_at: string | null
+          current_count: number
+          current_value: number
+          id: string
+          partner_id: string
+          xp_awarded: boolean
+        }
+        Insert: {
+          challenge_id: string
+          completed?: boolean
+          completed_at?: string | null
+          current_count?: number
+          current_value?: number
+          id?: string
+          partner_id: string
+          xp_awarded?: boolean
+        }
+        Update: {
+          challenge_id?: string
+          completed?: boolean
+          completed_at?: string | null
+          current_count?: number
+          current_value?: number
+          id?: string
+          partner_id?: string
+          xp_awarded?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "partner_weekly_challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_challenge_progress_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_challenge_progress_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_gamification: {
+        Row: {
+          best_streak: number
+          current_streak: number
+          id: string
+          level: number
+          partner_id: string
+          streak_last_date: string | null
+          streak_protection_available: boolean
+          streak_protection_used_month: number | null
+          updated_at: string | null
+          xp_total: number
+        }
+        Insert: {
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          level?: number
+          partner_id: string
+          streak_last_date?: string | null
+          streak_protection_available?: boolean
+          streak_protection_used_month?: number | null
+          updated_at?: string | null
+          xp_total?: number
+        }
+        Update: {
+          best_streak?: number
+          current_streak?: number
+          id?: string
+          level?: number
+          partner_id?: string
+          streak_last_date?: string | null
+          streak_protection_available?: boolean
+          streak_protection_used_month?: number | null
+          updated_at?: string | null
+          xp_total?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_gamification_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_gamification_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: true
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       partner_pix_keys: {
         Row: {
           created_at: string
@@ -3860,6 +4050,54 @@ export type Database = {
           },
         ]
       }
+      partner_weekly_challenges: {
+        Row: {
+          category_target: string | null
+          challenge_type: string
+          created_at: string | null
+          created_by: string | null
+          description: string
+          id: string
+          is_active: boolean | null
+          target_count: number
+          target_value: number | null
+          title: string
+          week_end: string
+          week_start: string
+          xp_reward: number
+        }
+        Insert: {
+          category_target?: string | null
+          challenge_type: string
+          created_at?: string | null
+          created_by?: string | null
+          description: string
+          id?: string
+          is_active?: boolean | null
+          target_count?: number
+          target_value?: number | null
+          title: string
+          week_end: string
+          week_start: string
+          xp_reward: number
+        }
+        Update: {
+          category_target?: string | null
+          challenge_type?: string
+          created_at?: string | null
+          created_by?: string | null
+          description?: string
+          id?: string
+          is_active?: boolean | null
+          target_count?: number
+          target_value?: number | null
+          title?: string
+          week_end?: string
+          week_start?: string
+          xp_reward?: number
+        }
+        Relationships: []
+      }
       partner_withdrawals: {
         Row: {
           admin_notes: string | null
@@ -3907,6 +4145,48 @@ export type Database = {
           },
           {
             foreignKeyName: "partner_withdrawals_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      partner_xp_log: {
+        Row: {
+          created_at: string | null
+          id: string
+          partner_id: string
+          reason: string
+          reference_id: string | null
+          xp_amount: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          partner_id: string
+          reason: string
+          reference_id?: string | null
+          xp_amount: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          partner_id?: string
+          reason?: string
+          reference_id?: string | null
+          xp_amount?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "partner_xp_log_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "partner_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "partner_xp_log_partner_id_fkey"
             columns: ["partner_id"]
             isOneToOne: false
             referencedRelation: "partners"
@@ -5982,6 +6262,15 @@ export type Database = {
           success: boolean
         }[]
       }
+      add_partner_xp: {
+        Args: {
+          _partner_id: string
+          _reason: string
+          _reference_id?: string
+          _xp_amount: number
+        }
+        Returns: Json
+      }
       add_upscaler_credits: {
         Args: { _amount: number; _description?: string; _user_id: string }
         Returns: {
@@ -6008,6 +6297,10 @@ export type Database = {
           p_status_filter?: string
         }
         Returns: Json
+      }
+      award_partner_badge: {
+        Args: { _badge_slug: string; _partner_id: string }
+        Returns: boolean
       }
       check_collaborator_email: { Args: { p_email: string }; Returns: Json }
       check_device_signup_limit: {
@@ -6596,6 +6889,17 @@ export type Database = {
           success: boolean
         }[]
       }
+      update_challenge_progress: {
+        Args: {
+          _category?: string
+          _challenge_type: string
+          _increment_count?: number
+          _increment_value?: number
+          _partner_id: string
+        }
+        Returns: undefined
+      }
+      update_partner_streak: { Args: { _partner_id: string }; Returns: Json }
       update_pose_changer_queue_positions: { Args: never; Returns: undefined }
       update_queue_positions: { Args: never; Returns: undefined }
       update_veste_ai_queue_positions: { Args: never; Returns: undefined }

@@ -15,6 +15,7 @@ import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import PartnerToolRatesAdmin from "./PartnerToolRatesAdmin";
+import PartnerGamificationAdmin from "./PartnerGamificationAdmin";
 
 const formatBRL = (v: number) => new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(v);
 
@@ -52,7 +53,7 @@ interface EarningRow {
   earning_type: 'unlock' | 'tool_usage'; tool_table?: string;
 }
 
-type Tab = "overview" | "withdrawals" | "ranking" | "detail";
+type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 type RankCriteria = "earnings" | "unlocks" | "prompts";
 type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts";
@@ -271,6 +272,7 @@ const PartnerEarningsAdminContent = () => {
     { id: "withdrawals", label: "Saques" },
     { id: "ranking", label: "Ranking" },
     { id: "detail", label: "Extrato por Colaborador" },
+    { id: "gamification", label: "🎮 Gamificação" },
   ];
 
   const SortHeader = ({ label, sk }: { label: string; sk: SortKey }) => (
@@ -623,6 +625,9 @@ const PartnerEarningsAdminContent = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* TAB: GAMIFICATION */}
+      {tab === "gamification" && <PartnerGamificationAdmin />}
     </div>
   );
 };
