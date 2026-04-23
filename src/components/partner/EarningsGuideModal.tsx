@@ -29,14 +29,24 @@ const LEVELS = [
   { level: 5, name: "Elite", minXp: 6000, unlockRate: "R$ 0,12" },
 ];
 
+const FOUNDER_LEVELS = [
+  { level: 1, name: "Iniciante", minXp: 0, unlockRate: "R$ 0,10" },
+  { level: 2, name: "Criador", minXp: 400, unlockRate: "R$ 0,10" },
+  { level: 3, name: "Colaborador", minXp: 900, unlockRate: "R$ 0,12" },
+  { level: 4, name: "Especialista", minXp: 2000, unlockRate: "R$ 0,15" },
+  { level: 5, name: "Elite", minXp: 6000, unlockRate: "R$ 0,20" },
+];
+
 interface EarningsGuideModalProps {
   trigger: ReactNode;
   /** Hide the "send your first prompt" CTA inside the modal (default false). */
   hideFirstPromptCta?: boolean;
+  isFounder?: boolean;
 }
 
-const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGuideModalProps) => {
+const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = false }: EarningsGuideModalProps) => {
   const [open, setOpen] = useState(false);
+  const levels = isFounder ? FOUNDER_LEVELS : LEVELS;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -45,10 +55,12 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
         <DialogHeader className="px-5 pt-5 pb-3 sm:px-7 sm:pt-6 border-b border-border/60 shrink-0 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Como você ganha como colaborador
+            {isFounder ? "Programa Arcano Founder" : "Como você ganha como colaborador"}
           </DialogTitle>
           <p className="text-xs sm:text-sm text-muted-foreground mt-1">
-            Entenda todas as formas de ganhar dinheiro publicando seu conteúdo no Arcano.
+            {isFounder
+              ? "Entenda as regras, requisitos e a escala especial de pagamentos para Founders."
+              : "Entenda todas as formas de ganhar dinheiro publicando seu conteúdo no Arcano."}
           </p>
         </DialogHeader>
 
@@ -67,11 +79,13 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
                 Toda vez que um usuário libera (copia/desbloqueia) um prompt seu marcado como{" "}
                 <strong className="text-foreground">Premium</strong>, você recebe um valor fixo
                 conforme o seu <strong className="text-foreground">nível na plataforma</strong>.
-                Quanto mais alto o seu nível, maior o valor por liberação.
+                {isFounder
+                  ? " Como Arcano Founder, sua tabela começa em R$ 0,10 por prompt e chega a R$ 0,20 no Elite."
+                  : " Quanto mais alto o seu nível, maior o valor por liberação."}
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-3">
-                {LEVELS.map((lvl) => (
+                {levels.map((lvl) => (
                   <Card key={lvl.level} className="border-primary/15 bg-primary/5">
                     <CardContent className="p-3 text-center space-y-1">
                       <div className="text-[10px] uppercase tracking-wider text-muted-foreground">
@@ -130,9 +144,16 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
               <p className="text-sm text-muted-foreground leading-relaxed">
                 Você acumula <strong className="text-foreground">XP</strong> realizando ações na
                 plataforma. Conforme você sobe de nível, o valor que recebe por cada liberação
-                aumenta — chegando a <strong className="text-foreground">2,4× mais</strong> no
-                nível Elite em comparação ao Iniciante.
+                aumenta — chegando a <strong className="text-foreground">{isFounder ? "R$ 0,20" : "2,4× mais"}</strong>{" "}
+                {isFounder ? "por prompt no nível Elite." : "no nível Elite em comparação ao Iniciante."}
               </p>
+              {isFounder && (
+                <div className="rounded-lg border border-primary/20 bg-primary/5 p-3 text-xs text-muted-foreground leading-relaxed">
+                  <strong className="text-foreground">Requisito Founder:</strong> o selo é exclusivo
+                  para os 15 primeiros colaboradores aceitos no programa. Para manter e aumentar os
+                  ganhos, continue publicando prompts originais, aprovados e com boa performance.
+                </div>
+              )}
               <div className="grid sm:grid-cols-2 gap-2.5">
                 <div className="flex items-start gap-2.5 rounded-lg border border-border/50 bg-card/50 p-3">
                   <Flame className="h-4 w-4 text-orange-400 mt-0.5 shrink-0" />
@@ -190,15 +211,15 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
                 </p>
                 <div className="grid grid-cols-3 gap-2 sm:gap-3">
                   <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">R$ 100</div>
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 150" : "R$ 100"}</div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">por dia</div>
                   </div>
                   <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">R$ 700</div>
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 1.050" : "R$ 700"}</div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">por semana</div>
                   </div>
                   <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">R$ 3.000+</div>
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 4.500+" : "R$ 3.000+"}</div>
                     <div className="text-[10px] sm:text-xs text-muted-foreground">por mês</div>
                   </div>
                 </div>
