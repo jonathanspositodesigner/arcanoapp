@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -149,6 +149,15 @@ const PartnerLoginUnified = () => {
             <ArrowLeft className="mr-2 h-4 w-4" />
             Voltar
           </Button>
+
+          <div className="text-center mt-2">
+            <Link
+              to="/tornar-se-colaborador"
+              className="text-sm text-primary hover:underline"
+            >
+              Tornar-se Colaborador
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
