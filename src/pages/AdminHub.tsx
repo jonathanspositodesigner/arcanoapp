@@ -20,6 +20,7 @@ import AdminsManagementContent from "@/components/AdminsManagementContent";
 import SalesManagementContent from "@/components/admin/SalesManagementContent";
 import AdsManagementContent from "@/components/admin/AdsManagementContent";
 import MetaCapiLogsContent from "@/components/admin/MetaCapiLogsContent";
+import CollaboratorRequestsContent from "@/components/admin/CollaboratorRequestsContent";
 
 const AdminHub = () => {
   const navigate = useNavigate();
@@ -196,6 +197,8 @@ const AdminHub = () => {
         return <AdsManagementContent />;
       case "pixel":
         return <MetaCapiLogsContent />;
+      case "collaborator-requests":
+        return <CollaboratorRequestsContent />;
       case "admins":
         return <AdminsManagementContent />;
       case "emails":
