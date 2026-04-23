@@ -27,6 +27,23 @@ interface EarningRecord {
   user_id: string;
 }
 
+interface PixKey {
+  id: string;
+  pix_key: string;
+  pix_key_type: string;
+}
+
+interface Withdrawal {
+  id: string;
+  valor_solicitado: number;
+  pix_key: string;
+  pix_key_type: string;
+  status: string;
+  admin_notes: string | null;
+  created_at: string;
+  processed_at: string | null;
+}
+
 const PartnerEarnings = () => {
   const navigate = useNavigate();
   const [partnerId, setPartnerId] = useState<string | null>(null);
@@ -37,6 +54,9 @@ const PartnerEarnings = () => {
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("30days");
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
   const [customTo, setCustomTo] = useState<Date | undefined>();
+  const [pixKey, setPixKey] = useState<PixKey | null>(null);
+  const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
+  const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
 
   useEffect(() => {
     checkAccessAndFetch();
@@ -66,18 +86,25 @@ const PartnerEarnings = () => {
     setTotalBalance(balanceData?.total_earned || 0);
     setTotalUnlocks(balanceData?.total_unlocks || 0);
 
-    // Fetch all earnings
-    const { data: earningsData, error } = await supabase
-      .from('collaborator_unlock_earnings')
-      .select('id, prompt_id, prompt_title, amount, unlock_date, unlocked_at, user_id')
-      .eq('collaborator_id', partnerData.id)
-      .order('unlocked_at', { ascending: false });
+    const [earningsRes, pixRes, withdrawalsRes] = await Promise.all([
+      supabase.from('collaborator_unlock_earnings')
+        .select('id, prompt_id, prompt_title, amount, unlock_date, unlocked_at, user_id')
+        .eq('collaborator_id', partnerData.id)
+        .order('unlocked_at', { ascending: false }),
+      supabase.from('partner_pix_keys')
+        .select('id, pix_key, pix_key_type')
+        .eq('partner_id', partnerData.id)
+        .maybeSingle(),
+      supabase.from('partner_withdrawals')
+        .select('id, valor_solicitado, pix_key, pix_key_type, status, admin_notes, created_at, processed_at')
+        .eq('partner_id', partnerData.id)
+        .order('created_at', { ascending: false }),
+    ]);
 
-    if (error) {
-      console.error("Error fetching earnings:", error);
-    } else {
-      setEarnings(earningsData || []);
-    }
+    if (earningsRes.error) console.error("Error fetching earnings:", earningsRes.error);
+    else setEarnings(earningsRes.data || []);
+    setPixKey(pixRes.data || null);
+    setWithdrawals((withdrawalsRes.data as Withdrawal[]) || []);
 
     setIsLoading(false);
   };
@@ -101,6 +128,18 @@ const PartnerEarnings = () => {
         return { from: null, to: null };
     }
   };
+
+  const totalPago = useMemo(() => {
+    return withdrawals.filter(w => w.status === 'pago').reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
+  }, [withdrawals]);
+
+  const saldoDisponivel = totalBalance - totalPago;
+  const hasPendingWithdrawal = withdrawals.some(w => w.status === 'pendente');
+  const canRequestWithdrawal = saldoDisponivel >= 100 && !hasPendingWithdrawal && !!pixKey;
+
+  const formatBRL = (v: number) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(v);
+
+  const refreshData = () => { setIsLoading(true); checkAccessAndFetch(); };
 
   const filteredEarnings = useMemo(() => {
     const { from, to } = getDateRange();
@@ -138,7 +177,8 @@ const PartnerEarnings = () => {
     <div className="min-h-screen bg-background">
       <div className="container max-w-4xl mx-auto py-8 px-4">
         {/* Header */}
-        <div className="flex items-center gap-3 mb-8">
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
@@ -146,10 +186,25 @@ const PartnerEarnings = () => {
             <h1 className="text-3xl font-bold text-foreground">Extrato de Ganhos</h1>
             <p className="text-muted-foreground">Acompanhe seus ganhos por desbloqueios de prompts</p>
           </div>
+          </div>
+          <Button onClick={() => setShowWithdrawalModal(true)} disabled={!canRequestWithdrawal} className="shrink-0">
+            <Banknote className="h-4 w-4 mr-2" /> Solicitar Saque
+          </Button>
         </div>
 
+        {!pixKey && (
+          <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
+            ⚠️ Cadastre sua chave PIX para poder solicitar saques.
+          </div>
+        )}
+        {hasPendingWithdrawal && (
+          <div className="mb-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20 text-sm text-blue-400">
+            ⏳ Você já possui uma solicitação de saque pendente. Aguarde o processamento.
+          </div>
+        )}
+
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card className="p-5 bg-green-500/10 border-green-500/20">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-green-500/20 flex items-center justify-center">
@@ -158,8 +213,19 @@ const PartnerEarnings = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Saldo Total</p>
                 <p className="text-2xl font-bold text-green-400">
-                  R$ {totalBalance.toFixed(2).replace('.', ',')}
+                  {formatBRL(totalBalance)}
                 </p>
+              </div>
+            </div>
+          </Card>
+          <Card className="p-5 bg-emerald-500/10 border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center">
+                <Wallet className="h-5 w-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Disponível p/ Saque</p>
+                <p className="text-2xl font-bold text-emerald-400">{formatBRL(saldoDisponivel)}</p>
               </div>
             </div>
           </Card>
@@ -171,7 +237,7 @@ const PartnerEarnings = () => {
               <div>
                 <p className="text-sm text-muted-foreground">Ganho no Período</p>
                 <p className="text-2xl font-bold text-primary">
-                  R$ {periodTotal.toFixed(2).replace('.', ',')}
+                  {formatBRL(periodTotal)}
                 </p>
               </div>
             </div>
@@ -188,6 +254,8 @@ const PartnerEarnings = () => {
             </div>
           </Card>
         </div>
+
+        {partnerId && <PartnerPixKeySection partnerId={partnerId} pixKey={pixKey} onPixKeyChange={setPixKey} />}
 
         {/* Filter Buttons */}
         <div className="flex flex-wrap gap-2 mb-4">
@@ -260,8 +328,23 @@ const PartnerEarnings = () => {
 
         {filteredEarnings.length > 0 && (
           <div className="mt-4 text-right text-sm text-muted-foreground">
-            {filteredEarnings.length} desbloqueio{filteredEarnings.length !== 1 ? 's' : ''} • Total: R$ {periodTotal.toFixed(2).replace('.', ',')}
+            {filteredEarnings.length} desbloqueio{filteredEarnings.length !== 1 ? 's' : ''} • Total: {formatBRL(periodTotal)}
           </div>
+        )}
+
+        <PartnerWithdrawalHistory withdrawals={withdrawals} />
+
+        {partnerId && pixKey && (
+          <WithdrawalRequestModal
+            open={showWithdrawalModal}
+            onOpenChange={setShowWithdrawalModal}
+            partnerId={partnerId}
+            saldoDisponivel={saldoDisponivel}
+            pixKey={pixKey.pix_key}
+            pixKeyType={pixKey.pix_key_type}
+            onSuccess={refreshData}
+            onEditPix={() => setShowWithdrawalModal(false)}
+          />
         )}
       </div>
     </div>
