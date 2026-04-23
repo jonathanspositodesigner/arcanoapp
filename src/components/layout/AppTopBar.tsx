@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
+import { usePremiumPromptLimit } from "@/hooks/usePremiumPromptLimit";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -33,6 +34,22 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   const { theme, toggleTheme } = useTheme();
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
+  const {
+    remainingUnlocks,
+    dailyLimit: premiumDailyLimit,
+    isUnlimited: isPremiumUnlimited,
+  } = usePremiumPromptLimit(user, isPremium, planType);
+
+  const PremiumCounter = () => (
+    isPremium ? (
+      <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-accent border border-border">
+        <Lock className="h-3.5 w-3.5 text-purple-400" />
+        <span className="text-xs font-bold text-purple-400 tabular-nums">
+          {isPremiumUnlimited ? '∞' : `${remainingUnlocks}/${premiumDailyLimit}`}
+        </span>
+      </div>
+    ) : null
+  );
 
   const ProfileDropdown = ({ isMobile = false }: { isMobile?: boolean }) => (
     <DropdownMenu>
@@ -188,6 +205,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
                 <Star className="h-3 w-3 mr-1" fill="currentColor" />
                 {t('header.premiumActive')}
               </Badge>
+              <PremiumCounter />
               <div className="flex items-center gap-1">
               <CreditsPreviewPopover
                   userId={user?.id || ''}
@@ -253,6 +271,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
               <Star className="h-3 w-3 mr-1" fill="currentColor" />
               Premium
             </Badge>
+            <PremiumCounter />
             <div className="flex items-center gap-1">
               <CreditsPreviewPopover
                 userId={user?.id || ''}

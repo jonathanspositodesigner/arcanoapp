@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart, Coins } from "lucide-react";
+import { ExternalLink, Copy, Download, Zap, Sparkles, X, Play, ChevronLeft, ChevronRight, Video, Star, Lock, LogIn, Smartphone, Menu, Youtube, AlertTriangle, Users, Flame, Search, ChevronDown, Heart } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
@@ -561,30 +561,6 @@ const BibliotecaPrompts = () => {
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 sm:mb-4 bg-gradient-to-r dark:from-gray-200 dark:to-gray-400 from-purple-700 to-purple-500 bg-clip-text text-transparent">{t('library.title')}</h2>
           <p className="text-sm sm:text-base lg:text-lg mb-4 sm:mb-6 text-muted-foreground">{t('library.description')}</p>
 
-          {/* Premium Prompt Counter */}
-          {user && isPremium && (
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                <Lock className="h-3.5 w-3.5 text-purple-400" />
-                <span className="text-xs font-medium text-foreground">
-                  Prompts Premium:
-                </span>
-                <span className="text-xs font-bold text-purple-400 tabular-nums">
-                  {isPremiumUnlimited ? '∞' : `${remainingUnlocks}/${premiumDailyLimit}`}
-                </span>
-              </div>
-              <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-accent border border-border">
-                <Coins className="h-3.5 w-3.5 text-yellow-400" />
-                <span className="text-xs font-medium text-foreground">
-                  Créditos:
-                </span>
-                <span className="text-xs font-bold text-yellow-400 tabular-nums">
-                  {creditsLoading ? '...' : credits.toLocaleString()}
-                </span>
-              </div>
-            </div>
-          )}
-
           {/* Content Type Tabs */}
           <div className="flex gap-2 mb-3">
             <Button variant={contentType === "exclusive" ? "default" : "outline"} onClick={() => { setContentType("exclusive"); handleCategorySelect("Ver Tudo"); }} size="sm" className={`text-xs font-semibold ${contentType === "exclusive" ? "bg-secondary hover:bg-secondary text-foreground" : "bg-accent hover:bg-accent0/20 border-border text-muted-foreground"}`}>
@@ -967,7 +943,41 @@ const BibliotecaPrompts = () => {
                         </div>
                       </div>
                     </>
-                  ) : revealedPrompts.has(String(selectedPrompt.id)) ? (
+                  ) : selectedPrompt.isPremium && !isPromptUnlocked(String(selectedPrompt.id)) ? (
+                    <>
+                      <p className="text-foreground whitespace-pre-wrap text-sm blur-md select-none pointer-events-none">{selectedPrompt.prompt}</p>
+                      <div className="absolute inset-0 flex items-center justify-center bg-background/60 rounded-lg">
+                        <div className="text-center">
+                          <Lock className="h-6 w-6 text-purple-400 mx-auto mb-2" />
+                          <p className="text-muted-foreground text-sm mb-2">
+                            {premiumLimitReached 
+                              ? 'Você atingiu seu limite diário de prompts premium' 
+                              : 'Libere este prompt para visualizar'}
+                          </p>
+                          <Button
+                            onClick={async () => {
+                              if (premiumLimitReached) {
+                                toast.error('Limite diário de prompts premium atingido. Volte amanhã!');
+                                return;
+                              }
+                              const success = await unlockPrompt(String(selectedPrompt.id));
+                              if (success) {
+                                toast.success('Prompt liberado!');
+                              } else {
+                                toast.error('Não foi possível liberar o prompt.');
+                              }
+                            }}
+                            size="sm"
+                            disabled={premiumLimitReached}
+                            className="bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white"
+                          >
+                            <Zap className="h-3 w-3 mr-1" />
+                            Liberar Prompt {!isPremiumUnlimited && `(${remainingUnlocks} restantes)`}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  ) : revealedPrompts.has(String(selectedPrompt.id)) || isPromptUnlocked(String(selectedPrompt.id)) ? (
                     <p className="text-foreground whitespace-pre-wrap text-sm">{selectedPrompt.prompt}</p>
                   ) : (
                     <>
