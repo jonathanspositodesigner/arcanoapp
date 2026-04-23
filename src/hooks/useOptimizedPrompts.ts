@@ -67,7 +67,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
 
     try {
       // Fetch all data in parallel with optimized column selection
-      const [communityResult, adminResult, partnerResult, clicksResult] = await Promise.all([
+      const [communityResult, adminResult, partnerResult, clicksResult, partnersResult] = await Promise.all([
         // Only select needed columns
         supabase
           .from('community_prompts')
@@ -82,18 +82,23 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         
         supabase
           .from('partner_prompts')
-          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks, partners(name, instagram, avatar_url)')
+          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks, partner_id')
           .eq('approved', true)
           .order('created_at', { ascending: false }),
         
         // Use aggregated function instead of fetching all rows
-        supabase.rpc('get_prompt_click_counts')
+        supabase.rpc('get_prompt_click_counts'),
+
+        supabase
+          .from('partners')
+          .select('id, name, instagram, avatar_url')
       ]);
 
       // Check for errors
       if (communityResult.error) throw communityResult.error;
       if (adminResult.error) throw adminResult.error;
       if (partnerResult.error) throw partnerResult.error;
+      if (partnersResult.error) throw partnersResult.error;
       
       // Build click counts map from aggregated data
       const clickCounts: Record<string, number> = {};
@@ -139,26 +144,34 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         partnerAvatarUrl: undefined
       }));
 
-      // Map partner prompts
-      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map((item: any) => ({
-        id: item.id,
-        title: item.title,
-        prompt: item.prompt,
-        imageUrl: item.image_url,
-        thumbnailUrl: item.thumbnail_url || undefined,
-        category: item.category,
-        isExclusive: true,
-        isPremium: item.is_premium || false,
-        referenceImages: item.reference_images || [],
-        tutorialUrl: item.tutorial_url || null,
-        createdAt: item.created_at || undefined,
-        promptType: 'partner' as const,
-        clickCount: clickCounts[item.id] || 0,
-        bonusClicks: item.bonus_clicks || 0,
-        partnerName: item.partners?.name || undefined,
-        partnerInstagram: item.partners?.instagram || undefined,
-        partnerAvatarUrl: item.partners?.avatar_url || undefined,
-      }));
+      const partnersById = new Map(
+        (partnersResult.data || []).map((partner) => [partner.id, partner])
+      );
+
+      // Map partner prompts using partner_id -> partners lookup
+      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map((item: any) => {
+        const partner = partnersById.get(item.partner_id);
+
+        return {
+          id: item.id,
+          title: item.title,
+          prompt: item.prompt,
+          imageUrl: item.image_url,
+          thumbnailUrl: item.thumbnail_url || undefined,
+          category: item.category,
+          isExclusive: true,
+          isPremium: item.is_premium || false,
+          referenceImages: item.reference_images || [],
+          tutorialUrl: item.tutorial_url || null,
+          createdAt: item.created_at || undefined,
+          promptType: 'partner' as const,
+          clickCount: clickCounts[item.id] || 0,
+          bonusClicks: item.bonus_clicks || 0,
+          partnerName: partner?.name || undefined,
+          partnerInstagram: partner?.instagram || undefined,
+          partnerAvatarUrl: partner?.avatar_url || undefined,
+        };
+      });
 
       // Combine all prompts (without date sorting for Ver Tudo)
       const combined = [...adminPrompts, ...partnerPrompts, ...communityPrompts];
