@@ -6840,25 +6840,15 @@ export type Database = {
           success: boolean
         }[]
       }
-      register_collaborator_tool_earning:
-        | {
-            Args: {
-              _job_id: string
-              _prompt_id: string
-              _tool_table: string
-              _user_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _job_id: string
-              _prompt_id: string
-              _tool_table: string
-              _user_id: string
-            }
-            Returns: Json
-          }
+      register_collaborator_tool_earning: {
+        Args: {
+          _job_id: string
+          _prompt_id: string
+          _tool_table: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       register_collaborator_unlock: {
         Args: {
           _collaborator_id: string
