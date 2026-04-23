@@ -415,7 +415,7 @@ const PartnerGamificationAdmin = () => {
                 <th className="text-left py-3 px-3 text-xs font-semibold text-muted-foreground">Nome</th>
                 <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground">Nível</th>
                 <th className="text-right py-3 px-3 text-xs font-semibold text-muted-foreground">XP</th>
-                <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground">🔥 Streak</th>
+                <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground">🔥 Sequência</th>
                 <th className="text-center py-3 px-3 text-xs font-semibold text-muted-foreground">Badges</th>
                 <th className="text-right py-3 px-3 text-xs font-semibold text-muted-foreground">Taxa Unlock</th>
                 <th className="text-right py-3 px-3 text-xs font-semibold text-muted-foreground">G. Unlock</th>
