@@ -344,10 +344,31 @@ const BibliotecaPrompts = () => {
       return;
     }
 
-    // Block premium prompts that haven't been unlocked today
+    // Auto-unlock premium prompts if not yet unlocked
     if (promptItem.isPremium && !isPromptUnlocked(String(promptItem.id))) {
-      toast.error('Libere o prompt primeiro antes de copiar.');
-      return;
+      if (premiumLimitReached && !isPremiumUnlimited) {
+        toast.error('Limite diário de prompts premium atingido. Volte amanhã!');
+        return;
+      }
+      const unlocked = await unlockPrompt(String(promptItem.id));
+      if (!unlocked) {
+        toast.error('Não foi possível liberar o prompt.');
+        return;
+      }
+      // Register collaborator unlock if applicable
+      if (promptItem.partnerId) {
+        try {
+          const fp = getDeviceFingerprint();
+          await supabase.rpc('register_collaborator_unlock', {
+            _collaborator_id: promptItem.partnerId,
+            _prompt_id: String(promptItem.id),
+            _prompt_title: promptItem.title,
+            _device_fingerprint: fp,
+          });
+        } catch (err) {
+          console.error('Error registering collaborator unlock:', err);
+        }
+      }
     }
 
     if (!promptItem.isPremium && hasLimitPlan) {
@@ -777,12 +798,23 @@ const BibliotecaPrompts = () => {
                   {/* Action buttons */}
                   <div className="flex gap-1">
                     <Button
-                      onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : handleItemClick(item); }}
+                      onClick={(e) => { e.stopPropagation(); canAccess ? copyToClipboard(item) : (item.isPremium && !isPremium ? handleItemClick(item) : copyToClipboard(item)); }}
                       size="sm"
-                      className="flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-secondary hover:bg-secondary text-foreground min-w-0"
+                      className={`flex-1 h-5 sm:h-7 text-[8px] sm:text-xs px-1.5 sm:px-3 min-w-0 ${
+                        item.isPremium && !isPremium
+                          ? 'bg-accent text-muted-foreground'
+                          : item.isPremium && isPremium && !isPromptUnlocked(String(item.id))
+                            ? 'bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-500 hover:to-purple-400 text-white'
+                            : 'bg-secondary hover:bg-secondary text-foreground'
+                      }`}
                     >
-                      <Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
-                      <span className="truncate">Copiar</span>
+                      {item.isPremium && !isPremium ? (
+                        <><Lock className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" /><span className="truncate">Premium</span></>
+                      ) : item.isPremium && isPremium && !isPromptUnlocked(String(item.id)) ? (
+                        <><Zap className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" /><span className="truncate">Liberar</span></>
+                      ) : (
+                        <><Copy className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" /><span className="truncate">Copiar</span></>
+                      )}
                     </Button>
                     <Button
                       onClick={(e) => { e.stopPropagation(); handleItemClick(item); }}
