@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { Dialog as ProfileDialog, DialogContent as ProfileDialogContent } from "@/components/ui/dialog";
+import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import imageCompression from 'browser-image-compression';
 
 interface Partner {
@@ -415,6 +416,8 @@ const PartnerDashboard = () => {
     { level: 5, name: "Elite", minXp: 6000, maxXp: Infinity, unlockRate: 0.12 },
   ];
   const currentLevelData = LEVELS.find(l => l.level === currentLevel) || LEVELS[0];
+  const founderUnlockRates: Record<number, number> = { 1: 0.10, 2: 0.10, 3: 0.12, 4: 0.15, 5: 0.20 };
+  const currentUnlockRate = partner?.is_founder ? founderUnlockRates[currentLevel] || 0.10 : currentLevelData.unlockRate;
   const levelName = currentLevelData.name;
   const xpTotal = partnerGamification?.xp_total || 0;
   const nextLevelData = LEVELS.find(l => l.level === currentLevel + 1);
