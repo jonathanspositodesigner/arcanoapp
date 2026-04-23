@@ -16,6 +16,9 @@ import {
   CheckCircle2,
   AlertCircle,
   ArrowLeft,
+  Users,
+  TrendingUp,
+  Instagram,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
@@ -202,6 +205,46 @@ const TornarSeColaborador = () => {
       </div>
 
       <div className="max-w-4xl mx-auto px-4 pb-16 space-y-20">
+
+        {/* SEÇÃO — SOCIAL PROOF / ALCANCE DA PLATAFORMA */}
+        <section className="space-y-6">
+          <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 p-8 md:p-10">
+            <h2 className="text-2xl md:text-3xl font-bold text-center text-foreground mb-2">
+              Uma plataforma com <span className="text-primary">alcance real</span>
+            </h2>
+            <p className="text-center text-muted-foreground text-sm mb-8 max-w-xl mx-auto">
+              Seu conteúdo será visto por milhares de pessoas todos os dias. Ao se tornar colaborador, você ganha visibilidade orgânica e remuneração automática.
+            </p>
+            <div className="grid sm:grid-cols-3 gap-6">
+              <div className="flex flex-col items-center gap-2 p-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-3xl font-bold text-foreground">+7.200</span>
+                <span className="text-sm text-muted-foreground text-center">membros ativos na plataforma</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 p-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <TrendingUp className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-3xl font-bold text-foreground">+12 mil</span>
+                <span className="text-sm text-muted-foreground text-center">visitas diárias na plataforma</span>
+              </div>
+              <div className="flex flex-col items-center gap-2 p-4">
+                <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                  <Instagram className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-3xl font-bold text-foreground">Seu perfil</span>
+                <span className="text-sm text-muted-foreground text-center">exibido na plataforma, trazendo divulgação orgânica pro seu Instagram</span>
+              </div>
+            </div>
+            <div className="mt-8 rounded-lg border border-primary/15 bg-primary/5 p-4 text-center">
+              <p className="text-sm text-foreground/80">
+                🚀 Ao publicar seus prompts, <strong className="text-foreground">seu @ do Instagram aparece junto ao conteúdo</strong> — cada uso é uma vitrine gratuita para o seu perfil.
+              </p>
+            </div>
+          </div>
+        </section>
 
         {/* SEÇÃO 2 — COMO VOCÊ GANHA */}
         <section className="space-y-10">
