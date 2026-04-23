@@ -23,6 +23,7 @@ interface Partner {
   email: string;
   instagram?: string;
   avatar_url?: string;
+  is_founder?: boolean;
 }
 
 interface PartnerPrompt {
@@ -115,7 +116,7 @@ const PartnerDashboard = () => {
     // Fetch partner info
     const { data: partnerData, error: partnerError } = await supabase
       .from('partners')
-      .select('id, name, email, instagram, avatar_url')
+      .select('id, name, email, instagram, avatar_url, is_founder')
       .eq('user_id', user.id)
       .maybeSingle();
 
