@@ -208,38 +208,6 @@ const TornarSeFounder = () => {
 
       <div className="max-w-4xl mx-auto px-4 pb-16 space-y-20">
 
-        {/* SEÇÃO — VAGAS E TABELA FOUNDER */}
-        <section className="space-y-6">
-          <div className="rounded-2xl border border-primary/25 bg-card p-6 md:p-8">
-            <div className="text-center space-y-3 mb-6">
-              <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-semibold text-primary">
-                <Crown className="h-3.5 w-3.5" />
-                Só 15 vagas Founder
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                Ganhe mais desde o primeiro prompt
-              </h2>
-              <p className="text-sm text-muted-foreground max-w-2xl mx-auto">
-                O Arcano Founder é para quem quer entrar cedo, ocupar espaço e transformar prompt bom em renda recorrente. A tabela especial começa em R$ 0,10 e chega a R$ 0,20 por liberação.
-              </p>
-            </div>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { title: "Criador", value: "R$ 0,10", desc: "por prompt" },
-                { title: "Founder Pro", value: "R$ 0,12", desc: "por prompt" },
-                { title: "Especialista", value: "R$ 0,15", desc: "por prompt" },
-                { title: "Elite", value: "R$ 0,20", desc: "por prompt" },
-              ].map((item) => (
-                <div key={item.title} className="rounded-xl border border-primary/20 bg-primary/5 p-4 text-center">
-                  <p className="text-xs font-medium text-muted-foreground">{item.title}</p>
-                  <p className="text-2xl font-bold text-primary mt-1">{item.value}</p>
-                  <p className="text-[11px] text-muted-foreground">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
         {/* SEÇÃO — SOCIAL PROOF / ALCANCE DA PLATAFORMA */}
         <section className="space-y-6">
           <div className="rounded-2xl border border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-primary/5 p-8 md:p-10">
