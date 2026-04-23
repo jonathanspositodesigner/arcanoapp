@@ -527,7 +527,9 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
 
       toast.success(t('success.loginSuccess'));
       config.onLoginSuccess?.();
-      navigate(config.defaultRedirect);
+      if (!config.onLoginSuccess) {
+        navigate(config.defaultRedirect);
+      }
       // Keep isLoading true briefly so the login button stays disabled during navigation
       setTimeout(() => setState(prev => ({ ...prev, isLoading: false })), 500);
       
