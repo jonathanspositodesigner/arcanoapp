@@ -1,9 +1,9 @@
-import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity, RefreshCw, UserPlus } from "lucide-react";
+import { Home, BarChart3, LogOut, ArrowLeft, Users, ShieldCheck, ShoppingCart, Mail, Receipt, Megaphone, Activity, RefreshCw, UserPlus, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
-export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel" | "collaborator-requests";
+export type HubViewType = "home" | "dashboard" | "email-marketing" | "push-notifications" | "partners" | "abandoned-checkouts" | "admins" | "emails" | "sales" | "ads" | "pixel" | "collaborator-requests" | "partner-earnings";
 
 interface AdminHubSidebarProps {
   activeView: HubViewType;
@@ -52,6 +52,12 @@ const AdminHubSidebar = ({ activeView, onViewChange, onLogout, onForceUpdate, is
       label: "SOLICITAÇÕES COLABORADORES",
       icon: UserPlus,
       description: "Aprovar/rejeitar novos colaboradores"
+    },
+    {
+      id: "partner-earnings" as const,
+      label: "FINANCEIRO COLABORADORES",
+      icon: DollarSign,
+      description: "Ganhos, saques e ranking"
     },
     {
       id: "abandoned-checkouts" as const,
