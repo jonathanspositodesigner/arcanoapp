@@ -41,6 +41,7 @@ const TornarSeColaborador = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [alreadyCollaborator, setAlreadyCollaborator] = useState<null | "pendente" | "aprovado">(null);
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -67,6 +68,16 @@ const TornarSeColaborador = () => {
     setIsSubmitting(true);
 
     try {
+      // Check if email already has a request
+      const { data: checkData } = await supabase.rpc("check_collaborator_email", {
+        p_email: form.email.trim().toLowerCase(),
+      });
+      if (checkData?.exists) {
+        setAlreadyCollaborator(checkData.status);
+        setIsSubmitting(false);
+        return;
+      }
+
       const { error } = await supabase.from("solicitacoes_colaboradores").insert({
         nome: form.nome.trim(),
         instagram: form.instagram.trim(),
