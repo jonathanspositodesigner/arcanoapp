@@ -47,6 +47,7 @@ const PartnerLoginArtes = () => {
     loginRoute: '/parceiro-login-artes',
     forgotPasswordRoute: '/forgot-password-artes',
     defaultRedirect: '/parceiro-dashboard-artes',
+    authMode: 'partner',
     postLoginValidation: validatePartnerArtes,
   });
 

@@ -34,6 +34,7 @@ export interface AuthConfig {
   loginRoute: string;
   forgotPasswordRoute: string;
   defaultRedirect: string;
+  authMode?: 'default' | 'partner';
   
   // Callbacks
   onLoginSuccess?: () => void;
@@ -116,6 +117,7 @@ const sendNativeRecoveryEmail = async (email: string, redirectUrl: string) => {
 export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
   const navigate = useNavigate();
   const t = config.t || defaultT;
+  const isPartnerAuth = config.authMode === 'partner';
   
   const [state, setState] = useState<AuthState>({
     step: 'email',
@@ -255,6 +257,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       // Case 2a: Has password_changed=true but never logged in → treat as first access
       // This catches users created by webhook with password=email and password_changed=true incorrectly
       if (profileExists && passwordChanged && !hasLoggedIn) {
+        if (isPartnerAuth) {
+          console.log('[UnifiedAuth] Partner auth detected, skipping first-access fallback');
+          setState(prev => ({
+            ...prev,
+            step: 'password',
+            verifiedEmail: normalizedEmail,
+            isLoading: false,
+          }));
+          return;
+        }
+
         console.log('[UnifiedAuth] User never logged in despite password_changed=true, trying auto-login');
         let autoLoginError: unknown = null;
 
@@ -294,6 +307,17 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       
       // Case 2b: First access (no password set) → try auto-login or send link
       if (profileExists && !passwordChanged) {
+        if (isPartnerAuth) {
+          console.log('[UnifiedAuth] Partner auth detected, sending directly to password step');
+          setState(prev => ({
+            ...prev,
+            step: 'password',
+            verifiedEmail: normalizedEmail,
+            isLoading: false,
+          }));
+          return;
+        }
+
         console.log('[UnifiedAuth] First access flow');
         let autoLoginError: unknown = null;
 
@@ -344,7 +368,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       toast.error(t('errors.checkRegisterError'));
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [state.email, navigate, config, t]);
+  }, [state.email, navigate, config, t, isPartnerAuth]);
 
   /**
    * STEP 2: Login with password
@@ -436,8 +460,16 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       }
       
       if (!profile || !profile.password_changed) {
+        if (isPartnerAuth) {
+          await supabase.from('profiles').upsert({
+            id: data.user.id,
+            email: data.user.email,
+            password_changed: true,
+          }, { onConflict: 'id' });
+        }
+
         // Create profile if doesn't exist
-        if (!profile) {
+        if (!profile && !isPartnerAuth) {
           await supabase.from('profiles').upsert({
             id: data.user.id,
             email: data.user.email,
@@ -452,7 +484,9 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
         
         // Legacy account created before 2026-03-12: auto-fix and let through
         const LEGACY_CUTOFF = new Date('2026-03-12T00:00:00Z');
-        if (profile.created_at && new Date(profile.created_at) < LEGACY_CUTOFF) {
+        if (isPartnerAuth) {
+          console.log('[UnifiedAuth] Partner auth, skipping customer first-access enforcement after login');
+        } else if (profile.created_at && new Date(profile.created_at) < LEGACY_CUTOFF) {
           console.log('[UnifiedAuth] Legacy account, skipping first-access flow (no DB write)');
           // Continue login normally - don't write password_changed to DB
         } else {
@@ -502,7 +536,7 @@ export function useUnifiedAuth(config: AuthConfig): UseUnifiedAuthReturn {
       toast.error(isTimeoutError(error, 'sign_in') ? t('errors.loginTimeout') : t('errors.loginError'));
       setState(prev => ({ ...prev, isLoading: false }));
     }
-  }, [state.verifiedEmail, navigate, config, t]);
+  }, [state.verifiedEmail, navigate, config, t, isPartnerAuth]);
 
   /**
    * SIGNUP: Create new account

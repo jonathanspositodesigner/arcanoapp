@@ -47,6 +47,7 @@ const PartnerLogin = () => {
     loginRoute: '/parceiro-login',
     forgotPasswordRoute: '/forgot-password',
     defaultRedirect: '/parceiro-dashboard',
+    authMode: 'partner',
     postLoginValidation: validatePartner,
   });
 
