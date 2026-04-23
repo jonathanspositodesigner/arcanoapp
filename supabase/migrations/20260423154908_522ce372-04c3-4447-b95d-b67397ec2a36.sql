@@ -1,0 +1,1 @@
+UPDATE partner_prompts SET is_premium = false WHERE id IN ('6de0b5de-a771-4556-aa14-9472ba43f640', '301d96a0-bbd5-417e-a8af-b2b22396feeb');
