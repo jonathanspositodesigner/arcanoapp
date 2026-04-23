@@ -256,7 +256,27 @@ const BibliotecaPrompts = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedCategory, contentType, expandedTerms]);
+  }, [selectedCategory, selectedSubcategory, contentType, expandedTerms]);
+
+  // Reset subcategory when category changes
+  useEffect(() => {
+    setSelectedSubcategory(null);
+  }, [selectedCategory]);
+
+  // Compute available subcategories for the selected category
+  const availableSubcategories = useMemo(() => {
+    if (!["Fotos"].includes(selectedCategory)) return [];
+    const contentTypePrompts = contentType === 'exclusive'
+      ? allPrompts.filter(p => p.isExclusive)
+      : allPrompts.filter(p => p.promptType === 'partner');
+    const catPrompts = contentTypePrompts.filter(p => p.category === selectedCategory);
+    const subs = new Set<string>();
+    catPrompts.forEach(p => {
+      if (p.gender) subs.add(p.gender);
+    });
+    const sorted = Array.from(subs).sort((a, b) => a.localeCompare(b, 'pt-BR'));
+    return sorted;
+  }, [selectedCategory, contentType, allPrompts]);
 
   const getCategoryDisplayName = (category: string): string => {
     const categoryMap: Record<string, string> = {
@@ -287,6 +307,7 @@ const BibliotecaPrompts = () => {
 
   const handleCategorySelect = (category: string) => {
     setSelectedCategory(category);
+    setSelectedSubcategory(null);
     const newParams = new URLSearchParams(searchParams);
     if (category === 'Ver Tudo') {
       newParams.delete('categoria');
@@ -299,6 +320,11 @@ const BibliotecaPrompts = () => {
   const filteredPrompts = useMemo(() => {
     let results = getFilteredPrompts(contentType, selectedCategory);
     
+    // Apply subcategory filter
+    if (selectedSubcategory) {
+      results = results.filter(prompt => prompt.gender === selectedSubcategory);
+    }
+
     // Apply smart search filter client-side
     const exactQuery = removeAccents(searchTerm.trim().toLowerCase());
     const hasSearch = exactQuery.length > 0;
@@ -322,7 +348,7 @@ const BibliotecaPrompts = () => {
     }
     
     return results;
-  }, [contentType, selectedCategory, getFilteredPrompts, expandedTerms, searchTerm]);
+  }, [contentType, selectedCategory, selectedSubcategory, getFilteredPrompts, expandedTerms, searchTerm]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
