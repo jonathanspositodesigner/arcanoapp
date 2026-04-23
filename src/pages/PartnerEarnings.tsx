@@ -25,6 +25,8 @@ interface EarningRecord {
   unlock_date: string;
   unlocked_at: string;
   user_id: string;
+  earning_type: 'unlock' | 'tool_usage';
+  tool_table?: string;
 }
 
 interface PixKey {
@@ -86,11 +88,15 @@ const PartnerEarnings = () => {
     setTotalBalance(balanceData?.total_earned || 0);
     setTotalUnlocks(balanceData?.total_unlocks || 0);
 
-    const [earningsRes, pixRes, withdrawalsRes] = await Promise.all([
+    const [earningsRes, toolEarningsRes, pixRes, withdrawalsRes] = await Promise.all([
       supabase.from('collaborator_unlock_earnings')
         .select('id, prompt_id, prompt_title, amount, unlock_date, unlocked_at, user_id')
         .eq('collaborator_id', partnerData.id)
         .order('unlocked_at', { ascending: false }),
+      supabase.from('collaborator_tool_earnings')
+        .select('id, prompt_id, prompt_title, amount, created_at, user_id, tool_table')
+        .eq('collaborator_id', partnerData.id)
+        .order('created_at', { ascending: false }),
       supabase.from('partner_pix_keys')
         .select('id, pix_key, pix_key_type')
         .eq('partner_id', partnerData.id)
@@ -101,8 +107,19 @@ const PartnerEarnings = () => {
         .order('created_at', { ascending: false }),
     ]);
 
-    if (earningsRes.error) console.error("Error fetching earnings:", earningsRes.error);
-    else setEarnings(earningsRes.data || []);
+    // Merge unlock earnings + tool earnings into unified list
+    const unlockRecords: EarningRecord[] = (earningsRes.data || []).map(e => ({
+      ...e, earning_type: 'unlock' as const,
+    }));
+    const toolRecords: EarningRecord[] = (toolEarningsRes.data || []).map(e => ({
+      id: e.id, prompt_id: e.prompt_id, prompt_title: e.prompt_title,
+      amount: e.amount, unlock_date: e.created_at, unlocked_at: e.created_at,
+      user_id: e.user_id, earning_type: 'tool_usage' as const, tool_table: e.tool_table,
+    }));
+    const merged = [...unlockRecords, ...toolRecords].sort(
+      (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
+    );
+    setEarnings(merged);
     setPixKey(pixRes.data || null);
     setWithdrawals((withdrawalsRes.data as Withdrawal[]) || []);
 
@@ -312,7 +329,12 @@ const PartnerEarnings = () => {
               filteredEarnings.map(e => (
                 <div key={e.id} className="flex items-center justify-between px-4 py-3 hover:bg-muted/30 transition-colors">
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">{e.prompt_title}</p>
+                    <p className="font-medium text-foreground text-sm truncate">
+                      {e.prompt_title}
+                      {e.earning_type === 'tool_usage' && (
+                        <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
+                      )}
+                    </p>
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                     </p>
@@ -328,7 +350,7 @@ const PartnerEarnings = () => {
 
         {filteredEarnings.length > 0 && (
           <div className="mt-4 text-right text-sm text-muted-foreground">
-            {filteredEarnings.length} desbloqueio{filteredEarnings.length !== 1 ? 's' : ''} • Total: {formatBRL(periodTotal)}
+            {filteredEarnings.length} registro{filteredEarnings.length !== 1 ? 's' : ''} • Total: {formatBRL(periodTotal)}
           </div>
         )}
 

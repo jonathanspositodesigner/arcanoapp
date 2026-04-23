@@ -48,6 +48,7 @@ interface WithdrawalRow {
 
 interface EarningRow {
   id: string; prompt_title: string; amount: number; unlocked_at: string; user_id: string;
+  earning_type: 'unlock' | 'tool_usage'; tool_table?: string;
 }
 
 type Tab = "overview" | "withdrawals" | "ranking" | "detail";
@@ -132,12 +133,28 @@ const PartnerEarningsAdminContent = () => {
   useEffect(() => {
     if (!selectedPartnerId) return;
     const fetchDetail = async () => {
-      const { data } = await supabase
+      const [unlockRes, toolRes] = await Promise.all([
+        supabase
         .from("collaborator_unlock_earnings")
         .select("id, prompt_title, amount, unlocked_at, user_id")
         .eq("collaborator_id", selectedPartnerId)
-        .order("unlocked_at", { ascending: false });
-      setDetailEarnings((data as EarningRow[]) || []);
+        .order("unlocked_at", { ascending: false }),
+        supabase
+          .from("collaborator_tool_earnings")
+          .select("id, prompt_title, amount, created_at, user_id, tool_table")
+          .eq("collaborator_id", selectedPartnerId)
+          .order("created_at", { ascending: false }),
+      ]);
+      const unlocks: EarningRow[] = (unlockRes.data || []).map(e => ({ ...e, earning_type: 'unlock' as const }));
+      const tools: EarningRow[] = (toolRes.data || []).map(e => ({
+        id: e.id, prompt_title: e.prompt_title, amount: e.amount,
+        unlocked_at: e.created_at, user_id: e.user_id,
+        earning_type: 'tool_usage' as const, tool_table: e.tool_table,
+      }));
+      const merged = [...unlocks, ...tools].sort(
+        (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
+      );
+      setDetailEarnings(merged);
       setDetailPage(0);
     };
     fetchDetail();
