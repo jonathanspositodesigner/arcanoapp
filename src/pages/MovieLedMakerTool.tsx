@@ -103,10 +103,14 @@ const MovieLedMakerTool = () => {
 
   // Pre-select item from navigation state (e.g. from Biblioteca de Prompts)
   useEffect(() => {
-    const state = location.state as { preSelectedItem?: LibraryItem } | null;
+    const state = location.state as { preSelectedItem?: LibraryItem; prefillPromptId?: string; prefillPromptType?: string } | null;
     if (state?.preSelectedItem) {
       setSelectedLibraryItem(state.preSelectedItem);
       setShowTutorial(false);
+      // If coming from biblioteca with a partner prompt, store the correct prompt ID
+      if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
+        partnerPromptIdRef.current = state.prefillPromptId;
+      }
       // Clear the state so it doesn't re-apply on re-render
       window.history.replaceState({}, document.title);
     }
