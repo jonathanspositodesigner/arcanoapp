@@ -20,7 +20,7 @@ const LEVELS = [
 
 const ALL_BADGES = [
   { slug: "first_prompt", name: "Primeira Contribuição", icon: "⭐", hint: "Tenha 1 prompt aprovado" },
-  { slug: "on_fire", name: "Em Chamas 🔥", icon: "🔥", hint: "Streak de 7 dias" },
+  { slug: "on_fire", name: "Em Chamas 🔥", icon: "🔥", hint: "7 dias seguidos enviando prompts" },
   { slug: "diamond", name: "Diamante 💎", icon: "💎", hint: "50 prompts aprovados" },
   { slug: "viral", name: "Viral ⚡", icon: "⚡", hint: "1 prompt com 100+ cópias" },
   { slug: "top3", name: "Pódio 🏆", icon: "🏆", hint: "Top 3 no ranking semanal" },
