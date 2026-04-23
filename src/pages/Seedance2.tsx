@@ -260,6 +260,8 @@ export default function Seedance2() {
   // Use a library item: set prompt, and if it has a reference image switch to multiref and add it
   const handleUseLibraryItem = useCallback((item: Generation) => {
     setPrompt(item.prompt);
+    // Clear previous partner prompt attribution — will be set below only if this is a partner item
+    setReferencePromptId(null);
     if (item.referenceImage) {
       setMode("multiref");
       // Clear previous library refs, add reference image

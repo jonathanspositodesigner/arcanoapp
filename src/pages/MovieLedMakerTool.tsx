@@ -437,7 +437,7 @@ const MovieLedMakerTool = () => {
             fallbackImageUrl,
             inputText: inputText.trim(),
             engine: selectedEngine,
-            referencePromptId: partnerPromptIdRef.current || selectedLibraryItem?.id || null,
+            referencePromptId: partnerPromptIdRef.current || null,
           },
         }
       );
@@ -967,11 +967,13 @@ const MovieLedMakerTool = () => {
           setSelectedLibraryItem(item as unknown as LibraryItem);
           setUploadedImage(null);
           setUploadedFileName('');
+          partnerPromptIdRef.current = null;
         }}
         onUploadPhoto={(dataUrl, file) => {
           setUploadedImage(dataUrl);
           setUploadedFileName(file.name);
           setSelectedLibraryItem(null);
+          partnerPromptIdRef.current = null;
         }}
       />
 
