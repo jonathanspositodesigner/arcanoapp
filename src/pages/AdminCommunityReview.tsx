@@ -8,6 +8,7 @@ import { ArrowLeft, Check, X, Users, Handshake, Trash2, XCircle } from "lucide-r
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
+import { syncFotoToAllTools } from "@/lib/iaLibrarySync";
 
 interface CommunityPrompt {
   id: string;
@@ -151,6 +152,18 @@ const AdminCommunityReview = () => {
     if (error) {
       toast.error("Erro ao aprovar");
     } else {
+      // Sync to AI tool libraries if it's a Fotos prompt
+      const prompt = partnerPrompts.find(p => p.id === promptId);
+      if (prompt?.category === 'Fotos') {
+        const { data: promptData } = await supabase
+          .from('partner_prompts')
+          .select('subcategory_slug')
+          .eq('id', promptId)
+          .maybeSingle();
+        if (promptData?.subcategory_slug) {
+          await syncFotoToAllTools(promptId, promptData.subcategory_slug, 'partner_prompts');
+        }
+      }
       toast.success("Aprovado com sucesso!");
       fetchPartnerPrompts();
     }
@@ -174,12 +187,17 @@ const AdminCommunityReview = () => {
     if (error) {
       toast.error("Erro ao recusar");
     } else {
+      // Remove from AI tool libraries
+      await syncFotoToAllTools(promptId, null, 'partner_prompts');
       toast.success("Recusado! O parceiro poderá editar e reenviar.");
       fetchPartnerPrompts();
     }
   };
 
   const handleDeletePartner = async (promptId: string, imageUrl: string) => {
+    // Remove from AI tool libraries before deleting
+    await syncFotoToAllTools(promptId, null, 'partner_prompts');
+
     const fileName = imageUrl.split('/').pop();
     if (fileName) {
       await supabase.storage.from('partner-prompts').remove([fileName]);

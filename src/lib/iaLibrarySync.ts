@@ -51,7 +51,8 @@ export async function getCurrentSubcategorySlug(sourceId: string): Promise<strin
  */
 export async function syncFotoToAllTools(
   sourceId: string,
-  subcategorySlug: string | null
+  subcategorySlug: string | null,
+  sourceTable: string = "admin_prompts"
 ): Promise<{ success: boolean; error?: string }> {
   try {
     if (!subcategorySlug) {
@@ -79,7 +80,7 @@ export async function syncFotoToAllTools(
 
     const rows = cats.map((c) => ({
       tool_slug: c.tool_slug,
-      source_table: "admin_prompts",
+      source_table: sourceTable,
       source_id: sourceId,
       category_id: c.id,
       is_visible: true,
