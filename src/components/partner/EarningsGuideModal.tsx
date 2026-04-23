@@ -42,8 +42,8 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl max-h-[92vh] p-0 gap-0 sm:rounded-2xl">
-        <DialogHeader className="px-5 pt-5 pb-3 sm:px-7 sm:pt-7 border-b border-border/60">
+      <DialogContent className="max-w-3xl h-[92vh] sm:h-auto sm:max-h-[92vh] p-0 gap-0 sm:rounded-2xl flex flex-col overflow-hidden">
+        <DialogHeader className="px-5 pt-5 pb-3 sm:px-7 sm:pt-6 border-b border-border/60 shrink-0 text-left">
           <DialogTitle className="text-xl sm:text-2xl font-bold flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             Como você ganha como colaborador
@@ -53,7 +53,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
           </p>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[70vh] sm:max-h-[68vh]">
+        <ScrollArea className="flex-1 min-h-0">
           <div className="px-5 py-5 sm:px-7 sm:py-6 space-y-8">
             {/* Forma 1 — Cliques de liberação */}
             <section className="space-y-3">
@@ -253,7 +253,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
           </div>
         </ScrollArea>
 
-        <div className="px-5 py-4 sm:px-7 border-t border-border/60 bg-background/95 backdrop-blur sticky bottom-0">
+        <div className="px-5 py-3 sm:px-7 sm:py-4 border-t border-border/60 bg-background shrink-0">
           <Button
             onClick={() => setOpen(false)}
             className="w-full h-11 text-sm sm:text-base font-semibold"
