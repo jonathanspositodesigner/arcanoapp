@@ -58,7 +58,7 @@ const GerarImagemTool = () => {
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' || savedEngine === 'gpt_image_evolink' ? 'gpt_image_2' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' || savedEngine === 'gpt_image_evolink' ? savedEngine : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
@@ -90,8 +90,8 @@ const GerarImagemTool = () => {
   const effectiveEngineRef = useRef<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>('flux2_klein');
   const gptPollIntervalRef = useRef<ReturnType<typeof setInterval>>();
 
-  const isGptEngine = engine === 'gpt_image_2' || engine === 'gpt_image_evolink';
-  const creditCost = isUnlimited ? 0 : (isGptEngine && isGptImageFreeTrial) ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : engine === 'gpt_image_evolink' ? 80 : getCreditCost('gerar_imagem', 100));
+  const isRunningHubGptImage = engine === 'gpt_image_2';
+  const creditCost = isRunningHubGptImage && (isUnlimited || isGptImageFreeTrial) ? 0 : (engine === 'flux2_klein' ? 50 : engine === 'gpt_image_2' ? 80 : engine === 'gpt_image_evolink' ? 80 : getCreditCost('gerar_imagem', 100));
 
   // Dynamic max refs: 4 for GPT Image 2, 5 for others
   const maxRefs = (engine === 'gpt_image_2' || engine === 'gpt_image_evolink') ? 4 : 5;
@@ -883,6 +883,7 @@ const GerarImagemTool = () => {
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
                       { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
+                      { value: 'gpt_image_evolink' as const, label: '🌐 GPT Image Evolink' },
                     ]).map((opt) => (
                       <button
                         key={opt.value}
@@ -900,7 +901,7 @@ const GerarImagemTool = () => {
               </div>
 
               {/* GPT Image Free Trial indicator */}
-              {isGptEngine && isGptImageFreeTrial && gptImageFreeUntil && (
+              {isRunningHubGptImage && isGptImageFreeTrial && gptImageFreeUntil && (
                 <span className="flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-[10px] text-emerald-400 font-bold animate-pulse">
                   🎁 Grátis por {Math.max(1, Math.ceil((new Date(gptImageFreeUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24)))} dia{Math.ceil((new Date(gptImageFreeUntil).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) !== 1 ? 's' : ''}
                 </span>
@@ -988,7 +989,7 @@ const GerarImagemTool = () => {
                     Gerar Imagem
                     <span className="ml-1.5 flex items-center gap-0.5 text-xs opacity-90">
                       <Coins className="w-3 h-3" />
-                      {isUnlimited ? '∞' : (isGptEngine && isGptImageFreeTrial) ? '🎁 FREE' : creditCost}
+                      {isRunningHubGptImage && isUnlimited ? '∞' : isRunningHubGptImage && isGptImageFreeTrial ? '🎁 FREE' : creditCost}
                     </span>
                   </>
                 )}
