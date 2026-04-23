@@ -662,15 +662,15 @@ const BibliotecaPrompts = () => {
 
                 {/* Premium lock icon (always visible) */}
                 {item.isPremium && !isPremium && (
-                  <div className="absolute top-2 right-2 bg-black/60 rounded-full p-1.5 z-10">
+                  <div className="absolute top-8 right-1.5 bg-black/60 rounded-full p-1.5 z-10">
                     <Lock className="h-3.5 w-3.5 text-foreground" />
                   </div>
                 )}
 
-                {/* Like button - always visible */}
+                {/* Like button - top right */}
                 <button
                   onClick={(e) => toggleLike(e, String(item.id))}
-                  className="absolute top-1.5 left-1.5 flex items-center gap-0.5 rounded-full backdrop-blur-sm px-1.5 py-0.5 z-10 transition-colors bg-destructive"
+                  className="absolute top-1.5 right-1.5 flex items-center gap-0.5 rounded-full backdrop-blur-sm px-1.5 py-0.5 z-10 transition-colors bg-destructive"
                 >
                   <Heart
                     className={`h-3 w-3 sm:h-3.5 sm:w-3.5 transition-colors ${userLikes.has(String(item.id)) ? 'text-red-500 fill-red-500' : 'text-primary-foreground'}`}
@@ -680,14 +680,14 @@ const BibliotecaPrompts = () => {
                   </span>
                 </button>
 
-                {/* Author avatar + instagram badge */}
+                {/* Author avatar + instagram badge - top left */}
                 {item.partnerInstagram && (
                   <a
                     href={`https://www.instagram.com/${item.partnerInstagram.replace('@', '')}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute bottom-1.5 right-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
+                    className="absolute top-1.5 left-1.5 z-10 flex items-center gap-1 bg-black/60 backdrop-blur-sm rounded-full px-1.5 py-0.5 hover:bg-black/80 transition-colors"
                   >
                     {(item.partnerAvatarUrl || item.promptType === 'admin') ? (
                       <img src={item.promptType === 'admin' ? arcanoLogoAvatar : item.partnerAvatarUrl} alt={item.partnerName || ''} className="w-4 h-4 rounded-full object-cover" />
