@@ -1,74 +1,70 @@
 
 
-# Auditoria Completa — Redesign Painel de Colaborador
+## Plano: Corrigir bug — Instagram do colaborador não aparece nos prompts
 
-## Bugs encontrados
+### Problema real
 
-### BUG 1 — Rota `/parceiro` inexistente no Bottom Nav (3 arquivos)
-Todas as bottom navs usam `/parceiro` para Home e Perfil, mas essa rota **nao existe** no App.tsx. A rota correta e `/parceiro-dashboard`.
+A edge function `approve-collaborator/index.ts` busca todos os dados da `solicitacoes_colaboradores` (incluindo `instagram`), mas na **linha 118** ao criar o registro na tabela `partners`, **não inclui o campo `instagram`**. Resultado: o parceiro é criado com `instagram: NULL`.
 
-**Arquivos afetados:**
-- `PartnerDashboard.tsx` linha 648: Home -> `/parceiro`
-- `PartnerConquistas.tsx` linhas 405, 409: Home e Perfil -> `/parceiro`
-- `PartnerEarnings.tsx` linhas 401, 405: Home e Perfil -> `/parceiro`
+Na `BibliotecaPrompts.tsx` (linha 509), quando `instagram` é null, o `getPromptAuthor` retorna `null`, ocultando completamente o badge do autor no prompt.
 
-**Correcao:** Trocar todas as ocorrencias de `/parceiro` para `/parceiro-dashboard` nos bottom navs.
+### Mudanças
 
-### BUG 2 — Perfil no Bottom Nav de Conquistas e Extrato
-Nas paginas Conquistas e Extrato, o botao "Perfil" navega para `/parceiro` (rota inexistente). Como essas paginas nao possuem dialog de perfil, o botao Perfil deve navegar para `/parceiro-dashboard` (onde o perfil esta disponivel via dialog).
+**1. Corrigir `approve-collaborator/index.ts` — incluir instagram no upsert**
 
-### BUG 3 — Stats incompletos no Dashboard
-O spec pedia 4 stat chips (Total, Aprovados, Pendentes, Recusados). Porem o screenshot mostra que tambem devem aparecer **Desbloqueios** e **Usos em IA** como cards adicionais apos os 4 stats de prompts.
+Linha 118, adicionar `instagram: sol.instagram || null` ao objeto de upsert:
 
-**Correcao:** Adicionar 2 cards extras ao grid de stats:
-- `earningsUnlocks` desbloqueios (com icone MousePointerClick)
-- `toolEarningsCount` usos em IA (com icone Cpu/Bot)
+```typescript
+.upsert({
+  user_id: userId,
+  name: sol.nome,
+  email: sol.email,
+  phone: sol.whatsapp || null,
+  instagram: sol.instagram || null,  // ← FALTAVA
+  is_active: true,
+}, { onConflict: "user_id" })
+```
 
-Mudar o grid para acomodar 6 items (3 colunas x 2 linhas) ou manter 2 colunas com 3 linhas.
+**2. Corrigir dados da colaboradora no banco (correção imediata)**
 
-## Verificacao item-a-item do spec original
+Atualizar o registro da parceira `hericanagila53@gmail.com` para copiar o instagram que já existe na `solicitacoes_colaboradores`:
 
-| Item | Spec | Status |
-|------|------|--------|
-| 1.1 TopBar com avatar/nivel | Sticky topbar, avatar, nivel, logout | OK |
-| 1.2 Hero Card roxo | Gradiente, saldo, streak, nivel | OK |
-| 1.3 Quick Actions 3-col | Upload, Saldo, Conquistas | OK |
-| 1.4 Stat chips 2x2 | 4 cards compactos | OK (mas faltam Desbloqueios/Usos IA) |
-| 1.5 Filter pills | overflow-x-auto, pills | OK |
-| 1.6 Grid 2 col mobile | grid-cols-2, aspect-[3/4] | OK |
-| 1.7 Bottom Nav | 5 botoes fixos | OK (rotas erradas) |
-| 1.8 Perfil como Dialog | ProfileDialog | OK |
-| 1.9 Container max-w-2xl | pb-20 md:pb-8 | OK |
-| 2.1 TopBar Conquistas | Back + titulo | OK |
-| 2.2 Earnings 2-col | grid-cols-2 | OK |
-| 2.3 Card nivel bg-card | Sem bg-purple | OK |
-| 2.4 Badges 3-col dourado | yellow-500 earned | OK |
-| 2.5 Challenges bg-card | Sem borda azul | OK |
-| 2.6 Bottom Nav Conquistas | Active em Conquistas | OK (rotas erradas) |
-| 2.7 Container | max-w-2xl pb-20 | OK |
-| 3.1 TopBar Extrato | Back + saque | OK |
-| 3.2 Hero verde | Gradiente verde, 2 mini cards | OK |
-| 3.3 Filter pills | overflow-x-auto | OK |
-| 3.4 Icones por tipo | unlock/tool/bonus | OK |
-| 3.5 Bottom Nav Extrato | Active em Extrato | OK (rotas erradas) |
-| 3.6 Container | max-w-2xl pb-20 | OK |
+```sql
+UPDATE partners SET instagram = 'Herica.nagila' 
+WHERE email = 'hericanagila53@gmail.com';
+```
 
-## Correcoes a aplicar
+**3. Corrigir `BibliotecaPrompts.tsx` — exibir autor mesmo sem Instagram**
 
-### Arquivo 1: `src/pages/PartnerDashboard.tsx`
-- Linha 648: Trocar `'/parceiro'` por `'/parceiro-dashboard'` (Home no bottom nav)
-- Adicionar 2 stat cards extras (Desbloqueios + Usos em IA) no grid de stats
+Na função `getPromptAuthor` (linha 509), em vez de retornar `null` quando não há Instagram, retornar o autor com `instagram: null` para que pelo menos o nome e avatar (ou placeholder) apareçam no prompt:
 
-### Arquivo 2: `src/pages/PartnerConquistas.tsx`
-- Linha 405: Trocar `'/parceiro'` por `'/parceiro-dashboard'` (Home)
-- Linha 409: Trocar `'/parceiro'` por `'/parceiro-dashboard'` (Perfil)
+```typescript
+// ANTES: if (!instagram) return null;
+// DEPOIS: retorna o autor sempre para prompts de parceiros
+return {
+  name: item.partnerName || fallbackPartner?.name || 'Colaborador',
+  instagram: instagram || null,
+  avatarUrl: item.partnerAvatarUrl || fallbackPartner?.avatar_url || undefined,
+};
+```
 
-### Arquivo 3: `src/pages/PartnerEarnings.tsx`
-- Linha 401: Trocar `'/parceiro'` por `'/parceiro-dashboard'` (Home)
-- Linha 405: Trocar `'/parceiro'` por `'/parceiro-dashboard'` (Perfil)
+E ajustar os renders (linhas 738 e 907) para exibir o badge do autor com placeholder quando não houver Instagram — mostrando o nome/avatar sem o link do Instagram.
 
-## O que NAO muda
-- Nenhuma logica, query, estado ou modal
-- Nenhuma rota no App.tsx
-- Nenhum Edge Function ou migration
+**4. Corrigir retroativamente todos os parceiros sem Instagram**
+
+Executar query para copiar o Instagram de `solicitacoes_colaboradores` para todos os `partners` que estejam com campo NULL:
+
+```sql
+UPDATE partners p 
+SET instagram = sc.instagram 
+FROM solicitacoes_colaboradores sc 
+WHERE sc.email = p.email 
+  AND p.instagram IS NULL 
+  AND sc.instagram IS NOT NULL;
+```
+
+### Arquivos editados
+- `supabase/functions/approve-collaborator/index.ts` — adicionar campo `instagram` no upsert
+- `src/pages/BibliotecaPrompts.tsx` — nunca ocultar autor por falta de Instagram
+- Banco de dados — correção retroativa dos dados
 
