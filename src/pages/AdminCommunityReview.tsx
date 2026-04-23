@@ -31,6 +31,7 @@ interface PartnerPrompt {
   rejected: boolean;
   deletion_requested: boolean;
   partner_name: string;
+  is_premium: boolean;
 }
 
 const AdminCommunityReview = () => {
@@ -340,6 +341,11 @@ const AdminCommunityReview = () => {
                           <Handshake className="h-3 w-3 mr-1" />{prompt.partner_name}
                         </Badge>
                         <Badge variant="secondary" className="mt-1 ml-1">{prompt.category}</Badge>
+                      {prompt.is_premium ? (
+                        <Badge className="mt-1 ml-1 bg-amber-500 text-foreground">Premium</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="mt-1 ml-1 bg-green-500/20 text-green-400 border-green-500/30">Gratuito</Badge>
+                      )}
                       </div>
                       <p className="text-sm text-muted-foreground line-clamp-3">{prompt.prompt}</p>
                       <div className="flex gap-2 pt-2">
