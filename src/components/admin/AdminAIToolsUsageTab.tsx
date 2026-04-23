@@ -638,7 +638,7 @@ const AdminAIToolsUsageTab = () => {
       if (VIDEO_TOOL_NAMES.has(toolName)) {
         const avgVideoCostMap: Record<string, number> = {
           "Gerar Vídeo": 0.504,      // average Veo 3.1 fast cost per job (~8s)
-          "MovieLed Maker": 0.294 * 8, // average gemini-lite cost
+          "MovieLed Maker": 2.00,     // Kling 2.5 = R$2.00 per job
           "Seedance 2.0": 0.424 * 8,   // average standard 480p i2v cost
           "Video Upscaler": 0,
         };
