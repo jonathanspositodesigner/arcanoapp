@@ -9,7 +9,7 @@ import { createClient } from "npm:@supabase/supabase-js@2";
  * 
  * Nodes do Workflow:
  * - Node 151: Aspect Ratio (aspectRatio)
- * - Node 135: Prompt (text)
+ * - Node 152: Prompt (text)
  * - Node 58:  Referência 1 (image)
  * - Node 147: Referência 2 (image)
  * - Node 148: Referência 3 (image)
