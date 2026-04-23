@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -402,32 +402,26 @@ const EarningsSimulator = () => {
   const [clonerUses, setClonerUses] = useState(10);
   const [userInteracted, setUserInteracted] = useState(false);
 
-  // Animação automática inicial
-  useState(() => {});
-  useEffectAuto(() => {
+  // Animação automática inicial dos sliders até o usuário interagir
+  useEffect(() => {
     if (userInteracted) return;
-    let raf: number;
     let dir = 1;
     let dirCloner = 1;
-    const tick = () => {
+    const interval = window.setInterval(() => {
       setClicks((c) => {
-        let next = c + dir * 1;
+        const next = c + dir;
         if (next >= 60) dir = -1;
         if (next <= 20) dir = 1;
         return Math.max(20, Math.min(100, next));
       });
       setClonerUses((u) => {
-        let next = u + dirCloner * 1;
+        const next = u + dirCloner;
         if (next >= 30) dirCloner = -1;
         if (next <= 10) dirCloner = 1;
         return Math.max(10, Math.min(50, next));
       });
-    };
-    const interval = window.setInterval(tick, 180);
-    return () => {
-      window.clearInterval(interval);
-      if (raf) cancelAnimationFrame(raf);
-    };
+    }, 180);
+    return () => window.clearInterval(interval);
   }, [userInteracted]);
 
   const handleClicksChange = (v: number[]) => {
@@ -557,9 +551,6 @@ const EarningsSimulator = () => {
     </section>
   );
 };
-
-// alias para useEffect (evita conflito com o useState fake acima durante leitura)
-import { useEffect as useEffectAuto } from "react";
 
 const TermoDialog = () => (
   <Dialog>
