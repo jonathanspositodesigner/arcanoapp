@@ -67,6 +67,7 @@ const PartnerDashboard = () => {
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const [earningsBalance, setEarningsBalance] = useState(0);
   const [earningsUnlocks, setEarningsUnlocks] = useState(0);
+  const [earningsPaidOut, setEarningsPaidOut] = useState(0);
 
   useEffect(() => {
     checkPartnerAndFetchData();
@@ -122,15 +123,24 @@ const PartnerDashboard = () => {
     setProfileInstagram(partnerData.instagram || "");
     setProfileAvatarUrl(partnerData.avatar_url || "");
 
-    // Fetch earnings balance
-    const { data: balanceData } = await supabase
-      .from('collaborator_balances')
-      .select('total_earned, total_unlocks')
-      .eq('collaborator_id', partnerData.id)
-      .maybeSingle();
+    // Fetch earnings balance and paid withdrawals
+    const [balanceRes, withdrawalsRes] = await Promise.all([
+      supabase
+        .from('collaborator_balances')
+        .select('total_earned, total_unlocks')
+        .eq('collaborator_id', partnerData.id)
+        .maybeSingle(),
+      supabase
+        .from('partner_withdrawals')
+        .select('valor_solicitado')
+        .eq('partner_id', partnerData.id)
+        .eq('status', 'pago'),
+    ]);
     
-    setEarningsBalance(balanceData?.total_earned || 0);
-    setEarningsUnlocks(balanceData?.total_unlocks || 0);
+    setEarningsBalance(balanceRes.data?.total_earned || 0);
+    setEarningsUnlocks(balanceRes.data?.total_unlocks || 0);
+    const totalPaid = (withdrawalsRes.data || []).reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
+    setEarningsPaidOut(totalPaid);
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
@@ -530,11 +540,13 @@ const PartnerDashboard = () => {
                 <DollarSign className="h-6 w-6 text-green-400" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Saldo de Ganhos</p>
+                <p className="text-sm text-muted-foreground">Saldo Disponível</p>
                 <p className="text-3xl font-bold text-green-400">
-                  R$ {earningsBalance.toFixed(2).replace('.', ',')}
+                  {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earningsBalance - earningsPaidOut)}
                 </p>
-                <p className="text-xs text-muted-foreground">{earningsUnlocks} desbloqueio{earningsUnlocks !== 1 ? 's' : ''} total</p>
+                <p className="text-xs text-muted-foreground">
+                  {earningsUnlocks} desbloqueio{earningsUnlocks !== 1 ? 's' : ''} • Total bruto: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(earningsBalance)}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2 text-primary">
