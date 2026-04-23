@@ -388,12 +388,123 @@ const PartnerDashboard = () => {
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
+            <Button variant="outline" onClick={() => setShowProfile(!showProfile)} className="gap-2">
+              <User className="h-4 w-4" />
+              Perfil
+            </Button>
             <Button variant="outline" onClick={handleLogout} className="gap-2">
               <LogOut className="h-4 w-4" />
               Sair
             </Button>
           </div>
         </div>
+
+        {/* Profile Section */}
+        {showProfile && (
+          <Card className="p-6 mb-8 border-primary/20">
+            <h2 className="text-xl font-bold text-foreground mb-6 flex items-center gap-2">
+              <User className="h-5 w-5" />
+              Gerenciar Perfil
+            </h2>
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Left column - Profile info */}
+              <div className="space-y-4">
+                {/* Avatar */}
+                <div className="flex items-center gap-4">
+                  <div className="relative">
+                    {profileAvatarUrl ? (
+                      <img src={profileAvatarUrl} alt="Avatar" className="w-20 h-20 rounded-full object-cover border-2 border-border" />
+                    ) : (
+                      <div className="w-20 h-20 rounded-full bg-primary/20 flex items-center justify-center border-2 border-border">
+                        <User className="h-8 w-8 text-muted-foreground" />
+                      </div>
+                    )}
+                    <label className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary flex items-center justify-center cursor-pointer hover:bg-primary/80 transition-colors">
+                      <Camera className="h-3.5 w-3.5 text-primary-foreground" />
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                        disabled={isUploadingAvatar}
+                      />
+                    </label>
+                  </div>
+                  <div>
+                    <p className="text-sm text-muted-foreground">
+                      {isUploadingAvatar ? "Enviando..." : "Clique no ícone para alterar"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">Auto-redimensionada para 100px em WebP</p>
+                  </div>
+                </div>
+
+                {/* Name */}
+                <div>
+                  <Label htmlFor="profileName">Nome</Label>
+                  <Input
+                    id="profileName"
+                    value={profileName}
+                    onChange={(e) => setProfileName(e.target.value)}
+                    className="mt-1"
+                  />
+                </div>
+
+                {/* Instagram */}
+                <div>
+                  <Label htmlFor="profileInstagram" className="flex items-center gap-1">
+                    <Instagram className="h-3.5 w-3.5" />
+                    Instagram
+                  </Label>
+                  <Input
+                    id="profileInstagram"
+                    value={profileInstagram}
+                    onChange={(e) => setProfileInstagram(e.target.value)}
+                    placeholder="seu_usuario"
+                    className="mt-1"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Sem o @, apenas o nome de usuário</p>
+                </div>
+
+                <Button onClick={handleSaveProfile} disabled={isSavingProfile} className="w-full">
+                  {isSavingProfile ? "Salvando..." : "Salvar Perfil"}
+                </Button>
+              </div>
+
+              {/* Right column - Password */}
+              <div className="space-y-4">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <KeyRound className="h-4 w-4" />
+                  Alterar Senha
+                </h3>
+                <div>
+                  <Label htmlFor="newPassword">Nova Senha</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Mínimo 6 caracteres"
+                    className="mt-1"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repita a senha"
+                    className="mt-1"
+                  />
+                </div>
+                <Button onClick={handleChangePassword} disabled={isChangingPassword} variant="outline" className="w-full">
+                  {isChangingPassword ? "Alterando..." : "Alterar Senha"}
+                </Button>
+              </div>
+            </div>
+          </Card>
+        )}
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
