@@ -71,7 +71,7 @@ const PartnerDashboard = () => {
   const [earningsBalance, setEarningsBalance] = useState(0);
   const [earningsUnlocks, setEarningsUnlocks] = useState(0);
   const [earningsPaidOut, setEarningsPaidOut] = useState(0);
-  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number } | null>(null);
+  const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number; best_streak: number; streak_protection_available: boolean } | null>(null);
   const [toolEarningsCount, setToolEarningsCount] = useState(0);
 
   useEffect(() => {
@@ -142,7 +142,7 @@ const PartnerDashboard = () => {
         .eq('status', 'pago'),
       supabase
         .from('partner_gamification')
-        .select('xp_total, level, current_streak')
+        .select('xp_total, level, current_streak, best_streak, streak_protection_available')
         .eq('partner_id', partnerData.id)
         .maybeSingle(),
       supabase
@@ -401,9 +401,21 @@ const PartnerDashboard = () => {
     }
   };
 
-  const LEVEL_NAMES: Record<number, string> = { 1: 'Iniciante', 2: 'Criador', 3: 'Colaborador', 4: 'Especialista', 5: 'Elite' };
   const currentLevel = partnerGamification?.level || 1;
-  const levelName = LEVEL_NAMES[currentLevel] || 'Iniciante';
+  const LEVELS = [
+    { level: 1, name: "Iniciante", minXp: 0, maxXp: 149, unlockRate: 0.05 },
+    { level: 2, name: "Criador", minXp: 150, maxXp: 399, unlockRate: 0.07 },
+    { level: 3, name: "Colaborador", minXp: 400, maxXp: 899, unlockRate: 0.07 },
+    { level: 4, name: "Especialista", minXp: 900, maxXp: 1999, unlockRate: 0.10 },
+    { level: 5, name: "Elite", minXp: 2000, maxXp: Infinity, unlockRate: 0.12 },
+  ];
+  const currentLevelData = LEVELS.find(l => l.level === currentLevel) || LEVELS[0];
+  const levelName = currentLevelData.name;
+  const xpTotal = partnerGamification?.xp_total || 0;
+  const nextLevelData = LEVELS.find(l => l.level === currentLevel + 1);
+  const xpMin = currentLevelData.minXp;
+  const xpMax = nextLevelData ? nextLevelData.minXp : currentLevelData.maxXp;
+  const xpProgress = xpMax === Infinity ? 100 : Math.min(100, ((xpTotal - xpMin) / (xpMax - xpMin)) * 100);
 
   if (isLoading) {
     return (
@@ -531,13 +543,63 @@ const PartnerDashboard = () => {
           </button>
         </div>
 
+        {/* XP Progress Section */}
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-sm font-bold text-foreground">
+              ⚡ {xpTotal} XP · Nível {currentLevel} — {levelName}
+            </p>
+            {nextLevelData && (
+              <p className="text-xs text-muted-foreground">meta: {xpMax}</p>
+            )}
+          </div>
+          <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden mb-1.5">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-purple-400 rounded-full transition-all duration-500"
+              style={{ width: `${xpProgress}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[10px] text-muted-foreground mb-3">
+            <span>{xpMin}</span>
+            <span>{xpMax === Infinity ? '∞' : xpMax} XP</span>
+          </div>
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
+            <p className="text-xs font-semibold text-green-400">
+              💰 Taxa por desbloqueio: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentLevelData.unlockRate)}
+            </p>
+          </div>
+        </div>
+
+        {/* Streak Card */}
+        {(partnerGamification?.current_streak || 0) > 0 && (
+          <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">🔥</span>
+              <div>
+                <p className="text-2xl font-extrabold text-foreground leading-none">
+                  {partnerGamification?.current_streak} dias
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Streak · Recorde: {partnerGamification?.best_streak || 0} dias
+                </p>
+              </div>
+            </div>
+            {partnerGamification?.streak_protection_available && (
+              <span className="text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-2.5 py-1 rounded-full">
+                Proteção ✓
+              </span>
+            )}
+          </div>
+        )}
+
+        {/* Section Header */}
+        <p className="text-xs font-bold text-muted-foreground tracking-wider px-4 mb-2 mt-1">SEUS PROMPTS</p>
+
         {/* Stat Chips */}
         <div className="grid grid-cols-2 gap-2.5 px-4 mb-4">
           {[
-            { num: stats.total, label: 'Total Enviados', color: 'text-foreground' },
             { num: stats.approved, label: '✅ Aprovados', color: 'text-green-400' },
             { num: stats.pending, label: '⏳ Pendentes', color: 'text-yellow-400' },
-            { num: stats.rejected, label: '❌ Recusados', color: 'text-red-400' },
             { num: earningsUnlocks, label: '🔓 Desbloqueios', color: 'text-blue-400' },
             { num: toolEarningsCount, label: '🤖 Usos em IA', color: 'text-purple-400' },
           ].map(({ num, label, color }) => (
