@@ -280,7 +280,7 @@ const PartnerUpload = () => {
     setMediaFiles(prev => prev.filter((_, i) => i !== index));
   };
 
-  const updateMediaData = (field: keyof MediaData, value: string | boolean) => {
+  const updateMediaData = (field: keyof MediaData, value: string | boolean | null) => {
     setMediaFiles(prev => prev.map((media, idx) =>
       idx === currentIndex ? { ...media, [field]: value } : media
     ));
