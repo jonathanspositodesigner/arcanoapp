@@ -129,6 +129,9 @@ const TornarSeColaborador = () => {
             <p className="text-muted-foreground">
               Recebemos seu cadastro e entraremos em contato em breve pelo Instagram ou e-mail informado. Fique ligado!
             </p>
+            <Button asChild className="mt-4">
+              <Link to="/">Voltar para a home</Link>
+            </Button>
           </CardContent>
         </Card>
       </div>
