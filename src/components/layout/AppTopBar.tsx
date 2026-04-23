@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
+import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Users, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
 import { usePremiumPromptContext } from "@/contexts/PremiumPromptContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
@@ -159,6 +159,10 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           </button>
         </div>
         <div className="flex items-center gap-3">
+          <Button onClick={() => navigate("/tornar-se-colaborador")} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm">
+            <Users className="h-4 w-4 mr-2" />
+            Tornar-se colaborador
+          </Button>
           {user && (
             <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent">
               <ImageIcon className="h-4 w-4 mr-2" />
@@ -235,6 +239,10 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
             <Home className="h-5 w-5" />
           </button>
         </div>
+        <Button onClick={() => navigate("/tornar-se-colaborador")} size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs px-2">
+          <Users className="h-3.5 w-3.5 mr-1" />
+          Colaborador
+        </Button>
         {!user && (
           <div className="flex items-center gap-2">
             <Button onClick={() => navigate("/login?redirect=/biblioteca-prompts")} size="sm" variant="ghost" className="text-muted-foreground hover:bg-accent text-xs">
