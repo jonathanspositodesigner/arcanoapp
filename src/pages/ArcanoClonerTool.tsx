@@ -350,6 +350,7 @@ const ArcanoClonerTool: React.FC = () => {
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setReferenceImage(dataUrl);
     setReferenceFile(file);
+    setReferencePromptId(null);
   };
 
   // Clear reference image

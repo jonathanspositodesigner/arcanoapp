@@ -256,6 +256,7 @@ const VesteAITool: React.FC = () => {
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setClothingImage(dataUrl);
     setClothingFile(file);
+    setReferencePromptId(null);
   };
 
   // Limpar referência

@@ -260,6 +260,7 @@ const PoseChangerTool: React.FC = () => {
   const handleUploadFromModal = (dataUrl: string, file: File) => {
     setReferenceImage(dataUrl);
     setReferenceFile(file);
+    setReferencePromptId(null);
   };
 
   // Limpar referência

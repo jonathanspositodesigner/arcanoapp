@@ -82,10 +82,6 @@ const TABLES_WITH_REFERENCE_PROMPT_ID = new Set([
   'pose_changer_jobs',
   'veste_ai_jobs',
   'movieled_maker_jobs',
-  'flyer_maker_jobs',
-  'character_generator_jobs',
-  'bg_remover_jobs',
-  'video_generator_jobs',
 ]);
 
 const JOB_TABLES = ['upscaler_jobs', 'pose_changer_jobs', 'veste_ai_jobs', 'video_upscaler_jobs', 'arcano_cloner_jobs', 'character_generator_jobs', 'flyer_maker_jobs', 'bg_remover_jobs', 'image_generator_jobs', 'video_generator_jobs', 'movieled_maker_jobs'] as const;
