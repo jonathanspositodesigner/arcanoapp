@@ -25,7 +25,7 @@ interface EarningRecord {
   unlock_date: string;
   unlocked_at: string;
   user_id: string;
-  earning_type: 'unlock' | 'tool_usage';
+  earning_type: 'unlock' | 'tool_usage' | 'bonus';
   tool_table?: string;
 }
 
@@ -88,7 +88,7 @@ const PartnerEarnings = () => {
     setTotalBalance(balanceData?.total_earned || 0);
     setTotalUnlocks(balanceData?.total_unlocks || 0);
 
-    const [earningsRes, toolEarningsRes, pixRes, withdrawalsRes] = await Promise.all([
+    const [earningsRes, toolEarningsRes, bonusRes, pixRes, withdrawalsRes] = await Promise.all([
       supabase.from('collaborator_unlock_earnings')
         .select('id, prompt_id, prompt_title, amount, unlock_date, unlocked_at, user_id')
         .eq('collaborator_id', partnerData.id)
@@ -96,6 +96,10 @@ const PartnerEarnings = () => {
       supabase.from('collaborator_tool_earnings')
         .select('id, prompt_id, prompt_title, amount, created_at, user_id, tool_table')
         .eq('collaborator_id', partnerData.id)
+        .order('created_at', { ascending: false }),
+      supabase.from('partner_bonus_payments' as any)
+        .select('id, amount, reason, created_at')
+        .eq('partner_id', partnerData.id)
         .order('created_at', { ascending: false }),
       supabase.from('partner_pix_keys')
         .select('id, pix_key, pix_key_type')
@@ -116,7 +120,12 @@ const PartnerEarnings = () => {
       amount: e.amount, unlock_date: e.created_at, unlocked_at: e.created_at,
       user_id: e.user_id, earning_type: 'tool_usage' as const, tool_table: e.tool_table,
     }));
-    const merged = [...unlockRecords, ...toolRecords].sort(
+    const bonusRecords: EarningRecord[] = ((bonusRes.data as any[]) || []).map((b: any) => ({
+      id: b.id, prompt_id: '', prompt_title: b.reason || 'Bônus',
+      amount: b.amount, unlock_date: b.created_at, unlocked_at: b.created_at,
+      user_id: '', earning_type: 'bonus' as const,
+    }));
+    const merged = [...unlockRecords, ...toolRecords, ...bonusRecords].sort(
       (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
     );
     setEarnings(merged);
