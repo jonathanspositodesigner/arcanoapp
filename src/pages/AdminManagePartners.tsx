@@ -7,10 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings } from "lucide-react";
+import { ArrowLeft, Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings, Crown, Instagram } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import AdminPartnerWithdrawals from "@/components/admin/AdminPartnerWithdrawals";
+import { z } from "zod";
 
 interface Partner {
   id: string;
@@ -19,9 +20,26 @@ interface Partner {
   email: string;
   phone: string | null;
   company: string | null;
+  instagram: string | null;
+  portfolio: string | null;
+  is_founder: boolean;
   is_active: boolean;
   created_at: string;
 }
+
+const adminPartnerSchema = z.object({
+  name: z.string().trim().min(1, "Nome é obrigatório").max(120, "Nome muito longo"),
+  instagram: z.string().trim().min(1, "Instagram é obrigatório").max(80, "Instagram muito longo"),
+  email: z.string().trim().email("Email inválido").max(255, "Email muito longo"),
+  phone: z.string().trim().min(1, "WhatsApp é obrigatório").max(30, "WhatsApp muito longo"),
+  portfolio: z.string().trim().url("Portfólio inválido. Use https://...").max(500, "Link muito longo").optional().or(z.literal("")),
+  company: z.string().trim().max(120, "Empresa muito longa").optional(),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres").max(128, "Senha muito longa"),
+  passwordConfirm: z.string().min(1, "Confirme a senha"),
+}).refine((data) => data.password === data.passwordConfirm, {
+  path: ["passwordConfirm"],
+  message: "As senhas não coincidem",
+});
 
 interface PartnerPlatform {
   id: string;
