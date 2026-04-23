@@ -108,11 +108,33 @@ const BibliotecaPrompts = () => {
   const [showExpiringModal, setShowExpiringModal] = useState(false);
   const [likeCounts, setLikeCounts] = useState<Record<string, number>>({});
   const [userLikes, setUserLikes] = useState<Set<string>>(new Set());
+  const [partnersById, setPartnersById] = useState<Record<string, { name: string | null; instagram: string | null; avatar_url: string | null }>>({});
 
   const toolsScrollRef = useRef<HTMLDivElement>(null);
   const { getCreditCost } = useAIToolSettings();
   const { allPrompts, getFilteredPrompts } = useOptimizedPrompts();
   const { searchTerm, setSearchTerm, expandedTerms, isSearching } = useSmartSearch();
+
+  useEffect(() => {
+    const fetchPartners = async () => {
+      const { data, error } = await supabase
+        .from('partners')
+        .select('id, name, instagram, avatar_url');
+
+      if (error) {
+        console.error('Error loading partners:', error);
+        return;
+      }
+
+      setPartnersById(
+        Object.fromEntries(
+          (data || []).map((partner) => [partner.id, partner])
+        )
+      );
+    };
+
+    fetchPartners();
+  }, []);
 
   useEffect(() => {
     const fetchPromptCategories = async () => {
@@ -460,6 +482,27 @@ const BibliotecaPrompts = () => {
         {getCategoryDisplayName(item.category)}
       </Badge>}
     </div>;
+  };
+
+  const getPromptAuthor = (item: PromptItem) => {
+    if (item.promptType === 'admin') {
+      return {
+        name: 'Arcano App',
+        instagram: 'arcanoapp',
+        avatarUrl: arcanoLogoAvatar,
+      };
+    }
+
+    const fallbackPartner = item.partnerId ? partnersById[item.partnerId] : undefined;
+    const instagram = item.partnerInstagram || fallbackPartner?.instagram || undefined;
+
+    if (!instagram) return null;
+
+    return {
+      name: item.partnerName || fallbackPartner?.name || 'Parceiro',
+      instagram,
+      avatarUrl: item.partnerAvatarUrl || fallbackPartner?.avatar_url || undefined,
+    };
   };
 
   return (
