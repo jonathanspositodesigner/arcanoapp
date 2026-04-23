@@ -343,12 +343,15 @@ const PartnerEarnings = () => {
                       {e.earning_type === 'tool_usage' && (
                         <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
                       )}
+                      {e.earning_type === 'bonus' && (
+                        <span className="ml-1.5 text-xs text-yellow-400">🏆 Bônus Ranking</span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
                     </p>
                   </div>
-                  <Badge className="bg-green-500/20 text-green-400 border-green-500/30 ml-3 shrink-0">
+                  <Badge className={`ml-3 shrink-0 ${e.earning_type === 'bonus' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30' : 'bg-green-500/20 text-green-400 border-green-500/30'}`}>
                     +R$ {Number(e.amount).toFixed(2).replace('.', ',')}
                   </Badge>
                 </div>
