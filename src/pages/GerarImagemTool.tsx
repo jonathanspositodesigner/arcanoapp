@@ -18,6 +18,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { createJob, startJob, checkActiveJob, cancelJob as centralCancelJob } from '@/ai/JobManager';
 import { uploadToStorage } from '@/ai/JobManager';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import runninghubFallbackPixel from '@/assets/runninghub-fallback-pixel.png';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
 import { DownloadProgressOverlay, NotificationPromptToast } from '@/components/ai-tools';
@@ -57,7 +58,7 @@ const GerarImagemTool = () => {
   const [engine, setEngine] = useState<'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink'>(() => {
     try {
       const savedEngine = sessionStorage.getItem(ENGINE_STORAGE_KEY);
-      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' ? 'gpt_image_evolink' : savedEngine === 'gpt_image_evolink' ? 'gpt_image_evolink' : 'flux2_klein';
+      return savedEngine === 'nano_banana' ? 'nano_banana' : savedEngine === 'gpt_image_2' || savedEngine === 'gpt_image_evolink' ? 'gpt_image_2' : 'flux2_klein';
     } catch {
       return 'flux2_klein';
     }
@@ -543,6 +544,10 @@ const GerarImagemTool = () => {
             setProgress(5 + Math.round((i + 1) / referenceImages.length * 15));
           }
 
+          if (effectiveEngine === 'gpt_image_2' && uploadedUrls.length === 0) {
+            uploadedUrls.push(runninghubFallbackPixel);
+          }
+
           const { jobId: newJobId, error: createError } = await createJob('image_generator', user.id, sessionIdRef.current, {
             prompt: prompt.trim(),
             aspect_ratio: aspectRatio,
@@ -878,7 +883,6 @@ const GerarImagemTool = () => {
                       { value: 'flux2_klein' as const, label: '⚡ Flux2 Klein' },
                       { value: 'nano_banana' as const, label: '🍌 Nano Banana' },
                       { value: 'gpt_image_2' as const, label: '🎨 GPT Image 2' },
-                      { value: 'gpt_image_evolink' as const, label: '🌐 GPT Image Evolink' },
                     ]).map((opt) => (
                       <button
                         key={opt.value}
