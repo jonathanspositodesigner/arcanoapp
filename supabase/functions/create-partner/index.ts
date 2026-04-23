@@ -206,7 +206,10 @@ serve(async (req) => {
         name,
         email,
         phone: phone || null,
-        company: company || null
+        company: company || null,
+        instagram: instagram || null,
+        portfolio: portfolio || null,
+        is_founder: isFounder
       })
       .select()
       .single();
