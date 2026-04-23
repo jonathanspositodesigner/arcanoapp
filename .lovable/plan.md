@@ -1,67 +1,85 @@
 
 
-## Plano: Corrigir duplicata de overload na RPC que impede registro de earnings
+## Auditoria completa: Bugs no sistema de atribuição de créditos ao colaborador
 
-### Causa raiz encontrada
+### Bugs encontrados
 
-A migration anterior criou uma NOVA versão da função `register_collaborator_tool_earning` com parâmetros em ordem diferente, mas **NÃO removeu a versão antiga**. Resultado: existem DUAS funções com o mesmo nome no banco:
+---
 
-```text
-Versão antiga: (_job_id text, _tool_table text, _prompt_id text, _user_id uuid)
-Versão nova:   (_user_id uuid, _job_id text, _tool_table text, _prompt_id text)
-```
+#### BUG 1 — Crédito fantasma: upload próprio não limpa referencePromptId
+**Afeta**: Arcano Cloner, Pose Changer, Veste AI
 
-Quando o edge function chama via RPC com parâmetros nomeados, o PostgreSQL encontra **ambiguidade** entre as duas assinaturas e falha. O erro é engolido pelo `try/catch` na linha 961 do `runninghub-queue-manager/index.ts`:
+**Cenário**: Usuário navega da biblioteca com prompt de parceiro → chega na ferramenta com `referencePromptId` setado → troca a imagem de referência por uma foto própria via upload → gera → colaborador recebe crédito indevidamente.
 
-```typescript
-} catch (e) {
-  console.error('[QueueManager] /finish: Error registering tool earning:', e);
-}
-```
+**Causa**: A função `handleUploadFromModal` em cada ferramenta seta a nova imagem mas **não limpa** o `referencePromptId`.
 
-O `/finish` retorna 200 (o job já foi marcado como completed), mas o earning nunca é registrado.
+**Correção**: Adicionar `setReferencePromptId(null)` dentro de `handleUploadFromModal` em:
+- `src/pages/ArcanoClonerTool.tsx`
+- `src/pages/PoseChangerTool.tsx`
+- `src/pages/VesteAITool.tsx`
 
-### Evidências
+---
 
-1. Job `dd6af0e3` completou com `reference_prompt_id = 6de0b5de-...` (confirmado no DB)
-2. O `/finish` retornou HTTP 200 (confirmado nos analytics)
-3. ZERO registros em `collaborator_tool_earnings` para esse job
-4. `SELECT count(*) FROM pg_proc WHERE proname = 'register_collaborator_tool_earning'` retorna **2**
+#### BUG 2 — Crédito fantasma no Seedance2: referencePromptId nunca atualiza
+**Afeta**: Seedance 2
 
-### Correção (1 migration SQL)
+**Cenário**: Usuário navega da biblioteca com prompt de parceiro → chega no Seedance com `referencePromptId` setado na inicialização → muda o prompt, troca as imagens de referência, faz o que quiser → gera 20 vezes → colaborador recebe pelo primeiro uso do dia, mas o prompt de referência pode não ter nada a ver com o que foi gerado.
 
-1. **Dropar a versão antiga** da função (a que tem `_job_id` como primeiro parâmetro)
-2. Manter apenas a versão nova (com daily limit check)
-3. **Registrar manualmente o earning perdido** do job `dd6af0e3` via INSERT direto
+**Causa**: `setReferencePromptId` é chamado apenas na inicialização do `useState`. Não existe nenhum ponto no código que atualize ou limpe esse estado.
 
-```sql
--- 1) Remover a overload antiga
-DROP FUNCTION IF EXISTS public.register_collaborator_tool_earning(text, text, text, uuid);
+**Correção**: Limpar `referencePromptId` sempre que o usuário alterar as imagens de referência manualmente ou limpar o formulário, em `src/pages/Seedance2.tsx`.
 
--- 2) Inserir earning perdido do teste
-INSERT INTO collaborator_tool_earnings (collaborator_id, user_id, job_id, tool_table, prompt_id, prompt_title, amount)
-VALUES (
-  'f008a899-b57e-4a40-819c-578cf9434040',
-  '61597c56-6d48-44d3-b236-5cb9cffcf995',
-  'dd6af0e3-d822-47aa-9b7c-ede1244bb6f9',
-  'arcano_cloner_jobs',
-  '6de0b5de-a771-4556-aa14-9472ba43f640',
-  'Ensaio mulher',
-  0.16
-) ON CONFLICT (job_id, tool_table) DO NOTHING;
-```
+---
 
-### O que NÃO muda
+#### BUG 3 — MovieLed envia ID de prompt admin como referência
+**Afeta**: MovieLed Maker
 
-- Nenhum arquivo frontend
-- Nenhuma edge function
-- A lógica de daily limit permanece intacta
-- O fluxo de geração de IA não é alterado
-- Os earnings anteriores não são afetados
+**Cenário**: Usuário seleciona um item da biblioteca de admin (não de parceiro) → a linha `referencePromptId: partnerPromptIdRef.current || selectedLibraryItem?.id || null` envia o ID do prompt admin → a RPC procura na tabela `partner_prompts`, não encontra, e retorna `invalid_prompt_or_partner` → sem crédito (correto), mas gera log de erro desnecessário.
 
-### Resultado esperado
+**Causa**: O fallback `selectedLibraryItem?.id` usa IDs de `admin_prompts`, não de `partner_prompts`.
 
-- Apenas UMA versão da RPC no banco
-- Chamadas futuras via edge function resolvem sem ambiguidade
-- Collaborador recebe o earning corretamente na primeira geração do dia com seu prompt
+**Correção**: Remover o fallback `selectedLibraryItem?.id`. Enviar apenas `partnerPromptIdRef.current || null`.
+
+---
+
+#### BUG 4 — MovieLed nunca limpa partnerPromptIdRef
+**Afeta**: MovieLed Maker
+
+**Cenário**: Usuário navega da biblioteca com prompt de parceiro → muda a seleção para outro item da biblioteca (admin) → gera → o `partnerPromptIdRef.current` ainda contém o ID do parceiro antigo → colaborador recebe crédito indevido.
+
+**Causa**: `partnerPromptIdRef.current` é setado apenas no `useEffect` de inicialização e nunca mais é limpo ou atualizado.
+
+**Correção**: Limpar `partnerPromptIdRef.current = null` quando o usuário seleciona um novo item da biblioteca ou faz upload de imagem própria, em `src/pages/MovieLedMakerTool.tsx`.
+
+---
+
+#### BUG 5 — TABLES_WITH_REFERENCE_PROMPT_ID inclui tabelas sem a coluna
+**Afeta**: Nenhum bug de crédito, mas gera queries desnecessárias
+
+**Causa**: O set `TABLES_WITH_REFERENCE_PROMPT_ID` no `runninghub-queue-manager` inclui `flyer_maker_jobs`, `character_generator_jobs`, `bg_remover_jobs` e `video_generator_jobs`, mas essas tabelas NÃO possuem a coluna `reference_prompt_id`. A query falha silenciosamente no try/catch.
+
+**Correção**: Remover as 4 tabelas do set em `supabase/functions/runninghub-queue-manager/index.ts`.
+
+---
+
+### Resumo das correções
+
+| Arquivo | O que corrigir |
+|---------|---------------|
+| `src/pages/ArcanoClonerTool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
+| `src/pages/PoseChangerTool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
+| `src/pages/VesteAITool.tsx` | Limpar `referencePromptId` no `handleUploadFromModal` |
+| `src/pages/Seedance2.tsx` | Limpar `referencePromptId` ao alterar refs/prompt manualmente |
+| `src/pages/MovieLedMakerTool.tsx` | Remover fallback `selectedLibraryItem?.id`, limpar ref ao mudar seleção |
+| `supabase/functions/runninghub-queue-manager/index.ts` | Remover tabelas sem a coluna do set |
+
+### O que NÃO está bugado (confirmado na auditoria)
+
+- A RPC `register_collaborator_tool_earning` está correta (1 overload, daily limit funciona)
+- A navegação da biblioteca passa `prefillPromptType: 'partner'` corretamente
+- O `/finish` do queue-manager tem idempotência correta (não duplica earning)
+- O Seedance-poll e seedance-recovery chamam a RPC corretamente
+- `prompt_clicks` tracking funciona independente dos earnings
+- Bloqueio de auto-uso (`self_usage_blocked`) funciona
+- Nenhuma tabela ou RLS precisa ser alterada
 
