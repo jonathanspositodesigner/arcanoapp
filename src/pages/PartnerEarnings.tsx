@@ -239,7 +239,7 @@ const PartnerEarnings = () => {
           {canRequestWithdrawal && (
             <button
               onClick={() => setShowWithdrawalModal(true)}
-              className="text-xs font-bold text-green-400 bg-green-500/10 border border-green-500/20 px-3 py-1.5 rounded-full hover:bg-green-500/20 transition-colors"
+              className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full hover:bg-primary/20 transition-colors"
             >
               Solicitar Saque
             </button>
@@ -249,7 +249,7 @@ const PartnerEarnings = () => {
 
       <div className="max-w-2xl mx-auto pb-20 md:pb-8">
         {!pixKey && (
-          <div className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-400">
+          <div className="mx-4 mt-3 p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 text-sm text-yellow-500">
             ⚠️ Cadastre sua chave PIX para poder solicitar saques.
           </div>
         )}
