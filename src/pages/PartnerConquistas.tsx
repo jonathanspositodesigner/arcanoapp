@@ -186,7 +186,7 @@ const PartnerConquistas = () => {
       {/* TopBar */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="flex items-center gap-3 px-4 py-3 max-w-2xl mx-auto">
-          <button onClick={() => navigate('/parceiro')} className="text-muted-foreground hover:text-foreground">
+          <button onClick={() => navigate('/parceiro-dashboard')} className="text-muted-foreground hover:text-foreground">
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-base font-bold text-foreground">🎮 Conquistas</h1>
