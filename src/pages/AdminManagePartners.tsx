@@ -779,9 +779,16 @@ const AdminManagePartners = () => {
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-foreground">{partner.name}</h3>
-                    <Badge variant={partner.is_active ? "default" : "secondary"}>
-                      {partner.is_active ? "Ativo" : "Inativo"}
-                    </Badge>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      <Badge variant={partner.is_active ? "default" : "secondary"}>
+                        {partner.is_active ? "Ativo" : "Inativo"}
+                      </Badge>
+                      {partner.is_founder && (
+                        <Badge variant="outline" className="border-primary/40 text-primary bg-primary/10">
+                          <Crown className="h-3 w-3 mr-1" /> Founder
+                        </Badge>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -795,6 +802,12 @@ const AdminManagePartners = () => {
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Phone className="h-4 w-4" />
                     <span>{partner.phone}</span>
+                  </div>
+                )}
+                {partner.instagram && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Instagram className="h-4 w-4" />
+                    <span>{partner.instagram}</span>
                   </div>
                 )}
                 {partner.company && (
