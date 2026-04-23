@@ -106,31 +106,10 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false }: EarningsGui
                 <strong className="text-foreground">
                   20% do valor que o usuário gasta em créditos na ferramenta
                 </strong>
-                . Quanto mais cara a geração (vídeos, upscales, etc.), maior a sua comissão.
+                . A comissão acontece quando o seu prompt é usado como referência em ferramentas
+                elegíveis da plataforma.
               </p>
               <div className="rounded-lg border border-border/60 bg-muted/30 p-3 space-y-2">
-                <p className="text-xs font-semibold text-foreground">Ferramentas que pagam comissão:</p>
-                <div className="flex flex-wrap gap-1.5">
-                  {[
-                    "Gerar Imagem",
-                    "Gerar Vídeo",
-                    "Veste AI",
-                    "Pose Changer",
-                    "Arcano Cloner",
-                    "Flyer Maker",
-                    "MovieLED Maker",
-                    "Cinema Studio",
-                    "Seedance 2",
-                    "Upscaler Arcano",
-                  ].map((t) => (
-                    <span
-                      key={t}
-                      className="text-[11px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20"
-                    >
-                      {t}
-                    </span>
-                  ))}
-                </div>
                 <p className="text-[11px] text-muted-foreground pt-1">
                   Mesmo prompts <strong>gratuitos</strong> geram comissão para você quando usados
                   como referência nas ferramentas de IA.
