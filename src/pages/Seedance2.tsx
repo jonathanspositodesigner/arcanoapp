@@ -105,6 +105,10 @@ export default function Seedance2() {
     }
     return null;
   });
+  const [referencePromptId, setReferencePromptId] = useState<string | null>(() => {
+    const state = location.state as { prefillPromptId?: string; prefillPromptType?: string } | null;
+    return state?.prefillPromptType === 'partner' ? state.prefillPromptId || null : null;
+  });
 
   // Load prefill reference images from navigation state (e.g. from BibliotecaPrompts)
   useEffect(() => {
@@ -469,6 +473,7 @@ export default function Seedance2() {
           input_video_urls: mode === "multiref" && refVideos.length > 0 ? refVideos : undefined,
           input_audio_urls: mode === "multiref" && refAudios.length > 0 ? refAudios : undefined,
           status: "queued",
+          reference_prompt_id: referencePromptId,
         })
         .select("id")
         .single();

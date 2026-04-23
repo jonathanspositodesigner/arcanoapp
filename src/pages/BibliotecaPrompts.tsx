@@ -828,7 +828,9 @@ const BibliotecaPrompts = () => {
                           prefillPrompt: item.prompt, 
                           prefillRefImages: item.referenceImages || [],
                           prefillTitle: item.title,
-                          prefillThumbnail: item.thumbnailUrl || item.imageUrl
+                         prefillThumbnail: item.thumbnailUrl || item.imageUrl,
+                         prefillPromptId: item.partnerId ? String(item.id) : null,
+                         prefillPromptType: item.partnerId ? 'partner' : null,
                         } });
                       }}
                     >
@@ -1042,7 +1044,9 @@ const BibliotecaPrompts = () => {
                         prefillPrompt: selectedPrompt.prompt, 
                         prefillRefImages: selectedPrompt.referenceImages || [],
                         prefillTitle: selectedPrompt.title,
-                        prefillThumbnail: selectedPrompt.thumbnailUrl || selectedPrompt.imageUrl
+                       prefillThumbnail: selectedPrompt.thumbnailUrl || selectedPrompt.imageUrl,
+                       prefillPromptId: selectedPrompt.partnerId ? String(selectedPrompt.id) : null,
+                       prefillPromptType: selectedPrompt.partnerId ? 'partner' : null,
                       } });
                     }}
                     className="w-full bg-gradient-to-r from-green-700 to-green-500 hover:from-green-600 hover:to-green-400 text-white shadow-lg shadow-green-500/30 font-bold border-0"
