@@ -727,15 +727,15 @@ const BibliotecaPrompts = () => {
               </button>
               {availableSubcategories.map(sub => (
                 <button
-                  key={sub}
-                  onClick={() => setSelectedSubcategory(sub)}
+                  key={sub.slug}
+                  onClick={() => setSelectedSubcategory(sub.slug)}
                   className={`flex-shrink-0 px-2.5 py-1 rounded-full text-[11px] font-medium capitalize transition-all ${
-                    selectedSubcategory === sub
+                    selectedSubcategory === sub.slug
                       ? "bg-secondary text-foreground"
                       : "bg-accent/50 text-muted-foreground hover:bg-accent hover:text-foreground"
                   }`}
                 >
-                  {sub}
+                  {sub.name}
                 </button>
               ))}
             </div>
