@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, Trash2, ArrowLeft, Copy, Pencil, XCircle } from "lucide-react";
-import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp } from "lucide-react";
+import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
@@ -596,6 +596,16 @@ const PartnerDashboard = () => {
         >
           <Upload className="h-6 w-6" />
           Enviar Novo Arquivo
+        </Button>
+
+        {/* Conquistas Button */}
+        <Button
+          onClick={() => navigate('/parceiro-conquistas')}
+          variant="outline"
+          className="w-full mb-6 h-14 text-base gap-2 border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+        >
+          <Trophy className="h-5 w-5" />
+          🎮 Conquistas & Ranking
         </Button>
 
         {/* Filter Tabs */}
