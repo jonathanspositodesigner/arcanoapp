@@ -392,6 +392,175 @@ const TornarSeColaborador = () => {
   );
 };
 
+// Simulador de ganhos — começa em Elite, 20 cliques/dia + 10 usos Cloner/dia.
+// Slider anima sozinho até o usuário interagir.
+const ELITE_RATE = 0.12; // R$ por liberação no nível Elite
+const ARCANO_CLONER_COMMISSION = 2.0; // 20% de ~R$10 (100 créditos) por uso
+
+const EarningsSimulator = () => {
+  const [clicks, setClicks] = useState(20);
+  const [clonerUses, setClonerUses] = useState(10);
+  const [userInteracted, setUserInteracted] = useState(false);
+
+  // Animação automática inicial
+  useState(() => {});
+  useEffectAuto(() => {
+    if (userInteracted) return;
+    let raf: number;
+    let dir = 1;
+    let dirCloner = 1;
+    const tick = () => {
+      setClicks((c) => {
+        let next = c + dir * 1;
+        if (next >= 60) dir = -1;
+        if (next <= 20) dir = 1;
+        return Math.max(20, Math.min(100, next));
+      });
+      setClonerUses((u) => {
+        let next = u + dirCloner * 1;
+        if (next >= 30) dirCloner = -1;
+        if (next <= 10) dirCloner = 1;
+        return Math.max(10, Math.min(50, next));
+      });
+    };
+    const interval = window.setInterval(tick, 180);
+    return () => {
+      window.clearInterval(interval);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [userInteracted]);
+
+  const handleClicksChange = (v: number[]) => {
+    setUserInteracted(true);
+    setClicks(v[0]);
+  };
+  const handleClonerChange = (v: number[]) => {
+    setUserInteracted(true);
+    setClonerUses(v[0]);
+  };
+
+  const dailyClicksEarn = clicks * ELITE_RATE;
+  const dailyClonerEarn = clonerUses * ARCANO_CLONER_COMMISSION;
+  const dailyTotal = dailyClicksEarn + dailyClonerEarn;
+  const monthlyTotal = dailyTotal * 30;
+
+  return (
+    <section className="space-y-6">
+      <div className="text-center space-y-2">
+        <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-medium text-primary">
+          <Crown className="h-3.5 w-3.5" />
+          Simulador de Ganhos — Nível Elite
+        </div>
+        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+          Quanto você pode <span className="text-primary">ganhar por mês</span>
+        </h2>
+        <p className="text-sm text-muted-foreground max-w-xl mx-auto">
+          Mexa nos sliders e veja sua estimativa de ganho mensal mudar em tempo real. A simulação assume que você já está no nível Elite (R$ 0,12 por liberação).
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-5 sm:p-7 space-y-7 max-w-2xl mx-auto">
+        {/* Slider 1 — Cliques de prompt */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                <MousePointerClick className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Liberações de prompts por dia</p>
+                <p className="text-[11px] text-muted-foreground">R$ 0,12 por liberação (nível Elite)</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{clicks}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">por dia</div>
+            </div>
+          </div>
+          <Slider
+            value={[clicks]}
+            onValueChange={handleClicksChange}
+            min={20}
+            max={100}
+            step={1}
+            className="py-2"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground">
+            <span>20</span>
+            <span>100</span>
+          </div>
+          <div className="flex justify-end text-xs text-muted-foreground tabular-nums">
+            = <span className="ml-1 font-semibold text-foreground">R$ {dailyClicksEarn.toFixed(2)}</span>
+            <span className="ml-1">/dia</span>
+          </div>
+        </div>
+
+        <div className="h-px bg-border/60" />
+
+        {/* Slider 2 — Arcano Cloner */}
+        <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <div className="w-9 h-9 rounded-lg bg-primary/15 flex items-center justify-center">
+                <Wand2 className="h-4 w-4 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">Usos no Arcano Cloner por dia</p>
+                <p className="text-[11px] text-muted-foreground">~R$ 2,00 de comissão por uso (20%)</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-xl sm:text-2xl font-bold text-primary tabular-nums">{clonerUses}</div>
+              <div className="text-[10px] text-muted-foreground uppercase tracking-wide">por dia</div>
+            </div>
+          </div>
+          <Slider
+            value={[clonerUses]}
+            onValueChange={handleClonerChange}
+            min={10}
+            max={50}
+            step={1}
+            className="py-2"
+          />
+          <div className="flex justify-between text-[10px] text-muted-foreground">
+            <span>10</span>
+            <span>50</span>
+          </div>
+          <div className="flex justify-end text-xs text-muted-foreground tabular-nums">
+            = <span className="ml-1 font-semibold text-foreground">R$ {dailyClonerEarn.toFixed(2)}</span>
+            <span className="ml-1">/dia</span>
+          </div>
+        </div>
+
+        <div className="h-px bg-border/60" />
+
+        {/* Resultado */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="rounded-xl bg-background/60 border border-border/50 p-4 text-center">
+            <div className="text-[10px] uppercase tracking-wider text-muted-foreground mb-1">Estimativa diária</div>
+            <div className="text-2xl font-bold text-foreground tabular-nums">
+              R$ {dailyTotal.toFixed(2)}
+            </div>
+          </div>
+          <div className="rounded-xl bg-gradient-to-br from-primary/25 to-primary/10 border border-primary/40 p-4 text-center shadow-lg shadow-primary/10">
+            <div className="text-[10px] uppercase tracking-wider text-primary/80 mb-1">Estimativa mensal</div>
+            <div className="text-2xl sm:text-3xl font-bold text-primary tabular-nums">
+              R$ {monthlyTotal.toFixed(2)}
+            </div>
+          </div>
+        </div>
+
+        <p className="text-[11px] text-muted-foreground text-center italic">
+          *Valores aproximados. Os ganhos reais variam conforme o uso real dos seus prompts e a ferramenta utilizada.
+        </p>
+      </div>
+    </section>
+  );
+};
+
+// alias para useEffect (evita conflito com o useState fake acima durante leitura)
+import { useEffect as useEffectAuto } from "react";
+
 const TermoDialog = () => (
   <Dialog>
     <DialogTrigger asChild>
