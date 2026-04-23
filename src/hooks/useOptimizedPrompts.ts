@@ -17,6 +17,9 @@ export interface PromptItem {
   promptType?: 'admin' | 'community' | 'partner';
   clickCount?: number;
   bonusClicks?: number;
+  partnerName?: string;
+  partnerInstagram?: string;
+  partnerAvatarUrl?: string;
 }
 
 // Fisher-Yates shuffle - memoized with ref
@@ -79,7 +82,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         
         supabase
           .from('partner_prompts')
-          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks')
+          .select('id, title, prompt, image_url, thumbnail_url, category, is_premium, reference_images, tutorial_url, created_at, bonus_clicks, partners(name, instagram, avatar_url)')
           .eq('approved', true)
           .order('created_at', { ascending: false }),
         
@@ -134,7 +137,7 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
       }));
 
       // Map partner prompts
-      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map(item => ({
+      const partnerPrompts: PromptItem[] = (partnerResult.data || []).map((item: any) => ({
         id: item.id,
         title: item.title,
         prompt: item.prompt,
@@ -148,7 +151,10 @@ export function useOptimizedPrompts(): UseOptimizedPromptsResult {
         createdAt: item.created_at || undefined,
         promptType: 'partner' as const,
         clickCount: clickCounts[item.id] || 0,
-        bonusClicks: item.bonus_clicks || 0
+        bonusClicks: item.bonus_clicks || 0,
+        partnerName: item.partners?.name || undefined,
+        partnerInstagram: item.partners?.instagram || undefined,
+        partnerAvatarUrl: item.partners?.avatar_url || undefined,
       }));
 
       // Combine all prompts (without date sorting for Ver Tudo)
