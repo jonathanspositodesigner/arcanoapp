@@ -181,7 +181,8 @@ const AdminManagePartners = () => {
   };
 
   const handleGenerateNewPassword = () => {
-    setNewPartner(prev => ({ ...prev, password: generateRandomPassword() }));
+    const password = generateRandomPassword();
+    setNewPartner(prev => ({ ...prev, password, passwordConfirm: password }));
   };
 
   const handleCopyPassword = async (password: string) => {
@@ -205,15 +206,25 @@ const AdminManagePartners = () => {
   };
 
   const handleAddPartner = async () => {
-    if (!newPartner.name || !newPartner.email) {
-      toast.error("Nome e email são obrigatórios");
+    const parsed = adminPartnerSchema.safeParse(newPartner);
+    if (!parsed.success) {
+      const fieldErrors: Record<string, string> = {};
+      parsed.error.errors.forEach((error) => {
+        const key = String(error.path[0] || "form");
+        fieldErrors[key] = error.message;
+      });
+      setFormErrors(fieldErrors);
+      toast.error(parsed.error.errors[0]?.message || "Revise os dados do colaborador");
       return;
     }
 
-    if (!newPartner.password) {
-      toast.error("Senha é obrigatória");
+    if (newPartner.email.trim().toLowerCase() !== newPartner.emailConfirm.trim().toLowerCase()) {
+      setFormErrors({ emailConfirm: "Os e-mails não coincidem" });
+      toast.error("Os e-mails não coincidem");
       return;
     }
+
+    setFormErrors({});
 
     // Check if at least one platform is selected
     const hasSelectedPlatform = Object.values(selectedPlatforms).some(v => v);
@@ -236,10 +247,13 @@ const AdminManagePartners = () => {
       const response = await supabase.functions.invoke('create-partner', {
         body: {
           name: newPartner.name,
-          email: newPartner.email,
+          email: newPartner.email.trim().toLowerCase(),
           phone: newPartner.phone || null,
           company: newPartner.company || null,
+          instagram: newPartner.instagram,
+          portfolio: newPartner.portfolio || null,
           password: newPartner.password,
+          isFounder: newPartner.isFounder,
         },
       });
 
@@ -275,13 +289,13 @@ const AdminManagePartners = () => {
       }
 
       setCreatedPartnerData({
-        email: newPartner.email,
+        email: newPartner.email.trim().toLowerCase(),
         password: response.data.password || newPartner.password,
       });
 
       setShowAddModal(false);
       setShowSuccessModal(true);
-      setNewPartner({ name: "", email: "", phone: "", company: "", password: "" });
+      setNewPartner(getEmptyPartnerForm());
       setSelectedPlatforms({ prompts: false, artes_eventos: false, artes_musicos: false });
       fetchPartners();
     } catch (error: any) {
