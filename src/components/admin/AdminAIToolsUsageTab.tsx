@@ -702,6 +702,10 @@ const AdminAIToolsUsageTab = () => {
         return <Badge className="bg-accent0/20 text-muted-foreground border-border">Premium</Badge>;
       case 'premium_credits':
         return <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">Premium + Créditos</Badge>;
+      case 'unlimited':
+        return <Badge className="bg-purple-500/20 text-purple-400 border-purple-500/30">Unlimited</Badge>;
+      case 'gpt_free_trial':
+        return <Badge className="bg-pink-500/20 text-pink-400 border-pink-500/30">GPT Grátis 7d</Badge>;
     }
   };
 
