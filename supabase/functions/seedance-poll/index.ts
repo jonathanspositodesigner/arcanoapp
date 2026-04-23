@@ -64,6 +64,7 @@ serve(async (req) => {
       // COLLABORATOR TOOL EARNINGS - Register if partner prompt was used
       try {
         const { data: jobData } = await supabase.from("seedance_jobs").select("reference_prompt_id").eq("id", jobId).maybeSingle();
+        console.log(`[seedance-poll] 🔍 AUDIT: Job ${jobId} reference_prompt_id = "${jobData?.reference_prompt_id}" | will_register=${!!jobData?.reference_prompt_id}`);
         if (jobData?.reference_prompt_id) {
           const { data: earningResult } = await supabase.rpc('register_collaborator_tool_earning', {
             _job_id: jobId,
