@@ -533,7 +533,12 @@ const PartnerEarningsAdminContent = () => {
                   ) : pagedDetailEarnings.map(e => (
                     <div key={e.id} className="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{e.prompt_title}</p>
+                        <p className="text-sm font-medium text-foreground truncate">
+                          {e.prompt_title}
+                          {e.earning_type === 'tool_usage' && (
+                            <span className="ml-1.5 text-xs text-blue-400">🛠 Uso na ferramenta</span>
+                          )}
+                        </p>
                         <p className="text-xs text-muted-foreground">{format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                       </div>
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30 shrink-0">+{formatBRL(Number(e.amount))}</Badge>
