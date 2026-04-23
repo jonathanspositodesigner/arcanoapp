@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
+import { Slider } from "@/components/ui/slider";
 
 const TornarSeColaborador = () => {
   const [form, setForm] = useState({
@@ -291,6 +292,9 @@ const TornarSeColaborador = () => {
             />
           </div>
         </section>
+
+        {/* SEÇÃO — SIMULADOR DE GANHOS */}
+        <EarningsSimulator />
 
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
         <section className="space-y-8">
