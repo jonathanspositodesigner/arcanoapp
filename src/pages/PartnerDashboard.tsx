@@ -581,9 +581,57 @@ const PartnerDashboard = () => {
           </div>
           <div className="bg-green-500/10 border border-green-500/20 rounded-xl px-3 py-2">
             <p className="text-xs font-semibold text-green-400">
-              💰 Ganho por prompt copiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentLevelData.unlockRate)}
+              💰 Ganho por prompt copiado: {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(currentUnlockRate)}
             </p>
           </div>
+        </div>
+
+        {/* Founder / earnings rules */}
+        <div className="mx-4 mb-3 bg-card border border-border rounded-2xl p-4 space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-sm font-bold text-foreground">
+                {partner?.is_founder ? "🏆 Programa Arcano Founder" : "💰 Como ganhar mais"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                {partner?.is_founder
+                  ? "Você faz parte do grupo especial dos 15 primeiros colaboradores e recebe valores maiores por liberação de prompt."
+                  : "Veja as regras de pagamento, níveis e requisitos para aumentar seus ganhos como colaborador."}
+              </p>
+            </div>
+            {partner?.is_founder && (
+              <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2.5 py-1 text-[10px] font-bold text-primary">
+                Founder
+              </span>
+            )}
+          </div>
+
+          {partner?.is_founder && (
+            <div className="grid grid-cols-4 gap-1.5 text-center">
+              {[
+                ["Criador", "R$ 0,10"],
+                ["Colab.", "R$ 0,12"],
+                ["Esp.", "R$ 0,15"],
+                ["Elite", "R$ 0,20"],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg border border-primary/15 bg-primary/5 px-2 py-2">
+                  <p className="text-[10px] text-muted-foreground">{label}</p>
+                  <p className="text-xs font-extrabold text-primary">{value}</p>
+                </div>
+              ))}
+            </div>
+          )}
+
+          <EarningsGuideModal
+            isFounder={!!partner?.is_founder}
+            hideFirstPromptCta
+            trigger={
+              <Button variant="outline" size="sm" className="w-full gap-2 border-primary/30 text-primary hover:bg-primary/10 hover:text-primary">
+                <Trophy className="h-3.5 w-3.5" />
+                Ver regras completas
+              </Button>
+            }
+          />
         </div>
 
         {/* Streak Card */}
