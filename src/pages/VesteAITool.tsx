@@ -57,6 +57,7 @@ const VesteAITool: React.FC = () => {
   const [personFile, setPersonFile] = useState<File | null>(null);
   const [clothingImage, setClothingImage] = useState<string | null>(null);
   const [clothingFile, setClothingFile] = useState<File | null>(null);
+  const [referencePromptId, setReferencePromptId] = useState<string | null>(null);
   const [outputImage, setOutputImage] = useState<string | null>(null);
   const [thumbnailImage, setThumbnailImage] = useState<string | null>(null);
 
@@ -245,9 +246,10 @@ const VesteAITool: React.FC = () => {
     }
   };
 
-  // Seleção da biblioteca de fotos (recebe URL)
-  const handleSelectFromLibrary = (imageUrl: string) => {
+  // Seleção da biblioteca de fotos (com meta para ganhos de parceiro)
+  const handleSelectFromLibrary = (imageUrl: string, meta?: { promptId: string; promptType: 'admin' | 'partner' } | null) => {
     handleClothingImageChange(imageUrl);
+    setReferencePromptId(meta?.promptType === 'partner' ? meta.promptId : null);
   };
 
   // Upload pelo modal (recebe dataUrl + file)
@@ -260,6 +262,7 @@ const VesteAITool: React.FC = () => {
   const handleClearClothing = () => {
     setClothingImage(null);
     setClothingFile(null);
+    setReferencePromptId(null);
   };
 
   // Compress image before upload using centralized AI optimizer (1536px limit)
@@ -373,6 +376,7 @@ const VesteAITool: React.FC = () => {
           clothing_file_name: clothingUrl.split('/').pop() || 'clothing.webp',
           person_image_url: personUrl,
           clothing_image_url: clothingUrl,
+          reference_prompt_id: referencePromptId,
         })
         .select()
         .single();
@@ -826,9 +830,9 @@ const VesteAITool: React.FC = () => {
       <PhotoLibraryModal
         isOpen={showPhotoLibrary}
         onClose={() => setShowPhotoLibrary(false)}
-        onSelectPhoto={handleSelectFromLibrary}
+        onSelectPhoto={(url) => handleSelectFromLibrary(url)}
+        onSelectPhotoWithMeta={(url, meta) => handleSelectFromLibrary(url, meta)}
         onUploadPhoto={handleUploadFromModal}
-        
       />
 
       {/* No Credits Modal */}
