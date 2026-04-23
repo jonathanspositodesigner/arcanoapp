@@ -509,7 +509,7 @@ const PartnerDashboard = () => {
           <p className="text-3xl font-extrabold text-white leading-none">
             {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, earningsBalance - earningsPaidOut))}
           </p>
-          <p className="text-xs text-white/50 mt-1">{earningsUnlocks} desbloqueios • {toolEarningsCount} usos em ferramentas</p>
+          <p className="text-xs text-white/50 mt-1">{earningsUnlocks} prompts copiados • {toolEarningsCount} usos em ferramentas</p>
           <div className="flex items-center justify-between mt-4">
             <button onClick={() => navigate('/parceiro-extrato')} className="flex items-center gap-1.5 bg-white/15 hover:bg-white/25 transition-colors rounded-full px-3 py-1.5 text-xs font-semibold text-white">
               <TrendingUp className="h-3 w-3" /> Ver Extrato

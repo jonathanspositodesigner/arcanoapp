@@ -268,9 +268,9 @@ const PartnerEarnings = () => {
           </p>
           <div className="grid grid-cols-2 gap-2.5 mt-4">
             <div className="bg-white/5 rounded-xl p-3">
-              <p className="text-[10px] text-muted-foreground mb-1">🖱️ Desbloqueios</p>
+              <p className="text-[10px] text-muted-foreground mb-1">🖱️ Prompts Copiados</p>
               <p className="text-base font-bold text-foreground">{formatBRL(unlockTotal)}</p>
-              <p className="text-[10px] text-muted-foreground">{unlockCount} desbloqueios</p>
+              <p className="text-[10px] text-muted-foreground">{unlockCount} prompts copiados</p>
             </div>
             <div className="bg-white/5 rounded-xl p-3">
               <p className="text-[10px] text-muted-foreground mb-1">🤖 Ferramentas</p>
