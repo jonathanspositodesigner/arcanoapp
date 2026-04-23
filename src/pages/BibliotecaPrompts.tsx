@@ -830,7 +830,11 @@ const BibliotecaPrompts = () => {
                       onClick={(e) => {
                         e.stopPropagation();
                         trackPromptClick(String(item.id), item.title, !!item.isExclusive);
-                        navigate('/arcano-cloner-tool', { state: { referenceImageUrl: item.imageUrl } });
+                        navigate('/arcano-cloner-tool', { state: { 
+                          referenceImageUrl: item.imageUrl,
+                          prefillPromptId: item.partnerId ? String(item.id) : null,
+                          prefillPromptType: item.partnerId ? 'partner' : null,
+                        } });
                       }}
                       size="sm"
                       className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white min-w-0"
@@ -853,7 +857,9 @@ const BibliotecaPrompts = () => {
                               thumbnail_url: item.thumbnailUrl || null,
                               reference_images: item.referenceImages || null,
                               prompt: item.prompt,
-                            }
+                            },
+                            prefillPromptId: item.partnerId ? String(item.id) : null,
+                            prefillPromptType: item.partnerId ? 'partner' : null,
                           }
                         });
                       }}
@@ -1087,7 +1093,11 @@ const BibliotecaPrompts = () => {
                   <Button
                     onClick={() => {
                       trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, !!selectedPrompt.isExclusive);
-                      navigate('/arcano-cloner-tool', { state: { referenceImageUrl: selectedPrompt.imageUrl } });
+                      navigate('/arcano-cloner-tool', { state: { 
+                        referenceImageUrl: selectedPrompt.imageUrl,
+                        prefillPromptId: selectedPrompt.partnerId ? String(selectedPrompt.id) : null,
+                        prefillPromptType: selectedPrompt.partnerId ? 'partner' : null,
+                      } });
                     }}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-pink-700 hover:to-slate-600 text-white"
                   >

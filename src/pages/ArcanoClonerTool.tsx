@@ -147,6 +147,10 @@ const ArcanoClonerTool: React.FC = () => {
     if (refUrl && !referenceImage) {
       handleReferenceImageChange(refUrl);
     }
+    const state = location.state as any;
+    if (state?.prefillPromptType === 'partner' && state?.prefillPromptId) {
+      setReferencePromptId(state.prefillPromptId);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [location.state]);
 
