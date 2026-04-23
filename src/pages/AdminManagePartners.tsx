@@ -834,6 +834,14 @@ const AdminManagePartners = () => {
                   Plataformas
                 </Button>
                 <Button
+                  variant={partner.is_founder ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => handleToggleFounder(partner.id, partner.is_founder)}
+                  title={partner.is_founder ? "Remover Founder" : "Marcar como Founder"}
+                >
+                  <Crown className="h-4 w-4" />
+                </Button>
+                <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleToggleActive(partner.id, partner.is_active)}
