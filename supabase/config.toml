@@ -183,6 +183,3 @@ verify_jwt = false
 
 [functions.create-stripe-checkout]
 verify_jwt = false
-
-[functions.generate-video-gemini]
-verify_jwt = false

@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
-import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,6 @@ const ENGINES = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
   // EVOLINK_BACKUP — descomente para reverter para EvoLink
   // { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
-  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 900, duration: '8s', resolution: '720p', time: '2 a 5 min' },
   { id: 'kling2.5', name: 'Kling 2.5 Turbo', cost: 900, duration: '5s', resolution: '720p', time: '3 a 6 min' },
 ] as const;
 
@@ -54,15 +52,13 @@ const MovieLedMakerTool = () => {
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
-  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing } = useGeminiVideoQueue();
-  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
   const isMobile = useIsMobile();
   const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
   // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('gemini-lite');
+  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
@@ -175,11 +171,10 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
-  // Cleanup evolink polling and gemini channel on unmount
+  // Cleanup evolink polling on unmount
   useEffect(() => {
     return () => {
       if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
-      if (geminiChannelRef.current) geminiChannelRef.current.unsubscribe();
     };
   }, []);
 
@@ -351,77 +346,6 @@ const MovieLedMakerTool = () => {
       }
 
       setStatus('processing');
-
-      // ===== GEMINI LITE PATH =====
-      if (selectedEngine === 'gemini-lite') {
-        try {
-          // Placeholder prompt — will be replaced by RunningHub preprocessing output
-          const geminiPrompt = `Create a cinematic LED screen video loop for "${inputText.trim()}"`;
-
-          console.log('[MovieLed] Enviando para Gemini Lite com pré-processamento RunningHub:', {
-            source: selectedLibraryItem ? 'library' : 'upload',
-            referenceImageUrl: imageUrlForBackend,
-            rawInputText: inputText.trim(),
-          });
-
-          const job = await enqueueGemini({
-            prompt: geminiPrompt,
-            aspectRatio: '16:9',
-            duration: 8,
-            quality: '720p',
-            context: 'movie-led-maker',
-            referenceImageUrl: imageUrlForBackend || undefined,
-            rawInputText: inputText.trim(),
-          });
-
-          setJobId(job.id);
-          setIsQueued(true);
-          toast.success('Movie adicionado à fila! Pronto em 2-5 minutos.');
-
-          const channel = subscribeGemini(job.id, (updatedJob: GeminiQueueJob) => {
-            if (updatedJob.status === 'completed' && updatedJob.video_url) {
-              setResultUrl(updatedJob.video_url);
-              setStatus('completed');
-              setIsQueued(false);
-              refetchCredits();
-              toast.success('Movie para telão gerado com sucesso!');
-              channel.unsubscribe();
-              endSubmit();
-            } else if (updatedJob.status === 'failed') {
-              const errInfo = getAIErrorMessage(updatedJob.error_message || 'Erro na geração');
-              setErrorMessage(errInfo.message);
-              setStatus('error');
-              setIsQueued(false);
-              refetchCredits();
-              toast.error(`${errInfo.message}. ${errInfo.solution}`);
-              channel.unsubscribe();
-              endSubmit();
-            } else if (updatedJob.status === 'processing') {
-              setIsQueued(false);
-              setStatus('processing');
-            }
-          });
-          geminiChannelRef.current = channel;
-
-          // Trigger processing immediately
-          triggerProcessing();
-          refetchCredits();
-        } catch (err: any) {
-          if (err.message?.includes('INSUFFICIENT_CREDITS') || err.message?.includes('Créditos insuficientes')) {
-            setNoCreditsReason('insufficient');
-            setShowNoCreditsModal(true);
-          } else if (err.message?.includes('USER_HAS_ACTIVE_JOB')) {
-            toast.error('Você já tem uma geração na fila. Aguarde finalizar.');
-          } else {
-            toast.error(err.message || 'Erro ao enfileirar movie');
-            setErrorMessage(err.message || 'Erro ao enfileirar movie');
-            setStatus('error');
-          }
-          setStatus('idle');
-          endSubmit();
-        }
-        return;
-      }
 
       // ===== EXISTING ENGINES PATH (Wan 2.2 + Evolink) =====
       // Send fallback URLs for library items (reference_images[0] + image_url)

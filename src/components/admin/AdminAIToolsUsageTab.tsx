@@ -147,7 +147,6 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "vgj:veo3.1-pro:no_audio": 0.984,
   "vgj:veo3.1-pro:audio": 1.924,
   "mlj:wan2.2": 0,
-  "mlj:gemini-lite": 0.294,
   "mlj:veo3.1": 0.504,
   "mlj:kling2.5": 0.25,
   "sdj:fast:480p:i2v": 0.344,
@@ -160,7 +159,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "sdj:standard:720p:t2v": 0.974,
 };
 
-const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "gemini-lite": 8, "veo3.1": 8, "kling2.5": 8 };
+const MOVIELED_DURATION: Record<string, number> = { "wan2.2": 15, "veo3.1": 8, "kling2.5": 8 };
 
 interface VideoJobDetail {
   id: string;
