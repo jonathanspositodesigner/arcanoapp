@@ -42,6 +42,10 @@ interface PartnerRow {
   total_earned: number; total_unlocks: number;
   approved_prompts: number; total_paid: number;
   pix_key?: string; pix_key_type?: string;
+  unlock_earned: number;
+  tool_earned: number;
+  tool_jobs: number;
+  bonus_earned: number;
 }
 
 interface WithdrawalRow {
@@ -59,7 +63,7 @@ interface EarningRow {
 type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 type RankCriteria = "earnings" | "unlocks" | "prompts";
-type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts";
+type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts" | "tool_jobs" | "tool_earned";
 
 const PartnerEarningsAdminContent = () => {
   const [tab, setTab] = useState<Tab>("overview");
@@ -94,18 +98,39 @@ const PartnerEarningsAdminContent = () => {
 
   const fetchAll = async () => {
     setIsLoading(true);
-    const [pRes, bRes, ppRes, wRes, pixRes] = await Promise.all([
+    const [pRes, bRes, ppRes, wRes, pixRes, uRes, tRes, bonusRes] = await Promise.all([
       supabase.from("partners").select("id, name, email, is_active"),
       supabase.from("collaborator_balances").select("collaborator_id, total_earned, total_unlocks"),
       supabase.from("partner_prompts").select("partner_id").eq("approved", true),
       supabase.from("partner_withdrawals").select("*").order("created_at", { ascending: false }),
       supabase.from("partner_pix_keys").select("partner_id, pix_key, pix_key_type"),
+      supabase.from("collaborator_unlock_earnings").select("collaborator_id, amount"),
+      supabase.from("collaborator_tool_earnings").select("collaborator_id, amount"),
+      supabase.from("partner_bonus_payments" as any).select("partner_id, amount"),
     ]);
 
     const balMap = new Map((bRes.data || []).map(b => [b.collaborator_id, b]));
     const promptMap = new Map<string, number>();
     (ppRes.data || []).forEach(p => promptMap.set(p.partner_id, (promptMap.get(p.partner_id) || 0) + 1));
     const pixMap = new Map((pixRes.data || []).map(p => [p.partner_id, p]));
+
+    // Aggregate from source-of-truth tables
+    const unlockSumMap = new Map<string, number>();
+    const unlockCountMap = new Map<string, number>();
+    (uRes.data || []).forEach(r => {
+      unlockSumMap.set(r.collaborator_id, (unlockSumMap.get(r.collaborator_id) || 0) + Number(r.amount || 0));
+      unlockCountMap.set(r.collaborator_id, (unlockCountMap.get(r.collaborator_id) || 0) + 1);
+    });
+    const toolSumMap = new Map<string, number>();
+    const toolCountMap = new Map<string, number>();
+    (tRes.data || []).forEach(r => {
+      toolSumMap.set(r.collaborator_id, (toolSumMap.get(r.collaborator_id) || 0) + Number(r.amount || 0));
+      toolCountMap.set(r.collaborator_id, (toolCountMap.get(r.collaborator_id) || 0) + 1);
+    });
+    const bonusSumMap = new Map<string, number>();
+    ((bonusRes?.data as any[]) || []).forEach((r: any) => {
+      bonusSumMap.set(r.partner_id, (bonusSumMap.get(r.partner_id) || 0) + Number(r.amount || 0));
+    });
 
     // Compute paid totals per partner
     const paidMap = new Map<string, number>();
@@ -116,15 +141,23 @@ const PartnerEarningsAdminContent = () => {
     const nameMap = new Map((pRes.data || []).map(p => [p.id, p.name]));
 
     const rows: PartnerRow[] = (pRes.data || []).map(p => {
-      const bal = balMap.get(p.id);
       const pix = pixMap.get(p.id);
+      const unlockEarned = unlockSumMap.get(p.id) || 0;
+      const toolEarned = toolSumMap.get(p.id) || 0;
+      const bonusEarned = bonusSumMap.get(p.id) || 0;
+      const realEarned = unlockEarned + toolEarned + bonusEarned;
+      const realUnlocks = unlockCountMap.get(p.id) || 0;
       return {
         id: p.id, name: p.name, email: p.email, is_active: p.is_active,
-        total_earned: bal?.total_earned || 0,
-        total_unlocks: bal?.total_unlocks || 0,
+        total_earned: realEarned,
+        total_unlocks: realUnlocks,
         approved_prompts: promptMap.get(p.id) || 0,
         total_paid: paidMap.get(p.id) || 0,
         pix_key: pix?.pix_key, pix_key_type: pix?.pix_key_type,
+        unlock_earned: unlockEarned,
+        tool_earned: toolEarned,
+        tool_jobs: toolCountMap.get(p.id) || 0,
+        bonus_earned: bonusEarned,
       };
     });
     setPartners(rows);
@@ -247,6 +280,8 @@ const PartnerEarningsAdminContent = () => {
         case "available": va = a.total_earned - a.total_paid; vb = b.total_earned - b.total_paid; break;
         case "total_unlocks": va = a.total_unlocks; vb = b.total_unlocks; break;
         case "approved_prompts": va = a.approved_prompts; vb = b.approved_prompts; break;
+        case "tool_jobs": va = a.tool_jobs; vb = b.tool_jobs; break;
+        case "tool_earned": va = a.tool_earned; vb = b.tool_earned; break;
         default: va = 0; vb = 0;
       }
       return sortAsc ? va - vb : vb - va;
