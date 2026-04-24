@@ -212,30 +212,12 @@ const PartnerGamificationAdmin = () => {
 
       if (insertErr) throw insertErr;
 
-      // Update balance
+      // Update XP (saldo é atualizado automaticamente pelo trigger trg_sync_balance_on_bonus)
       const { error: balErr } = await supabase.rpc("add_partner_xp" as any, {
         _partner_id: partnerId,
         _xp_amount: 0,
         _reason: "bonus_ranking_semanal",
       });
-
-      // Increment total_earned in collaborator_balances
-      const { data: existing } = await supabase
-        .from("collaborator_balances")
-        .select("total_earned")
-        .eq("collaborator_id", partnerId)
-        .maybeSingle();
-
-      if (existing) {
-        await supabase
-          .from("collaborator_balances")
-          .update({ total_earned: existing.total_earned + amount, updated_at: new Date().toISOString() })
-          .eq("collaborator_id", partnerId);
-      } else {
-        await supabase
-          .from("collaborator_balances")
-          .insert({ collaborator_id: partnerId, total_earned: amount, total_unlocks: 0 });
-      }
 
       // Award top3 badge for positions 1-3
       if (position <= 3) {
