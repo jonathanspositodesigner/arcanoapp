@@ -3,7 +3,6 @@ import { useLocation } from 'react-router-dom';
 import { ArrowLeft, Download, Sparkles, Loader2, Video, Coins, Clock, Type, RotateCcw, AlertCircle, ImageIcon, X, Plus, Check, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
-import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 
 import MovieLedLibraryModal, { type MovieLedItem } from '@/components/movieled-maker/MovieLedLibraryModal';
 import { Button } from '@/components/ui/button';
@@ -43,7 +42,6 @@ const ENGINES = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 500, duration: '15s', resolution: '720p', time: '4 a 5 min' },
   // EVOLINK_BACKUP — descomente para reverter para EvoLink
   // { id: 'veo3.1', name: 'Veo 3.1', cost: 1500, duration: '6s', resolution: '1080p', time: '2 a 4 min' },
-  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 900, duration: '8s', resolution: '720p', time: '2 a 5 min' },
   { id: 'kling2.5', name: 'Kling 2.5 Turbo', cost: 900, duration: '5s', resolution: '720p', time: '3 a 6 min' },
 ] as const;
 
@@ -54,15 +52,13 @@ const MovieLedMakerTool = () => {
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob } = useAIJob();
-  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing } = useGeminiVideoQueue();
-  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
   const isMobile = useIsMobile();
   const [showMobileConfig, setShowMobileConfig] = useState(false);
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
   // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('gemini-lite');
+  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
@@ -175,11 +171,10 @@ const MovieLedMakerTool = () => {
     }
   }, [jobId, registerJob]);
 
-  // Cleanup evolink polling and gemini channel on unmount
+  // Cleanup evolink polling on unmount
   useEffect(() => {
     return () => {
       if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
-      if (geminiChannelRef.current) geminiChannelRef.current.unsubscribe();
     };
   }, []);
 
