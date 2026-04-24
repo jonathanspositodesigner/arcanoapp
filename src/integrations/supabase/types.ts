@@ -6836,7 +6836,6 @@ export type Database = {
         }[]
       }
       reconcile_collaborator_balances: { Args: never; Returns: Json }
-      reconcile_stuck_gemini_video_jobs: { Args: never; Returns: undefined }
       record_warranty_waiver: {
         Args: { _tool_slug: string; _version_slug?: string }
         Returns: boolean
@@ -6849,28 +6848,15 @@ export type Database = {
           success: boolean
         }[]
       }
-      register_collaborator_tool_earning:
-        | {
-            Args: {
-              _job_id: string
-              _partner_id: string
-              _prompt_id: string
-              _prompt_title: string
-              _tool_name: string
-              _tool_table: string
-              _user_id: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              _job_id: string
-              _prompt_id: string
-              _tool_table: string
-              _user_id: string
-            }
-            Returns: Json
-          }
+      register_collaborator_tool_earning: {
+        Args: {
+          _job_id: string
+          _prompt_id: string
+          _tool_table: string
+          _user_id: string
+        }
+        Returns: Json
+      }
       register_collaborator_unlock: {
         Args: {
           _collaborator_id: string

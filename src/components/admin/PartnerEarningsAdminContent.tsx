@@ -42,6 +42,10 @@ interface PartnerRow {
   total_earned: number; total_unlocks: number;
   approved_prompts: number; total_paid: number;
   pix_key?: string; pix_key_type?: string;
+  unlock_earned: number;
+  tool_earned: number;
+  tool_jobs: number;
+  bonus_earned: number;
 }
 
 interface WithdrawalRow {
@@ -59,7 +63,7 @@ interface EarningRow {
 type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
 type RankCriteria = "earnings" | "unlocks" | "prompts";
-type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts";
+type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts" | "tool_jobs" | "tool_earned";
 
 const PartnerEarningsAdminContent = () => {
   const [tab, setTab] = useState<Tab>("overview");
@@ -94,18 +98,39 @@ const PartnerEarningsAdminContent = () => {
 
   const fetchAll = async () => {
     setIsLoading(true);
-    const [pRes, bRes, ppRes, wRes, pixRes] = await Promise.all([
+    const [pRes, bRes, ppRes, wRes, pixRes, uRes, tRes, bonusRes] = await Promise.all([
       supabase.from("partners").select("id, name, email, is_active"),
       supabase.from("collaborator_balances").select("collaborator_id, total_earned, total_unlocks"),
       supabase.from("partner_prompts").select("partner_id").eq("approved", true),
       supabase.from("partner_withdrawals").select("*").order("created_at", { ascending: false }),
       supabase.from("partner_pix_keys").select("partner_id, pix_key, pix_key_type"),
+      supabase.from("collaborator_unlock_earnings").select("collaborator_id, amount"),
+      supabase.from("collaborator_tool_earnings").select("collaborator_id, amount"),
+      supabase.from("partner_bonus_payments" as any).select("partner_id, amount"),
     ]);
 
     const balMap = new Map((bRes.data || []).map(b => [b.collaborator_id, b]));
     const promptMap = new Map<string, number>();
     (ppRes.data || []).forEach(p => promptMap.set(p.partner_id, (promptMap.get(p.partner_id) || 0) + 1));
     const pixMap = new Map((pixRes.data || []).map(p => [p.partner_id, p]));
+
+    // Aggregate from source-of-truth tables
+    const unlockSumMap = new Map<string, number>();
+    const unlockCountMap = new Map<string, number>();
+    (uRes.data || []).forEach(r => {
+      unlockSumMap.set(r.collaborator_id, (unlockSumMap.get(r.collaborator_id) || 0) + Number(r.amount || 0));
+      unlockCountMap.set(r.collaborator_id, (unlockCountMap.get(r.collaborator_id) || 0) + 1);
+    });
+    const toolSumMap = new Map<string, number>();
+    const toolCountMap = new Map<string, number>();
+    (tRes.data || []).forEach(r => {
+      toolSumMap.set(r.collaborator_id, (toolSumMap.get(r.collaborator_id) || 0) + Number(r.amount || 0));
+      toolCountMap.set(r.collaborator_id, (toolCountMap.get(r.collaborator_id) || 0) + 1);
+    });
+    const bonusSumMap = new Map<string, number>();
+    ((bonusRes?.data as any[]) || []).forEach((r: any) => {
+      bonusSumMap.set(r.partner_id, (bonusSumMap.get(r.partner_id) || 0) + Number(r.amount || 0));
+    });
 
     // Compute paid totals per partner
     const paidMap = new Map<string, number>();
@@ -116,15 +141,23 @@ const PartnerEarningsAdminContent = () => {
     const nameMap = new Map((pRes.data || []).map(p => [p.id, p.name]));
 
     const rows: PartnerRow[] = (pRes.data || []).map(p => {
-      const bal = balMap.get(p.id);
       const pix = pixMap.get(p.id);
+      const unlockEarned = unlockSumMap.get(p.id) || 0;
+      const toolEarned = toolSumMap.get(p.id) || 0;
+      const bonusEarned = bonusSumMap.get(p.id) || 0;
+      const realEarned = unlockEarned + toolEarned + bonusEarned;
+      const realUnlocks = unlockCountMap.get(p.id) || 0;
       return {
         id: p.id, name: p.name, email: p.email, is_active: p.is_active,
-        total_earned: bal?.total_earned || 0,
-        total_unlocks: bal?.total_unlocks || 0,
+        total_earned: realEarned,
+        total_unlocks: realUnlocks,
         approved_prompts: promptMap.get(p.id) || 0,
         total_paid: paidMap.get(p.id) || 0,
         pix_key: pix?.pix_key, pix_key_type: pix?.pix_key_type,
+        unlock_earned: unlockEarned,
+        tool_earned: toolEarned,
+        tool_jobs: toolCountMap.get(p.id) || 0,
+        bonus_earned: bonusEarned,
       };
     });
     setPartners(rows);
@@ -229,6 +262,7 @@ const PartnerEarningsAdminContent = () => {
   const totalPaid = withdrawals.filter(w => w.status === "pago").reduce((s, w) => s + Number(w.valor_solicitado), 0);
   const totalPending = withdrawals.filter(w => w.status === "pendente").reduce((s, w) => s + Number(w.valor_solicitado), 0);
   const totalUnlocksAll = partners.reduce((s, p) => s + p.total_unlocks, 0);
+  const totalToolJobsAll = partners.reduce((s, p) => s + p.tool_jobs, 0);
   const activeWithEarnings = partners.filter(p => p.total_earned > 0).length;
 
   // Sorting & filtering
@@ -247,6 +281,8 @@ const PartnerEarningsAdminContent = () => {
         case "available": va = a.total_earned - a.total_paid; vb = b.total_earned - b.total_paid; break;
         case "total_unlocks": va = a.total_unlocks; vb = b.total_unlocks; break;
         case "approved_prompts": va = a.approved_prompts; vb = b.approved_prompts; break;
+        case "tool_jobs": va = a.tool_jobs; vb = b.tool_jobs; break;
+        case "tool_earned": va = a.tool_earned; vb = b.tool_earned; break;
         default: va = 0; vb = 0;
       }
       return sortAsc ? va - vb : vb - va;
@@ -324,7 +360,7 @@ const PartnerEarningsAdminContent = () => {
           {/* Tool Rates Management */}
           <PartnerToolRatesAdmin />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <Card className="p-4 bg-green-500/10 border-green-500/20">
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-green-400" />
@@ -341,6 +377,12 @@ const PartnerEarningsAdminContent = () => {
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
                 <div><p className="text-xs text-muted-foreground">Prompts Copiados Totais</p><p className="text-xl font-bold text-blue-400">{totalUnlocksAll}</p></div>
+              </div>
+            </Card>
+            <Card className="p-4 bg-purple-500/10 border-purple-500/20">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="h-5 w-5 text-purple-400" />
+                <div><p className="text-xs text-muted-foreground">Jobs IA Totais</p><p className="text-xl font-bold text-purple-400">{totalToolJobsAll}</p></div>
               </div>
             </Card>
             <Card className="p-4 bg-primary/10 border-primary/20">
@@ -367,6 +409,8 @@ const PartnerEarningsAdminContent = () => {
                   <th className="text-right py-2 px-2"><SortHeader label="Saques Pagos" sk="total_paid" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Disponível" sk="available" /></th>
                    <th className="text-right py-2 px-2"><SortHeader label="P. Copiados" sk="total_unlocks" /></th>
+                  <th className="text-right py-2 px-2"><SortHeader label="🤖 Jobs IA" sk="tool_jobs" /></th>
+                  <th className="text-right py-2 px-2"><SortHeader label="R$ Ferramentas" sk="tool_earned" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Prompts" sk="approved_prompts" /></th>
                   <th className="text-left py-2 px-2 text-xs font-semibold text-muted-foreground">PIX</th>
                   <th className="text-right py-2 px-2"></th>
@@ -383,6 +427,8 @@ const PartnerEarningsAdminContent = () => {
                     <td className="text-right py-2 px-2 text-muted-foreground">{formatBRL(p.total_paid)}</td>
                     <td className="text-right py-2 px-2 text-emerald-400 font-medium">{formatBRL(p.total_earned - p.total_paid)}</td>
                     <td className="text-right py-2 px-2">{p.total_unlocks}</td>
+                    <td className="text-right py-2 px-2 text-purple-400 font-medium">{p.tool_jobs}</td>
+                    <td className="text-right py-2 px-2 text-purple-300">{formatBRL(p.tool_earned)}</td>
                     <td className="text-right py-2 px-2">{p.approved_prompts}</td>
                     <td className="py-2 px-2 text-xs">
                       {p.pix_key ? <span>{PIX_LABELS[p.pix_key_type || ""] || ""}: {maskPix(p.pix_key_type || "", p.pix_key)}</span> : <span className="text-yellow-400">Não cadastrada</span>}
@@ -528,7 +574,7 @@ const PartnerEarningsAdminContent = () => {
 
           {selectedPartner && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <Card className="p-4 bg-green-500/10 border-green-500/20">
                   <p className="text-xs text-muted-foreground">Saldo Bruto</p>
                   <p className="text-xl font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
@@ -546,6 +592,24 @@ const PartnerEarningsAdminContent = () => {
                   <p className="text-sm font-medium text-foreground">
                     {selectedPartner.pix_key ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}` : "Não cadastrada"}
                   </p>
+                </Card>
+              </div>
+
+              {/* Breakdown por tipo de ganho */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <Card className="p-3 bg-blue-500/5 border-blue-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🖱️ Prompts Copiados</p>
+                  <p className="text-base font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedPartner.total_unlocks} cópias</p>
+                </Card>
+                <Card className="p-3 bg-purple-500/5 border-purple-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas de IA</p>
+                  <p className="text-base font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedPartner.tool_jobs} jobs</p>
+                </Card>
+                <Card className="p-3 bg-yellow-500/5 border-yellow-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🏆 Bônus Ranking</p>
+                  <p className="text-base font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
                 </Card>
               </div>
 
