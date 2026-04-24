@@ -142,6 +142,60 @@ const ArcanoClonerTool: React.FC = () => {
     sessionIdRef.current = crypto.randomUUID();
   }, []);
 
+  // RECOVERY: Recuperar último job recente (caso usuário tenha saído da página
+  // enquanto processava). Resolve o bug de jobs que "somem" da UI mesmo quando
+  // foram completados com sucesso no backend.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        // Janela de 30 min para recuperar resultados recentes
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+        const { data, error } = await supabase
+          .from('arcano_cloner_jobs')
+          .select('id, status, output_url, thumbnail_url, error_message, created_at, position')
+          .eq('user_id', user.id)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || error || !data) return;
+
+        // Se já tem resultado mostrado ou está processando algo, não interferir
+        if (outputImage || isProcessing) return;
+
+        const job = data as any;
+
+        if (job.status === 'completed' && job.output_url) {
+          console.log('[ArcanoCloner] Recovered completed job:', job.id);
+          setOutputImage(job.thumbnail_url || job.output_url);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Resultado recuperado da última sessão!');
+        } else if (['pending', 'queued', 'starting', 'running'].includes(job.status)) {
+          // Job ainda em andamento — re-anexar para receber updates
+          console.log('[ArcanoCloner] Re-attaching to in-progress job:', job.id);
+          setJobId(job.id);
+          if (job.status === 'queued') {
+            setStatus('waiting');
+            setQueuePosition(job.position || 0);
+          } else {
+            setStatus('processing');
+          }
+          toast.info('Reconectando ao processamento em andamento...');
+        }
+      } catch (e) {
+        console.error('[ArcanoCloner] Recovery error:', e);
+      }
+    })();
+
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
+
   // Pre-fill reference image from navigation state (e.g. from Biblioteca de Prompts)
   useEffect(() => {
     const refUrl = (location.state as any)?.referenceImageUrl;
