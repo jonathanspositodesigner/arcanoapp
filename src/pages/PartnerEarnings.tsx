@@ -213,6 +213,31 @@ const PartnerEarnings = () => {
     return filteredEarnings.reduce((sum, e) => sum + Number(e.amount), 0);
   }, [filteredEarnings]);
 
+  // Top prompts ranking: aggregate clicks (unlocks) + tool usages by prompt_id
+  const topPrompts = useMemo(() => {
+    const agg = new Map<string, { prompt_id: string; title: string; thumbnail_url?: string | null; category?: string | null; unlocks: number; tools: number; total_uses: number; total_earned: number }>();
+    earnings.forEach(e => {
+      if (!e.prompt_id || e.earning_type === 'bonus') return;
+      const cur = agg.get(e.prompt_id) || {
+        prompt_id: e.prompt_id,
+        title: e.prompt_title,
+        thumbnail_url: e.thumbnail_url,
+        category: e.category,
+        unlocks: 0,
+        tools: 0,
+        total_uses: 0,
+        total_earned: 0,
+      };
+      if (e.earning_type === 'unlock') cur.unlocks += 1;
+      if (e.earning_type === 'tool_usage') cur.tools += 1;
+      cur.total_uses = cur.unlocks + cur.tools;
+      cur.total_earned += Number(e.amount);
+      if (!cur.thumbnail_url && e.thumbnail_url) cur.thumbnail_url = e.thumbnail_url;
+      agg.set(e.prompt_id, cur);
+    });
+    return Array.from(agg.values()).sort((a, b) => b.total_uses - a.total_uses);
+  }, [earnings]);
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -236,32 +261,6 @@ const PartnerEarnings = () => {
   const unlockCount = earnings.filter(e => e.earning_type === 'unlock').length;
   const toolTotal = earnings.filter(e => e.earning_type === 'tool_usage').reduce((s, e) => s + Number(e.amount), 0);
   const toolCount = earnings.filter(e => e.earning_type === 'tool_usage').length;
-
-  // Top prompts ranking: aggregate clicks (unlocks) + tool usages by prompt_id
-  const topPrompts = useMemo(() => {
-    const agg = new Map<string, { prompt_id: string; title: string; thumbnail_url?: string | null; category?: string | null; unlocks: number; tools: number; total_uses: number; total_earned: number }>();
-    earnings.forEach(e => {
-      if (!e.prompt_id || e.earning_type === 'bonus') return;
-      const cur = agg.get(e.prompt_id) || {
-        prompt_id: e.prompt_id,
-        title: e.prompt_title,
-        thumbnail_url: e.thumbnail_url,
-        category: e.category,
-        unlocks: 0,
-        tools: 0,
-        total_uses: 0,
-        total_earned: 0,
-      };
-      if (e.earning_type === 'unlock') cur.unlocks += 1;
-      if (e.earning_type === 'tool_usage') cur.tools += 1;
-      cur.total_uses = cur.unlocks + cur.tools;
-      cur.total_earned += Number(e.amount);
-      // prefer thumbnail if available
-      if (!cur.thumbnail_url && e.thumbnail_url) cur.thumbnail_url = e.thumbnail_url;
-      agg.set(e.prompt_id, cur);
-    });
-    return Array.from(agg.values()).sort((a, b) => b.total_uses - a.total_uses);
-  }, [earnings]);
 
   const PAGE_SIZE = 10;
   const totalPages = Math.max(1, Math.ceil(topPrompts.length / PAGE_SIZE));
