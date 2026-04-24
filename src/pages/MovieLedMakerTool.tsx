@@ -57,8 +57,8 @@ const MovieLedMakerTool = () => {
 
   const isTutorialTestUser = false; // Tutorial test mode disabled
 
-  // Engine selection
-  const [selectedEngine, setSelectedEngine] = useState<string>('wan2.2');
+  // Engine selection (Kling 2.5 Turbo é o motor padrão)
+  const [selectedEngine, setSelectedEngine] = useState<string>('kling2.5');
   const currentEngine = ENGINES.find(e => e.id === selectedEngine) || ENGINES[0];
 
   // Image input
