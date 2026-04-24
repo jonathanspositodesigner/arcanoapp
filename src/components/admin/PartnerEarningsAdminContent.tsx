@@ -689,6 +689,11 @@ const PartnerEarningsAdminContent = () => {
                           )}
                         </p>
                         <p className="text-xs text-muted-foreground">{format(new Date(e.unlocked_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                        {e.earning_type !== 'bonus' && e.user_id && (
+                          <p className="text-xs text-muted-foreground truncate">
+                            👤 {userEmailMap[e.user_id] || `${e.user_id.slice(0, 8)}...`}
+                          </p>
+                        )}
                       </div>
                       <Badge className="bg-green-500/20 text-green-400 border-green-500/30 shrink-0">+{formatBRL(Number(e.amount))}</Badge>
                     </div>
