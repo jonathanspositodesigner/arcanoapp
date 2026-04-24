@@ -114,13 +114,17 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
 
     const adminIds = itemsData?.filter(i => i.prompt_type === 'admin').map(i => i.prompt_id) || [];
     const communityIds = itemsData?.filter(i => i.prompt_type === 'community').map(i => i.prompt_id) || [];
+    const partnerIds = itemsData?.filter(i => i.prompt_type === 'partner').map(i => i.prompt_id) || [];
 
-    const [{ data: adminPrompts }, { data: communityPrompts }] = await Promise.all([
+    const [{ data: adminPrompts }, { data: communityPrompts }, { data: partnerPrompts }] = await Promise.all([
       adminIds.length > 0 
         ? supabase.from('admin_prompts').select('id, title, prompt, image_url, is_premium, category, tutorial_url').in('id', adminIds)
         : Promise.resolve({ data: [] }),
       communityIds.length > 0
         ? supabase.from('community_prompts').select('id, title, prompt, image_url, category').in('id', communityIds)
+        : Promise.resolve({ data: [] }),
+      partnerIds.length > 0
+        ? supabase.from('partner_prompts').select('id, title, prompt, image_url, is_premium, category, tutorial_url').in('id', partnerIds)
         : Promise.resolve({ data: [] })
     ]);
 
@@ -129,6 +133,19 @@ const CollectionModal = ({ slug, onClose }: CollectionModalProps) => {
     for (const item of itemsData || []) {
       if (item.prompt_type === 'admin') {
         const prompt = adminPrompts?.find(p => p.id === item.prompt_id);
+        if (prompt) {
+          orderedItems.push({
+            id: prompt.id,
+            title: prompt.title,
+            prompt: prompt.prompt,
+            imageUrl: prompt.image_url,
+            isPremium: prompt.is_premium,
+            category: prompt.category,
+            tutorialUrl: prompt.tutorial_url || null
+          });
+        }
+      } else if (item.prompt_type === 'partner') {
+        const prompt = partnerPrompts?.find(p => p.id === item.prompt_id);
         if (prompt) {
           orderedItems.push({
             id: prompt.id,
