@@ -308,6 +308,7 @@ const PartnerEarningsAdminContent = () => {
     switch (rankBy) {
       case "earnings": list.sort((a, b) => b.total_earned - a.total_earned); break;
       case "unlocks": list.sort((a, b) => b.total_unlocks - a.total_unlocks); break;
+      case "tool_jobs": list.sort((a, b) => b.tool_jobs - a.tool_jobs); break;
       case "prompts": list.sort((a, b) => b.approved_prompts - a.approved_prompts); break;
     }
     return list;
@@ -501,7 +502,7 @@ const PartnerEarningsAdminContent = () => {
       {tab === "ranking" && (
         <div>
           <div className="flex flex-wrap gap-2 mb-4">
-             {([["earnings", "Por Ganhos"], ["unlocks", "Por Prompts Copiados"], ["prompts", "Por Prompts"]] as [RankCriteria, string][]).map(([k, l]) => (
+             {([["earnings", "Por Ganhos"], ["unlocks", "Por Prompts Copiados"], ["tool_jobs", "Por Jobs IA"], ["prompts", "Por Prompts Enviados"]] as [RankCriteria, string][]).map(([k, l]) => (
               <Button key={k} variant={rankBy === k ? "default" : "outline"} size="sm" onClick={() => { setRankBy(k); setRankPage(1); }}>{l}</Button>
             ))}
           </div>
@@ -509,7 +510,11 @@ const PartnerEarningsAdminContent = () => {
           <div className="space-y-3">
             {rankedPage.map((p, idx) => {
               const i = (rankPage - 1) * RANK_PER_PAGE + idx;
-               const mainValue = rankBy === "earnings" ? formatBRL(p.total_earned) : rankBy === "unlocks" ? `${p.total_unlocks} prompts copiados` : `${p.approved_prompts} prompts`;
+               const mainValue =
+                 rankBy === "earnings" ? formatBRL(p.total_earned)
+                 : rankBy === "unlocks" ? `${p.total_unlocks} prompts copiados`
+                 : rankBy === "tool_jobs" ? `${p.tool_jobs} jobs IA`
+                 : `${p.approved_prompts} prompts`;
               const isTop3 = i < 3;
               return (
                 <Card key={p.id} className={cn("p-4 flex items-center gap-4", isTop3 && "border-2", i === 0 && "border-yellow-500/40", i === 1 && "border-gray-400/40", i === 2 && "border-amber-600/40")}>
@@ -523,6 +528,7 @@ const PartnerEarningsAdminContent = () => {
                   <div className="text-right text-xs text-muted-foreground space-y-0.5">
                     {rankBy !== "earnings" && <p>{formatBRL(p.total_earned)}</p>}
                      {rankBy !== "unlocks" && <p>{p.total_unlocks} prompts copiados</p>}
+                    {rankBy !== "tool_jobs" && <p>{p.tool_jobs} jobs IA</p>}
                     {rankBy !== "prompts" && <p>{p.approved_prompts} prompts</p>}
                   </div>
                 </Card>
