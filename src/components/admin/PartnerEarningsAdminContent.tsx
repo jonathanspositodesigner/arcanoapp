@@ -574,7 +574,7 @@ const PartnerEarningsAdminContent = () => {
 
           {selectedPartner && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
                 <Card className="p-4 bg-green-500/10 border-green-500/20">
                   <p className="text-xs text-muted-foreground">Saldo Bruto</p>
                   <p className="text-xl font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
@@ -592,6 +592,24 @@ const PartnerEarningsAdminContent = () => {
                   <p className="text-sm font-medium text-foreground">
                     {selectedPartner.pix_key ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}` : "Não cadastrada"}
                   </p>
+                </Card>
+              </div>
+
+              {/* Breakdown por tipo de ganho */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                <Card className="p-3 bg-blue-500/5 border-blue-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🖱️ Prompts Copiados</p>
+                  <p className="text-base font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedPartner.total_unlocks} cópias</p>
+                </Card>
+                <Card className="p-3 bg-purple-500/5 border-purple-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas de IA</p>
+                  <p className="text-base font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">{selectedPartner.tool_jobs} jobs</p>
+                </Card>
+                <Card className="p-3 bg-yellow-500/5 border-yellow-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🏆 Bônus Ranking</p>
+                  <p className="text-base font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
                 </Card>
               </div>
 
