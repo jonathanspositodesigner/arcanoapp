@@ -62,7 +62,7 @@ interface EarningRow {
 
 type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
-type RankCriteria = "earnings" | "unlocks" | "prompts";
+type RankCriteria = "earnings" | "unlocks" | "tool_jobs" | "prompts";
 type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts" | "tool_jobs" | "tool_earned";
 
 const PartnerEarningsAdminContent = () => {
