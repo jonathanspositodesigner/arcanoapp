@@ -4,11 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Check, X, Users, Handshake, Trash2, XCircle } from "lucide-react";
+import { ArrowLeft, Check, X, Users, Handshake, Trash2, XCircle, Eye } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { syncFotoToAllTools } from "@/lib/iaLibrarySync";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface CommunityPrompt {
   id: string;
@@ -33,6 +34,17 @@ interface PartnerPrompt {
   deletion_requested: boolean;
   partner_name: string;
   is_premium: boolean;
+  tutorial_url?: string | null;
+  reference_images?: string[] | null;
+  thumbnail_url?: string | null;
+  gender?: string | null;
+  tags?: string[] | null;
+  subcategory_slug?: string | null;
+  bonus_clicks?: number | null;
+  approved_at?: string | null;
+  rejected_at?: string | null;
+  deletion_requested_at?: string | null;
+  updated_at?: string | null;
 }
 
 const AdminCommunityReview = () => {
@@ -40,6 +52,7 @@ const AdminCommunityReview = () => {
   const [communityPrompts, setCommunityPrompts] = useState<CommunityPrompt[]>([]);
   const [partnerPrompts, setPartnerPrompts] = useState<PartnerPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [detailItem, setDetailItem] = useState<{ kind: "community" | "partner"; data: any } | null>(null);
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -223,6 +236,11 @@ const AdminCommunityReview = () => {
   const pendingCommunity = communityPrompts.filter(p => !p.approved);
   const pendingPartner = partnerPrompts.filter(p => !p.approved || p.deletion_requested);
 
+  const isVideoUrl = (url: string) => /\.(mp4|webm|mov)(\?|$)/i.test(url || "");
+
+  const formatDate = (d?: string | null) =>
+    d ? new Date(d).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" }) : "—";
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -259,8 +277,11 @@ const AdminCommunityReview = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {communityPrompts.map((prompt) => (
                 <Card key={prompt.id} className="overflow-hidden">
-                  <div className="relative">
-                    {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
+                  <div
+                    className="relative cursor-pointer group"
+                    onClick={() => setDetailItem({ kind: "community", data: prompt })}
+                  >
+                    {isVideoUrl(prompt.image_url) ? (
                       <SecureVideo
                         src={prompt.image_url}
                         className="w-full h-48 object-cover"
@@ -277,6 +298,9 @@ const AdminCommunityReview = () => {
                         isPremium={false}
                       />
                     )}
+                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100">
+                      <Badge className="bg-background/90 text-foreground"><Eye className="h-3 w-3 mr-1" />Ver detalhes</Badge>
+                    </div>
                     {prompt.approved && <Badge className="absolute top-2 right-2 bg-green-500">Aprovado</Badge>}
                   </div>
                   <div className="p-4 space-y-3">
@@ -313,8 +337,11 @@ const AdminCommunityReview = () => {
                 const status = getPartnerPromptStatus(prompt);
                 return (
                   <Card key={prompt.id} className="overflow-hidden">
-                    <div className="relative">
-                      {prompt.image_url.includes('.mp4') || prompt.image_url.includes('.webm') || prompt.image_url.includes('.mov') ? (
+                    <div
+                      className="relative cursor-pointer group"
+                      onClick={() => setDetailItem({ kind: "partner", data: prompt })}
+                    >
+                      {isVideoUrl(prompt.image_url) ? (
                         <SecureVideo
                           src={prompt.image_url}
                           className="w-full h-48 object-cover"
@@ -331,6 +358,9 @@ const AdminCommunityReview = () => {
                           isPremium={false}
                         />
                       )}
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center opacity-0 group-hover:opacity-100 pointer-events-none">
+                        <Badge className="bg-background/90 text-foreground"><Eye className="h-3 w-3 mr-1" />Ver detalhes</Badge>
+                      </div>
                       <div className="absolute top-2 right-2 flex gap-1">
                         {status === "deletion" && (
                           <Badge variant="destructive">
@@ -399,6 +429,171 @@ const AdminCommunityReview = () => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Detail Modal */}
+      <Dialog open={!!detailItem} onOpenChange={(o) => !o && setDetailItem(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          {detailItem && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-2xl">{detailItem.data.title}</DialogTitle>
+              </DialogHeader>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Image / Video — full size */}
+                <div className="space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Mídia Principal</p>
+                  <div className="rounded-lg overflow-hidden bg-muted border border-border">
+                    {isVideoUrl(detailItem.data.image_url) ? (
+                      <SecureVideo
+                        src={detailItem.data.image_url}
+                        className="w-full h-auto max-h-[70vh] object-contain"
+                        isPremium={false}
+                        controls
+                      />
+                    ) : (
+                      <SecureImage
+                        src={detailItem.data.image_url}
+                        alt={detailItem.data.title}
+                        className="w-full h-auto max-h-[70vh] object-contain"
+                        isPremium={false}
+                      />
+                    )}
+                  </div>
+                  {detailItem.kind === "partner" && detailItem.data.thumbnail_url && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Thumbnail</p>
+                      <SecureImage
+                        src={detailItem.data.thumbnail_url}
+                        alt="thumb"
+                        className="w-32 h-32 object-cover rounded border border-border"
+                        isPremium={false}
+                      />
+                    </div>
+                  )}
+                  {detailItem.kind === "partner" && Array.isArray(detailItem.data.reference_images) && detailItem.data.reference_images.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                        Imagens de Referência ({detailItem.data.reference_images.length})
+                      </p>
+                      <div className="grid grid-cols-3 gap-2">
+                        {detailItem.data.reference_images.map((url: string, i: number) => (
+                          <a key={i} href={url} target="_blank" rel="noreferrer" className="block">
+                            <SecureImage
+                              src={url}
+                              alt={`ref-${i}`}
+                              className="w-full h-24 object-cover rounded border border-border hover:border-primary transition-colors"
+                              isPremium={false}
+                            />
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* Details */}
+                <div className="space-y-4 text-sm">
+                  <div className="flex flex-wrap gap-2">
+                    {detailItem.kind === "partner" && (
+                      <Badge variant="outline" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                        <Handshake className="h-3 w-3 mr-1" />{detailItem.data.partner_name}
+                      </Badge>
+                    )}
+                    {detailItem.kind === "community" && detailItem.data.contributor_name && (
+                      <Badge variant="outline">
+                        <Users className="h-3 w-3 mr-1" />{detailItem.data.contributor_name}
+                      </Badge>
+                    )}
+                    <Badge variant="secondary">{detailItem.data.category}</Badge>
+                    {detailItem.kind === "partner" && (
+                      detailItem.data.is_premium ? (
+                        <Badge className="bg-amber-500 text-foreground">Premium</Badge>
+                      ) : (
+                        <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">Gratuito</Badge>
+                      )
+                    )}
+                    {detailItem.kind === "partner" && detailItem.data.gender && (
+                      <Badge variant="outline">Gênero: {detailItem.data.gender}</Badge>
+                    )}
+                    {detailItem.kind === "partner" && detailItem.data.subcategory_slug && (
+                      <Badge variant="outline">Subcat: {detailItem.data.subcategory_slug}</Badge>
+                    )}
+                  </div>
+
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Prompt</p>
+                    <div className="bg-muted/50 rounded-lg p-3 border border-border whitespace-pre-wrap text-foreground max-h-64 overflow-y-auto">
+                      {detailItem.data.prompt}
+                    </div>
+                  </div>
+
+                  {detailItem.kind === "partner" && detailItem.data.tutorial_url && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Tutorial</p>
+                      <a href={detailItem.data.tutorial_url} target="_blank" rel="noreferrer" className="text-primary underline break-all text-xs">
+                        {detailItem.data.tutorial_url}
+                      </a>
+                    </div>
+                  )}
+
+                  {detailItem.kind === "partner" && Array.isArray(detailItem.data.tags) && detailItem.data.tags.length > 0 && (
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Tags</p>
+                      <div className="flex flex-wrap gap-1">
+                        {detailItem.data.tags.map((t: string, i: number) => (
+                          <Badge key={i} variant="outline" className="text-xs">{t}</Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    <div>
+                      <p className="text-muted-foreground">Criado em</p>
+                      <p className="text-foreground font-medium">{formatDate(detailItem.data.created_at)}</p>
+                    </div>
+                    {detailItem.data.updated_at && (
+                      <div>
+                        <p className="text-muted-foreground">Atualizado em</p>
+                        <p className="text-foreground font-medium">{formatDate(detailItem.data.updated_at)}</p>
+                      </div>
+                    )}
+                    {detailItem.data.approved_at && (
+                      <div>
+                        <p className="text-muted-foreground">Aprovado em</p>
+                        <p className="text-green-400 font-medium">{formatDate(detailItem.data.approved_at)}</p>
+                      </div>
+                    )}
+                    {detailItem.data.rejected_at && (
+                      <div>
+                        <p className="text-muted-foreground">Recusado em</p>
+                        <p className="text-red-400 font-medium">{formatDate(detailItem.data.rejected_at)}</p>
+                      </div>
+                    )}
+                    {detailItem.data.deletion_requested_at && (
+                      <div>
+                        <p className="text-muted-foreground">Exclusão solicitada em</p>
+                        <p className="text-orange-400 font-medium">{formatDate(detailItem.data.deletion_requested_at)}</p>
+                      </div>
+                    )}
+                    {detailItem.kind === "partner" && typeof detailItem.data.bonus_clicks === "number" && (
+                      <div>
+                        <p className="text-muted-foreground">Bonus clicks</p>
+                        <p className="text-foreground font-medium">{detailItem.data.bonus_clicks}</p>
+                      </div>
+                    )}
+                    <div className="col-span-2">
+                      <p className="text-muted-foreground">ID</p>
+                      <p className="text-foreground font-mono text-[10px] break-all">{detailItem.data.id}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
