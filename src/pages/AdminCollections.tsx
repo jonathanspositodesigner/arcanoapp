@@ -380,6 +380,32 @@ const AdminCollections = () => {
             autoComplete="off"
           />
         </div>
+        <div className="flex gap-2 mt-2">
+          <Button
+            type="button"
+            variant={sourceFilter === 'all' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setSourceFilter('all'); setCurrentPage(1); }}
+          >
+            Todos
+          </Button>
+          <Button
+            type="button"
+            variant={sourceFilter === 'admin' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setSourceFilter('admin'); setCurrentPage(1); }}
+          >
+            Só Admin
+          </Button>
+          <Button
+            type="button"
+            variant={sourceFilter === 'partner' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => { setSourceFilter('partner'); setCurrentPage(1); }}
+          >
+            Só Colaborador
+          </Button>
+        </div>
       </div>
 
       <div>
