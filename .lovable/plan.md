@@ -1,85 +1,89 @@
-## 🔎 Diagnóstico
+## 🔎 Diagnóstico Completo (verificado direto no DB)
 
-Investiguei `/admin-hub` → aba **Painel de Colaboradores** (componente `PartnerEarningsAdminContent.tsx`) e o banco. Encontrei **3 problemas** distintos que combinados causam o efeito "só aparece prompts copiados, jobs de IA somem":
+Investiguei a fundo o painel de colaboradores (`PartnerEarningsAdminContent.tsx`) e os dados reais. Achei **bugs reais**, mas alguns diferentes do que parecia à primeira vista:
 
-### 1. UI do Overview NÃO mostra a coluna de Jobs de IA
-A tabela do "Visão Geral" exibe apenas:
-- Saldo Bruto / Saques Pagos / Disponível / **P. Copiados** / Prompts Aprovados
+### ✅ O que JÁ está correto (não preciso mexer)
+A UI **já está somando** `unlock + tool + bonus` no `total_earned` (linha 148). Os dados na fonte de verdade batem com a soma:
+- **Hérica:** unlock R$0,12 (2) + tool R$0,84 (6 jobs) = **R$0,96** ✓ — exatamente o que a UI exibe.
 
-Mas a tabela `collaborator_balances` só guarda `total_unlocks` (= prompts copiados). Os **jobs em ferramentas de IA** ficam em `collaborator_tool_earnings` e nunca são contados/exibidos no overview. Por isso parece que "só conta clicks em prompts".
+### 🐛 Bug #1 (CRÍTICO) — Jobs de parceiros NÃO geram earning
+Rodei query nos últimos 30 dias só do Arcano Cloner: **6 jobs concluídos com prompt de parceiro, mas só 4 geraram registro em `collaborator_tool_earnings`. 2 jobs sumiram (33% de perda).**
 
-Exemplo real (colaborador `f008a899...`):
-- Tem **6 jobs de IA** registrados (R$ 0,84 em earnings de ferramentas)
-- Tem **2 unlocks de prompt** (R$ 0,17)
-- Coluna "P. Copiados" mostra `2` ✅
-- Mas não há coluna mostrando os `6 jobs` ❌
+Isso é o bug raiz que o admin está sentindo: ele vê o colaborador usando a ferramenta no log, mas o "R$ Ferramentas" e "Jobs IA" do painel ficam menores que a realidade. Não é a UI que está errada, é o **registro do earning na hora do job** que está falhando silenciosamente.
 
-### 2. `collaborator_balances.total_earned` está dessincronizado
-O balance mostra **R$ 0,80** mas a soma real (unlocks + tools + bônus) é **R$ ~1,01**. Faltam R$ 0,21.
+Possíveis causas (preciso confirmar com `rg` em default mode):
+- Edge functions/triggers só registram earning quando o job termina via webhook completo, mas alguns jobs usam path alternativo (queue manager, fallback, retry) que esquece de chamar `register_collaborator_tool_earning`
+- Race condition: o job marca `completed` antes do hook de earning rodar
+- A versão antiga sobrecarregada da RPC (já dropada na migration anterior) pode ter deixado órfãos
 
-Causa: **não existe trigger** em `collaborator_tool_earnings` / `collaborator_unlock_earnings` / `partner_bonus_payments` que atualize `collaborator_balances`. A atualização é feita manualmente dentro das RPCs `register_collaborator_tool_earning` e `register_collaborator_unlock` — quando alguém insere direto na tabela ou quando há erro/race, o balance fica defasado pra sempre.
+### 🐛 Bug #2 — Faltam outras ferramentas no tracking
+A tabela `collaborator_tool_earnings` só tem registros de 3 tools: `arcano_cloner_jobs`, `veste_ai_jobs`, `pose_changer_jobs`. Mas o `ai_tool_registry` lista **15 ferramentas ativas** (Upscaler, Flyer Maker, Gerar Imagem, Gerar Vídeo, Seedance, MovieLed, etc).
 
-Pior: a função `reconcile_collaborator_balances` **só recalcula a partir de `collaborator_unlock_earnings`** (ignora `collaborator_tool_earnings` e `partner_bonus_payments`). Ou seja, rodar reconciliação apaga os ganhos de ferramentas do balance.
+Se um colaborador subir prompt categorizado em "Movies para Telão" (MovieLed) ou "Logos" (Gerar Imagem) e usuários usarem, **nenhum earning é gerado**. O sistema precisa cobrir todas as tools que aceitam `reference_prompt_id` (ou equivalente) de partner_prompts.
 
-### 3. Existem DUAS funções `register_collaborator_tool_earning` (sobrecarga)
-- Versão antiga (4 args): lê valor de `collaborator_tool_rates`
-- Versão nova (7 args): calcula valor por `level` do parceiro
+### 🐛 Bug #3 — Cards de "Visão Geral" no detalhe do colaborador
+Na aba "Extrato por Colaborador" (linhas 577-596) os 4 cards do topo NÃO mostram o breakdown novo (unlock vs tool vs bonus); só mostra "Saldo Bruto / Disponível / Prompts Copiados / PIX". O breakdown real existe mais abaixo (linhas 598-614) mas fica meio escondido. Reordenar pra deixar tudo no topo.
 
-Isso pode causar Edge Functions chamando a versão errada e duplicando/perdendo registros.
+### 🐛 Bug #4 — Mensagem confusa no extrato
+Linha 654 e 686: quando filtra por período, mostra "Nenhum prompt copiado" e "X prompts copiados" mesmo quando o registro é de tool_usage ou bonus. Texto desatualizado.
+
+### 🐛 Bug #5 — Ranking ignora tool earnings
+Linhas 504, 510-512, 525: o ranking "Por Prompts Copiados" e os subtítulos usam só `total_unlocks` (= count de prompt clicks), ignorando `tool_jobs`. Adicionar opção "Por Usos em IA" e mostrar ambos nos subtítulos.
 
 ---
 
 ## 🛠️ Plano de Correção
 
-### Fase 1 — Corrigir a UI do Overview (`PartnerEarningsAdminContent.tsx`)
-- Buscar agregados de `collaborator_tool_earnings` por colaborador no `fetchAll` (count + sum por `collaborator_id`)
-- Buscar agregados de `partner_bonus_payments` por colaborador
-- Adicionar à interface `PartnerRow`:
-  - `tool_jobs: number` (total de jobs de IA)
-  - `tool_earned: number` (R$ ganho em ferramentas)
-  - `bonus_earned: number` (R$ em bônus de ranking)
-- Adicionar duas novas colunas na tabela do Overview:
-  - **"🤖 Jobs IA"** (com sort)
-  - **"R$ Ferramentas"** (com sort)
-- Calcular `total_earned` na UI como `unlock_earned + tool_earned + bonus_earned` (fonte de verdade) ao invés de confiar em `collaborator_balances.total_earned`, evitando o problema de dessincronia
-- Atualizar cards do topo: adicionar card **"Total Jobs IA"** ao lado de "Prompts Copiados Totais"
+### Fase 1 — Auditoria de earnings perdidos (default mode, com `rg`)
+1. Localizar TODAS as Edge Functions / triggers que finalizam jobs de IA das 15 tools
+2. Para cada uma, verificar se chama `register_collaborator_tool_earning` quando `reference_prompt_id` (ou coluna equivalente) aponta pra um `partner_prompts` aprovado
+3. Mapear quais tools têm a coluna de referência ao prompt:
+   - `arcano_cloner_jobs.reference_prompt_id` ✓
+   - Verificar: `pose_changer_jobs`, `veste_ai_jobs`, `flyer_maker_jobs`, `image_generator_jobs`, `video_generator_jobs`, `seedance_jobs`, `movieled_maker_jobs`, `character_generator_jobs`, `cinema_projects`, etc
+4. Criar relatório SQL: para cada tool com prompt_ref, contar `jobs concluídos com partner_prompt vs earnings registrados`
 
-### Fase 2 — Corrigir o Extrato Individual (aba "Detail")
-Já busca tudo certo (unlock + tool + bonus), mas:
-- Adicionar mini-cards de breakdown no topo do extrato (Unlocks vs Ferramentas vs Bônus) — igual à página `/parceiro-extrato`
-- Mostrar tag visual diferente para `tool_usage` (já tem, mas reforçar com ícone do tool)
+### Fase 2 — Backfill dos earnings perdidos (migration SQL)
+Criar função `backfill_collaborator_tool_earnings()` que percorre cada tabela de jobs registrada no `ai_tool_registry`, identifica jobs concluídos com `reference_prompt_id` apontando pra `partner_prompts.approved=true`, e gera o registro em `collaborator_tool_earnings` se ainda não existir (idempotente via `job_id + tool_table` unique).
 
-### Fase 3 — Corrigir a função `reconcile_collaborator_balances` (migration SQL)
-Reescrever para somar das **3 fontes**:
-```sql
-SELECT collaborator_id, SUM(amount), COUNT(*)
-FROM (
-  SELECT collaborator_id, amount FROM collaborator_unlock_earnings
-  UNION ALL
-  SELECT collaborator_id, amount FROM collaborator_tool_earnings
-  UNION ALL
-  SELECT partner_id AS collaborator_id, amount FROM partner_bonus_payments
-) t GROUP BY collaborator_id
-```
-E manter `total_unlocks` apenas como contagem de `collaborator_unlock_earnings` (pra preservar a semântica da coluna).
+Executar uma vez para corrigir todo o histórico.
 
-Remover o `DELETE FROM collaborator_balances WHERE collaborator_id NOT IN (...)` ou ampliar para considerar tool_earnings.
+### Fase 3 — Garantir registro automático para o futuro
+Opção A (mais segura): criar **trigger AFTER UPDATE** em cada tabela de jobs do registry que, quando `status` muda pra `completed` E há `reference_prompt_id` ligado a `partner_prompts`, chama a RPC `register_collaborator_tool_earning`. Trigger é idempotente (já existe constraint pra evitar duplicação).
 
-### Fase 4 — Reconciliar dados existentes
-Após corrigir a função, executar `reconcile_collaborator_balances()` uma vez para alinhar todos os balances com a realidade.
+Opção B: corrigir as Edge Functions uma a uma (mais frágil, alto risco de esquecer alguma).
 
-### Fase 5 — Eliminar a sobrecarga ambígua
-Dropar a versão antiga (4 args) `register_collaborator_tool_earning(_user_id, _job_id, _tool_table, _prompt_id)` para garantir que todas as Edge Functions usem a versão nova baseada em `level`. Vou validar primeiro com `rg` quem chama qual assinatura.
+→ Vou recomendar **Opção A** (trigger) por ser à prova de bala.
 
-### Fase 6 — Bump de versão
-Incrementar `APP_BUILD_VERSION` em `src/pages/Index.tsx` (memória `auto-increment-build-version`).
+### Fase 4 — Reescrever `reconcile_collaborator_balances` ainda mais robusta
+Já foi reescrita pra somar 3 fontes na migration anterior. Adicionar agora:
+- Recalcular `total_unlocks` como contagem de `collaborator_unlock_earnings`
+- Recalcular `total_tool_jobs` (nova coluna em `collaborator_balances`?) ou só deixar a UI calcular dinâmico
+- Usar `bigint` nos `SUM()` pra evitar overflow
+
+### Fase 5 — UI: melhorias no painel admin (`PartnerEarningsAdminContent.tsx`)
+1. **Aba "Extrato por Colaborador":** mover os 3 cards de breakdown (Unlocks / Ferramentas / Bônus) para o topo, junto com Saldo Bruto, ao invés de ficarem em uma segunda linha. Adicionar card "Total: X jobs IA + Y prompts copiados".
+2. **Lista de earnings:** trocar texto "Nenhum prompt copiado" por "Nenhum ganho neste período"; trocar "X prompts copiados" no rodapé por "X ganhos (Y prompts + Z jobs IA + W bônus)"
+3. **Ranking:** adicionar critério "Por Jobs IA" e mostrar `tool_jobs` também nos subtítulos
+4. **Card "Visão Geral":** adicionar coluna "Total Atividade" = `total_unlocks + tool_jobs` pra ranking simples
+5. **Botão "Forçar Reconciliação"** já existe na aba Reconciliação — verificar que aponta pra função nova
+
+### Fase 6 — Adicionar trigger de auto-update do balance
+Criar triggers AFTER INSERT em `collaborator_unlock_earnings`, `collaborator_tool_earnings` e `partner_bonus_payments` que atualizam `collaborator_balances.total_earned` em tempo real. Assim nunca mais dessincroniza.
+
+### Fase 7 — Bump de versão
+Incrementar `APP_BUILD_VERSION` em `Index.tsx` para `1.2.0` (mudança grande).
 
 ---
 
-## ✅ Resultado esperado
-- Admin Hub passa a mostrar **jobs IA + R$ ferramentas** por colaborador
-- Saldo bruto na UI vira soma real das 3 fontes (não confia em balance defasado)
-- Botão de reconciliação passa a corrigir tudo (não só unlocks)
-- Sem mais duplicidade de função RPC
+## 📊 Resultado esperado
+- ✅ Todos os jobs de IA usando prompts de parceiros geram earning automaticamente (trigger no DB)
+- ✅ Backfill corrige histórico de jobs perdidos (estimativa: ~30%+ de earnings recuperados)
+- ✅ Balance fica sempre em sincronia (triggers de atualização)
+- ✅ UI do admin mostra breakdown completo no topo do extrato
+- ✅ Ranking inclui jobs IA
+- ✅ Reconciliação manual continua funcionando como rede de segurança
 
-Posso prosseguir?
+## ⚠️ Atenção
+A Fase 1 (auditoria) pode revelar que algumas tools não têm coluna de `reference_prompt_id` e precisam ser instrumentadas — nesse caso vou listar e perguntar antes de mexer no schema delas.
+
+Aprova esse plano completo?
