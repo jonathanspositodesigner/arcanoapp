@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
-import { useGeminiVideoQueue, type GeminiQueueJob } from '@/hooks/useGeminiVideoQueue';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,7 +32,6 @@ const MODEL_DURATIONS: Record<string, number> = {
   'veo3.1-fast': 8,
   'veo3.1-pro': 8,
   'wan2.2': 5,
-  'gemini-lite': 8,
 };
 
 interface FrameImage {
@@ -54,7 +52,6 @@ interface ModelOption {
 
 const ALL_MODELS: ModelOption[] = [
   { id: 'wan2.2', name: 'Wan 2.2', cost: 400, costWithAudio: 400, description: '5 segundos' },
-  { id: 'gemini-lite', name: 'Veo 3.1 Lite', cost: 900, costWithAudio: 900, description: '8s • Sem áudio', isGeminiQueue: true },
   { id: 'veo3.1-fast', name: 'Veo 3.1 Fast', cost: 1500, costWithAudio: 2500, description: '8s • 1080p' },
   { id: 'veo3.1-pro', name: 'Veo 3.1 Pro', cost: 2800, costWithAudio: 5000, description: '8s • 1080p' },
 ];
@@ -122,16 +119,11 @@ const GerarVideoTool = () => {
 
   const currentModel = availableModels.find(m => m.id === selectedModel) || availableModels[0];
   const isVeoModel = selectedModel === 'veo3.1-fast' || selectedModel === 'veo3.1-pro';
-  const isGeminiLite = selectedModel === 'gemini-lite';
   
   const effectiveCost = (isVeoModel && generateAudio) ? currentModel.costWithAudio : currentModel.cost;
   const creditCost = (isUnlimited && selectedModel === 'wan2.2') 
     ? 0 
     : effectiveCost;
-
-  // Gemini queue hook
-  const { enqueueVideo: enqueueGemini, subscribeToJob: subscribeGemini, triggerProcessing, isSubmitting: isGeminiSubmitting } = useGeminiVideoQueue();
-  const geminiChannelRef = useRef<ReturnType<typeof subscribeGemini> | null>(null);
 
   // Reset audio when switching away from Veo models
   useEffect(() => {
@@ -214,11 +206,10 @@ const GerarVideoTool = () => {
     }
   }, [generationMode]);
 
-  // Cleanup evolink polling and gemini channel on unmount
+  // Cleanup evolink polling on unmount
   useEffect(() => {
     return () => {
       if (evolinkPollRef.current) clearInterval(evolinkPollRef.current);
-      if (geminiChannelRef.current) geminiChannelRef.current.unsubscribe();
     };
   }, []);
 
