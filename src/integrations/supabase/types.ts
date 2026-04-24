@@ -6328,6 +6328,14 @@ export type Database = {
         Args: { _badge_slug: string; _partner_id: string }
         Returns: boolean
       }
+      backfill_collaborator_tool_earnings: {
+        Args: never
+        Returns: {
+          inserted: number
+          processed: number
+          tool_table: string
+        }[]
+      }
       check_collaborator_email: { Args: { p_email: string }; Returns: Json }
       check_device_signup_limit: {
         Args: { p_fingerprint: string }

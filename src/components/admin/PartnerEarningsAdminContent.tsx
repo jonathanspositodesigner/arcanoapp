@@ -62,7 +62,7 @@ interface EarningRow {
 
 type Tab = "overview" | "withdrawals" | "ranking" | "detail" | "gamification" | "reconciliation" | "manage-partners" | "requests";
 type PeriodFilter = "today" | "7days" | "30days" | "all" | "custom";
-type RankCriteria = "earnings" | "unlocks" | "prompts";
+type RankCriteria = "earnings" | "unlocks" | "tool_jobs" | "prompts";
 type SortKey = "name" | "total_earned" | "total_paid" | "available" | "total_unlocks" | "approved_prompts" | "tool_jobs" | "tool_earned";
 
 const PartnerEarningsAdminContent = () => {
@@ -308,6 +308,7 @@ const PartnerEarningsAdminContent = () => {
     switch (rankBy) {
       case "earnings": list.sort((a, b) => b.total_earned - a.total_earned); break;
       case "unlocks": list.sort((a, b) => b.total_unlocks - a.total_unlocks); break;
+      case "tool_jobs": list.sort((a, b) => b.tool_jobs - a.tool_jobs); break;
       case "prompts": list.sort((a, b) => b.approved_prompts - a.approved_prompts); break;
     }
     return list;
@@ -501,7 +502,7 @@ const PartnerEarningsAdminContent = () => {
       {tab === "ranking" && (
         <div>
           <div className="flex flex-wrap gap-2 mb-4">
-             {([["earnings", "Por Ganhos"], ["unlocks", "Por Prompts Copiados"], ["prompts", "Por Prompts"]] as [RankCriteria, string][]).map(([k, l]) => (
+             {([["earnings", "Por Ganhos"], ["unlocks", "Por Prompts Copiados"], ["tool_jobs", "Por Jobs IA"], ["prompts", "Por Prompts Enviados"]] as [RankCriteria, string][]).map(([k, l]) => (
               <Button key={k} variant={rankBy === k ? "default" : "outline"} size="sm" onClick={() => { setRankBy(k); setRankPage(1); }}>{l}</Button>
             ))}
           </div>
@@ -509,7 +510,11 @@ const PartnerEarningsAdminContent = () => {
           <div className="space-y-3">
             {rankedPage.map((p, idx) => {
               const i = (rankPage - 1) * RANK_PER_PAGE + idx;
-               const mainValue = rankBy === "earnings" ? formatBRL(p.total_earned) : rankBy === "unlocks" ? `${p.total_unlocks} prompts copiados` : `${p.approved_prompts} prompts`;
+               const mainValue =
+                 rankBy === "earnings" ? formatBRL(p.total_earned)
+                 : rankBy === "unlocks" ? `${p.total_unlocks} prompts copiados`
+                 : rankBy === "tool_jobs" ? `${p.tool_jobs} jobs IA`
+                 : `${p.approved_prompts} prompts`;
               const isTop3 = i < 3;
               return (
                 <Card key={p.id} className={cn("p-4 flex items-center gap-4", isTop3 && "border-2", i === 0 && "border-yellow-500/40", i === 1 && "border-gray-400/40", i === 2 && "border-amber-600/40")}>
@@ -523,6 +528,7 @@ const PartnerEarningsAdminContent = () => {
                   <div className="text-right text-xs text-muted-foreground space-y-0.5">
                     {rankBy !== "earnings" && <p>{formatBRL(p.total_earned)}</p>}
                      {rankBy !== "unlocks" && <p>{p.total_unlocks} prompts copiados</p>}
+                    {rankBy !== "tool_jobs" && <p>{p.tool_jobs} jobs IA</p>}
                     {rankBy !== "prompts" && <p>{p.approved_prompts} prompts</p>}
                   </div>
                 </Card>
@@ -574,44 +580,45 @@ const PartnerEarningsAdminContent = () => {
 
           {selectedPartner && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <Card className="p-4 bg-green-500/10 border-green-500/20">
-                  <p className="text-xs text-muted-foreground">Saldo Bruto</p>
-                  <p className="text-xl font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
+              {/* Cards principais: saldo + breakdown completo no topo */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                <Card className="p-3 bg-green-500/10 border-green-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">💰 Saldo Bruto</p>
+                  <p className="text-lg font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">Total de ganhos</p>
                 </Card>
-                <Card className="p-4 bg-emerald-500/10 border-emerald-500/20">
-                  <p className="text-xs text-muted-foreground">Disponível p/ Saque</p>
-                  <p className="text-xl font-bold text-emerald-400">{formatBRL(selectedPartner.total_earned - selectedPartner.total_paid)}</p>
+                <Card className="p-3 bg-emerald-500/10 border-emerald-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">✅ Disponível</p>
+                  <p className="text-lg font-bold text-emerald-400">{formatBRL(selectedPartner.total_earned - selectedPartner.total_paid)}</p>
+                  <p className="text-[10px] text-muted-foreground">P/ saque</p>
                 </Card>
-                <Card className="p-4 bg-blue-500/10 border-blue-500/20">
-                   <p className="text-xs text-muted-foreground">Prompts Copiados</p>
-                  <p className="text-xl font-bold text-blue-400">{selectedPartner.total_unlocks}</p>
-                </Card>
-                <Card className="p-4">
-                  <p className="text-xs text-muted-foreground">Chave PIX</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {selectedPartner.pix_key ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}` : "Não cadastrada"}
-                  </p>
-                </Card>
-              </div>
-
-              {/* Breakdown por tipo de ganho */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 <Card className="p-3 bg-blue-500/5 border-blue-500/20">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🖱️ Prompts Copiados</p>
-                  <p className="text-base font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
+                  <p className="text-lg font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
                   <p className="text-[10px] text-muted-foreground">{selectedPartner.total_unlocks} cópias</p>
                 </Card>
                 <Card className="p-3 bg-purple-500/5 border-purple-500/20">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas de IA</p>
-                  <p className="text-base font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas IA</p>
+                  <p className="text-lg font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
                   <p className="text-[10px] text-muted-foreground">{selectedPartner.tool_jobs} jobs</p>
                 </Card>
                 <Card className="p-3 bg-yellow-500/5 border-yellow-500/20">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🏆 Bônus Ranking</p>
-                  <p className="text-base font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
+                  <p className="text-lg font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">Premiações</p>
                 </Card>
               </div>
+
+              {/* PIX info */}
+              <Card className="p-3 mb-4 bg-muted/30">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold">Chave PIX:</span>{" "}
+                  {selectedPartner.pix_key
+                    ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}`
+                    : <span className="text-yellow-400">Não cadastrada</span>}
+                  <span className="ml-4 font-semibold">Saques pagos:</span> {formatBRL(selectedPartner.total_paid)}
+                </p>
+              </Card>
 
               {selectedPendingWd && (
                 <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-between">
@@ -651,7 +658,7 @@ const PartnerEarningsAdminContent = () => {
               <Card className="overflow-hidden mb-4">
                 <div className="divide-y divide-border">
                   {pagedDetailEarnings.length === 0 ? (
-                     <p className="text-center text-muted-foreground py-8">Nenhum prompt copiado neste período</p>
+                     <p className="text-center text-muted-foreground py-8">Nenhum ganho registrado neste período</p>
                   ) : pagedDetailEarnings.map(e => (
                     <div key={e.id} className="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
                       <div className="flex-1 min-w-0">
@@ -683,7 +690,12 @@ const PartnerEarningsAdminContent = () => {
               )}
 
               <div className="text-right text-sm text-muted-foreground mb-6">
-                {filteredDetailEarnings.length} prompt{filteredDetailEarnings.length !== 1 ? "s" : ""} copiado{filteredDetailEarnings.length !== 1 ? "s" : ""} • Total: {formatBRL(detailPeriodTotal)}
+                {(() => {
+                  const u = filteredDetailEarnings.filter(e => e.earning_type === 'unlock').length;
+                  const t = filteredDetailEarnings.filter(e => e.earning_type === 'tool_usage').length;
+                  const b = filteredDetailEarnings.filter(e => e.earning_type === 'bonus').length;
+                  return `${filteredDetailEarnings.length} ganho${filteredDetailEarnings.length !== 1 ? 's' : ''} (${u} prompt${u !== 1 ? 's' : ''} + ${t} job${t !== 1 ? 's' : ''} IA + ${b} bônus) • Total: ${formatBRL(detailPeriodTotal)}`;
+                })()}
               </div>
 
               {/* Partner's withdrawal history */}
