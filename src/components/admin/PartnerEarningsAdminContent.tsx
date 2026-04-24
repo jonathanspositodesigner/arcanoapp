@@ -652,7 +652,7 @@ const PartnerEarningsAdminContent = () => {
               <Card className="overflow-hidden mb-4">
                 <div className="divide-y divide-border">
                   {pagedDetailEarnings.length === 0 ? (
-                     <p className="text-center text-muted-foreground py-8">Nenhum prompt copiado neste período</p>
+                     <p className="text-center text-muted-foreground py-8">Nenhum ganho registrado neste período</p>
                   ) : pagedDetailEarnings.map(e => (
                     <div key={e.id} className="flex items-center justify-between px-4 py-2 hover:bg-muted/30">
                       <div className="flex-1 min-w-0">
@@ -684,7 +684,12 @@ const PartnerEarningsAdminContent = () => {
               )}
 
               <div className="text-right text-sm text-muted-foreground mb-6">
-                {filteredDetailEarnings.length} prompt{filteredDetailEarnings.length !== 1 ? "s" : ""} copiado{filteredDetailEarnings.length !== 1 ? "s" : ""} • Total: {formatBRL(detailPeriodTotal)}
+                {(() => {
+                  const u = filteredDetailEarnings.filter(e => e.earning_type === 'unlock').length;
+                  const t = filteredDetailEarnings.filter(e => e.earning_type === 'tool_usage').length;
+                  const b = filteredDetailEarnings.filter(e => e.earning_type === 'bonus').length;
+                  return `${filteredDetailEarnings.length} ganho${filteredDetailEarnings.length !== 1 ? 's' : ''} (${u} prompt${u !== 1 ? 's' : ''} + ${t} job${t !== 1 ? 's' : ''} IA + ${b} bônus) • Total: ${formatBRL(detailPeriodTotal)}`;
+                })()}
               </div>
 
               {/* Partner's withdrawal history */}
