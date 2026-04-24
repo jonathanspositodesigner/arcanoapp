@@ -1,51 +1,60 @@
+Corrigir exatamente a área que você apontou: `/admin-hub` > painel de colaboradores do admin, nas abas **Visão Geral**, **Ranking** e **Extrato por Colaborador**.
 
-## Correção: Trigger MovieLed ignora referências a admin_prompts
+Plano:
 
-### Problema
-A coluna `movieled_maker_jobs.reference_prompt_id` aponta para `admin_prompts` (templates internos), não para `partner_prompts`. O trigger `trg_register_tool_earning_from_job` tenta gerar earning para todos os jobs com `reference_prompt_id` preenchido, falhando silenciosamente em 115 jobs órfãos.
+1. Confirmar a fonte única de verdade dos ganhos
+- Padronizar o Admin Hub para calcular os valores sempre a partir dos registros reais de ganhos e saques:
+  - ganhos por cópia de prompt
+  - ganhos por uso em ferramentas de IA
+  - bônus de ranking
+  - saques pagos
+- Remover qualquer dependência visual de saldo agregado que possa estar desatualizado.
 
-### Solução
+2. Corrigir a inconsistência real encontrada no banco
+- Há pelo menos um colaborador com saldo agregado divergente do total real dos lançamentos:
+  - Denilson está com `collaborator_balances.total_earned = R$ 0,32`
+  - mas os lançamentos reais somam `R$ 0,16`
+- Vou aplicar uma reconciliação para alinhar os saldos agregados aos lançamentos reais e evitar que essa divergência continue contaminando outras telas.
 
-**1. Refinar a função do trigger (migration SQL)**
-Atualizar `trg_register_tool_earning_from_job` para verificar se o `reference_prompt_id` existe em `partner_prompts` ANTES de tentar registrar o earning:
+3. Blindar o cálculo do Admin Hub
+- Revisar `PartnerEarningsAdminContent.tsx` para garantir que:
+  - **Visão Geral** liste saldo bruto, disponível, prompts copiados e jobs IA com os totais reais
+  - **Ranking** ordene pelos mesmos totais reais
+  - **Extrato por Colaborador** some exatamente os mesmos lançamentos exibidos na lista
+- Garantir que os três lugares usem a mesma regra de cálculo, sem diferenças entre abas.
 
-```sql
-CREATE OR REPLACE FUNCTION public.trg_register_tool_earning_from_job()
-RETURNS trigger AS $$
-DECLARE
-  v_tool_table text := TG_ARGV[0];
-  v_is_partner_prompt boolean;
-BEGIN
-  -- Só processa se o job foi concluído e tem reference_prompt_id
-  IF NEW.status != 'completed' OR NEW.reference_prompt_id IS NULL THEN
-    RETURN NEW;
-  END IF;
+4. Corrigir bug estrutural que pode inflar saldo no futuro
+- Remover a atualização manual de `collaborator_balances.total_earned` no fluxo de bônus da gamificação/admin, porque ela pode somar em duplicidade quando já existe automação no banco para isso.
+- Manter um único mecanismo de atualização de saldo para evitar contagem dobrada.
 
-  -- Verifica se o ID pertence a partner_prompts (não admin_prompts/outros)
-  SELECT EXISTS (
-    SELECT 1 FROM public.partner_prompts 
-    WHERE id = NEW.reference_prompt_id AND approved = true
-  ) INTO v_is_partner_prompt;
+5. Fazer auditoria completa dos ganhos por ferramentas de IA
+- Validar cobertura das ferramentas hoje rastreadas para colaboradores.
+- Confirmar quais tools realmente geram earning por prompt de parceiro e quais não devem gerar.
+- Verificar se há jobs concluídos com prompt de parceiro sem earning registrado.
 
-  IF NOT v_is_partner_prompt THEN
-    RETURN NEW; -- Sai limpo, é admin_prompts ou outro
-  END IF;
+6. Sincronizar também o painel do colaborador
+- Onde ainda houver leitura de saldo agregado no painel do colaborador, trocar para soma real dos lançamentos para evitar divergência entre “o que o admin vê” e “o que o colaborador vê”.
 
-  -- Chama a RPC de registro (idempotente)
-  PERFORM public.register_collaborator_tool_earning(
-    NEW.id, v_tool_table, NEW.reference_prompt_id, NEW.user_id
-  );
+7. Publicar correção e atualizar versão
+- Subir a correção com bump de `APP_BUILD_VERSION` para forçar atualização do frontend.
 
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
-```
+Achados já confirmados
+- O local correto é mesmo o que você descreveu: `Admin Hub` > `Colaboradores`.
+- O cálculo real hoje no banco é:
+  - Hérica: `R$ 1,28` total (`R$ 0,12` em cópias + `R$ 1,16` em ferramentas, 8 jobs IA)
+  - Denilson: `R$ 0,16` total (1 job IA)
+  - Jonathan: `R$ 0,05` total (1 cópia)
+- Existe divergência agregada real no banco para pelo menos um colaborador.
+- Existe um ponto de código que pode gerar saldo duplicado em bônus futuros.
 
-**2. Bump APP_BUILD_VERSION**
-`src/pages/Index.tsx`: `1.2.0` → `1.2.1`
+Detalhes técnicos
+- Arquivos principais:
+  - `src/components/admin/PartnerEarningsAdminContent.tsx`
+  - `src/pages/PartnerEarnings.tsx`
+  - `src/pages/PartnerDashboard.tsx`
+  - `src/components/admin/PartnerGamificationAdmin.tsx`
+- Ajustes de banco:
+  - reconciliar `collaborator_balances` com os lançamentos reais
+  - manter automação de saldo sem incrementos manuais duplicados
 
-### Resultado
-- Trigger continua funcionando para Arcano Cloner, Pose Changer, Veste AI, Seedance (que apontam para `partner_prompts`)
-- MovieLed para de gerar warnings/falhas silenciosas nos 115 jobs que apontam para `admin_prompts`
-- Não cria nenhum earning indevido (admin_prompts não tem dono colaborador)
-- Idempotente: rodar de novo não quebra nada
+Se você aprovar, eu parto para corrigir exatamente esse painel do admin e a consistência dos saldos por trás dele.
