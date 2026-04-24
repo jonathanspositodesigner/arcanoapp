@@ -262,6 +262,7 @@ const PartnerEarningsAdminContent = () => {
   const totalPaid = withdrawals.filter(w => w.status === "pago").reduce((s, w) => s + Number(w.valor_solicitado), 0);
   const totalPending = withdrawals.filter(w => w.status === "pendente").reduce((s, w) => s + Number(w.valor_solicitado), 0);
   const totalUnlocksAll = partners.reduce((s, p) => s + p.total_unlocks, 0);
+  const totalToolJobsAll = partners.reduce((s, p) => s + p.tool_jobs, 0);
   const activeWithEarnings = partners.filter(p => p.total_earned > 0).length;
 
   // Sorting & filtering
@@ -359,7 +360,7 @@ const PartnerEarningsAdminContent = () => {
           {/* Tool Rates Management */}
           <PartnerToolRatesAdmin />
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
             <Card className="p-4 bg-green-500/10 border-green-500/20">
               <div className="flex items-center gap-3">
                 <DollarSign className="h-5 w-5 text-green-400" />
@@ -376,6 +377,12 @@ const PartnerEarningsAdminContent = () => {
               <div className="flex items-center gap-3">
                 <TrendingUp className="h-5 w-5 text-blue-400" />
                 <div><p className="text-xs text-muted-foreground">Prompts Copiados Totais</p><p className="text-xl font-bold text-blue-400">{totalUnlocksAll}</p></div>
+              </div>
+            </Card>
+            <Card className="p-4 bg-purple-500/10 border-purple-500/20">
+              <div className="flex items-center gap-3">
+                <TrendingUp className="h-5 w-5 text-purple-400" />
+                <div><p className="text-xs text-muted-foreground">Jobs IA Totais</p><p className="text-xl font-bold text-purple-400">{totalToolJobsAll}</p></div>
               </div>
             </Card>
             <Card className="p-4 bg-primary/10 border-primary/20">
@@ -402,6 +409,8 @@ const PartnerEarningsAdminContent = () => {
                   <th className="text-right py-2 px-2"><SortHeader label="Saques Pagos" sk="total_paid" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Disponível" sk="available" /></th>
                    <th className="text-right py-2 px-2"><SortHeader label="P. Copiados" sk="total_unlocks" /></th>
+                  <th className="text-right py-2 px-2"><SortHeader label="🤖 Jobs IA" sk="tool_jobs" /></th>
+                  <th className="text-right py-2 px-2"><SortHeader label="R$ Ferramentas" sk="tool_earned" /></th>
                   <th className="text-right py-2 px-2"><SortHeader label="Prompts" sk="approved_prompts" /></th>
                   <th className="text-left py-2 px-2 text-xs font-semibold text-muted-foreground">PIX</th>
                   <th className="text-right py-2 px-2"></th>
@@ -418,6 +427,8 @@ const PartnerEarningsAdminContent = () => {
                     <td className="text-right py-2 px-2 text-muted-foreground">{formatBRL(p.total_paid)}</td>
                     <td className="text-right py-2 px-2 text-emerald-400 font-medium">{formatBRL(p.total_earned - p.total_paid)}</td>
                     <td className="text-right py-2 px-2">{p.total_unlocks}</td>
+                    <td className="text-right py-2 px-2 text-purple-400 font-medium">{p.tool_jobs}</td>
+                    <td className="text-right py-2 px-2 text-purple-300">{formatBRL(p.tool_earned)}</td>
                     <td className="text-right py-2 px-2">{p.approved_prompts}</td>
                     <td className="py-2 px-2 text-xs">
                       {p.pix_key ? <span>{PIX_LABELS[p.pix_key_type || ""] || ""}: {maskPix(p.pix_key_type || "", p.pix_key)}</span> : <span className="text-yellow-400">Não cadastrada</span>}
