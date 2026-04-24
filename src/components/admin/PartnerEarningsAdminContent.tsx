@@ -81,6 +81,7 @@ const PartnerEarningsAdminContent = () => {
   // Detail tab state
   const [selectedPartnerId, setSelectedPartnerId] = useState<string | null>(null);
   const [detailEarnings, setDetailEarnings] = useState<EarningRow[]>([]);
+  const [userEmailMap, setUserEmailMap] = useState<Record<string, string>>({});
   const [detailPeriod, setDetailPeriod] = useState<PeriodFilter>("30days");
   const [detailCustomFrom, setDetailCustomFrom] = useState<Date | undefined>();
   const [detailCustomTo, setDetailCustomTo] = useState<Date | undefined>();
@@ -209,6 +210,20 @@ const PartnerEarningsAdminContent = () => {
       );
       setDetailEarnings(merged);
       setDetailPage(0);
+
+      // Fetch emails of users that generated each item
+      const userIds = Array.from(new Set(merged.map(m => m.user_id).filter(Boolean)));
+      if (userIds.length > 0) {
+        const { data: profs } = await supabase
+          .from("profiles")
+          .select("id, email")
+          .in("id", userIds);
+        const map: Record<string, string> = {};
+        (profs || []).forEach((p: any) => { if (p?.id) map[p.id] = p.email || ""; });
+        setUserEmailMap(map);
+      } else {
+        setUserEmailMap({});
+      }
     };
     fetchDetail();
   }, [selectedPartnerId]);
