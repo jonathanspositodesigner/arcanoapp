@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick, Banknote, Wallet, Home, Upload, Trophy, User } from "lucide-react";
+import { ArrowLeft, DollarSign, TrendingUp, CalendarIcon, MousePointerClick, Banknote, Wallet, Home, Upload, Trophy, User, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Flame } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { format, subDays, startOfDay, endOfDay, startOfMonth, endOfMonth } from "date-fns";
@@ -27,6 +27,9 @@ interface EarningRecord {
   user_id: string;
   earning_type: 'unlock' | 'tool_usage' | 'bonus';
   tool_table?: string;
+  thumbnail_url?: string | null;
+  prompt_text?: string | null;
+  category?: string | null;
 }
 
 interface PixKey {
@@ -59,6 +62,8 @@ const PartnerEarnings = () => {
   const [pixKey, setPixKey] = useState<PixKey | null>(null);
   const [withdrawals, setWithdrawals] = useState<Withdrawal[]>([]);
   const [showWithdrawalModal, setShowWithdrawalModal] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [topPromptsPage, setTopPromptsPage] = useState(0);
 
   useEffect(() => {
     checkAccessAndFetch();
@@ -128,6 +133,26 @@ const PartnerEarnings = () => {
     const merged = [...unlockRecords, ...toolRecords, ...bonusRecords].sort(
       (a, b) => new Date(b.unlocked_at).getTime() - new Date(a.unlocked_at).getTime()
     );
+
+    // Fetch thumbnails/details for all unique prompt_ids in batch (from partner_prompts)
+    const promptIds = Array.from(new Set(merged.filter(m => m.prompt_id).map(m => m.prompt_id)));
+    if (promptIds.length > 0) {
+      const { data: promptsData } = await supabase
+        .from('partner_prompts')
+        .select('id, image_url, thumbnail_url, prompt, category')
+        .in('id', promptIds);
+      const pMap = new Map<string, any>();
+      (promptsData || []).forEach(p => pMap.set(p.id, p));
+      merged.forEach(m => {
+        const p = pMap.get(m.prompt_id);
+        if (p) {
+          m.thumbnail_url = p.thumbnail_url || p.image_url;
+          m.prompt_text = p.prompt;
+          m.category = p.category;
+        }
+      });
+    }
+
     setEarnings(merged);
     setPixKey(pixRes.data || null);
     setWithdrawals((withdrawalsRes.data as Withdrawal[]) || []);
@@ -159,7 +184,12 @@ const PartnerEarnings = () => {
     return withdrawals.filter(w => w.status === 'pago').reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
   }, [withdrawals]);
 
-  const saldoDisponivel = totalBalance - totalPago;
+  // SOURCE OF TRUTH: sum from real earnings records, not from (possibly stale) collaborator_balances.total_earned
+  const realTotalEarned = useMemo(
+    () => earnings.reduce((s, e) => s + Number(e.amount), 0),
+    [earnings]
+  );
+  const saldoDisponivel = realTotalEarned - totalPago;
   const hasPendingWithdrawal = withdrawals.some(w => w.status === 'pendente');
   const canRequestWithdrawal = saldoDisponivel >= 100 && !hasPendingWithdrawal && !!pixKey;
 
@@ -206,6 +236,36 @@ const PartnerEarnings = () => {
   const unlockCount = earnings.filter(e => e.earning_type === 'unlock').length;
   const toolTotal = earnings.filter(e => e.earning_type === 'tool_usage').reduce((s, e) => s + Number(e.amount), 0);
   const toolCount = earnings.filter(e => e.earning_type === 'tool_usage').length;
+
+  // Top prompts ranking: aggregate clicks (unlocks) + tool usages by prompt_id
+  const topPrompts = useMemo(() => {
+    const agg = new Map<string, { prompt_id: string; title: string; thumbnail_url?: string | null; category?: string | null; unlocks: number; tools: number; total_uses: number; total_earned: number }>();
+    earnings.forEach(e => {
+      if (!e.prompt_id || e.earning_type === 'bonus') return;
+      const cur = agg.get(e.prompt_id) || {
+        prompt_id: e.prompt_id,
+        title: e.prompt_title,
+        thumbnail_url: e.thumbnail_url,
+        category: e.category,
+        unlocks: 0,
+        tools: 0,
+        total_uses: 0,
+        total_earned: 0,
+      };
+      if (e.earning_type === 'unlock') cur.unlocks += 1;
+      if (e.earning_type === 'tool_usage') cur.tools += 1;
+      cur.total_uses = cur.unlocks + cur.tools;
+      cur.total_earned += Number(e.amount);
+      // prefer thumbnail if available
+      if (!cur.thumbnail_url && e.thumbnail_url) cur.thumbnail_url = e.thumbnail_url;
+      agg.set(e.prompt_id, cur);
+    });
+    return Array.from(agg.values()).sort((a, b) => b.total_uses - a.total_uses);
+  }, [earnings]);
+
+  const PAGE_SIZE = 10;
+  const totalPages = Math.max(1, Math.ceil(topPrompts.length / PAGE_SIZE));
+  const paginatedTop = topPrompts.slice(topPromptsPage * PAGE_SIZE, (topPromptsPage + 1) * PAGE_SIZE);
 
   const getEarningIcon = (e: EarningRecord) => {
     if (e.earning_type === 'bonus') return '🏆';
@@ -264,7 +324,7 @@ const PartnerEarnings = () => {
           <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-widest mb-1">Saldo Disponível</p>
           <p className="text-3xl font-extrabold text-foreground leading-none">{formatBRL(saldoDisponivel)}</p>
           <p className="text-xs text-muted-foreground mt-1.5 break-words">
-            Total bruto: {formatBRL(totalBalance)} • Já sacado: {formatBRL(totalPago)}
+            Total bruto: {formatBRL(realTotalEarned)} • Já sacado: {formatBRL(totalPago)}
           </p>
           <div className="grid grid-cols-2 gap-2.5 mt-4">
             <div className="bg-muted/50 rounded-xl p-3">
@@ -290,6 +350,75 @@ const PartnerEarnings = () => {
         </div>
 
         {partnerId && <div className="px-4"><PartnerPixKeySection partnerId={partnerId} pixKey={pixKey} onPixKeyChange={setPixKey} /></div>}
+
+        {/* Top Prompts Ranking */}
+        {topPrompts.length > 0 && (
+          <div className="mx-4 mb-3 bg-card border border-border rounded-2xl overflow-hidden">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <Flame className="h-4 w-4 text-orange-500" />
+                <p className="text-sm font-bold text-foreground">Seus Top Prompts</p>
+                <span className="text-[10px] text-muted-foreground">({topPrompts.length})</span>
+              </div>
+              {totalPages > 1 && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setTopPromptsPage(p => Math.max(0, p - 1))}
+                    disabled={topPromptsPage === 0}
+                    className="p-1 rounded hover:bg-muted disabled:opacity-30"
+                  >
+                    <ChevronLeft className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                  <span className="text-[10px] text-muted-foreground">
+                    {topPromptsPage + 1}/{totalPages}
+                  </span>
+                  <button
+                    onClick={() => setTopPromptsPage(p => Math.min(totalPages - 1, p + 1))}
+                    disabled={topPromptsPage >= totalPages - 1}
+                    className="p-1 rounded hover:bg-muted disabled:opacity-30"
+                  >
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                  </button>
+                </div>
+              )}
+            </div>
+            <div className="divide-y divide-border">
+              {paginatedTop.map((tp, idx) => {
+                const rank = topPromptsPage * PAGE_SIZE + idx + 1;
+                return (
+                  <div key={tp.prompt_id} className="flex items-center gap-3 px-4 py-2.5">
+                    <span className={cn(
+                      "text-xs font-bold w-6 text-center flex-shrink-0",
+                      rank === 1 && "text-yellow-500",
+                      rank === 2 && "text-gray-400",
+                      rank === 3 && "text-orange-600",
+                      rank > 3 && "text-muted-foreground"
+                    )}>#{rank}</span>
+                    {tp.thumbnail_url ? (
+                      <img
+                        src={tp.thumbnail_url}
+                        alt={tp.title}
+                        className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-border"
+                        loading="lazy"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-muted flex-shrink-0 flex items-center justify-center text-base">🖼️</div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-foreground truncate">{tp.title}</p>
+                      <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                        <span>🖱️ {tp.unlocks}</span>
+                        <span>🤖 {tp.tools}</span>
+                        <span className="font-semibold text-primary">{tp.total_uses} usos</span>
+                      </div>
+                    </div>
+                    <span className="text-xs font-bold text-primary flex-shrink-0">{formatBRL(tp.total_earned)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Filter Pills */}
         <div className="flex gap-2 px-4 mb-3 overflow-x-auto scrollbar-hide pb-1">
@@ -346,26 +475,89 @@ const PartnerEarnings = () => {
                 <p className="text-sm">Nenhum registro neste período</p>
               </div>
             ) : (
-              filteredEarnings.map(e => (
-                <div key={e.id} className="flex items-center gap-3 px-4 py-3">
-                  <div className={`w-8 h-8 rounded-full ${getEarningBg(e)} flex items-center justify-center text-sm flex-shrink-0`}>
-                    {getEarningIcon(e)}
+              filteredEarnings.map(e => {
+                const isExpanded = expandedId === e.id;
+                const canExpand = !!e.thumbnail_url || !!e.prompt_text;
+                return (
+                  <div key={e.id}>
+                    <button
+                      type="button"
+                      onClick={() => canExpand && setExpandedId(isExpanded ? null : e.id)}
+                      className={cn(
+                        "w-full flex items-center gap-3 px-4 py-3 text-left transition-colors",
+                        canExpand && "hover:bg-muted/40 cursor-pointer"
+                      )}
+                    >
+                      {e.thumbnail_url ? (
+                        <img
+                          src={e.thumbnail_url}
+                          alt={e.prompt_title}
+                          className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-border"
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className={`w-10 h-10 rounded-lg ${getEarningBg(e)} flex items-center justify-center text-base flex-shrink-0`}>
+                          {getEarningIcon(e)}
+                        </div>
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground text-sm truncate">{e.prompt_title}</p>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-[10px] text-muted-foreground">
+                            {format(new Date(e.unlocked_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
+                          </p>
+                          {e.earning_type === 'tool_usage' && <span className="text-[10px] text-green-500">🤖 Ferramenta</span>}
+                          {e.earning_type === 'unlock' && <span className="text-[10px] text-primary">🖱️ Cópia</span>}
+                          {e.earning_type === 'bonus' && <span className="text-[10px] text-yellow-400">🏆 Bônus</span>}
+                        </div>
+                      </div>
+                      <span className={`text-sm font-bold flex-shrink-0 ${e.earning_type === 'bonus' ? 'text-yellow-500' : 'text-primary'}`}>
+                        +{formatBRL(Number(e.amount))}
+                      </span>
+                      {canExpand && (
+                        isExpanded
+                          ? <ChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          : <ChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="px-4 pb-4 pt-1 bg-muted/20 border-t border-border">
+                        <div className="flex flex-col sm:flex-row gap-3 mt-2">
+                          {e.thumbnail_url && (
+                            <img
+                              src={e.thumbnail_url}
+                              alt={e.prompt_title}
+                              className="w-full sm:w-48 h-48 rounded-lg object-cover border border-border flex-shrink-0"
+                            />
+                          )}
+                          <div className="flex-1 space-y-2 text-xs">
+                            {e.category && (
+                              <div>
+                                <span className="text-muted-foreground">Categoria: </span>
+                                <span className="text-foreground font-medium">{e.category}</span>
+                              </div>
+                            )}
+                            {e.tool_table && (
+                              <div>
+                                <span className="text-muted-foreground">Ferramenta: </span>
+                                <span className="text-foreground font-medium">{e.tool_table.replace(/_jobs$/, '').replace(/_/g, ' ')}</span>
+                              </div>
+                            )}
+                            {e.prompt_text && (
+                              <div>
+                                <p className="text-muted-foreground mb-1">Prompt:</p>
+                                <div className="bg-background rounded-lg p-2 border border-border whitespace-pre-wrap text-foreground max-h-40 overflow-y-auto text-[11px]">
+                                  {e.prompt_text}
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground text-sm truncate">{e.prompt_title}</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-[10px] text-muted-foreground">
-                        {format(new Date(e.unlocked_at), "dd/MM/yyyy HH:mm", { locale: ptBR })}
-                      </p>
-                      {e.earning_type === 'tool_usage' && <span className="text-[10px] text-primary">Ferramenta</span>}
-                      {e.earning_type === 'bonus' && <span className="text-[10px] text-yellow-400">Bônus Ranking</span>}
-                    </div>
-                  </div>
-          <span className={`text-sm font-bold flex-shrink-0 ${e.earning_type === 'bonus' ? 'text-yellow-500' : 'text-primary'}`}>
-                    +{formatBRL(Number(e.amount))}
-                  </span>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
         </div>
