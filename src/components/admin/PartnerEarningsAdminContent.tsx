@@ -574,44 +574,45 @@ const PartnerEarningsAdminContent = () => {
 
           {selectedPartner && (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                <Card className="p-4 bg-green-500/10 border-green-500/20">
-                  <p className="text-xs text-muted-foreground">Saldo Bruto</p>
-                  <p className="text-xl font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
+              {/* Cards principais: saldo + breakdown completo no topo */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-6">
+                <Card className="p-3 bg-green-500/10 border-green-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">💰 Saldo Bruto</p>
+                  <p className="text-lg font-bold text-green-400">{formatBRL(selectedPartner.total_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">Total de ganhos</p>
                 </Card>
-                <Card className="p-4 bg-emerald-500/10 border-emerald-500/20">
-                  <p className="text-xs text-muted-foreground">Disponível p/ Saque</p>
-                  <p className="text-xl font-bold text-emerald-400">{formatBRL(selectedPartner.total_earned - selectedPartner.total_paid)}</p>
+                <Card className="p-3 bg-emerald-500/10 border-emerald-500/20">
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">✅ Disponível</p>
+                  <p className="text-lg font-bold text-emerald-400">{formatBRL(selectedPartner.total_earned - selectedPartner.total_paid)}</p>
+                  <p className="text-[10px] text-muted-foreground">P/ saque</p>
                 </Card>
-                <Card className="p-4 bg-blue-500/10 border-blue-500/20">
-                   <p className="text-xs text-muted-foreground">Prompts Copiados</p>
-                  <p className="text-xl font-bold text-blue-400">{selectedPartner.total_unlocks}</p>
-                </Card>
-                <Card className="p-4">
-                  <p className="text-xs text-muted-foreground">Chave PIX</p>
-                  <p className="text-sm font-medium text-foreground">
-                    {selectedPartner.pix_key ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}` : "Não cadastrada"}
-                  </p>
-                </Card>
-              </div>
-
-              {/* Breakdown por tipo de ganho */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
                 <Card className="p-3 bg-blue-500/5 border-blue-500/20">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🖱️ Prompts Copiados</p>
-                  <p className="text-base font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
+                  <p className="text-lg font-bold text-blue-400">{formatBRL(selectedPartner.unlock_earned)}</p>
                   <p className="text-[10px] text-muted-foreground">{selectedPartner.total_unlocks} cópias</p>
                 </Card>
                 <Card className="p-3 bg-purple-500/5 border-purple-500/20">
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas de IA</p>
-                  <p className="text-base font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🤖 Ferramentas IA</p>
+                  <p className="text-lg font-bold text-purple-400">{formatBRL(selectedPartner.tool_earned)}</p>
                   <p className="text-[10px] text-muted-foreground">{selectedPartner.tool_jobs} jobs</p>
                 </Card>
                 <Card className="p-3 bg-yellow-500/5 border-yellow-500/20">
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider">🏆 Bônus Ranking</p>
-                  <p className="text-base font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
+                  <p className="text-lg font-bold text-yellow-400">{formatBRL(selectedPartner.bonus_earned)}</p>
+                  <p className="text-[10px] text-muted-foreground">Premiações</p>
                 </Card>
               </div>
+
+              {/* PIX info */}
+              <Card className="p-3 mb-4 bg-muted/30">
+                <p className="text-xs text-muted-foreground">
+                  <span className="font-semibold">Chave PIX:</span>{" "}
+                  {selectedPartner.pix_key
+                    ? `${PIX_LABELS[selectedPartner.pix_key_type || ""]}: ${maskPix(selectedPartner.pix_key_type || "", selectedPartner.pix_key)}`
+                    : <span className="text-yellow-400">Não cadastrada</span>}
+                  <span className="ml-4 font-semibold">Saques pagos:</span> {formatBRL(selectedPartner.total_paid)}
+                </p>
+              </Card>
 
               {selectedPendingWd && (
                 <div className="mb-4 p-3 rounded-lg bg-yellow-500/10 border border-yellow-500/20 flex items-center justify-between">
