@@ -25,7 +25,7 @@ interface PromptItem {
   imageUrl: string;
   isPremium: boolean;
   category: string;
-  type: 'admin' | 'community';
+  type: 'admin' | 'community' | 'partner';
 }
 
 const isVideoUrl = (url: string) => {
@@ -51,6 +51,8 @@ const AdminCollections = () => {
   const searchQueryRef = useRef("");
   const [searchQuery, setSearchQuery] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 30;
   
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -115,9 +117,10 @@ const AdminCollections = () => {
   };
 
   const fetchPrompts = async () => {
-    const [{ data: adminData }, { data: communityData }] = await Promise.all([
+    const [{ data: adminData }, { data: communityData }, { data: partnerData }] = await Promise.all([
       supabase.from('admin_prompts').select('id, title, image_url, is_premium, category').order('created_at', { ascending: false }),
-      supabase.from('community_prompts').select('id, title, image_url, category').eq('approved', true).order('created_at', { ascending: false })
+      supabase.from('community_prompts').select('id, title, image_url, category').eq('approved', true).order('created_at', { ascending: false }),
+      supabase.from('partner_prompts').select('id, title, image_url, is_premium, category').eq('approved', true).order('created_at', { ascending: false })
     ]);
 
     const prompts: PromptItem[] = [
@@ -136,6 +139,14 @@ const AdminCollections = () => {
         isPremium: false,
         category: p.category,
         type: 'community' as const
+      })),
+      ...(partnerData || []).map(p => ({
+        id: p.id,
+        title: p.title,
+        imageUrl: p.image_url,
+        isPremium: p.is_premium,
+        category: p.category,
+        type: 'partner' as const
       }))
     ];
 
@@ -313,6 +324,13 @@ const AdminCollections = () => {
     p.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const totalPages = Math.max(1, Math.ceil(filteredPrompts.length / PAGE_SIZE));
+  const safePage = Math.min(currentPage, totalPages);
+  const paginatedPrompts = filteredPrompts.slice(
+    (safePage - 1) * PAGE_SIZE,
+    safePage * PAGE_SIZE
+  );
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -344,7 +362,7 @@ const AdminCollections = () => {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
             placeholder="Buscar por título..."
             className="pl-10"
             autoComplete="off"
@@ -358,7 +376,7 @@ const AdminCollections = () => {
           ref={scrollContainerRef}
           className="mt-2 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 max-h-[400px] overflow-y-auto p-2 border rounded-lg"
         >
-          {filteredPrompts.map(prompt => {
+          {paginatedPrompts.map(prompt => {
             const isSelected = selectedItems.includes(prompt.id);
             return (
               <div
@@ -401,8 +419,8 @@ const AdminCollections = () => {
                   </div>
                 )}
                 
-                {/* Premium badge */}
-                <div className="absolute top-1 left-1">
+                {/* Premium / Type badge */}
+                <div className="absolute top-1 left-1 flex flex-col gap-0.5">
                   {prompt.isPremium ? (
                     <Badge className="bg-gradient-to-r from-yellow-500 to-orange-500 text-foreground border-0 text-[8px] px-1 py-0">
                       <Star className="h-2 w-2 mr-0.5" fill="currentColor" />
@@ -413,6 +431,16 @@ const AdminCollections = () => {
                       Grátis
                     </Badge>
                   )}
+                  {prompt.type === 'partner' && (
+                    <Badge className="bg-purple-600 text-foreground border-0 text-[8px] px-1 py-0">
+                      Colab
+                    </Badge>
+                  )}
+                  {prompt.type === 'community' && (
+                    <Badge className="bg-blue-600 text-foreground border-0 text-[8px] px-1 py-0">
+                      Comunidade
+                    </Badge>
+                  )}
                 </div>
                 
                 <div className="absolute bottom-0 left-0 right-0 bg-black/70 p-1">
@@ -421,6 +449,31 @@ const AdminCollections = () => {
               </div>
             );
           })}
+        </div>
+        <div className="flex items-center justify-between mt-3 text-sm">
+          <span className="text-muted-foreground">
+            {filteredPrompts.length} prompts • Página {safePage} de {totalPages}
+          </span>
+          <div className="flex gap-2">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={safePage <= 1}
+              onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+            >
+              Anterior
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={safePage >= totalPages}
+              onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+            >
+              Próxima
+            </Button>
+          </div>
         </div>
       </div>
     </div>
