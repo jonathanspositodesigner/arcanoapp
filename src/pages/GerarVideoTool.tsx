@@ -761,7 +761,7 @@ const GerarVideoTool = () => {
                     </DropdownMenuContent>
                   </DropdownMenu>
 
-                  {(isVeoModel || isGeminiLite) && (
+                  {isVeoModel && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button className="flex items-center gap-1 px-2 py-1 rounded-lg bg-accent border border-slate-500/25 text-[10px] text-muted-foreground hover:bg-muted/50 transition-colors">
