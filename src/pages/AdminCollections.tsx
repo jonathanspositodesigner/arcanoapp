@@ -26,6 +26,7 @@ interface PromptItem {
   isPremium: boolean;
   category: string;
   type: 'admin' | 'community' | 'partner';
+  createdAt: string;
 }
 
 const isVideoUrl = (url: string) => {
@@ -53,6 +54,7 @@ const AdminCollections = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const PAGE_SIZE = 30;
+  const [sourceFilter, setSourceFilter] = useState<'all' | 'admin' | 'partner'>('all');
   
   // Modal states
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -118,9 +120,9 @@ const AdminCollections = () => {
 
   const fetchPrompts = async () => {
     const [{ data: adminData }, { data: communityData }, { data: partnerData }] = await Promise.all([
-      supabase.from('admin_prompts').select('id, title, image_url, is_premium, category').order('created_at', { ascending: false }),
-      supabase.from('community_prompts').select('id, title, image_url, category').eq('approved', true).order('created_at', { ascending: false }),
-      supabase.from('partner_prompts').select('id, title, image_url, is_premium, category').eq('approved', true).order('created_at', { ascending: false })
+      supabase.from('admin_prompts').select('id, title, image_url, is_premium, category, created_at').order('created_at', { ascending: false }),
+      supabase.from('community_prompts').select('id, title, image_url, category, created_at').eq('approved', true).order('created_at', { ascending: false }),
+      supabase.from('partner_prompts').select('id, title, image_url, is_premium, category, created_at').eq('approved', true).order('created_at', { ascending: false })
     ]);
 
     const prompts: PromptItem[] = [
@@ -130,7 +132,8 @@ const AdminCollections = () => {
         imageUrl: p.image_url,
         isPremium: p.is_premium,
         category: p.category,
-        type: 'admin' as const
+        type: 'admin' as const,
+        createdAt: p.created_at || ''
       })),
       ...(communityData || []).map(p => ({
         id: p.id,
@@ -138,7 +141,8 @@ const AdminCollections = () => {
         imageUrl: p.image_url,
         isPremium: false,
         category: p.category,
-        type: 'community' as const
+        type: 'community' as const,
+        createdAt: p.created_at || ''
       })),
       ...(partnerData || []).map(p => ({
         id: p.id,
@@ -146,10 +150,13 @@ const AdminCollections = () => {
         imageUrl: p.image_url,
         isPremium: p.is_premium,
         category: p.category,
-        type: 'partner' as const
+        type: 'partner' as const,
+        createdAt: p.created_at || ''
       }))
     ];
 
+    // Mix all sources sorted by created_at descending (newest first)
+    prompts.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
     setAvailablePrompts(prompts);
   };
 
@@ -320,9 +327,14 @@ const AdminCollections = () => {
     );
   }, []);
 
-  const filteredPrompts = availablePrompts.filter(p => 
-    p.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredPrompts = availablePrompts.filter(p => {
+    const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSource =
+      sourceFilter === 'all' ? true :
+      sourceFilter === 'admin' ? p.type === 'admin' :
+      p.type === 'partner';
+    return matchesSearch && matchesSource;
+  });
 
   const totalPages = Math.max(1, Math.ceil(filteredPrompts.length / PAGE_SIZE));
   const safePage = Math.min(currentPage, totalPages);
