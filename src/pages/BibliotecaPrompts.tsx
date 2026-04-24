@@ -443,7 +443,7 @@ const BibliotecaPrompts = () => {
       toast.success(t('toast.promptCopied', { title: promptItem.title }));
       const promptId = String(promptItem.id);
       setRevealedPrompts(prev => new Set(prev).add(promptId));
-      await trackPromptClick(promptId, promptItem.title, !!promptItem.isExclusive);
+      await trackPromptClick(promptId, promptItem.title, promptItem.promptType === 'admin');
     }
   };
 
@@ -879,7 +879,7 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        trackPromptClick(String(item.id), item.title, !!item.isExclusive);
+                        trackPromptClick(String(item.id), item.title, item.promptType === 'admin');
                         navigate('/arcano-cloner-tool', { state: { 
                           referenceImageUrl: item.imageUrl,
                           prefillPromptId: item.partnerId ? String(item.id) : null,
@@ -897,7 +897,7 @@ const BibliotecaPrompts = () => {
                     <Button
                       onClick={(e) => {
                         e.stopPropagation();
-                        trackPromptClick(String(item.id), item.title, !!item.isExclusive);
+                        trackPromptClick(String(item.id), item.title, item.promptType === 'admin');
                         navigate('/movieled-maker', {
                           state: {
                             preSelectedItem: {
@@ -1142,7 +1142,7 @@ const BibliotecaPrompts = () => {
                 {selectedPrompt.category === 'Fotos' && !isVideoUrl(selectedPrompt.imageUrl) && (
                   <Button
                     onClick={() => {
-                      trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, !!selectedPrompt.isExclusive);
+                      trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, selectedPrompt.promptType === 'admin');
                       navigate('/arcano-cloner-tool', { state: { 
                         referenceImageUrl: selectedPrompt.imageUrl,
                         prefillPromptId: selectedPrompt.partnerId ? String(selectedPrompt.id) : null,
