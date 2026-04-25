@@ -368,10 +368,18 @@ const MovieLedMakerTool = () => {
       endSubmit();
       return;
     }
-    if (!inputText.trim()) {
-      toast.error('Digite o nome para o telão');
-      endSubmit();
-      return;
+    if (contentMode === 'name') {
+      if (!inputText.trim()) {
+        toast.error('Digite o nome para o telão');
+        endSubmit();
+        return;
+      }
+    } else {
+      if (!logoFile) {
+        toast.error('Envie uma logo para o telão');
+        endSubmit();
+        return;
+      }
     }
     if (!user?.id) {
       setNoCreditsReason('not_logged');
