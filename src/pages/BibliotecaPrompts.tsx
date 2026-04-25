@@ -35,6 +35,8 @@ import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 import { getDeviceFingerprint } from "@/lib/deviceFingerprint";
+import MobileFilterDropdown from "@/components/MobileFilterDropdown";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
