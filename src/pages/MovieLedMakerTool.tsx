@@ -652,31 +652,123 @@ const MovieLedMakerTool = () => {
                 )}
               </div>
 
-              {/* Text Input */}
+              {/* Conteúdo do Telão: Switch Nome/Logo */}
               <div>
                 <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
                   <Type className="h-3.5 w-3.5 text-muted-foreground" />
-                  Nome no Telão
+                  Conteúdo do Telão
                 </span>
-                <div className="flex gap-2" data-tutorial-movieled="text-input">
-                  <Input
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Ex: DJ MARCOS"
-                    disabled={isProcessing}
-                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
-                    maxLength={50}
-                  />
+
+                {/* Switch */}
+                <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1 mb-2">
                   <button
-                    data-tutorial-movieled="text-confirm"
                     type="button"
-                    disabled={!inputText.trim() || isProcessing}
-                    className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    onClick={() => setContentMode('name')}
+                    disabled={isProcessing}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs rounded-md transition-all font-medium ${
+                      contentMode === 'name'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <Check className="w-4 h-4 text-foreground" />
+                    <Type className="w-3.5 h-3.5" />
+                    Nome
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContentMode('logo')}
+                    disabled={isProcessing}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs rounded-md transition-all font-medium ${
+                      contentMode === 'logo'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Logo
                   </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
+
+                {contentMode === 'name' ? (
+                  <>
+                    <div className="flex gap-2" data-tutorial-movieled="text-input">
+                      <Input
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Ex: DJ MARCOS"
+                        disabled={isProcessing}
+                        className="bg-muted border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
+                        maxLength={50}
+                      />
+                      <button
+                        data-tutorial-movieled="text-confirm"
+                        type="button"
+                        disabled={!inputText.trim() || isProcessing}
+                        className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                      >
+                        <Check className="w-4 h-4 text-foreground" />
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleLogoSelect}
+                      className="hidden"
+                    />
+                    {!logoPreview ? (
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={isProcessing || logoProcessing}
+                        className="w-full border-2 border-dashed border-border rounded-lg py-6 px-3 flex flex-col items-center justify-center gap-1.5 hover:border-primary/50 hover:bg-accent transition-colors disabled:opacity-50"
+                      >
+                        {logoProcessing ? (
+                          <>
+                            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                            <span className="text-xs text-muted-foreground">Processando logo...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                            <span className="text-xs font-medium text-foreground">Enviar Logo</span>
+                            <span className="text-[10px] text-muted-foreground">PNG, JPG, WEBP — máx 10MB</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <div className="relative rounded-lg overflow-hidden border border-border bg-muted">
+                        <img src={logoPreview} alt="Logo preview" className="w-full h-32 object-contain bg-[#00B140]/10" />
+                        <button
+                          type="button"
+                          onClick={handleLogoRemove}
+                          disabled={isProcessing}
+                          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 hover:bg-black flex items-center justify-center transition-colors disabled:opacity-50"
+                          aria-label="Remover logo"
+                        >
+                          <X className="w-3.5 h-3.5 text-white" />
+                        </button>
+                        {logoHadTransparency && (
+                          <div className="absolute bottom-0 inset-x-0 bg-green-600/90 px-2 py-1 flex items-center gap-1.5">
+                            <Check className="w-3 h-3 text-white" />
+                            <span className="text-[10px] text-white font-medium">Chroma key verde aplicado</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {logoHadTransparency
+                        ? 'Detectamos fundo transparente e aplicamos verde chroma key automaticamente.'
+                        : logoFile
+                          ? 'Logo pronta para o telão.'
+                          : 'Logos sem fundo recebem chroma key verde automaticamente.'}
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* DESKTOP ONLY: Engine + Generate + Actions */}
