@@ -26,10 +26,11 @@ const NewVersionBanner = () => {
       } catch {}
     };
 
-    // Listen for new SW installing
+    // Nunca recarregar automaticamente durante o uso do app.
+    // Se uma nova versão assumir o controle, apenas exibir o banner
+    // para o usuário decidir quando atualizar manualmente.
     const handleControllerChange = () => {
-      // New SW took over — reload
-      window.location.reload();
+      setShowBanner(true);
     };
 
     navigator.serviceWorker.addEventListener('controllerchange', handleControllerChange);
