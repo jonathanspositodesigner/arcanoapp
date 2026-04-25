@@ -19,6 +19,7 @@ import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { createJob, startJob, checkActiveJob, cancelJob as centralCancelJob } from '@/ai/JobManager';
 import { uploadToStorage } from '@/ai/JobManager';
 import { getAIErrorMessage } from '@/utils/errorMessages';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 import runninghubFallbackPixel from '@/assets/runninghub-fallback-pixel.png';
 import NoCreditsModal from '@/components/upscaler/NoCreditsModal';
 import ActiveJobBlockModal from '@/components/ai-tools/ActiveJobBlockModal';
@@ -47,6 +48,8 @@ const GerarImagemTool = () => {
   const navigate = useNavigate();
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited, isGptImageFreeTrial, gptImageFreeUntil } = useCredits();
+  // Atribuição de ganho ao colaborador (caso o prompt tenha vindo da biblioteca de um partner)
+  const { referencePromptId, clear: clearAttribution } = useCollaboratorAttribution();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
   const { getCreditCost } = useAIToolSettings();
   const { isSubmitting, startSubmit, endSubmit } = useProcessingButton();
