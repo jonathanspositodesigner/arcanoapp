@@ -13,6 +13,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { Loader2, Check, X } from "lucide-react";
 import { useAIJob } from "@/contexts/AIJobContext";
 import { cn } from "@/lib/utils";
+import { useNavigate } from "react-router-dom";
 
 const STORAGE_KEY = "floating-job-btn-pos";
 const SIZE = 56;
@@ -55,6 +56,7 @@ const clampPos = (p: Pos, expanded: boolean): Pos => {
 
 export const FloatingJobButton = () => {
   const { jobStatus, activeToolName, clearJob } = useAIJob();
+  const navigate = useNavigate();
 
   const [pos, setPos] = useState<Pos>(() => loadPos());
   const [expanded, setExpanded] = useState(false);
@@ -143,12 +145,12 @@ export const FloatingJobButton = () => {
 
     // Tap behavior
     if (isDone) {
-      // O modal "Minhas Criações" é hospedado globalmente (GlobalMyCreationsHost
-      // em App.tsx) e escuta este evento em QUALQUER rota. Não navegamos —
-      // apenas abrimos o modal por cima da página atual.
+      // Agora "Minhas Criações" é uma página dedicada (/minhas-criacoes),
+      // com o mesmo shell visual da Biblioteca de Prompts. Navegamos para ela
+      // direto, sem passar pela home.
       setDismissed(true);
       clearJob();
-      window.dispatchEvent(new CustomEvent("open-my-creations"));
+      navigate("/minhas-criacoes");
       return;
     }
     if (isError) {
@@ -156,7 +158,7 @@ export const FloatingJobButton = () => {
       return;
     }
     setExpanded((v) => !v);
-  }, [isDone, isError, clearJob]);
+  }, [isDone, isError, clearJob, navigate]);
 
   const onClose = (e: React.MouseEvent | React.PointerEvent) => {
     e.stopPropagation();
