@@ -1,13 +1,12 @@
-import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Home, BookOpen, FolderOpen, User, Coins } from "lucide-react";
 import { cn } from "@/lib/utils";
-import MyCreationsModal from "@/components/ai-tools/creations/MyCreationsModal";
+// MyCreationsModal substituído pela página /minhas-criacoes (mantido como backup).
 
 const navItems = [
   { icon: Home, label: "Início", path: "/" },
   { icon: BookOpen, label: "Prompts", path: "/biblioteca-prompts" },
-  { icon: FolderOpen, label: "Criações", action: "creations" as const },
+  { icon: FolderOpen, label: "Criações", path: "/minhas-criacoes" },
   { icon: Coins, label: "Recarregar", path: "/planos-2" },
   { icon: User, label: "Perfil", path: "/profile-settings" },
 ];
@@ -62,7 +61,6 @@ const showOnPaths = [
 export function FloatingToolsNav() {
   const location = useLocation();
   const navigate = useNavigate();
-  const [showCreations, setShowCreations] = useState(false);
 
   const isExcluded = excludedPaths.some(p => location.pathname.startsWith(p));
   if (isExcluded) return null;
@@ -74,17 +72,12 @@ export function FloatingToolsNav() {
     <>
       <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1 px-2 py-2 rounded-2xl shadow-lg shadow-primary/20 border border-border bg-card/95 backdrop-blur-md">
         {navItems.map((item) => {
-          const isAction = 'action' in item;
-          const isActive = !isAction && location.pathname === item.path;
+          const isActive = location.pathname === item.path;
           return (
             <button
               key={item.label}
               onClick={() => {
-                if (isAction && item.action === 'creations') {
-                  setShowCreations(true);
-                } else if (item.path) {
-                  navigate(item.path);
-                }
+                if (item.path) navigate(item.path);
               }}
               title={item.label}
               className={cn(
@@ -99,7 +92,6 @@ export function FloatingToolsNav() {
           );
         })}
       </div>
-      <MyCreationsModal open={showCreations} onClose={() => setShowCreations(false)} />
     </>
   );
 }
