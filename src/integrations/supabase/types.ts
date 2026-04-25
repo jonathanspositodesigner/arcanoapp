@@ -3218,6 +3218,7 @@ export type Database = {
         Row: {
           api_account: string
           completed_at: string | null
+          content_mode: string | null
           created_at: string | null
           credits_charged: boolean | null
           credits_refunded: boolean | null
@@ -3230,6 +3231,7 @@ export type Database = {
           input_image_url: string | null
           input_text: string | null
           job_payload: Json | null
+          logo_image_url: string | null
           output_url: string | null
           position: number | null
           queue_wait_seconds: number | null
@@ -3250,6 +3252,7 @@ export type Database = {
         Insert: {
           api_account?: string
           completed_at?: string | null
+          content_mode?: string | null
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
@@ -3262,6 +3265,7 @@ export type Database = {
           input_image_url?: string | null
           input_text?: string | null
           job_payload?: Json | null
+          logo_image_url?: string | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
@@ -3282,6 +3286,7 @@ export type Database = {
         Update: {
           api_account?: string
           completed_at?: string | null
+          content_mode?: string | null
           created_at?: string | null
           credits_charged?: boolean | null
           credits_refunded?: boolean | null
@@ -3294,6 +3299,7 @@ export type Database = {
           input_image_url?: string | null
           input_text?: string | null
           job_payload?: Json | null
+          logo_image_url?: string | null
           output_url?: string | null
           position?: number | null
           queue_wait_seconds?: number | null
