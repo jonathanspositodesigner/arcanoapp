@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Download, Trash2, Wand2, Sparkles, Video as VideoIcon, Maximize2, Loader2 } from 'lucide-react';
+import { Dialog, DialogPortal, DialogOverlay } from '@/components/ui/dialog';
+import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { Download, Trash2, Wand2, Video as VideoIcon, Maximize2, Loader2, X } from 'lucide-react';
 import { useResilientDownload } from '@/hooks/useResilientDownload';
 import { toast } from 'sonner';
-import { urlToFile } from '@/lib/urlToFile';
+import { cn } from '@/lib/utils';
 import type { Creation } from './useMyCreations';
 
 interface CreationLightboxModalProps {
@@ -85,108 +85,127 @@ const CreationLightboxModal: React.FC<CreationLightboxModalProps> = ({
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-4xl w-[95vw] p-0 gap-0 bg-background border-border overflow-hidden">
-        {/* Mídia */}
-        <div className="relative bg-black flex items-center justify-center max-h-[70vh] min-h-[300px]">
+      <DialogPortal>
+        <DialogOverlay className="bg-black/95" />
+        <DialogPrimitive.Content
+          className="fixed inset-0 z-50 flex items-center justify-center outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+          onClick={onClose}
+        >
+          {/* Mídia em tela cheia */}
           {isVideo ? (
             <video
               src={getProxiedUrl(creation.output_url)}
               controls
               autoPlay
               playsInline
-              className="max-h-[70vh] w-auto max-w-full"
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[100vh] max-w-[100vw] object-contain"
             />
           ) : (
             <img
               src={getProxiedUrl(creation.output_url)}
               alt={creation.tool_name}
-              className="max-h-[70vh] w-auto max-w-full object-contain"
+              onClick={(e) => e.stopPropagation()}
+              className="max-h-[100vh] max-w-[100vw] object-contain"
             />
           )}
-        </div>
 
-        {/* Ações */}
-        <div className="p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">{creation.tool_name}</p>
-              <p className="text-xs text-muted-foreground">
-                {new Date(creation.created_at).toLocaleString('pt-BR')}
-              </p>
-            </div>
-          </div>
+          {/* Botão fechar (X) flutuante */}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Fechar"
+            className="absolute top-3 right-3 z-10 w-9 h-9 rounded-full bg-black/40 hover:bg-black/70 text-white/80 hover:text-white backdrop-blur-md flex items-center justify-center transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-            <Button
-              variant="outline"
+          {/* Barra de ações flutuante translúcida sobre a imagem */}
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex items-center gap-1 px-2 py-1.5 rounded-full bg-black/40 backdrop-blur-md border border-white/10 shadow-lg max-w-[95vw]"
+          >
+            <ActionIcon
+              label={isDownloading ? 'Baixando...' : 'Baixar'}
               onClick={handleDownload}
               disabled={isDownloading}
-              className="gap-2"
             >
-              <Download className="w-4 h-4" />
-              {isDownloading ? 'Baixando...' : 'Baixar'}
-            </Button>
+              {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+            </ActionIcon>
 
-            <Button
-              variant="outline"
+            <ActionIcon
+              label="Fazer Upscale"
               onClick={handleUpscale}
               disabled={!!navigating}
-              className="gap-2 border-primary/40 text-foreground hover:bg-primary/10"
             >
               {navigating?.includes('upscaler') ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : (
                 <Maximize2 className="w-4 h-4" />
               )}
-              Fazer Upscale
-            </Button>
+            </ActionIcon>
 
             {!isVideo && (
               <>
-                <Button
-                  variant="outline"
-                  onClick={handleModify}
-                  disabled={!!navigating}
-                  className="gap-2 border-purple-400/40 text-foreground hover:bg-purple-500/10"
-                >
+                <ActionIcon label="Modificar" onClick={handleModify} disabled={!!navigating}>
                   {navigating === '/gerar-imagem' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <Wand2 className="w-4 h-4" />
                   )}
-                  Modificar
-                </Button>
+                </ActionIcon>
 
-                <Button
-                  variant="outline"
-                  onClick={handleGenerateVideo}
-                  disabled={!!navigating}
-                  className="gap-2 border-blue-400/40 text-foreground hover:bg-blue-500/10"
-                >
+                <ActionIcon label="Gerar Vídeo" onClick={handleGenerateVideo} disabled={!!navigating}>
                   {navigating === '/gerar-video' ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     <VideoIcon className="w-4 h-4" />
                   )}
-                  Gerar Vídeo
-                </Button>
+                </ActionIcon>
               </>
             )}
 
-            <Button
-              variant="outline"
+            <span className="w-px h-5 bg-white/15 mx-0.5" />
+
+            <ActionIcon
+              label="Excluir"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="gap-2 border-red-400/40 text-red-300 hover:bg-red-500/10 col-span-2 sm:col-span-1"
+              danger
             >
-              <Trash2 className="w-4 h-4" />
-              {isDeleting ? 'Excluindo...' : 'Excluir'}
-            </Button>
+              {isDeleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            </ActionIcon>
           </div>
-        </div>
-      </DialogContent>
+        </DialogPrimitive.Content>
+      </DialogPortal>
     </Dialog>
   );
 };
+
+interface ActionIconProps {
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+  danger?: boolean;
+  children: React.ReactNode;
+}
+
+const ActionIcon: React.FC<ActionIconProps> = ({ label, onClick, disabled, danger, children }) => (
+  <button
+    type="button"
+    onClick={onClick}
+    disabled={disabled}
+    title={label}
+    aria-label={label}
+    className={cn(
+      'w-9 h-9 rounded-full flex items-center justify-center transition-colors',
+      'text-white/80 hover:text-white hover:bg-white/10',
+      danger && 'hover:bg-red-500/30 hover:text-red-200',
+      disabled && 'opacity-50 cursor-not-allowed hover:bg-transparent'
+    )}
+  >
+    {children}
+  </button>
+);
 
 export default CreationLightboxModal;
