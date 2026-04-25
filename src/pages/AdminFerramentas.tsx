@@ -36,14 +36,16 @@ const AdminFerramentas = () => {
       const { count: partnerPendingCount } = await supabase
         .from('partner_prompts')
         .select('*', { count: 'exact', head: true })
-        .eq('approved', false);
+        .eq('approved', false)
+        .eq('rejected', false);
       setPendingPartnerCount(partnerPendingCount || 0);
 
       // Fetch pending partner artes submissions
       const { count: artesPartnerPendingCount } = await supabase
         .from('partner_artes')
         .select('*', { count: 'exact', head: true })
-        .eq('approved', false);
+        .eq('approved', false)
+        .eq('rejected', false);
       setPendingArtesPartnerCount(artesPartnerPendingCount || 0);
 
       // Fetch pending abandoned checkouts
