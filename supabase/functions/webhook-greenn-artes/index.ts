@@ -850,7 +850,7 @@ async function processCreditsWebhook(
       await sendCreditsWelcomeEmail(supabase, email, clientName, creditsProduct.amount, requestId, userLocale, productId)
     } catch (e) {
       console.log(`   ├─ ⚠️ Falha no email (créditos já liberados)`)
-      console.error(`   ├─ ❌ Erro detalhado do email:`, e?.message || e)
+      console.error(`   ├─ ❌ Erro detalhado do email:`, (e as Error)?.message || e)
     }
 
     console.log(`\n✅ [${requestId}] CRÉDITOS PROCESSADOS COM SUCESSO`)

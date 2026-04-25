@@ -1727,7 +1727,7 @@ serve(async (req) => {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
-                'Authorization': 'Basic ' + btoa(pagarmeSecretKey + ':'),
+                'Authorization': 'Basic ' + btoa((Deno.env.get('PAGARME_SECRET_KEY') || '') + ':'),
               },
             }
           )
