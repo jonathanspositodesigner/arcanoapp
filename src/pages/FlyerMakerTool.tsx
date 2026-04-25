@@ -38,6 +38,7 @@ import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import RefinePanel from '@/components/arcano-cloner/RefinePanel';
 import RefinementTimeline, { type RefinementVersion } from '@/components/arcano-cloner/RefinementTimeline';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
@@ -75,6 +76,9 @@ const FlyerMakerTool: React.FC = () => {
   useEffect(() => { fetchTestCredits(); }, [fetchTestCredits]);
   
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
+
+  // Collaborator attribution (vitalícia/mensal por usuário×prompt — lógica compartilhada)
+  const { referencePromptId, clear: clearAttribution } = useCollaboratorAttribution();
 
   // Inputs
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
@@ -507,6 +511,7 @@ const FlyerMakerTool: React.FC = () => {
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'pending',
+          reference_prompt_id: referencePromptId,
           reference_image_url: referenceUrl,
           artist_photo_urls: artistUrls,
           logo_url: logoUrlStr,
@@ -665,6 +670,7 @@ const FlyerMakerTool: React.FC = () => {
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'pending',
+          reference_prompt_id: referencePromptId,
           reference_image_url: referenceUrl,
           artist_photo_urls: [artistUrl],
           logo_url: null,
@@ -809,6 +815,7 @@ const FlyerMakerTool: React.FC = () => {
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'pending',
+          reference_prompt_id: referencePromptId,
           reference_image_url: referenceUrl,
           artist_photo_urls: [artistUrl],
           logo_url: null,
@@ -960,6 +967,7 @@ const FlyerMakerTool: React.FC = () => {
           session_id: sessionIdRef.current,
           user_id: user.id,
           status: 'pending',
+          reference_prompt_id: referencePromptId,
           reference_image_url: referenceUrl,
           artist_photo_urls: pessoaUrl ? [pessoaUrl] : [],
           logo_url: logoUrl || null,

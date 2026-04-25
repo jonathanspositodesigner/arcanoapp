@@ -60,11 +60,18 @@ const GERAR_IMAGEM_CATEGORIES = new Set([
   'Outros',
   'Produtos/Comida',
 ]);
+const isVideoAsset = (imageUrl?: string | null) =>
+  !!imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl);
 const isGerarImagemCategory = (category?: string | null, imageUrl?: string | null) => {
   if (!category) return false;
   if (!GERAR_IMAGEM_CATEGORIES.has(category)) return false;
-  // Nunca para vídeos
-  if (imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl)) return false;
+  if (isVideoAsset(imageUrl)) return false;
+  return true;
+};
+// Categoria elegível para "Gerar sua versão" → /flyer-maker (subtipo Outros)
+const isFlyerIACategory = (category?: string | null, imageUrl?: string | null) => {
+  if (category !== 'Flyers com IA') return false;
+  if (isVideoAsset(imageUrl)) return false;
   return true;
 };
 
@@ -976,6 +983,25 @@ const BibliotecaPrompts = () => {
                       <span className="truncate">Gerar sua versão</span>
                     </Button>
                   )}
+                  {isFlyerIACategory(item.category, item.imageUrl) && (
+                    <Button
+                      size="sm"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white min-w-0 shadow-lg shadow-indigo-500/30 font-bold border-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        trackPromptClick(String(item.id), item.title, item.promptType === 'admin');
+                        navigate('/flyer-maker', { state: {
+                          referenceImageUrl: item.imageUrl,
+                          flyerType: 'outro',
+                          prefillPromptId: item.partnerId ? String(item.id) : null,
+                          prefillPromptType: item.partnerId ? 'partner' : null,
+                        } });
+                      }}
+                    >
+                      <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">Gerar sua versão</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             );
@@ -1221,6 +1247,23 @@ const BibliotecaPrompts = () => {
                       } });
                     }}
                     className="w-full bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white shadow-lg shadow-purple-500/30 font-bold border-0"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar sua versão
+                  </Button>
+                )}
+                {isFlyerIACategory(selectedPrompt.category, selectedPrompt.imageUrl) && (
+                  <Button
+                    onClick={() => {
+                      trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, selectedPrompt.promptType === 'admin');
+                      navigate('/flyer-maker', { state: {
+                        referenceImageUrl: selectedPrompt.imageUrl,
+                        flyerType: 'outro',
+                        prefillPromptId: selectedPrompt.partnerId ? String(selectedPrompt.id) : null,
+                        prefillPromptType: selectedPrompt.partnerId ? 'partner' : null,
+                      } });
+                    }}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white shadow-lg shadow-indigo-500/30 font-bold border-0"
                   >
                     <Sparkles className="h-4 w-4 mr-2" />
                     Gerar sua versão
