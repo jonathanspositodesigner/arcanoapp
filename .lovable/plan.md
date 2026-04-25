@@ -1,33 +1,61 @@
-## Diagnóstico
+# Correção raiz: `IMAGE_TRANSFER_ERROR: Connection refused` no Upscaler
 
-Investiguei o problema e encontrei o bug exato.
+## Diagnóstico (confirmado nos dados)
 
-### O que está acontecendo
+O bug está em `supabase/functions/runninghub-upscaler/index.ts`, função `fetchWithRetry` (linhas 149-198).
 
-1. **Fotos de comida:** No banco de dados a categoria está cadastrada como **`Produto/Comida`** (singular), mas no código (`src/pages/BibliotecaPrompts.tsx`, linha 63) a lista `GERAR_IMAGEM_CATEGORIES` está procurando por **`Produtos/Comida`** (plural com "s"). Por causa dessa diferença de uma única letra, a função `isGerarImagemCategory()` retorna `false` e o botão roxo "Gerar sua versão" nunca aparece nesses cards — independente do prompt ser Premium ou não.
+Quando o servidor da RunningHub recusa a conexão TCP, o `fetch` do Deno **lança uma exceção** (não retorna Response). O nosso retry só cobre:
+- Status HTTP `[429, 502, 503, 504]`
+- `AbortError` (timeout)
 
-2. **Flyers com IA:** A categoria `Flyers com IA` no código bate exatamente com o banco. O código já está correto e o botão `isFlyerIACategory` deveria estar aparecendo. Pode ser que o usuário não tenha visto porque o overlay com os botões só aparece ao **passar o mouse (desktop)** ou **pressionar e segurar (mobile)** — o card precisa estar em estado ativo.
+Qualquer outro erro (incluindo `Connection refused`, `ECONNRESET`, `fetch failed`, DNS, etc.) cai no `throw err` da linha 193 **sem nenhum retry**, matando o job na primeira piscada de rede da RunningHub.
 
-### Confirmação importante sobre a regra de negócio
+5 jobs falharam em sequência hoje entre 14:12-14:14 por causa disso. A RunningHub voltou a operar normal logo depois (job `144ee800` rodou às 14:31).
 
-A lógica de exibição dos botões "Gerar sua versão" (Cenários, Logos, Selos 3D, Outros, Produto/Comida, Flyers com IA, Movies para Telão, Seedance 2, Fotos→Cloner) **JÁ está correta**: eles são renderizados sem nenhuma checagem de `isPremium`. Ou seja, mesmo usuários sem assinatura veem o botão e podem clicar para ir para a ferramenta de IA correspondente — usarão seus créditos avulsos normalmente. O único bloqueio Premium é no botão "Copiar" do prompt em si, que vira "Premium" com cadeado. Isso bate com a regra que você reforçou.
+## Correção (cirúrgica, escopo restrito)
 
-## Plano de correção
+### 1. `supabase/functions/runninghub-upscaler/index.ts` — função `fetchWithRetry`
 
-### 1. `src/pages/BibliotecaPrompts.tsx` (linha 63)
-Trocar `'Produtos/Comida'` por `'Produto/Comida'` dentro do `Set` `GERAR_IMAGEM_CATEGORIES`. Mudança de uma única letra que vai liberar o botão roxo "Gerar sua versão" em todas as fotos de comida (incluindo o card "Food burger" da screenshot), levando para `/gerar-imagem` com o motor Nano Banana e o prompt já preenchido.
+Adicionar detecção de erros de rede transientes no `catch`, reaproveitando o backoff já existente:
 
-### 2. Verificação dos Flyers com IA
-Após o deploy, vou pedir para você confirmar passando o mouse num card de Flyer (ex: "Flyer dia das mães") se o botão "Gerar sua versão" aparece no overlay. Se NÃO aparecer, vou investigar mais a fundo (pode ser ordenação CSS, z-index ou algo no SecureImage que está bloqueando o overlay no mobile). Se aparecer, é só uma questão de descoberta visual.
+```ts
+} catch (err: any) {
+  if (err.name === 'AbortError') {
+    // ... lógica atual de timeout
+    continue;
+  }
+  
+  // NOVO: tratar erros de rede TCP/DNS como retryable
+  const errMsg = err instanceof Error ? err.message : String(err);
+  const isNetworkError = /connection refused|ECONNREFUSED|ECONNRESET|fetch failed|tcp connect|network|socket|dns error|os error 111/i.test(errMsg);
+  
+  if (isNetworkError && attempt < maxRetries - 1) {
+    const jitter = Math.random() * 2000;
+    const delay = (baseDelays[attempt] || 5000) + jitter;
+    console.warn(`[RunningHub] ${context} network error: ${errMsg.slice(0,120)}, retrying in ${Math.round(delay)}ms (${attempt+1}/${maxRetries})`);
+    await new Promise(r => setTimeout(r, delay));
+    continue;
+  }
+  
+  throw err;
+}
+```
 
-### 3. Bump de versão
-Incrementar `APP_BUILD_VERSION` em `src/pages/Index.tsx` para `1.4.2` conforme regra de auto-incremento.
+Isso aplica os mesmos 6 retries (2s → 4s → 8s → 15s → 25s → 40s) que já temos para 5xx, agora também para falhas TCP.
 
-### O que NÃO vou mexer
+### 2. Recovery dos jobs já queimados
 
-- Lógica de Premium do botão "Copiar"
-- Lógica de cobrança de créditos das ferramentas (`/gerar-imagem`, `/flyer-maker`)
-- Qualquer outra categoria que já esteja funcionando
-- Comportamento mobile do overlay (active vs hover) — segue o padrão atual
+Verificar se algum dos 5 jobs falhou DEPOIS de cobrar crédito (cobrança acontece nas linhas 661+, depois do upload). Pelo log, o erro morre **antes** do consumo de créditos, mas vou conferir e estornar se houver algum caso. Não tem usuário lesado nos 5 casos hoje (créditos ainda não foram debitados quando `image_transfer` falha).
 
-Mudança cirúrgica, risco zero de quebrar qualquer fluxo existente.
+### 3. Versão
+
+Bump `APP_BUILD_VERSION` para `1.4.5` em `src/pages/Index.tsx`.
+
+## Escopo NÃO incluído (deliberado)
+
+- Não vou tocar em outros edge functions (Flux2, MovieLed, Cloner, etc.) nesta correção, mesmo eles podendo ter o mesmo padrão. Quero validar que a correção resolve o Upscaler antes de propagar. Se quiser, depois faço auditoria das outras.
+- Não mexo no Queue Manager nem no webhook.
+
+## Resultado esperado
+
+Próxima vez que a RunningHub recusar conexão TCP, o upscaler vai tentar 6 vezes com backoff exponencial (~94 segundos no pior caso) antes de marcar o job como falho. Em 99% dos casos transientes (que duram segundos a 1-2 minutos), o job vai completar normalmente sem o usuário perceber.

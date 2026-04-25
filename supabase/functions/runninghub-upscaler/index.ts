@@ -190,6 +190,24 @@ async function fetchWithRetry(
         await new Promise(r => setTimeout(r, (baseDelays[attempt] || 5000) + jitter));
         continue;
       }
+
+      // Treat transient TCP/DNS errors as retryable (e.g., Connection refused, ECONNRESET, fetch failed)
+      const errMsg = err instanceof Error ? err.message : String(err);
+      const isNetworkError = /connection refused|econnrefused|econnreset|fetch failed|tcp connect|network|socket|dns error|os error 111|client error \(connect\)/i.test(errMsg);
+
+      if (isNetworkError && attempt < maxRetries - 1) {
+        const jitter = Math.random() * 2000;
+        const delay = (baseDelays[attempt] || 5000) + jitter;
+        console.warn(`[RunningHub] ${context} network error: ${errMsg.slice(0, 140)} — retrying in ${Math.round(delay)}ms (attempt ${attempt + 1}/${maxRetries})`);
+        await new Promise(r => setTimeout(r, delay));
+        continue;
+      }
+
+      if (isNetworkError) {
+        console.error(`[RunningHub] ${context} failed after ${maxRetries} retries due to network error: ${errMsg.slice(0, 200)}`);
+        throw new Error(`${context} failed after ${maxRetries} network retries: ${errMsg.slice(0, 120)}`);
+      }
+
       throw err;
     }
   }
