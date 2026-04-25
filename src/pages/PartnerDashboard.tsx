@@ -506,7 +506,7 @@ const PartnerDashboard = () => {
           <div className="absolute -bottom-6 left-2 w-20 h-20 rounded-full bg-white/[0.03] pointer-events-none" />
           <p className="text-xs font-semibold text-white/60 tracking-wide mb-1">SALDO DISPONÍVEL</p>
           <p className="text-3xl font-extrabold text-white leading-none">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, earningsBalance - earningsPaidOut))}
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoDisponivel)}
           </p>
           <p className="text-xs text-white/50 mt-1">{earningsUnlocks} prompts copiados • {toolEarningsCount} usos em ferramentas</p>
           <div className="flex items-center justify-between mt-4">
