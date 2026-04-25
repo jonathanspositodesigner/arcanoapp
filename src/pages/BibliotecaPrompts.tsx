@@ -60,11 +60,18 @@ const GERAR_IMAGEM_CATEGORIES = new Set([
   'Outros',
   'Produtos/Comida',
 ]);
+const isVideoAsset = (imageUrl?: string | null) =>
+  !!imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl);
 const isGerarImagemCategory = (category?: string | null, imageUrl?: string | null) => {
   if (!category) return false;
   if (!GERAR_IMAGEM_CATEGORIES.has(category)) return false;
-  // Nunca para vídeos
-  if (imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl)) return false;
+  if (isVideoAsset(imageUrl)) return false;
+  return true;
+};
+// Categoria elegível para "Gerar sua versão" → /flyer-maker (subtipo Outros)
+const isFlyerIACategory = (category?: string | null, imageUrl?: string | null) => {
+  if (category !== 'Flyers com IA') return false;
+  if (isVideoAsset(imageUrl)) return false;
   return true;
 };
 
