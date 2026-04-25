@@ -332,7 +332,7 @@ const TornarSeColaborador = () => {
               Quem está criando <span className="text-primary">os prompts</span>
             </h2>
             <p className="text-sm text-muted-foreground">
-              6 criadores contribuindo com a biblioteca.
+               Vários criadores contribuindo com a biblioteca.
             </p>
           </div>
 
