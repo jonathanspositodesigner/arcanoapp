@@ -22,6 +22,12 @@ import {
   Crown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import collabMindfy from "@/assets/collaborators/mindfy-ai.png";
+import collabJonathan from "@/assets/collaborators/jonathandesigner.png";
+import collabHerstudio from "@/assets/collaborators/herstudio-ia.png";
+import collabWsDesign from "@/assets/collaborators/ws-design03.png";
+import collabAquila from "@/assets/collaborators/aquila-sobrinho.png";
+import collabArt3com from "@/assets/collaborators/art3com-ia.png";
 import {
   Dialog,
   DialogContent,
