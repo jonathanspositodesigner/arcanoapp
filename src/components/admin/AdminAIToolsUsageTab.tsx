@@ -738,6 +738,18 @@ const AdminAIToolsUsageTab = () => {
     return cps * dur;
   }, [videoJobDetailsMap, isVideoTool]);
 
+  // Determines if a record is from a tool/engine that charges credits even for Unlimited users.
+  // Used so the dashboard does not zero-out revenue when the user actually paid for the job.
+  const isForcedChargeRecord = useCallback((record: UsageRecord): boolean => {
+    if (TOOLS_FORCE_CHARGE_UNLIMITED.has(record.tool_name)) return true;
+    if (record.tool_name === 'MovieLed Maker') {
+      const d = videoJobDetailsMap[record.id];
+      const engine = d?.engine || '';
+      return MOVIELED_FORCE_CHARGE_ENGINES.has(engine);
+    }
+    return false;
+  }, [videoJobDetailsMap]);
+
   const getRecordRevenue = useCallback((record: UsageRecord) => {
     if (record.status === 'failed') return 0;
     const userType = userTypeMap[record.user_id] || 'free';
