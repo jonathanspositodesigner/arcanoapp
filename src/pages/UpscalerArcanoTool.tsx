@@ -515,6 +515,27 @@ const UpscalerArcanoTool: React.FC = () => {
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
 
+  // Prefill vindo de "Minhas Criações" (location.state.prefillImageUrl)
+  useEffect(() => {
+    const state = location.state as { prefillImageUrl?: string } | null;
+    if (!state?.prefillImageUrl) return;
+    const url = state.prefillImageUrl;
+    // Limpa o state imediatamente para evitar reprefill em F5/voltar
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const file = await urlToFile(url);
+        await handleFileSelect(file);
+        toast.success('Imagem carregada de Minhas Criações');
+      } catch (err) {
+        console.error('[Upscaler] Prefill failed:', err);
+        toast.error('Não foi possível carregar a imagem. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Process image
   const processImage = async () => {
     // CRITICAL: Instant lock to prevent duplicate clicks
