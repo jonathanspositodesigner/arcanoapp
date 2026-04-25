@@ -956,6 +956,26 @@ const BibliotecaPrompts = () => {
                       <span className="truncate">Gerar sua versão</span>
                     </Button>
                   )}
+                  {isGerarImagemCategory(item.category, item.imageUrl) && (
+                    <Button
+                      size="sm"
+                      className="w-full h-5 sm:h-7 mt-1 text-[8px] sm:text-xs px-1.5 sm:px-3 bg-gradient-to-r from-purple-600 to-purple-500 hover:from-purple-700 hover:to-purple-600 text-white min-w-0 shadow-lg shadow-purple-500/30 font-bold border-0"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        trackPromptClick(String(item.id), item.title, item.promptType === 'admin');
+                        navigate('/gerar-imagem', { state: {
+                          prefillPrompt: item.prompt,
+                          prefillImageUrl: item.imageUrl,
+                          prefillEngine: 'nano_banana',
+                          prefillPromptId: item.partnerId ? String(item.id) : null,
+                          prefillPromptType: item.partnerId ? 'partner' : null,
+                        } });
+                      }}
+                    >
+                      <Sparkles className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1 shrink-0" />
+                      <span className="truncate">Gerar sua versão</span>
+                    </Button>
+                  )}
                 </div>
               </div>
             );
