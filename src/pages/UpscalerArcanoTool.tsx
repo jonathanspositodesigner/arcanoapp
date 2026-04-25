@@ -176,6 +176,57 @@ const UpscalerArcanoTool: React.FC = () => {
     }, []),
   });
 
+  // RECOVERY: reanexa ao último job recente para não "sumir" após refresh/reload.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+        const { data, error } = await supabase
+          .from('upscaler_jobs')
+          .select('id, status, output_url, thumbnail_url, input_url, error_message, created_at, position')
+          .eq('user_id', user.id)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || error || !data) return;
+        if (outputImage || status === 'processing' || status === 'uploading' || isWaitingInQueue) return;
+
+        const recoveredJob = data as any;
+
+        if (recoveredJob.status === 'completed' && recoveredJob.output_url) {
+          if (recoveredJob.input_url) setInputImage(recoveredJob.input_url);
+          setOutputImage(recoveredJob.output_url);
+          setJobId(recoveredJob.id);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Resultado recuperado da última sessão!');
+        } else if (['pending', 'queued', 'starting', 'running'].includes(recoveredJob.status)) {
+          if (recoveredJob.input_url) setInputImage(recoveredJob.input_url);
+          setJobId(recoveredJob.id);
+          if (recoveredJob.status === 'queued') {
+            setIsWaitingInQueue(true);
+            setQueuePosition(recoveredJob.position || 1);
+            setStatus('uploading');
+          } else {
+            setStatus('processing');
+          }
+          toast.info('Reconectando ao processamento em andamento...');
+        }
+      } catch (recoveryError) {
+        console.error('[Upscaler] Recovery error:', recoveryError);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   // PENDING WATCHDOG v2 - Detecta jobs travados como 'pending' e marca como failed após 30s
   // CORREÇÃO: Usa 'enabled' ao invés de status da UI (que nunca é 'pending')
   useJobPendingWatchdog({

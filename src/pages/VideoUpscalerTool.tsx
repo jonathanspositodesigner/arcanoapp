@@ -151,6 +151,56 @@ const VideoUpscalerTool: React.FC = () => {
     }, []),
   });
 
+  // RECOVERY: reanexa ao último job recente para não perder o processamento após refresh/reload.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+        const { data, error } = await supabase
+          .from('video_upscaler_jobs')
+          .select('id, status, output_url, thumbnail_url, video_url, error_message, created_at, position')
+          .eq('user_id', user.id)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || error || !data) return;
+        if (outputVideoUrl || isProcessing) return;
+
+        const recoveredJob = data as any;
+
+        if (recoveredJob.status === 'completed' && recoveredJob.output_url) {
+          if (recoveredJob.video_url) setVideoUrl(recoveredJob.video_url);
+          setOutputVideoUrl(recoveredJob.output_url);
+          setJobId(recoveredJob.id);
+          setStatus('completed');
+          setProgress(100);
+          toast.success('Resultado recuperado da última sessão!');
+        } else if (['pending', 'queued', 'starting', 'running'].includes(recoveredJob.status)) {
+          if (recoveredJob.video_url) setVideoUrl(recoveredJob.video_url);
+          setJobId(recoveredJob.id);
+          if (recoveredJob.status === 'queued') {
+            setStatus('waiting');
+            setQueuePosition(recoveredJob.position || 0);
+          } else {
+            setStatus('processing');
+          }
+          toast.info('Reconectando ao processamento em andamento...');
+        }
+      } catch (recoveryError) {
+        console.error('[VideoUpscaler] Recovery error:', recoveryError);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   // PENDING WATCHDOG v2 - Detecta jobs travados como 'pending' e marca como failed após 30s
   // CORREÇÃO: Usa 'enabled' ao invés de status da UI (que nunca é 'pending')
   useJobPendingWatchdog({

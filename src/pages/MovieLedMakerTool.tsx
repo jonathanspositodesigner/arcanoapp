@@ -164,6 +164,56 @@ const MovieLedMakerTool = () => {
     onGlobalStatusChange: updateJobStatus,
   });
 
+  // RECOVERY: reanexa ao último job recente para não perder o processamento após refresh/reload.
+  useEffect(() => {
+    if (!user?.id) return;
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const since = new Date(Date.now() - 30 * 60 * 1000).toISOString();
+        const { data, error } = await supabase
+          .from('movieled_maker_jobs' as any)
+          .select('id, status, output_url, thumbnail_url, input_image_url, error_message, created_at, position')
+          .eq('user_id', user.id)
+          .gte('created_at', since)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+
+        if (cancelled || error || !data) return;
+        if (resultUrl || status === 'processing' || status === 'uploading' || isQueued) return;
+
+        const recoveredJob = data as any;
+
+        if (recoveredJob.status === 'completed' && recoveredJob.output_url) {
+          setResultUrl(recoveredJob.output_url);
+          setJobId(recoveredJob.id);
+          setStatus('completed');
+          setIsQueued(false);
+          toast.success('Resultado recuperado da última sessão!');
+        } else if (['pending', 'queued', 'starting', 'running'].includes(recoveredJob.status)) {
+          setJobId(recoveredJob.id);
+          if (recoveredJob.status === 'queued') {
+            setIsQueued(true);
+            setQueuePosition(recoveredJob.position || 1);
+            setStatus('uploading');
+          } else {
+            setIsQueued(false);
+            setStatus('processing');
+          }
+          toast.info('Reconectando ao processamento em andamento...');
+        }
+      } catch (recoveryError) {
+        console.error('[MovieLed] Recovery error:', recoveryError);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
+
   // Register job globally
   useEffect(() => {
     if (jobId) {
