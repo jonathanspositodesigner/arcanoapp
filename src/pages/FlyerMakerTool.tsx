@@ -77,6 +77,9 @@ const FlyerMakerTool: React.FC = () => {
   
   const { registerJob, updateJobStatus, clearJob: clearGlobalJob, playNotificationSound } = useAIJob();
 
+  // Collaborator attribution (vitalícia/mensal por usuário×prompt — lógica compartilhada)
+  const { referencePromptId, clear: clearAttribution } = useCollaboratorAttribution();
+
   // Inputs
   const [referenceImage, setReferenceImage] = useState<string | null>(null);
   const [referenceFile, setReferenceFile] = useState<File | null>(null);
