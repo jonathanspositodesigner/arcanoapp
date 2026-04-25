@@ -18,7 +18,7 @@ import { useTranslation } from "react-i18next";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
 import { useNavigationGuard } from "@/hooks/useNavigationGuard";
 import NavigationBlockerModal from "@/components/NavigationBlockerModal";
-import { MyCreationsModal } from "@/components/ai-tools/creations";
+// MyCreationsModal substituído pela página /minhas-criacoes (mantido como backup).
 
 interface ToolsHeaderProps {
   title?: string;
@@ -40,7 +40,6 @@ const ToolsHeader = ({
   const { user, logout } = usePremiumStatus();
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
   const [userProfile, setUserProfile] = useState<{ name?: string; phone?: string } | null>(null);
-  const [showCreationsModal, setShowCreationsModal] = useState(false);
   
   // Hook de trava de navegação - bloqueia se job ativo
   const {
@@ -121,7 +120,7 @@ const ToolsHeader = ({
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => setShowCreationsModal(true)}
+              onClick={() => navigate("/minhas-criacoes")}
               className="text-muted-foreground hover:text-foreground hover:bg-accent0/20 hidden sm:flex"
             >
               <Library className="w-4 h-4 mr-2" />
@@ -235,7 +234,7 @@ const ToolsHeader = ({
 
                   {/* Minhas Criações - acessível no mobile via dropdown */}
                   <DropdownMenuItem
-                    onClick={() => setShowCreationsModal(true)}
+                    onClick={() => navigate("/minhas-criacoes")}
                     className="cursor-pointer hover:bg-accent0/20 focus:bg-accent0/20"
                   >
                     <Library className="w-4 h-4 mr-2" />
@@ -282,12 +281,6 @@ const ToolsHeader = ({
         onConfirmLeave={confirmLeave}
         onCancelLeave={cancelLeave}
         toolName={activeToolName}
-      />
-      
-      {/* Modal Minhas Criações */}
-      <MyCreationsModal 
-        open={showCreationsModal} 
-        onClose={() => setShowCreationsModal(false)} 
       />
     </header>
   );
