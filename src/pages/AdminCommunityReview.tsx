@@ -604,6 +604,12 @@ const AdminCommunityReview = () => {
                         <p className="text-red-400 font-medium">{formatDate(detailItem.data.rejected_at)}</p>
                       </div>
                     )}
+                    {detailItem.kind === "partner" && detailItem.data.rejection_reason && (
+                      <div className="col-span-2 p-3 rounded-md bg-red-500/10 border border-red-500/30">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-1">Motivo da recusa</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{detailItem.data.rejection_reason}</p>
+                      </div>
+                    )}
                     {detailItem.data.deletion_requested_at && (
                       <div>
                         <p className="text-muted-foreground">Exclusão solicitada em</p>
@@ -624,6 +630,44 @@ const AdminCommunityReview = () => {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject reason modal */}
+      <Dialog open={!!rejectModal} onOpenChange={(open) => { if (!open) { setRejectModal(null); setRejectReason(""); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recusar prompt</DialogTitle>
+          </DialogHeader>
+          {rejectModal && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Recusando: <span className="font-semibold text-foreground">{rejectModal.title}</span>
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="reject-reason">Motivo da recusa <span className="text-red-500">*</span></Label>
+                <Textarea
+                  id="reject-reason"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value.slice(0, 1000))}
+                  placeholder="Explique ao colaborador o que precisa ser ajustado para reenviar..."
+                  rows={5}
+                  maxLength={1000}
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground text-right">{rejectReason.length}/1000</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setRejectModal(null); setRejectReason(""); }} disabled={isRejecting}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleConfirmReject} disabled={isRejecting || !rejectReason.trim()}>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  {isRejecting ? "Recusando..." : "Confirmar Recusa"}
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
