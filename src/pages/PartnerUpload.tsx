@@ -929,7 +929,11 @@ const PartnerUpload = () => {
                   disabled={isSubmitting}
                   className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6"
                 >
-                  {isSubmitting ? "Enviando..." : "Enviar Todos"}
+                  {isSubmitting
+                    ? submitProgress
+                      ? `Enviando ${submitProgress.current}/${submitProgress.total}...`
+                      : "Enviando..."
+                    : "Enviar Todos"}
                 </Button>
               )}
             </div>
