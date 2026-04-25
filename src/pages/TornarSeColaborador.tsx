@@ -63,6 +63,30 @@ const CONTENT_EXAMPLES: Array<{
     label: "Movie Telão - Grafite Vitor Hugo",
     category: "Movie LED",
   },
+  {
+    type: "image",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/IA-PAGA-VS-IA-GRATIS-05-1769794541845.webp",
+    label: "Maquete 3D a partir de planta baixa",
+    category: "Cenários",
+  },
+  {
+    type: "video",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/admin_prompts/a98c9ab0-f6da-43f5-be0e-43b2f6e2d67c-1766250108379.mp4",
+    label: "Dolly Zoom",
+    category: "Controles de Câmera",
+  },
+  {
+    type: "image",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/admin_prompts/38933fae-6c57-4c0e-81ff-1d3ac0f10ef9-1766250134085.webp",
+    label: "Logo + caricatura 3D — hamburgueria",
+    category: "Logos",
+  },
+  {
+    type: "image",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/1-1775150290065.webp",
+    label: "Mini Craque",
+    category: "Outros",
+  },
 ];
 
 const TornarSeColaborador = () => {
@@ -332,7 +356,7 @@ const TornarSeColaborador = () => {
           <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto -mt-4">
             Exemplos reais de conteúdos publicados por colaboradores da plataforma.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto">
             {CONTENT_EXAMPLES.map((ex) => (
               <div
                 key={ex.label}
