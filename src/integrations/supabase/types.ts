@@ -2643,6 +2643,7 @@ export type Database = {
           raw_api_response: Json | null
           raw_webhook_payload: Json | null
           reference_images: Json | null
+          reference_prompt_id: string | null
           rh_cost: number | null
           runninghub_task_id: string | null
           session_id: string | null
@@ -2677,6 +2678,7 @@ export type Database = {
           raw_api_response?: Json | null
           raw_webhook_payload?: Json | null
           reference_images?: Json | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           runninghub_task_id?: string | null
           session_id?: string | null
@@ -2711,6 +2713,7 @@ export type Database = {
           raw_api_response?: Json | null
           raw_webhook_payload?: Json | null
           reference_images?: Json | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           runninghub_task_id?: string | null
           session_id?: string | null
