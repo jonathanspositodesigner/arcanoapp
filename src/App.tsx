@@ -7,6 +7,7 @@ import React, { lazy, Suspense, useEffect } from "react";
 
 import { LocaleProvider } from "./contexts/LocaleContext";
 import { FloatingToolsNav } from "./components/FloatingToolsNav";
+import FloatingJobButton from "./components/FloatingJobButton";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CreditsProvider } from "./contexts/CreditsContext";
@@ -221,6 +222,7 @@ const AppContent = () => {
       <NewVersionBanner />
 
       <FloatingToolsNav />
+      <FloatingJobButton />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
