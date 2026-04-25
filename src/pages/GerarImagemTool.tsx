@@ -336,16 +336,29 @@ const GerarImagemTool = () => {
 
   // Prefill vindo de "Minhas Criações"
   useEffect(() => {
-    const state = location.state as { prefillImageUrl?: string } | null;
-    if (!state?.prefillImageUrl) return;
+    const state = location.state as {
+      prefillImageUrl?: string;
+      prefillPrompt?: string;
+      prefillEngine?: 'flux2_klein' | 'nano_banana' | 'gpt_image_2' | 'gpt_image_evolink';
+    } | null;
+    if (!state?.prefillImageUrl && !state?.prefillPrompt && !state?.prefillEngine) return;
     const url = state.prefillImageUrl;
+    const prefillPromptText = state.prefillPrompt;
+    const prefillEngineValue = state.prefillEngine;
     navigate(location.pathname, { replace: true, state: {} });
+    if (prefillPromptText) {
+      setPrompt(prefillPromptText);
+    }
+    if (prefillEngineValue) {
+      setEngine(prefillEngineValue);
+    }
+    if (!url) return;
     (async () => {
       try {
         const { urlToFile } = await import('@/lib/urlToFile');
         const file = await urlToFile(url);
         processFiles([file]);
-        toast.success('Imagem carregada de Minhas Criações');
+        toast.success('Imagem e prompt carregados');
       } catch (err) {
         console.error('[GerarImagem] Prefill failed:', err);
         toast.error('Não foi possível carregar a imagem. Faça upload manual.');
