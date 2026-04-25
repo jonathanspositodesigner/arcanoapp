@@ -264,6 +264,40 @@ const VideoUpscalerTool: React.FC = () => {
     setVideoMetadata(metadata || null);
   };
 
+  // Prefill vindo de "Minhas Criações" (vídeo já gerado)
+  useEffect(() => {
+    const state = location.state as { prefillVideoUrl?: string } | null;
+    if (!state?.prefillVideoUrl) return;
+    const url = state.prefillVideoUrl;
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const file = await urlToFile(url, `video-${Date.now()}.mp4`);
+        const localUrl = URL.createObjectURL(file);
+        // Lê metadata via <video>
+        const video = document.createElement('video');
+        video.preload = 'metadata';
+        video.src = localUrl;
+        await new Promise<void>((resolve) => {
+          video.onloadedmetadata = () => resolve();
+          video.onerror = () => resolve();
+        });
+        const metadata: VideoMetadata = {
+          width: video.videoWidth || 0,
+          height: video.videoHeight || 0,
+          duration: video.duration || 0,
+        };
+        handleVideoChange(localUrl, file, metadata);
+        toast.success('Vídeo carregado de Minhas Criações');
+      } catch (err) {
+        console.error('[VideoUpscaler] Prefill failed:', err);
+        toast.error('Não foi possível carregar o vídeo. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Upload video to Supabase storage
   const uploadToStorage = async (file: File): Promise<string> => {
     if (!user?.id) {
