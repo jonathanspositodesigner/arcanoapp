@@ -6933,7 +6933,6 @@ export type Database = {
           success: boolean
         }[]
       }
-      test_monthly_earning_rule_v1: { Args: never; Returns: Json }
       update_challenge_progress: {
         Args: {
           _category?: string
