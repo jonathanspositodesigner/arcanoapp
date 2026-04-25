@@ -409,7 +409,7 @@ const PartnerUpload = () => {
       // Otimiza apenas se for imagem grande (>2MB) — não-bloqueante: se falhar, segue com o original
       if (prepared.size > 2 * 1024 * 1024) {
         try {
-          const r = await optimizeImage(prepared, { maxWidth: 2048, quality: 0.85, format: 'webp' });
+          const r = await optimizeImage(prepared, { maxSizeMB: 2, maxWidthOrHeight: 2048 });
           if (r?.file) prepared = r.file;
         } catch (e) {
           console.warn('[PartnerUpload] otimização falhou, usando original', e);
