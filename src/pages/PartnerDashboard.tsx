@@ -248,6 +248,7 @@ const PartnerDashboard = () => {
           rejected: false,
           rejected_at: null,
           rejected_by: null,
+          rejection_reason: null,
           approved_at: null,
           approved_by: null,
           updated_at: new Date().toISOString(),
