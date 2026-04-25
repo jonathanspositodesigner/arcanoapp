@@ -395,10 +395,6 @@ const PROMO_DURATION_DAYS = 7;
           <ArrowLeft className="w-4 h-4 mr-2" />
           {t('planos.back')}
         </Button>
-        <Button variant="outline" onClick={() => navigate('/login')} className="gap-2 border-border text-foreground hover:bg-accent hover:text-foreground">
-          <LogIn className="w-4 h-4" />
-          {t('planos.alreadyPremium')}
-        </Button>
       </div>
 
       {/* Main Content */}
