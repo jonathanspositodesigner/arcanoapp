@@ -641,7 +641,8 @@ const AdminCreditsTab = () => {
       )}
 
       <p className="text-sm text-muted-foreground text-center">
-        Mostrando {paginatedUsers.length} de {filteredUsers.length} usuários
+        Mostrando {paginatedUsers.length} de {formatNumber(totalCount)} usuários
+        {debouncedSearch && ` (filtro: "${debouncedSearch}")`}
       </p>
 
       {/* Credit Audit Modal */}
