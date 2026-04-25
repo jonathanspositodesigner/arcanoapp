@@ -8,6 +8,7 @@ import React, { lazy, Suspense, useEffect } from "react";
 import { LocaleProvider } from "./contexts/LocaleContext";
 import { FloatingToolsNav } from "./components/FloatingToolsNav";
 import FloatingJobButton from "./components/FloatingJobButton";
+import GlobalMyCreationsHost from "./components/GlobalMyCreationsHost";
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CreditsProvider } from "./contexts/CreditsContext";
@@ -223,6 +224,7 @@ const AppContent = () => {
 
       <FloatingToolsNav />
       <FloatingJobButton />
+      <GlobalMyCreationsHost />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
