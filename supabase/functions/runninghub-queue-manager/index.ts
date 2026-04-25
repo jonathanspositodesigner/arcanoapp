@@ -1806,12 +1806,48 @@ async function startJobOnRunningHub(
       
     case 'movieled_maker_jobs': {
       const movieEngine = p.engine || job.engine || 'veo3.1';
+      const isLogoMode = (p.contentMode || job.content_mode) === 'logo';
       const movieWebappIds = WEBAPP_IDS.movieled_maker_jobs as Record<string, string>;
-      webappId = movieWebappIds[movieEngine] || movieWebappIds['veo3.1'];
-      nodeInfoList = [
-        { nodeId: "68", fieldName: "image", fieldValue: p.rhFileName || job.reference_file_name, description: "image" },
-        { nodeId: "72", fieldName: "text", fieldValue: p.inputText || job.input_text || '', description: "text" },
-      ];
+
+      if (isLogoMode) {
+        // Fluxo LOGO: WebApp ID dedicado por engine, dois inputs de imagem
+        const logoKey = `${movieEngine}_logo`;
+        webappId = movieWebappIds[logoKey];
+        if (!webappId) {
+          console.error(`[QueueManager] Logo mode not supported for engine: ${movieEngine}`);
+          return { taskId: null };
+        }
+        const refImg = p.rhFileName || job.reference_file_name;
+        const logoImg = p.rhLogoFileName;
+        if (!logoImg) {
+          console.error(`[QueueManager] MovieLed logo mode missing rhLogoFileName for job ${job.id}`);
+          return { taskId: null };
+        }
+
+        if (movieEngine === 'kling2.5') {
+          // Doc Kling+Logo: nodeId 155 = IMAGEM REF, nodeId 160 = LOGO
+          nodeInfoList = [
+            { nodeId: "155", fieldName: "image", fieldValue: refImg, description: "IMAGEM REF" },
+            { nodeId: "160", fieldName: "image", fieldValue: logoImg, description: "LOGO" },
+          ];
+        } else if (movieEngine === 'wan2.2') {
+          // Doc Wan+Logo: nodeId 135 = MOVIE REF, nodeId 139 = LOGO
+          nodeInfoList = [
+            { nodeId: "135", fieldName: "image", fieldValue: refImg, description: "MOVIE REF" },
+            { nodeId: "139", fieldName: "image", fieldValue: logoImg, description: "LOGO" },
+          ];
+        } else {
+          console.error(`[QueueManager] Unknown engine for logo mode: ${movieEngine}`);
+          return { taskId: null };
+        }
+      } else {
+        // Fluxo NOME (padrão atual)
+        webappId = movieWebappIds[movieEngine] || movieWebappIds['veo3.1'];
+        nodeInfoList = [
+          { nodeId: "68", fieldName: "image", fieldValue: p.rhFileName || job.reference_file_name, description: "image" },
+          { nodeId: "72", fieldName: "text", fieldValue: p.inputText || job.input_text || '', description: "text" },
+        ];
+      }
       break;
     }
 
