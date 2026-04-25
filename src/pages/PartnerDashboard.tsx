@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
-import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home, Sparkles } from "lucide-react";
+import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home, Sparkles, FolderPlus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { usePartnerGamificationNotifications } from "@/hooks/usePartnerGamificationNotifications";
@@ -529,7 +529,7 @@ const PartnerDashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-3 gap-2.5 px-4 mb-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5 px-4 mb-3">
           <button onClick={() => navigate('/parceiro-upload')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-primary hover:bg-primary/90 transition-colors">
             <Upload className="h-5 w-5 text-primary-foreground" />
             <span className="text-[11px] font-bold text-primary-foreground leading-tight text-center">Enviar Prompt</span>
@@ -541,6 +541,10 @@ const PartnerDashboard = () => {
           <button onClick={() => navigate('/parceiro-conquistas')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
             <Trophy className="h-5 w-5 text-yellow-400" />
             <span className="text-[11px] font-semibold text-muted-foreground leading-tight text-center">Conquistas</span>
+          </button>
+          <button onClick={() => navigate('/parceiro-colecoes')} className="flex flex-col items-center gap-2 py-4 px-2 rounded-xl bg-card border border-border hover:border-primary/30 transition-colors">
+            <FolderPlus className="h-5 w-5 text-purple-400" />
+            <span className="text-[11px] font-semibold text-muted-foreground leading-tight text-center">Criar Coleção</span>
           </button>
         </div>
 
