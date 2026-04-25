@@ -3983,6 +3983,7 @@ export type Database = {
           rejected: boolean | null
           rejected_at: string | null
           rejected_by: string | null
+          rejection_reason: string | null
           subcategory_slug: string | null
           tags: string[] | null
           thumbnail_url: string | null
@@ -4009,6 +4010,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          rejection_reason?: string | null
           subcategory_slug?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null
@@ -4035,6 +4037,7 @@ export type Database = {
           rejected?: boolean | null
           rejected_at?: string | null
           rejected_by?: string | null
+          rejection_reason?: string | null
           subcategory_slug?: string | null
           tags?: string[] | null
           thumbnail_url?: string | null

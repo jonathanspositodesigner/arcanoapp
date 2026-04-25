@@ -60,7 +60,7 @@ interface CardData {
   imagePosition: string;
 }
 
-export const APP_BUILD_VERSION = '1.4.3';
+export const APP_BUILD_VERSION = '1.4.4';
 
 const Index = () => {
   const navigate = useNavigate();

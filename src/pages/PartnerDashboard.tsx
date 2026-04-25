@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { LogOut, Upload, FileCheck, Clock, ArrowLeft, Copy, Pencil, XCircle, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 import { Instagram, User, Camera, KeyRound, DollarSign, TrendingUp, Trophy, Home, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -36,6 +36,7 @@ interface PartnerPrompt {
   category: string;
   approved: boolean;
   rejected: boolean;
+  rejection_reason?: string | null;
   deletion_requested: boolean;
   created_at: string;
   click_count?: number;
@@ -247,6 +248,7 @@ const PartnerDashboard = () => {
           rejected: false,
           rejected_at: null,
           rejected_by: null,
+          rejection_reason: null,
           approved_at: null,
           approved_by: null,
           updated_at: new Date().toISOString(),
@@ -726,6 +728,17 @@ const PartnerDashboard = () => {
                     <Badge variant="outline" className="text-[10px] px-1.5 py-0">{prompt.category}</Badge>
                     <span className="text-[10px] text-primary font-semibold flex items-center gap-0.5"><Copy className="h-2.5 w-2.5" />{prompt.click_count || 0}</span>
                   </div>
+                  {status === "rejected" && (
+                    <div className="mt-2 p-2 rounded-md bg-red-500/10 border border-red-500/30">
+                      <div className="flex items-center gap-1 mb-0.5">
+                        <AlertTriangle className="h-3 w-3 text-red-500 shrink-0" />
+                        <span className="text-[10px] font-bold text-red-500 uppercase tracking-wide">Motivo da recusa</span>
+                      </div>
+                      <p className="text-[10px] text-foreground/90 leading-snug whitespace-pre-wrap break-words">
+                        {prompt.rejection_reason?.trim() || "Sem motivo informado. Edite e reenvie ou contate o admin."}
+                      </p>
+                    </div>
+                  )}
                   <div className="flex gap-1.5 mt-2">
                     {(status === "pending" || status === "rejected" || status === "approved") && (
                       <button onClick={() => openEditModal(prompt)} className="flex-1 text-[10px] font-semibold text-muted-foreground bg-muted/50 hover:bg-muted rounded-lg py-1.5 transition-colors">

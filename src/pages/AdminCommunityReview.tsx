@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { syncFotoToAllTools } from "@/lib/iaLibrarySync";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface CommunityPrompt {
   id: string;
@@ -31,6 +33,7 @@ interface PartnerPrompt {
   created_at: string;
   approved: boolean;
   rejected: boolean;
+  rejection_reason?: string | null;
   deletion_requested: boolean;
   partner_name: string;
   is_premium: boolean;
@@ -53,6 +56,9 @@ const AdminCommunityReview = () => {
   const [partnerPrompts, setPartnerPrompts] = useState<PartnerPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [detailItem, setDetailItem] = useState<{ kind: "community" | "partner"; data: any } | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ promptId: string; title: string; currentReason?: string | null } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -158,7 +164,8 @@ const AdminCommunityReview = () => {
         deletion_requested: false,
         rejected: false,
         rejected_at: null,
-        rejected_by: null
+        rejected_by: null,
+        rejection_reason: null
       })
       .eq('id', promptId);
 
@@ -182,27 +189,48 @@ const AdminCommunityReview = () => {
     }
   };
 
-  const handleRejectPartner = async (promptId: string) => {
+  const openRejectModal = (promptId: string, title: string, currentReason?: string | null) => {
+    setRejectModal({ promptId, title, currentReason });
+    setRejectReason(currentReason || "");
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectModal) return;
+    const reason = rejectReason.trim();
+    if (!reason) {
+      toast.error("Informe o motivo da recusa");
+      return;
+    }
+    if (reason.length > 1000) {
+      toast.error("O motivo deve ter no máximo 1000 caracteres");
+      return;
+    }
+
+    setIsRejecting(true);
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     const { error } = await supabase
       .from('partner_prompts')
-      .update({ 
+      .update({
         approved: false,
-        rejected: true, 
-        rejected_at: new Date().toISOString(), 
+        rejected: true,
+        rejected_at: new Date().toISOString(),
         rejected_by: user?.id,
+        rejection_reason: reason,
         approved_at: null,
-        approved_by: null
+        approved_by: null,
       })
-      .eq('id', promptId);
+      .eq('id', rejectModal.promptId);
+
+    setIsRejecting(false);
 
     if (error) {
       toast.error("Erro ao recusar");
     } else {
-      // Remove from AI tool libraries
-      await syncFotoToAllTools(promptId, null, 'partner_prompts');
-      toast.success("Recusado! O parceiro poderá editar e reenviar.");
+      await syncFotoToAllTools(rejectModal.promptId, null, 'partner_prompts');
+      toast.success("Recusado! O parceiro verá o motivo e poderá editar.");
+      setRejectModal(null);
+      setRejectReason("");
       fetchPartnerPrompts();
     }
   };
@@ -403,8 +431,13 @@ const AdminCommunityReview = () => {
                           </Button>
                         )}
                         {(status === "pending" || status === "approved") && (
-                          <Button onClick={() => handleRejectPartner(prompt.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
+                          <Button onClick={() => openRejectModal(prompt.id, prompt.title, prompt.rejection_reason)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
                             <XCircle className="h-4 w-4 mr-2" />Recusar
+                          </Button>
+                        )}
+                        {status === "rejected" && (
+                          <Button onClick={() => openRejectModal(prompt.id, prompt.title, prompt.rejection_reason)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
+                            <XCircle className="h-4 w-4 mr-2" />Editar Motivo
                           </Button>
                         )}
                         {status === "deletion" && (
@@ -571,6 +604,12 @@ const AdminCommunityReview = () => {
                         <p className="text-red-400 font-medium">{formatDate(detailItem.data.rejected_at)}</p>
                       </div>
                     )}
+                    {detailItem.kind === "partner" && detailItem.data.rejection_reason && (
+                      <div className="col-span-2 p-3 rounded-md bg-red-500/10 border border-red-500/30">
+                        <p className="text-xs font-semibold uppercase tracking-wider text-red-400 mb-1">Motivo da recusa</p>
+                        <p className="text-sm text-foreground whitespace-pre-wrap">{detailItem.data.rejection_reason}</p>
+                      </div>
+                    )}
                     {detailItem.data.deletion_requested_at && (
                       <div>
                         <p className="text-muted-foreground">Exclusão solicitada em</p>
@@ -591,6 +630,44 @@ const AdminCommunityReview = () => {
                 </div>
               </div>
             </>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reject reason modal */}
+      <Dialog open={!!rejectModal} onOpenChange={(open) => { if (!open) { setRejectModal(null); setRejectReason(""); } }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Recusar prompt</DialogTitle>
+          </DialogHeader>
+          {rejectModal && (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Recusando: <span className="font-semibold text-foreground">{rejectModal.title}</span>
+              </p>
+              <div className="space-y-2">
+                <Label htmlFor="reject-reason">Motivo da recusa <span className="text-red-500">*</span></Label>
+                <Textarea
+                  id="reject-reason"
+                  value={rejectReason}
+                  onChange={(e) => setRejectReason(e.target.value.slice(0, 1000))}
+                  placeholder="Explique ao colaborador o que precisa ser ajustado para reenviar..."
+                  rows={5}
+                  maxLength={1000}
+                  autoFocus
+                />
+                <p className="text-xs text-muted-foreground text-right">{rejectReason.length}/1000</p>
+              </div>
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={() => { setRejectModal(null); setRejectReason(""); }} disabled={isRejecting}>
+                  Cancelar
+                </Button>
+                <Button variant="destructive" onClick={handleConfirmReject} disabled={isRejecting || !rejectReason.trim()}>
+                  <XCircle className="h-4 w-4 mr-2" />
+                  {isRejecting ? "Recusando..." : "Confirmar Recusa"}
+                </Button>
+              </div>
+            </div>
           )}
         </DialogContent>
       </Dialog>
