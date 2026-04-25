@@ -280,11 +280,32 @@ serve(async (req) => {
     // Calcular custo RH
     const completedAt = new Date();
     let rhCost = 0;
-    
-    if (jobData.started_at && !errorMessage) {
-      const startedAt = new Date(jobData.started_at);
-      const processingSeconds = Math.max(1, Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000));
-      rhCost = Math.round(processingSeconds * 0.2);
+
+    // 1) Prefer the REAL consumeCoins value reported by RunningHub in the webhook payload.
+    //    The payload contains either eventData.usage.consumeCoins or eventData.taskUsageList[].usage.consumeCoins.
+    if (!errorMessage) {
+      try {
+        const usageDirect = Number(eventData?.usage?.consumeCoins);
+        if (Number.isFinite(usageDirect) && usageDirect > 0) {
+          rhCost = Math.round(usageDirect);
+        } else if (Array.isArray(eventData?.taskUsageList)) {
+          const sum = eventData.taskUsageList.reduce((acc: number, tu: any) => {
+            const c = Number(tu?.usage?.consumeCoins);
+            return acc + (Number.isFinite(c) && c > 0 ? c : 0);
+          }, 0);
+          if (sum > 0) rhCost = Math.round(sum);
+        }
+      } catch (e) {
+        console.warn('[Webhook] Failed to parse consumeCoins from payload:', e);
+      }
+
+      // 2) Fallback for legacy payloads that don't include consumeCoins:
+      //    estimate from processing duration (~0.2 coins/sec).
+      if (rhCost === 0 && jobData.started_at) {
+        const startedAt = new Date(jobData.started_at);
+        const processingSeconds = Math.max(1, Math.ceil((completedAt.getTime() - startedAt.getTime()) / 1000));
+        rhCost = Math.round(processingSeconds * 0.2);
+      }
     }
 
     // If COMPLETED but no output, try auto-reconciliation before failing
