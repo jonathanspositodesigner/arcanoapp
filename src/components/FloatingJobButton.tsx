@@ -17,6 +17,8 @@ import { cn } from "@/lib/utils";
 
 const STORAGE_KEY = "floating-job-btn-pos";
 const SIZE = 56;
+const EXPANDED_W = 240;
+const EXPANDED_H = 96;
 const MARGIN = 12;
 
 type Pos = { x: number; y: number };
@@ -42,8 +44,10 @@ const loadPos = (): Pos => {
 };
 
 const clampPos = (p: Pos, expanded: boolean): Pos => {
-  const w = expanded ? 240 : SIZE;
-  const h = expanded ? 96 : SIZE;
+  // Position always tracks the RIGHT edge of the button (we anchor by right).
+  // Width changes when expanded but the right edge stays in place.
+  const w = SIZE;
+  const h = expanded ? EXPANDED_H : SIZE;
   return {
     x: Math.min(Math.max(MARGIN, p.x), window.innerWidth - w - MARGIN),
     y: Math.min(Math.max(MARGIN, p.y), window.innerHeight - h - MARGIN),
@@ -141,13 +145,17 @@ export const FloatingJobButton = () => {
 
     // Tap behavior
     if (isDone) {
-      // navigate to home and open My Creations modal globally
+      // Open My Creations modal globally. There's no dedicated route — the modal
+      // lives inside AppTopBar which is mounted on most app pages. Navigate to "/"
+      // and dispatch the event with retries to wait for the listener to mount.
       setDismissed(true);
       clearJob();
       navigate("/");
-      setTimeout(() => {
+      const tryDispatch = (attempt = 0) => {
         window.dispatchEvent(new CustomEvent("open-my-creations"));
-      }, 50);
+        if (attempt < 6) setTimeout(() => tryDispatch(attempt + 1), 200);
+      };
+      setTimeout(() => tryDispatch(0), 100);
       return;
     }
     if (isError) {
@@ -171,6 +179,11 @@ export const FloatingJobButton = () => {
     ? "bg-destructive/90 text-destructive-foreground border-destructive shadow-[0_8px_24px_-4px_hsl(var(--destructive)/0.5)]"
     : "bg-background/95 text-foreground border-border shadow-[0_8px_24px_-4px_hsl(var(--foreground)/0.18)]";
 
+  // Anchor by RIGHT edge so the panel grows to the LEFT when expanded.
+  // pos.x is still the LEFT coordinate of the collapsed circle, so the right edge is pos.x + SIZE.
+  const rightEdge = pos.x + SIZE;
+  const rightInset = Math.max(MARGIN, window.innerWidth - rightEdge);
+
   return (
     <div
       role="button"
@@ -184,17 +197,17 @@ export const FloatingJobButton = () => {
       }}
       style={{
         position: "fixed",
-        left: pos.x,
+        right: rightInset,
         top: pos.y,
         zIndex: 9998,
         touchAction: "none",
-        width: expanded ? 240 : SIZE,
-        height: expanded ? 96 : SIZE,
+        width: expanded ? EXPANDED_W : SIZE,
+        height: expanded ? EXPANDED_H : SIZE,
         transition:
           "width 200ms ease, height 200ms ease, background-color 300ms ease, box-shadow 300ms ease",
       }}
       className={cn(
-        "select-none rounded-2xl border backdrop-blur-md flex items-center justify-center cursor-grab active:cursor-grabbing animate-scale-in",
+        "select-none rounded-full border backdrop-blur-md flex items-center justify-center cursor-grab active:cursor-grabbing animate-scale-in overflow-hidden",
         colorClass,
         isDone && "animate-[pulse_1.2s_ease-in-out_2]"
       )}
@@ -206,7 +219,7 @@ export const FloatingJobButton = () => {
           {isError && <X className="h-7 w-7" strokeWidth={3} />}
         </div>
       ) : (
-        <div className="w-full h-full px-3 py-2 flex flex-col justify-between">
+        <div className="w-full h-full px-4 py-2 flex flex-col justify-between">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <div className="text-[10px] uppercase tracking-wide opacity-70">

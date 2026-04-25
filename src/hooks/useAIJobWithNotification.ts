@@ -78,7 +78,7 @@ export function useAIJobWithNotification(): UseAIJobWithNotificationResult {
     }
     
     // Registrar no contexto global
-    registerJob(jobId, toolDisplayName, initialStatus);
+    registerJob(jobId, toolDisplayName, initialStatus, toolType);
     
     // Configurar subscription com callback de status
     const unsubscribe = subscribeToJob(
