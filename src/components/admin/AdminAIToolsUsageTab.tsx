@@ -102,7 +102,10 @@ const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
 const RECEITA_POR_CREDITO_PADRAO = 0.007;
 const RECEITA_POR_CREDITO_HISTORICA = 0.007;
 const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
-const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited", "gpt_free_trial"]);
+// gpt_free_trial NÃO entra aqui: é uma promo adicional concedida a assinantes
+// pagantes (Starter/Pro/Ultimate) durante 7 dias — eles continuam gerando receita
+// normal pelo plano que pagaram. Apenas planos sem cobrança de uso zeram receita.
+const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited"]);
 
 const API_COST_FALLBACK_MAP: Record<string, number> = {
   "Arcano Cloner": 0.36,
@@ -484,8 +487,8 @@ const AdminAIToolsUsageTab = () => {
           const hasTrial = trialSet.has(uid);
           if (isPremium && hasLifetime) typeMap[uid] = 'premium_credits';
           else if (unlimitedSet.has(uid)) typeMap[uid] = 'unlimited';
-          else if (gptFreeSet.has(uid)) typeMap[uid] = 'gpt_free_trial';
           else if (isPremium) typeMap[uid] = 'premium';
+          else if (gptFreeSet.has(uid)) typeMap[uid] = 'gpt_free_trial';
           else if (hasPromo) typeMap[uid] = 'redeemed_credits';
           else if (hasLifetime) typeMap[uid] = 'bought_credits';
           else if (hasTrial) typeMap[uid] = 'free_trial';
