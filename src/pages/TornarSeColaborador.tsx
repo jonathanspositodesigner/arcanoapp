@@ -33,6 +33,38 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import { Slider } from "@/components/ui/slider";
 
+const CONTENT_EXAMPLES: Array<{
+  type: "image" | "video";
+  url: string;
+  label: string;
+  category: string;
+}> = [
+  {
+    type: "image",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/52-1771961596089.webp",
+    label: "Mulher sentada em caixa de som",
+    category: "Foto IA",
+  },
+  {
+    type: "video",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/1767123526734-b0rydg-1767123530830.mp4",
+    label: "Tardezinha de Férias",
+    category: "Selo 3D",
+  },
+  {
+    type: "video",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/hf-20260331-191024-b78d9842-046f-4725-8187-4e14b287beed-1776088574470.mp4",
+    label: "Skate com nível máximo de personalidade",
+    category: "Seedance 2",
+  },
+  {
+    type: "video",
+    url: "https://jooojbaljrshgpaxdlou.supabase.co/storage/v1/object/public/prompts-cloudinary/prompts-cloudinary/VITOR-HUGO--GRAFITE--1775165404928.mp4",
+    label: "Movie Telão - Grafite Vitor Hugo",
+    category: "Movie LED",
+  },
+];
+
 const TornarSeColaborador = () => {
   const [form, setForm] = useState({
     nome: "",
