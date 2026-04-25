@@ -107,6 +107,13 @@ const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
 // normal pelo plano que pagaram. Apenas planos sem cobrança de uso zeram receita.
 const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited"]);
 
+// Ferramentas/engines que cobram crédito MESMO de Unlimited.
+// Para esses, a receita NÃO deve ser zerada só porque o usuário é Unlimited.
+// MovieLed: Kling 2.5 Turbo e Veo 3.1 são cobrados; Wan 2.2 é coberto pelo Unlimited.
+// Seedance 2.0: cobra todos (forced billing).
+const TOOLS_FORCE_CHARGE_UNLIMITED = new Set<string>(["Seedance 2.0"]);
+const MOVIELED_FORCE_CHARGE_ENGINES = new Set<string>(["kling2.5", "veo3.1"]);
+
 const API_COST_FALLBACK_MAP: Record<string, number> = {
   "Arcano Cloner": 0.36,
   "Gerador Avatar": 0.18,
@@ -122,13 +129,17 @@ const API_COST_SETTING_KEY_MAP: Record<string, string[]> = {
   "Gerar Imagem - Flux 2": ["gerar_imagem", "gerar_imagem_nano2"],
   "GPT Image": ["GPT Image"],
   "GPT Image Evolink": ["GPT Image Evolink"],
-  "MovieLed Maker": ["MovieLed Maker"],
+  // MovieLed Maker NÃO usa custo fixo de ai_tool_settings.
+  // Custo real vem do rh_cost salvo (consumeCoins do webhook RunningHub) +
+  // custo Evolink quando engine = veo3.1 (calculado em getVideoCostBRL).
 };
 
 const getApiCostFromSettings = (
   toolName: string,
   settingsMap: Record<string, { has_api_cost: boolean; api_cost: number }>
 ) => {
+  // MovieLed Maker é tratado por engine real (rh_cost + getVideoCostBRL). Nunca custo fixo.
+  if (toolName === "MovieLed Maker") return 0;
   const settingKeys = API_COST_SETTING_KEY_MAP[toolName] ?? [toolName];
 
   for (const key of settingKeys) {
@@ -151,7 +162,7 @@ const VIDEO_COST_PER_SECOND: Record<string, number> = {
   "vgj:veo3.1-pro:audio": 1.924,
   "mlj:wan2.2": 0,
   "mlj:veo3.1": 0.504,
-  "mlj:kling2.5": 0.25,
+  "mlj:kling2.5": 0,
   "sdj:fast:480p:i2v": 0.344,
   "sdj:fast:480p:t2v": 0.374,
   "sdj:fast:720p:i2v": 0.724,
