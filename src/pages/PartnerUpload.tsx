@@ -376,29 +376,65 @@ const PartnerUpload = () => {
     }
 
     setIsSubmitting(true);
+    setSubmitProgress({ current: 0, total: mediaFiles.length });
 
-    try {
-      for (const media of mediaFiles) {
-        // Upload to Cloudinary
-        const uploadResult = await uploadToStorage(media.file, 'prompts-cloudinary');
-        
-        if (!uploadResult.success || !uploadResult.url) {
-          throw new Error(uploadResult.error || 'Failed to upload media');
+    // Helper: tenta uploadToStorage até `attempts` vezes (resiliente a falhas de rede)
+    const uploadWithRetry = async (
+      file: File,
+      folder: string,
+      attempts = 3,
+    ): Promise<{ url: string }> => {
+      let lastErr = '';
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const r = await uploadToStorage(file, folder);
+          if (r.success && r.url) return { url: r.url };
+          lastErr = r.error || 'Falha no upload';
+        } catch (e) {
+          lastErr = e instanceof Error ? e.message : 'Falha no upload';
         }
+        // Backoff: 800ms, 1600ms
+        if (i < attempts - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+      }
+      throw new Error(lastErr || 'Falha no upload após várias tentativas');
+    };
 
-        const imageStoragePath = uploadResult.url;
+    // Helper: prepara o arquivo (HEIC -> JPEG; otimiza imagem grande)
+    const prepareFile = async (file: File, isVideo: boolean): Promise<File> => {
+      if (isVideo) return file;
+      let prepared = file;
+      if (isHeicFile(prepared)) {
+        prepared = await ensureBrowserCompatibleImage(prepared);
+      }
+      // Otimiza apenas se for imagem grande (>2MB) — não-bloqueante: se falhar, segue com o original
+      if (prepared.size > 2 * 1024 * 1024) {
+        try {
+          const r = await optimizeImage(prepared, { maxWidth: 2048, quality: 0.85, format: 'webp' });
+          if (r?.file) prepared = r.file;
+        } catch (e) {
+          console.warn('[PartnerUpload] otimização falhou, usando original', e);
+        }
+      }
+      return prepared;
+    };
 
-        // Upload reference images if it's a video
-        let referenceImageUrls: string[] = [];
+    const failures: { title: string; reason: string }[] = [];
+    const successes: number[] = []; // índices que entraram com sucesso
+
+    for (let i = 0; i < mediaFiles.length; i++) {
+      const media = mediaFiles[i];
+      setSubmitProgress({ current: i + 1, total: mediaFiles.length });
+      const label = media.title || `item ${i + 1}`;
+      try {
+        const preparedMain = await prepareFile(media.file, media.isVideo);
+        const mainUpload = await uploadWithRetry(preparedMain, 'prompts-cloudinary');
+
+        const referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
-            
-            if (!refUploadResult.success || !refUploadResult.url) {
-              throw new Error(refUploadResult.error || 'Failed to upload reference image');
-            }
-
-            referenceImageUrls.push(refUploadResult.url);
+            const preparedRef = await prepareFile(refImg.file, false);
+            const refUp = await uploadWithRetry(preparedRef, 'prompts-cloudinary/references');
+            referenceImageUrls.push(refUp.url);
           }
         }
 
@@ -409,7 +445,7 @@ const PartnerUpload = () => {
             title: formatTitle(media.title),
             prompt: media.prompt,
             category: media.category,
-            image_url: imageStoragePath,
+            image_url: mainUpload.url,
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
@@ -419,17 +455,41 @@ const PartnerUpload = () => {
             subcategory_slug: media.category === 'Fotos' ? media.subcategorySlug : null,
           });
 
-        if (insertError) throw insertError;
+        if (insertError) throw new Error(insertError.message);
+        successes.push(i);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : 'Erro desconhecido';
+        console.error(`[PartnerUpload] falha em "${label}":`, err);
+        failures.push({ title: label, reason });
       }
+    }
 
+    setSubmitProgress(null);
+    setIsSubmitting(false);
+
+    if (failures.length === 0) {
+      // Tudo certo
       setMediaFiles([]);
       setShowModal(false);
       setShowSuccessModal(true);
-    } catch (error) {
-      console.error("Error submitting prompts:", error);
-      toast.error("Erro ao enviar. Tente novamente.");
-    } finally {
-      setIsSubmitting(false);
+      return;
+    }
+
+    // Houve falhas: remove só os que enviaram com sucesso, mantém os que falharam para reenviar
+    const remaining = mediaFiles.filter((_, idx) => !successes.includes(idx));
+    setMediaFiles(remaining);
+    setCurrentIndex(0);
+
+    if (successes.length > 0) {
+      toast.success(`${successes.length} de ${mediaFiles.length} prompts enviados com sucesso.`);
+    }
+
+    // Mostra cada falha em uma toast separada com motivo real
+    failures.slice(0, 5).forEach(f => {
+      toast.error(`Falhou "${f.title}": ${f.reason}`, { duration: 8000 });
+    });
+    if (failures.length > 5) {
+      toast.error(`+${failures.length - 5} outros prompts falharam. Tente reenviar.`);
     }
   };
 
