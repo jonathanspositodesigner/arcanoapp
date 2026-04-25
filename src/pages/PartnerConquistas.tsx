@@ -345,11 +345,11 @@ const PartnerConquistas = () => {
                     </div>
                   )}
                   <div className={`text-2xl mb-1 ${earned ? "drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" : ""}`}>{b.icon}</div>
-                  <p className={`text-[11px] leading-tight ${earned ? "text-yellow-100 font-bold" : "text-muted-foreground font-medium"}`}>
+                  <p className={`text-[11px] leading-tight ${earned ? "font-bold text-destructive" : "text-muted-foreground font-medium"}`}>
                     {b.name.replace(/[🔥💎⚡🏆💰👑🤖🎬]/g, '').trim()}
                   </p>
                   {earned ? (
-                    <p className="text-[9px] text-yellow-300/90 mt-0.5 font-semibold uppercase tracking-wide">Conquistado</p>
+                    <p className="text-[9px] mt-0.5 font-semibold uppercase tracking-wide text-secondary-foreground">Conquistado</p>
                   ) : (
                     <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight break-words hyphens-auto">{b.hint}</p>
                   )}
