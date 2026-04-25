@@ -396,6 +396,8 @@ async function handleRun(req: Request) {
   const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId, contentMode: rawContentMode, logoImageUrl } = body;
   const contentMode: 'name' | 'logo' = rawContentMode === 'logo' ? 'logo' : 'name';
 
+  console.log(`[MovieLedMaker] handleRun: engine=${engine}, contentMode=${contentMode}, hasLogo=${!!logoImageUrl}, hasInputText=${!!inputText}`);
+
   if (!imageUrl || typeof imageUrl !== 'string') {
     return new Response(JSON.stringify({ error: 'Imagem de referência é obrigatória' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
