@@ -356,7 +356,7 @@ const TornarSeColaborador = () => {
           <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto -mt-4">
             Exemplos reais de conteúdos publicados por colaboradores da plataforma.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 max-w-5xl mx-auto">
             {CONTENT_EXAMPLES.map((ex) => (
               <div
                 key={ex.label}
