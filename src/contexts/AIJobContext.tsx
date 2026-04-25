@@ -11,7 +11,9 @@
  */
 
 import React, { createContext, useContext, useState, useCallback, useRef, ReactNode, useEffect } from 'react';
-import type { JobStatus } from '@/ai/JobManager';
+import type { JobStatus, ToolType } from '@/ai/JobManager';
+import { TABLE_MAP } from '@/ai/JobManager';
+import { supabase } from '@/integrations/supabase/client';
 
 interface AIJobContextType {
   // Estado do job ativo
@@ -21,7 +23,7 @@ interface AIJobContextType {
   jobStatus: JobStatus | null;
   
   // Ações
-  registerJob: (jobId: string, toolName: string, status: JobStatus) => void;
+  registerJob: (jobId: string, toolName: string, status: JobStatus, toolType?: ToolType) => void;
   updateJobStatus: (status: JobStatus) => void;
   clearJob: () => void;
   
@@ -53,6 +55,7 @@ export const AIJobProvider = ({ children }: AIJobProviderProps) => {
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [activeToolName, setActiveToolName] = useState<string | null>(null);
   const [jobStatus, setJobStatus] = useState<JobStatus | null>(null);
+  const [activeToolType, setActiveToolType] = useState<ToolType | null>(null);
   
   // Ref para evitar tocar som múltiplas vezes
   const hasPlayedSoundRef = useRef(false);
@@ -96,11 +99,12 @@ export const AIJobProvider = ({ children }: AIJobProviderProps) => {
   }, []);
   
   // Registrar um novo job ativo
-  const registerJob = useCallback((jobId: string, toolName: string, status: JobStatus) => {
+  const registerJob = useCallback((jobId: string, toolName: string, status: JobStatus, toolType?: ToolType) => {
     console.log(`[AIJobContext] Registering job: ${jobId} (${toolName}) - ${status}`);
     setActiveJobId(jobId);
     setActiveToolName(toolName);
     setJobStatus(status);
+    setActiveToolType(toolType ?? null);
     hasPlayedSoundRef.current = false; // Reset flag para novo job
   }, []);
   
@@ -121,9 +125,47 @@ export const AIJobProvider = ({ children }: AIJobProviderProps) => {
     setActiveJobId(null);
     setActiveToolName(null);
     setJobStatus(null);
+    setActiveToolType(null);
     hasPlayedSoundRef.current = false;
   }, []);
-  
+
+  // Polling de fallback: se houver job ativo e conhecermos a tabela, fazer poll a cada 4s
+  // Isso garante que mesmo se a página da ferramenta desmontar (perdendo subscription realtime),
+  // o botão flutuante global ainda detecta a conclusão do job.
+  useEffect(() => {
+    if (!activeJobId || !jobStatus || !ACTIVE_STATUSES.includes(jobStatus)) return;
+    if (!activeToolType || !TABLE_MAP[activeToolType]) return;
+
+    const tableName = TABLE_MAP[activeToolType];
+    let cancelled = false;
+
+    const poll = async () => {
+      try {
+        const { data, error } = await (supabase as any)
+          .from(tableName)
+          .select('status')
+          .eq('id', activeJobId)
+          .maybeSingle();
+        if (cancelled || error || !data) return;
+        if (data.status && data.status !== jobStatus) {
+          console.log(`[AIJobContext] Polling detected status change: ${jobStatus} → ${data.status}`);
+          updateJobStatus(data.status as JobStatus);
+        }
+      } catch (e) {
+        // silencioso
+      }
+    };
+
+    const id = setInterval(poll, 4000);
+    // poll inicial rápido
+    const t = setTimeout(poll, 1500);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+      clearTimeout(t);
+    };
+  }, [activeJobId, jobStatus, activeToolType, updateJobStatus]);
+
   return (
     <AIJobContext.Provider value={{
       isJobActive,
