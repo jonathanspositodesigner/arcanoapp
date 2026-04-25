@@ -1,5 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import decodePng from 'npm:@jsquash/png@3.0.1/decode.js'
+import decodeJpeg from 'npm:@jsquash/jpeg@1.5.0/decode.js'
+import decodeWebp from 'npm:@jsquash/webp@1.4.0/decode.js'
+import encodeWebp from 'npm:@jsquash/webp@1.4.0/encode.js'
+import { resize } from 'npm:@jsquash/resize@2.1.0'
 
 /**
  * GENERATE-THUMBNAIL
@@ -37,6 +42,44 @@ function isAllowedDomain(url: string): boolean {
   } catch {
     return false
   }
+}
+
+const TARGET_WIDTH = 300
+
+/**
+ * Decodifica imagem (png/jpeg/webp) → ImageData,
+ * redimensiona para 300px de largura mantendo proporção,
+ * e re-encoda como WebP com qualidade 75 (~bom balanço size/qualidade).
+ */
+async function makeThumbnailWebp(buffer: ArrayBuffer, contentType: string): Promise<Uint8Array> {
+  // 1. Decodificar conforme o tipo
+  let imageData: ImageData
+  if (contentType.includes('png')) {
+    imageData = await decodePng(buffer)
+  } else if (contentType.includes('jpeg') || contentType.includes('jpg')) {
+    imageData = await decodeJpeg(buffer)
+  } else if (contentType.includes('webp')) {
+    imageData = await decodeWebp(buffer)
+  } else {
+    // Tenta png como fallback
+    imageData = await decodePng(buffer)
+  }
+
+  // 2. Calcular altura proporcional
+  const ratio = imageData.height / imageData.width
+  const targetWidth = Math.min(TARGET_WIDTH, imageData.width)
+  const targetHeight = Math.round(targetWidth * ratio)
+
+  // 3. Redimensionar
+  const resized = await resize(imageData, {
+    width: targetWidth,
+    height: targetHeight,
+    method: 'lanczos3',
+  })
+
+  // 4. Encodar como WebP
+  const webpBuffer = await encodeWebp(resized, { quality: 75 })
+  return new Uint8Array(webpBuffer)
 }
 
 serve(async (req) => {
@@ -96,25 +139,32 @@ serve(async (req) => {
     
     console.log(`[GenerateThumbnail] Image fetched: ${imageBuffer.byteLength} bytes, type: ${contentType}`)
 
-    // 3. Determinar extensão
-    let extension = 'png'
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) {
-      extension = 'jpg'
-    } else if (contentType.includes('webp')) {
+    // 3. Gerar thumbnail WebP 300px (com fallback para imagem original em caso de erro)
+    let uploadBuffer: Uint8Array | ArrayBuffer = imageBuffer
+    let uploadContentType = contentType
+    let extension = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg'
+      : contentType.includes('webp') ? 'webp' : 'png'
+
+    try {
+      const thumb = await makeThumbnailWebp(imageBuffer, contentType)
+      uploadBuffer = thumb
+      uploadContentType = 'image/webp'
       extension = 'webp'
+      const reduction = ((1 - thumb.byteLength / imageBuffer.byteLength) * 100).toFixed(1)
+      console.log(`[GenerateThumbnail] Resized to 300px WebP: ${thumb.byteLength} bytes (${reduction}% smaller)`)
+    } catch (thumbErr) {
+      console.warn('[GenerateThumbnail] Thumbnail generation failed, uploading original:', thumbErr)
     }
 
-    // 4. Upload para Storage (sem compressão por enquanto - Deno não tem sharp nativo)
-    // A imagem original já está otimizada pelo RunningHub
+    // 4. Upload para Storage
     const storagePath = `${table}/${jobId}.${extension}`
-    
     console.log(`[GenerateThumbnail] Uploading to: ai-thumbnails/${storagePath}`)
 
     const { error: uploadError } = await supabase.storage
       .from('ai-thumbnails')
-      .upload(storagePath, imageBuffer, {
-        contentType,
-        upsert: true, // Sobrescreve se já existir
+      .upload(storagePath, uploadBuffer, {
+        contentType: uploadContentType,
+        upsert: true,
       })
 
     if (uploadError) {
@@ -148,7 +198,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       thumbnailUrl,
-      size: imageBuffer.byteLength,
+      originalSize: imageBuffer.byteLength,
+      thumbnailSize: uploadBuffer instanceof Uint8Array ? uploadBuffer.byteLength : imageBuffer.byteLength,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
