@@ -53,8 +53,6 @@ const PartnerEarnings = () => {
   const navigate = useNavigate();
   const [partnerId, setPartnerId] = useState<string | null>(null);
   const [earnings, setEarnings] = useState<EarningRecord[]>([]);
-  const [totalBalance, setTotalBalance] = useState(0);
-  const [totalUnlocks, setTotalUnlocks] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [periodFilter, setPeriodFilter] = useState<PeriodFilter>("30days");
   const [customFrom, setCustomFrom] = useState<Date | undefined>();
@@ -83,15 +81,9 @@ const PartnerEarnings = () => {
 
     setPartnerId(partnerData.id);
 
-    // Fetch total balance
-    const { data: balanceData } = await supabase
-      .from('collaborator_balances')
-      .select('total_earned, total_unlocks')
-      .eq('collaborator_id', partnerData.id)
-      .maybeSingle();
-
-    setTotalBalance(balanceData?.total_earned || 0);
-    setTotalUnlocks(balanceData?.total_unlocks || 0);
+    // Saldo é derivado dos registros reais de earnings abaixo (fonte da verdade,
+    // mesma lógica do hook usePartnerBalance usado no Dashboard). Não lemos
+    // mais collaborator_balances aqui — ele é apenas cache para queries admin.
 
     const [earningsRes, toolEarningsRes, bonusRes, pixRes, withdrawalsRes] = await Promise.all([
       supabase.from('collaborator_unlock_earnings')
