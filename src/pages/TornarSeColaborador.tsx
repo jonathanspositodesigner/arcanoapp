@@ -345,12 +345,12 @@ const TornarSeColaborador = () => {
               {[...Array(2)].map((_, loopIdx) => (
                 <div key={loopIdx} className="flex gap-6 shrink-0">
                   {[
-                    { handle: "@salino3d", count: 2 },
-                    { handle: "@omatosdsgn", count: 1 },
-                    { handle: "@renatodesig", count: 14 },
-                    { handle: "@marllondoug", count: 6 },
-                    { handle: "@seabraa.desi", count: 4 },
-                    { handle: "@eversonvice", count: 3 },
+                    { handle: "@mindfy.ai", count: 2, image: collabMindfy },
+                    { handle: "@jonathandesigner", count: 1, image: collabJonathan },
+                    { handle: "@herstudio.ia", count: 14, image: collabHerstudio },
+                    { handle: "@ws_design03", count: 6, image: collabWsDesign },
+                    { handle: "@aquila.sobrinho", count: 4, image: collabAquila },
+                    { handle: "@art3com_ia", count: 3, image: collabArt3com },
                   ].map((c, idx) => (
                     <div
                       key={`${loopIdx}-${idx}`}
@@ -358,7 +358,7 @@ const TornarSeColaborador = () => {
                     >
                       <div className="relative">
                         <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/40 flex items-center justify-center overflow-hidden">
-                          <Users className="h-8 w-8 text-primary/40" />
+                          <img src={c.image} alt={c.handle} className="w-full h-full object-cover" loading="lazy" />
                         </div>
                         <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center border-2 border-background">
                           {c.count}
