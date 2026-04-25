@@ -450,6 +450,21 @@ const MovieLedMakerTool = () => {
         imageUrlForBackend = publicUrlData.publicUrl;
       }
 
+      // ===== UPLOAD DA LOGO (se modo logo) =====
+      let logoImageUrl: string | null = null;
+      if (contentMode === 'logo' && logoFile) {
+        const logoTempId = crypto.randomUUID();
+        const logoStoragePath = `movieled-logos/${verifiedUser.id}/${logoTempId}.jpg`;
+        const { error: logoUploadError } = await supabase.storage
+          .from('artes-cloudinary')
+          .upload(logoStoragePath, logoFile, { contentType: logoFile.type || 'image/jpeg', upsert: true });
+        if (logoUploadError) throw new Error('Erro no upload da logo: ' + logoUploadError.message);
+        const { data: logoUrlData } = supabase.storage
+          .from('artes-cloudinary')
+          .getPublicUrl(logoStoragePath);
+        logoImageUrl = logoUrlData.publicUrl;
+      }
+
       setStatus('processing');
 
       // ===== EXISTING ENGINES PATH (Wan 2.2 + Evolink) =====
@@ -462,7 +477,9 @@ const MovieLedMakerTool = () => {
           body: {
             imageUrl: imageUrlForBackend,
             fallbackImageUrl,
-            inputText: inputText.trim(),
+            inputText: contentMode === 'name' ? inputText.trim() : null,
+            logoImageUrl,
+            contentMode,
             engine: selectedEngine,
             referencePromptId: referencePromptId,
           },
