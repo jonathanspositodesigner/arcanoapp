@@ -32,6 +32,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import { Slider } from "@/components/ui/slider";
+import AnimatedCounter from "@/components/AnimatedCounter";
 
 const CONTENT_EXAMPLES: Array<{
   type: "image" | "video";
@@ -279,14 +280,23 @@ const TornarSeColaborador = () => {
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                   <Users className="h-6 w-6 text-primary" />
                 </div>
-                <span className="text-3xl font-bold text-foreground">+7.200</span>
+                <AnimatedCounter
+                  end={7200}
+                  prefix="+"
+                  className="text-3xl font-bold text-foreground"
+                />
                 <span className="text-sm text-muted-foreground text-center">membros ativos na plataforma</span>
               </div>
               <div className="flex flex-col items-center gap-2 p-4">
                 <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
                   <TrendingUp className="h-6 w-6 text-primary" />
                 </div>
-                <span className="text-3xl font-bold text-foreground">+12 mil</span>
+                <AnimatedCounter
+                  end={12}
+                  prefix="+"
+                  suffix=" mil"
+                  className="text-3xl font-bold text-foreground"
+                />
                 <span className="text-sm text-muted-foreground text-center">visitas diárias na plataforma</span>
               </div>
               <div className="flex flex-col items-center gap-2 p-4">
