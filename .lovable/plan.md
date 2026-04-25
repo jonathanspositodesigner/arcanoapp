@@ -1,50 +1,45 @@
-## Objetivo
-Adicionar um botão **"Criar Coleção"** no `PartnerDashboard` que abre um fluxo igual ao do admin (`AdminCollections`), mas filtrado para mostrar **apenas os prompts aprovados do próprio parceiro** — nunca prompts do admin nem de outros colaboradores.
+Vou corrigir a página de Conquistas para não depender apenas do registro em `partner_badges` quando o badge pode ser derivado dos dados reais do parceiro.
 
-## Estrutura existente reutilizada
-- Tabelas `admin_collections` + `admin_collection_items` já existem, com slug único e link público via `/biblioteca-prompts?colecao=<slug>`.
-- O `CollectionModal` em `BibliotecaPrompts.tsx` já renderiza qualquer coleção pública pelo slug, então o link compartilhável funciona automaticamente.
-- RLS atual: `admin_collections` exige `has_role(admin)` para INSERT/UPDATE/DELETE. Precisa ser ampliada para permitir parceiros gerenciarem **as próprias coleções**.
+O que encontrei:
+- O parceiro `jonathan.lifecazy@gmail.com` existe com 16 prompts aprovados e já tem `first_prompt` no banco.
+- Mesmo assim, a UI pode continuar mostrando desativado se a leitura de `partner_badges` falhar, vier atrasada/cacheada, ou se algum perfil tiver estado legado inconsistente.
+- A página hoje marca badge conquistado somente com `badges.some(...)`, sem conferir o requisito real do badge.
 
-## Mudanças
+Plano de correção:
 
-### 1. Banco (migração)
-- Adicionar coluna `created_by uuid` (nullable, default `auth.uid()`) em `admin_collections` para identificar o autor (admin → fica null/admin id; parceiro → seu user id).
-- Adicionar coluna `partner_id uuid` (nullable) em `admin_collections` referenciando o partner. Quando preenchida, indica que é uma coleção de parceiro.
-- Atualizar políticas RLS:
-  - Manter: admins gerenciam tudo.
-  - Adicionar: parceiros autenticados podem `INSERT/UPDATE/DELETE` suas próprias coleções (`partner_id = auth.uid()`).
-  - Adicionar: parceiros podem `INSERT/DELETE` itens em `admin_collection_items` apenas se o `collection_id` pertence a uma coleção com `partner_id = auth.uid()` E o `prompt_id` pertence a um `partner_prompts` com `partner_id = auth.uid()` e `approved = true` (validação via subquery dentro da policy).
-  - Manter SELECT público.
+1. Atualizar `src/pages/PartnerConquistas.tsx`
+   - Buscar contagens reais do parceiro logado junto com os dados atuais:
+     - prompts aprovados e não rejeitados
+     - ganhos totais
+     - quantidade de jobs em ferramentas
+     - quantidade de jobs Seedance
+   - Criar uma função única de estado do badge que combine:
+     - registro existente em `partner_badges`
+     - regra derivada dos dados reais
+   - Para `first_prompt`, considerar conquistado sempre que o parceiro tiver `approved = true` e `rejected != true` em pelo menos 1 prompt.
+   - Para `diamond`, considerar conquistado com 50+ prompts aprovados e não rejeitados.
+   - Para `millionaire`, `legendary`, `ai_master` e `seedance_star`, também derivar do saldo/nível/contagens já disponíveis.
 
-### 2. Nova página `src/pages/PartnerCollections.tsx`
-Cópia adaptada de `AdminCollections.tsx` com:
-- Verificação de auth de parceiro (igual ao restante do PartnerDashboard) em vez de checagem de admin.
-- `fetchPrompts()` consulta **apenas** `partner_prompts` com `.eq('partner_id', user.id).eq('approved', true).eq('rejected', false)`. Sem `admin_prompts`, sem `community_prompts`, sem prompts de outros parceiros.
-- `fetchCollections()` lista apenas coleções `where partner_id = user.id`.
-- Ao criar coleção: insere com `partner_id = user.id` e `prompt_type = 'partner'` em todos os itens.
-- Sem filtro "Source filter" (admin/partner) — sempre é partner.
-- Botão Voltar leva para `/parceiro-dashboard`.
-- Link copiado: mesmo formato `${origin}/biblioteca-prompts?colecao=<slug>`.
+2. Ajustar o visual dos badges conquistados
+   - Manter os badges bloqueados clarinhos/grayscale.
+   - Forçar badges conquistados com contraste alto, borda/ring dourada, selo de check e texto “Conquistado”.
+   - Isso garante que um badge ativo nunca pareça desativado.
 
-### 3. Rota
-Em `src/App.tsx` adicionar:
-```tsx
-const PartnerCollections = lazy(() => import("./pages/PartnerCollections"));
-<Route path="/parceiro-colecoes" element={<PartnerCollections />} />
-```
+3. Corrigir o banco para consistência geral
+   - Fazer um backfill de dados, não mudança estrutural:
+     - inserir `first_prompt` para todo parceiro com 1+ prompt aprovado e não rejeitado que ainda não tenha o badge;
+     - inserir `diamond` para todo parceiro com 50+ prompts aprovados e não rejeitados que ainda não tenha o badge.
+   - Usar conflito ignorado para não duplicar nada.
 
-### 4. Botão no `PartnerDashboard.tsx`
-Mudar o grid de **3 colunas** para **2x2** (4 botões) na seção "Quick Actions" (linha ~532), mantendo o estilo atual:
-- Enviar Prompt (existente)
-- Saldo & Saques (existente)
-- Conquistas (existente)
-- **Criar Coleção** (novo) → ícone `FolderPlus`, navega para `/parceiro-colecoes`.
+4. Corrigir a regra futura de concessão automática
+   - Atualizar a função/trigger de aprovação para contar somente prompts aprovados e não rejeitados.
+   - Garantir que `first_prompt` seja concedido quando o parceiro atingir 1+ prompt aprovado, não apenas quando a contagem for exatamente 1.
+   - Isso evita falha em casos legados ou reaprovação.
 
-Layout: `grid-cols-2 md:grid-cols-4 gap-2.5` para ficar bom no mobile e desktop.
+5. Versionar a atualização
+   - Incrementar `APP_BUILD_VERSION` em `src/pages/Index.tsx` para forçar atualização do app conforme a regra do projeto.
 
-## Resultado para o usuário
-- Parceiro vê novo botão "Criar Coleção" no dashboard.
-- Ao clicar, abre tela onde pode nomear a coleção, selecionar entre os **próprios prompts aprovados** e gerar um link compartilhável.
-- O link abre o `CollectionModal` público existente, mostrando apenas os prompts escolhidos.
-- Garantia de segurança via RLS: mesmo via API direta, parceiro não consegue incluir prompts que não sejam dele e aprovados.
+Resultado esperado:
+- Qualquer parceiro com pelo menos 1 prompt aprovado e não rejeitado verá “Primeira Contribuição” ativo na página de Conquistas.
+- A correção vale para todos os perfis, não só para um usuário específico.
+- A UI fica resiliente mesmo se algum registro de badge estiver faltando ou atrasado.
