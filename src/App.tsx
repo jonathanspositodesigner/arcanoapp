@@ -232,6 +232,7 @@ const AppContent = () => {
           <Route path="/" element={<Index />} />
           <Route path="/promptverso" element={<Promptverso />} />
           <Route path="/biblioteca-prompts" element={<BibliotecaPrompts />} />
+          <Route path="/minhas-criacoes" element={<MinhasCriacoes />} />
           <Route path="/biblioteca-artes" element={<BibliotecaArtes />} />
           <Route path="/biblioteca-artes-hub" element={<BibliotecaArtesHub />} />
           <Route path="/biblioteca-artes-musicos" element={<BibliotecaArtesMusicos />} />
