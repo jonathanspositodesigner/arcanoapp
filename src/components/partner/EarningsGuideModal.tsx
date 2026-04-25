@@ -138,7 +138,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                   <Trophy className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  3. Escale como Arcano Founder
+                  3. Escale como Colaborador Arcano
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed">
