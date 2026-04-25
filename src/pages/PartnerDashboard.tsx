@@ -614,7 +614,7 @@ const PartnerDashboard = () => {
               <span className="text-3xl">🔥</span>
               <div>
                 <p className="text-2xl font-extrabold text-foreground leading-none">
-                  {partnerGamification?.current_streak} dias
+                  Dias seguidos postando: {partnerGamification?.current_streak} dias
                 </p>
                 <p className="text-xs text-muted-foreground mt-0.5">
                   Sequência · Recorde: {partnerGamification?.best_streak || 0} dias
