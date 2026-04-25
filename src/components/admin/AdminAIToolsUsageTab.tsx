@@ -620,7 +620,9 @@ const AdminAIToolsUsageTab = () => {
   function getRecordRevenueInternal(record: UsageRecord): number {
     if (record.status === 'failed') return 0;
     const userType = userTypeMap[record.user_id] || 'free';
-    if (USER_TYPES_SEM_RECEITA.has(userType)) return 0;
+    // Forced-charge tools/engines geram receita mesmo para Unlimited.
+    const forced = isForcedChargeRecord(record);
+    if (USER_TYPES_SEM_RECEITA.has(userType) && !forced) return 0;
     const receitaPorCreditoAplicada = getReceitaPorCreditoAplicada(record.created_at, receitaPorCreditoAtual);
     return record.user_credit_cost * receitaPorCreditoAplicada;
   }
@@ -647,16 +649,10 @@ const AdminAIToolsUsageTab = () => {
     for (const [toolName, count] of Object.entries(toolCompletedCounts)) {
       const apiCost = getApiCostFromSettings(toolName, aiToolSettingsMap);
       total += count * apiCost;
-      // Add estimated video API costs for video tools
-      if (VIDEO_TOOL_NAMES.has(toolName)) {
-        const avgVideoCostMap: Record<string, number> = {
-          "Gerar Vídeo": 0.504,      // average Veo 3.1 fast cost per job (~8s)
-          "MovieLed Maker": 2.00,     // Kling 2.5 = R$2.00 per job
-          "Seedance 2.0": 0.424 * 8,   // average standard 480p i2v cost
-          "Video Upscaler": 0,
-        };
-        total += count * (avgVideoCostMap[toolName] || 0);
-      }
+      // Custo de vídeo (Evolink/Kling/etc) é calculado por linha em getVideoCostBRL com o
+      // detalhamento real do job (engine, duração, áudio). Não somar média no resumo —
+      // isso causava cobrança duplicada (ex.: MovieLed Kling = R$2 fixo + custo por segundo).
+      // Mantemos apenas custos fixos de API por job vindos de ai_tool_settings.
     }
     return total;
   }, [toolCompletedCounts, aiToolSettingsMap]);
@@ -745,10 +741,11 @@ const AdminAIToolsUsageTab = () => {
   const getRecordRevenue = useCallback((record: UsageRecord) => {
     if (record.status === 'failed') return 0;
     const userType = userTypeMap[record.user_id] || 'free';
-    if (USER_TYPES_SEM_RECEITA.has(userType)) return 0;
+    const forced = isForcedChargeRecord(record);
+    if (USER_TYPES_SEM_RECEITA.has(userType) && !forced) return 0;
     const receitaPorCreditoAplicada = getReceitaPorCreditoAplicada(record.created_at, receitaPorCreditoAtual);
     return record.user_credit_cost * receitaPorCreditoAplicada;
-  }, [receitaPorCreditoAtual, userTypeMap]);
+  }, [receitaPorCreditoAtual, userTypeMap, videoJobDetailsMap]);
 
   const handleCancelJob = async (record: UsageRecord) => {
     if (cancellingJobId) return;
