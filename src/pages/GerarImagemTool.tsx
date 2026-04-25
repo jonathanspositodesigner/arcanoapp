@@ -462,6 +462,14 @@ const GerarImagemTool = () => {
           },
         });
 
+        // Atribuição de ganho ao colaborador (fire-and-forget)
+        if (referencePromptId) {
+          supabase.from('image_generator_jobs')
+            .update({ reference_prompt_id: referencePromptId } as any)
+            .eq('id', newJobId)
+            .then(() => {}, () => {});
+        }
+
         if (error) {
           const errMsg = error.message || 'Erro desconhecido';
           setStatus('failed');
@@ -530,6 +538,14 @@ const GerarImagemTool = () => {
         setJobId(newJobId);
         registerJob(newJobId, 'image_generator', 'pending');
 
+        // Atribuição de ganho ao colaborador (fire-and-forget)
+        if (referencePromptId) {
+          supabase.from('image_generator_jobs')
+            .update({ reference_prompt_id: referencePromptId } as any)
+            .eq('id', newJobId)
+            .then(() => {}, () => {});
+        }
+
         // Start job via edge function
         const result = await startJob('image_generator', newJobId, {
           referenceImageUrls: uploadedUrls,
@@ -588,6 +604,14 @@ const GerarImagemTool = () => {
           registerJob(newJobId, 'image_generator', 'pending');
           setStatus('running');
           setProgress(20);
+
+          // Atribuição de ganho ao colaborador (fire-and-forget)
+          if (referencePromptId) {
+            supabase.from('image_generator_jobs')
+              .update({ reference_prompt_id: referencePromptId } as any)
+              .eq('id', newJobId)
+              .then(() => {}, () => {});
+          }
 
           // Call GPT Image edge function (submit only — returns immediately)
           const runFunction = effectiveEngine === 'gpt_image_evolink' ? 'evolink-gpt-image/run' : 'runninghub-gpt-image/run';
