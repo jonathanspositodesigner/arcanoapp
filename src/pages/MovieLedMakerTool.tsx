@@ -518,7 +518,8 @@ const MovieLedMakerTool = () => {
 
   const isProcessing = status === 'processing' || status === 'uploading' || isQueued;
   const hasImage = !!selectedLibraryItem || !!uploadedImage;
-  const canGenerate = hasImage && inputText.trim().length > 0 && !isProcessing && status !== 'completed';
+  const hasContent = contentMode === 'name' ? inputText.trim().length > 0 : !!logoFile;
+  const canGenerate = hasImage && hasContent && !isProcessing && status !== 'completed' && !logoProcessing;
 
   return (
     <AppLayout fullScreen>
