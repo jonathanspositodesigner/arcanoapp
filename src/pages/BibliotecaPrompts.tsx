@@ -35,6 +35,8 @@ import { useAIToolSettings } from "@/hooks/useAIToolSettings";
 import { useSmartSearch } from "@/hooks/useSmartSearch";
 import { removeAccents } from "@/lib/synonyms";
 import { getDeviceFingerprint } from "@/lib/deviceFingerprint";
+import MobileFilterDropdown from "@/components/MobileFilterDropdown";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const isVideoUrl = (url: string) => {
   const videoExtensions = ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.m4v'];
@@ -88,6 +90,7 @@ const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation('prompts');
+  const isMobile = useIsMobile();
 
   const colecaoParam = searchParams.get("colecao");
 
@@ -697,7 +700,7 @@ const BibliotecaPrompts = () => {
           </div>
 
           {/* Category Scrollable Chips */}
-          <div className="flex gap-1.5 overflow-x-auto pb-2 scrollbar-hide" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <div className={`${isMobile ? "hidden" : "flex"} gap-1.5 overflow-x-auto pb-2 scrollbar-hide`} style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             {categories.map(cat => {
               const isSelected = selectedCategory === cat;
               const isSeedance = cat === "Seedance 2";
@@ -727,6 +730,20 @@ const BibliotecaPrompts = () => {
               );
             })}
           </div>
+
+          {/* Mobile Category Dropdown */}
+          {isMobile && (
+            <div className="mb-2">
+              <MobileFilterDropdown
+                categories={categories.map(getCategoryDisplayName)}
+                selectedCategory={getCategoryDisplayName(selectedCategory)}
+                onSelectCategory={(displayName) => {
+                  const original = categories.find(c => getCategoryDisplayName(c) === displayName) || displayName;
+                  handleCategorySelect(original);
+                }}
+              />
+            </div>
+          )}
 
           {/* Subcategory Chips (shown when category has subcategories) */}
           {availableSubcategories.length > 0 && (
