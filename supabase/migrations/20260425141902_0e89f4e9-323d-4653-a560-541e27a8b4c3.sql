@@ -1,0 +1,1 @@
+ALTER TABLE public.partner_prompts ADD COLUMN IF NOT EXISTS rejection_reason TEXT;
