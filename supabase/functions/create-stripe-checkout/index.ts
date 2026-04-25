@@ -119,9 +119,9 @@ serve(async (req) => {
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
-    console.error("[Stripe Checkout] Error:", error.message);
+    console.error("[Stripe Checkout] Error:", (error as Error)?.message);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: (error as Error)?.message || 'Erro interno' }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
