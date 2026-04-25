@@ -34,6 +34,13 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   const { theme, toggleTheme } = useTheme();
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
+
+  // Permite que outros componentes (ex: FloatingJobButton) abram o modal globalmente
+  useEffect(() => {
+    const handler = () => setShowCreationsModal(true);
+    window.addEventListener("open-my-creations", handler);
+    return () => window.removeEventListener("open-my-creations", handler);
+  }, []);
   const {
     remainingUnlocks,
     dailyLimit: premiumDailyLimit,
