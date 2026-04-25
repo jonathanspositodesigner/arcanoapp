@@ -8,7 +8,9 @@ import React, { lazy, Suspense, useEffect } from "react";
 import { LocaleProvider } from "./contexts/LocaleContext";
 import { FloatingToolsNav } from "./components/FloatingToolsNav";
 import FloatingJobButton from "./components/FloatingJobButton";
-import GlobalMyCreationsHost from "./components/GlobalMyCreationsHost";
+// GlobalMyCreationsHost foi substituído pela página /minhas-criacoes.
+// O arquivo permanece no projeto como BACKUP — para reverter, basta voltar a
+// importar e montar <GlobalMyCreationsHost /> aqui.
 
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { CreditsProvider } from "./contexts/CreditsContext";
@@ -172,6 +174,7 @@ const UpscalerArcanoV3Teste = lazy(() => import("./pages/UpscalerArcanoV3Teste")
 const SelfieNaLua = lazy(() => import("./pages/SelfieNaLua"));
 const CinemaStudio = lazy(() => import("./pages/CinemaStudio"));
 const Seedance2 = lazy(() => import("./pages/Seedance2"));
+const MinhasCriacoes = lazy(() => import("./pages/MinhasCriacoes"));
 import { useInstallTracker } from "./hooks/useInstallTracker";
 import { useUtmTracker } from "./hooks/useUtmTracker";
 
@@ -224,7 +227,6 @@ const AppContent = () => {
 
       <FloatingToolsNav />
       <FloatingJobButton />
-      <GlobalMyCreationsHost />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
