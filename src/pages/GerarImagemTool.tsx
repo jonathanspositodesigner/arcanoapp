@@ -331,6 +331,26 @@ const GerarImagemTool = () => {
     return () => window.removeEventListener('paste', handlePaste);
   }, [processFiles, referenceImages.length, maxRefs]);
 
+  // Prefill vindo de "Minhas Criações"
+  useEffect(() => {
+    const state = location.state as { prefillImageUrl?: string } | null;
+    if (!state?.prefillImageUrl) return;
+    const url = state.prefillImageUrl;
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const file = await urlToFile(url);
+        processFiles([file]);
+        toast.success('Imagem carregada de Minhas Criações');
+      } catch (err) {
+        console.error('[GerarImagem] Prefill failed:', err);
+        toast.error('Não foi possível carregar a imagem. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Reset state for new generation
   const resetJobState = () => {
     setJobId(null);
