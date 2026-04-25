@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
@@ -60,6 +61,8 @@ type GenerationMode = 'prompt_only' | 'with_frames';
 
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
