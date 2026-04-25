@@ -6685,13 +6685,13 @@ export type Database = {
         }
         Returns: {
           email: string
-          has_history: boolean
-          lifetime_balance: number
+          last_transaction_at: string
           monthly_balance: number
           name: string
+          permanent_balance: number
+          phone: string
           total_balance: number
           total_count: number
-          updated_at: string
           user_id: string
         }[]
       }
