@@ -3,11 +3,17 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { evolinkGenerate, evolinkPoll } from "../_shared/evolink-client.ts";
 
 /**
- * MOVIELED MAKER - EDGE FUNCTION v4
+ * MOVIELED MAKER - EDGE FUNCTION v5
  * 
  * Gera movies para telão de LED:
  * - Wan 2.2: via RunningHub workflow (500 créditos, 15s, 720p)
  * - Veo 3.1: via Evolink API centralizada (1500 créditos, 6s, 1080p, sem áudio)
+ * - Kling 2.5 Turbo: via RunningHub (900 créditos, 5s, 720p)
+ *
+ * Modos de conteúdo:
+ * - 'name': texto exibido no telão (fluxo padrão)
+ * - 'logo': imagem de logo exibida no telão (apenas Kling 2.5 ou Wan 2.2,
+ *           usa WebApp IDs dedicados com nodeInfoList expandido)
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
@@ -387,7 +393,8 @@ async function handleRun(req: Request) {
   const verifiedUserId = authResult.userId;
 
   const body = await req.json();
-  const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId } = body;
+  const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId, contentMode: rawContentMode, logoImageUrl } = body;
+  const contentMode: 'name' | 'logo' = rawContentMode === 'logo' ? 'logo' : 'name';
 
   if (!imageUrl || typeof imageUrl !== 'string') {
     return new Response(JSON.stringify({ error: 'Imagem de referência é obrigatória' }), {
@@ -395,15 +402,33 @@ async function handleRun(req: Request) {
     });
   }
 
-  if (!inputText || typeof inputText !== 'string' || inputText.trim().length === 0) {
-    return new Response(JSON.stringify({ error: 'Nome para o telão é obrigatório' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  if (contentMode === 'name') {
+    if (!inputText || typeof inputText !== 'string' || inputText.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Nome para o telão é obrigatório' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  } else {
+    if (!logoImageUrl || typeof logoImageUrl !== 'string') {
+      return new Response(JSON.stringify({ error: 'Logo é obrigatória no modo Logo' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   const selectedEngine = engine && ENGINE_COSTS[engine] ? engine : 'veo3.1';
   const creditCost = ENGINE_COSTS[selectedEngine];
   const isEvolink = selectedEngine === 'veo3.1';
+
+  // Modo Logo só funciona com Kling 2.5 ou Wan 2.2 (Veo 3.1 não tem fluxo com logo)
+  if (contentMode === 'logo' && selectedEngine !== 'kling2.5' && selectedEngine !== 'wan2.2') {
+    return new Response(JSON.stringify({
+      error: 'Modo Logo está disponível apenas em Kling 2.5 Turbo ou Wan 2.2',
+      code: 'LOGO_MODE_ENGINE_UNSUPPORTED',
+    }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   // Check user active job
   try {
@@ -454,7 +479,9 @@ async function handleRun(req: Request) {
       status: 'pending',
       engine: selectedEngine,
       input_image_url: imageUrl,
-      input_text: inputText.trim(),
+      input_text: contentMode === 'name' ? inputText.trim() : null,
+      content_mode: contentMode,
+      logo_image_url: logoImageUrl || null,
       reference_prompt_id: referencePromptId || null,
       current_step: 'pending',
       api_account: isEvolink ? 'evolink' : 'primary',
@@ -621,12 +648,54 @@ async function handleRun(req: Request) {
     });
   }
 
+  // Upload da LOGO (apenas no modo logo) — também precisa estar no RunningHub
+  let rhLogoFileName: string | null = null;
+  if (contentMode === 'logo' && logoImageUrl) {
+    try {
+      await logStep(jobId, 'uploading_logo');
+      rhLogoFileName = await uploadImageToRunningHub(logoImageUrl, null, 'logo_image');
+      await logStep(jobId, 'logo_uploaded', { rhLogoFileName });
+    } catch (error: any) {
+      const errorMsg = error.message || 'Logo upload failed';
+      console.error('[MovieLedMaker] Logo upload error:', errorMsg);
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: verifiedUserId, _amount: creditCost,
+          _description: `MOVIELED_LOGO_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}`
+        });
+        await logStepFailure(jobId, 'upload_logo', errorMsg);
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: `Erro ao processar logo. Tente novamente.`,
+          credits_refunded: true,
+          completed_at: new Date().toISOString()
+        }).eq('id', jobId);
+      } catch {
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: `Erro ao processar logo. Tente novamente.`,
+          completed_at: new Date().toISOString()
+        }).eq('id', jobId);
+      }
+      return new Response(JSON.stringify({
+        error: 'Erro ao processar logo. Tente novamente.',
+        code: 'LOGO_TRANSFER_ERROR',
+        refunded: true,
+      }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
   // Save job_payload
   const jobPayload = {
     engine: selectedEngine,
-    inputText: inputText.trim(),
+    contentMode,
+    inputText: contentMode === 'name' ? inputText.trim() : null,
     rhFileName,
+    rhLogoFileName,
     imageUrl,
+    logoImageUrl: logoImageUrl || null,
     fallbackImageUrl: promptFallbackUrl,
     referencePromptId: referencePromptId || null,
   };

@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { processLogoForUpload } from '@/lib/movieled-logo-processor';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
@@ -70,6 +71,14 @@ const MovieLedMakerTool = () => {
 
   // Text input
   const [inputText, setInputText] = useState('');
+
+  // Content mode: 'name' (texto) ou 'logo' (upload de imagem da logo)
+  const [contentMode, setContentMode] = useState<'name' | 'logo'>('name');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoHadTransparency, setLogoHadTransparency] = useState(false);
+  const [logoProcessing, setLogoProcessing] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Job state
   const [status, setStatus] = useState<ProcessingStatus>('idle');
@@ -311,6 +320,44 @@ const MovieLedMakerTool = () => {
     return uploadedImage;
   };
 
+  // ===== LOGO HANDLERS =====
+  const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) {
+      toast.error('Use uma imagem PNG, JPG ou WEBP');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Logo muito grande. Máx 10MB.');
+      return;
+    }
+    setLogoProcessing(true);
+    try {
+      const { file: processedFile, hadTransparency } = await processLogoForUpload(file);
+      setLogoFile(processedFile);
+      setLogoHadTransparency(hadTransparency);
+      const previewUrl = URL.createObjectURL(processedFile);
+      setLogoPreview(previewUrl);
+      if (hadTransparency) {
+        toast.success('Logo detectada sem fundo. Chroma key verde aplicado automaticamente!');
+      }
+    } catch (err: any) {
+      console.error('[MovieLed] Logo processing error:', err);
+      toast.error(err?.message || 'Erro ao processar logo');
+    } finally {
+      setLogoProcessing(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleLogoRemove = () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoHadTransparency(false);
+  };
+
   // Handle generate
   const handleGenerate = async () => {
     if (!startSubmit()) return;
@@ -321,10 +368,18 @@ const MovieLedMakerTool = () => {
       endSubmit();
       return;
     }
-    if (!inputText.trim()) {
-      toast.error('Digite o nome para o telão');
-      endSubmit();
-      return;
+    if (contentMode === 'name') {
+      if (!inputText.trim()) {
+        toast.error('Digite o nome para o telão');
+        endSubmit();
+        return;
+      }
+    } else {
+      if (!logoFile) {
+        toast.error('Envie uma logo para o telão');
+        endSubmit();
+        return;
+      }
     }
     if (!user?.id) {
       setNoCreditsReason('not_logged');
@@ -395,6 +450,21 @@ const MovieLedMakerTool = () => {
         imageUrlForBackend = publicUrlData.publicUrl;
       }
 
+      // ===== UPLOAD DA LOGO (se modo logo) =====
+      let logoImageUrl: string | null = null;
+      if (contentMode === 'logo' && logoFile) {
+        const logoTempId = crypto.randomUUID();
+        const logoStoragePath = `movieled-logos/${verifiedUser.id}/${logoTempId}.jpg`;
+        const { error: logoUploadError } = await supabase.storage
+          .from('artes-cloudinary')
+          .upload(logoStoragePath, logoFile, { contentType: logoFile.type || 'image/jpeg', upsert: true });
+        if (logoUploadError) throw new Error('Erro no upload da logo: ' + logoUploadError.message);
+        const { data: logoUrlData } = supabase.storage
+          .from('artes-cloudinary')
+          .getPublicUrl(logoStoragePath);
+        logoImageUrl = logoUrlData.publicUrl;
+      }
+
       setStatus('processing');
 
       // ===== EXISTING ENGINES PATH (Wan 2.2 + Evolink) =====
@@ -407,7 +477,9 @@ const MovieLedMakerTool = () => {
           body: {
             imageUrl: imageUrlForBackend,
             fallbackImageUrl,
-            inputText: inputText.trim(),
+            inputText: contentMode === 'name' ? inputText.trim() : null,
+            logoImageUrl,
+            contentMode,
             engine: selectedEngine,
             referencePromptId: referencePromptId,
           },
@@ -509,7 +581,8 @@ const MovieLedMakerTool = () => {
 
   const isProcessing = status === 'processing' || status === 'uploading' || isQueued;
   const hasImage = !!selectedLibraryItem || !!uploadedImage;
-  const canGenerate = hasImage && inputText.trim().length > 0 && !isProcessing && status !== 'completed';
+  const hasContent = contentMode === 'name' ? inputText.trim().length > 0 : !!logoFile;
+  const canGenerate = hasImage && hasContent && !isProcessing && status !== 'completed' && !logoProcessing;
 
   return (
     <AppLayout fullScreen>
@@ -579,31 +652,123 @@ const MovieLedMakerTool = () => {
                 )}
               </div>
 
-              {/* Text Input */}
+              {/* Conteúdo do Telão: Switch Nome/Logo */}
               <div>
                 <span className="text-sm font-medium text-foreground mb-2 block flex items-center gap-1.5">
                   <Type className="h-3.5 w-3.5 text-muted-foreground" />
-                  Nome no Telão
+                  Conteúdo do Telão
                 </span>
-                <div className="flex gap-2" data-tutorial-movieled="text-input">
-                  <Input
-                    value={inputText}
-                    onChange={(e) => setInputText(e.target.value)}
-                    placeholder="Ex: DJ MARCOS"
-                    disabled={isProcessing}
-                    className="bg-muted border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
-                    maxLength={50}
-                  />
+
+                {/* Switch */}
+                <div className="grid grid-cols-2 gap-0 bg-muted border border-border rounded-lg p-1 mb-2">
                   <button
-                    data-tutorial-movieled="text-confirm"
                     type="button"
-                    disabled={!inputText.trim() || isProcessing}
-                    className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                    onClick={() => setContentMode('name')}
+                    disabled={isProcessing}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs rounded-md transition-all font-medium ${
+                      contentMode === 'name'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
                   >
-                    <Check className="w-4 h-4 text-foreground" />
+                    <Type className="w-3.5 h-3.5" />
+                    Nome
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setContentMode('logo')}
+                    disabled={isProcessing}
+                    className={`flex items-center justify-center gap-1.5 py-2 px-3 text-xs rounded-md transition-all font-medium ${
+                      contentMode === 'logo'
+                        ? 'bg-primary text-primary-foreground shadow-sm'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    <ImageIcon className="w-3.5 h-3.5" />
+                    Logo
                   </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
+
+                {contentMode === 'name' ? (
+                  <>
+                    <div className="flex gap-2" data-tutorial-movieled="text-input">
+                      <Input
+                        value={inputText}
+                        onChange={(e) => setInputText(e.target.value)}
+                        placeholder="Ex: DJ MARCOS"
+                        disabled={isProcessing}
+                        className="bg-muted border-border text-foreground placeholder:text-muted-foreground text-sm flex-1"
+                        maxLength={50}
+                      />
+                      <button
+                        data-tutorial-movieled="text-confirm"
+                        type="button"
+                        disabled={!inputText.trim() || isProcessing}
+                        className="flex items-center justify-center w-10 h-10 rounded-md bg-green-600 hover:bg-green-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors shrink-0"
+                      >
+                        <Check className="w-4 h-4 text-foreground" />
+                      </button>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground mt-1">{inputText.length}/50 caracteres</p>
+                  </>
+                ) : (
+                  <>
+                    <input
+                      ref={logoInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={handleLogoSelect}
+                      className="hidden"
+                    />
+                    {!logoPreview ? (
+                      <button
+                        type="button"
+                        onClick={() => logoInputRef.current?.click()}
+                        disabled={isProcessing || logoProcessing}
+                        className="w-full border-2 border-dashed border-border rounded-lg py-6 px-3 flex flex-col items-center justify-center gap-1.5 hover:border-primary/50 hover:bg-accent transition-colors disabled:opacity-50"
+                      >
+                        {logoProcessing ? (
+                          <>
+                            <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                            <span className="text-xs text-muted-foreground">Processando logo...</span>
+                          </>
+                        ) : (
+                          <>
+                            <ImageIcon className="w-5 h-5 text-muted-foreground" />
+                            <span className="text-xs font-medium text-foreground">Enviar Logo</span>
+                            <span className="text-[10px] text-muted-foreground">PNG, JPG, WEBP — máx 10MB</span>
+                          </>
+                        )}
+                      </button>
+                    ) : (
+                      <div className="relative rounded-lg overflow-hidden border border-border bg-muted">
+                        <img src={logoPreview} alt="Logo preview" className="w-full h-32 object-contain bg-[#00B140]/10" />
+                        <button
+                          type="button"
+                          onClick={handleLogoRemove}
+                          disabled={isProcessing}
+                          className="absolute top-1.5 right-1.5 w-7 h-7 rounded-full bg-black/70 hover:bg-black flex items-center justify-center transition-colors disabled:opacity-50"
+                          aria-label="Remover logo"
+                        >
+                          <X className="w-3.5 h-3.5 text-white" />
+                        </button>
+                        {logoHadTransparency && (
+                          <div className="absolute bottom-0 inset-x-0 bg-green-600/90 px-2 py-1 flex items-center gap-1.5">
+                            <Check className="w-3 h-3 text-white" />
+                            <span className="text-[10px] text-white font-medium">Chroma key verde aplicado</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <p className="text-[10px] text-muted-foreground mt-1">
+                      {logoHadTransparency
+                        ? 'Detectamos fundo transparente e aplicamos verde chroma key automaticamente.'
+                        : logoFile
+                          ? 'Logo pronta para o telão.'
+                          : 'Logos sem fundo recebem chroma key verde automaticamente.'}
+                    </p>
+                  </>
+                )}
               </div>
 
               {/* DESKTOP ONLY: Engine + Generate + Actions */}
