@@ -235,7 +235,7 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
                   <Zap className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Dicas para virar um Founder desejado
+                  Dicas para virar um {isFounder ? "Founder" : "Colaborador"} desejado
                 </h3>
               </div>
               <ul className="text-sm text-muted-foreground space-y-1.5 pl-1">
