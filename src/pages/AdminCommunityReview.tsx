@@ -188,7 +188,6 @@ const AdminCommunityReview = () => {
     }
   };
 
-  const handleRejectPartner = async (promptId: string) => {
   const openRejectModal = (promptId: string, title: string, currentReason?: string | null) => {
     setRejectModal({ promptId, title, currentReason });
     setRejectReason(currentReason || "");
