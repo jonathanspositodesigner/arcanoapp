@@ -52,6 +52,22 @@ const categoryToSlug = (category: string): string => {
     .replace(/\s+/g, '-');
 };
 
+// Categorias elegíveis para o botão "Gerar sua versão" → /gerar-imagem (motor Nano Banana)
+const GERAR_IMAGEM_CATEGORIES = new Set([
+  'Cenários',
+  'Logos',
+  'Selos 3D',
+  'Outros',
+  'Produtos/Comida',
+]);
+const isGerarImagemCategory = (category?: string | null, imageUrl?: string | null) => {
+  if (!category) return false;
+  if (!GERAR_IMAGEM_CATEGORIES.has(category)) return false;
+  // Nunca para vídeos
+  if (imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl)) return false;
+  return true;
+};
+
 const slugToCategory = (slug: string, categories: string[]): string | null => {
   return categories.find(cat => categoryToSlug(cat) === slug) || null;
 };
