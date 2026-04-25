@@ -297,18 +297,42 @@ const TornarSeColaborador = () => {
         {/* SEÇÃO 3 — TIPOS DE CONTEÚDO */}
         <section className="space-y-8">
           <h2 className="text-2xl font-bold text-center text-foreground">O que você pode publicar</h2>
-          <div className="grid sm:grid-cols-2 gap-4 max-w-2xl mx-auto">
-            {[
-              { icon: ImageIcon, text: "Prompts de geração de imagem com IA" },
-              { icon: Video, text: "Prompts de geração de vídeo com IA (incluindo Seedance 2)" },
-              { icon: Palette, text: "Conteúdos para ferramentas como Pose Changer, Veste AI, Arcano Cloner, MovieLED Maker" },
-              { icon: Wand2, text: "Qualquer prompt criativo e original gerado por você" },
-            ].map((item, i) => (
-              <div key={i} className="flex items-start gap-3 rounded-lg border border-border/50 bg-card/50 p-4">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <item.icon className="h-4 w-4 text-primary" />
+          <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto -mt-4">
+            Exemplos reais de conteúdos publicados por colaboradores da plataforma.
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+            {CONTENT_EXAMPLES.map((ex) => (
+              <div
+                key={ex.label}
+                className="group relative aspect-[3/4] rounded-xl overflow-hidden border border-border/50 bg-card/50"
+              >
+                {ex.type === "video" ? (
+                  <video
+                    src={ex.url}
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                  />
+                ) : (
+                  <img
+                    src={ex.url}
+                    alt={ex.label}
+                    loading="lazy"
+                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-3 space-y-1">
+                  <span className="inline-block text-[10px] uppercase tracking-wider text-white/70 font-medium">
+                    {ex.category}
+                  </span>
+                  <p className="text-xs sm:text-sm font-semibold text-white leading-tight line-clamp-2">
+                    {ex.label}
+                  </p>
                 </div>
-                <span className="text-sm text-foreground/80 leading-snug">{item.text}</span>
               </div>
             ))}
           </div>
