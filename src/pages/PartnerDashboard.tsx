@@ -17,6 +17,7 @@ import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { Dialog as ProfileDialog, DialogContent as ProfileDialogContent } from "@/components/ui/dialog";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import imageCompression from 'browser-image-compression';
+import { usePartnerBalance } from "@/hooks/usePartnerBalance";
 
 interface Partner {
   id: string;
@@ -72,11 +73,14 @@ const PartnerDashboard = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
-  const [earningsBalance, setEarningsBalance] = useState(0);
-  const [earningsUnlocks, setEarningsUnlocks] = useState(0);
-  const [earningsPaidOut, setEarningsPaidOut] = useState(0);
   const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number; best_streak: number; streak_protection_available: boolean } | null>(null);
-  const [toolEarningsCount, setToolEarningsCount] = useState(0);
+
+  // Fonte ÚNICA da verdade do saldo (mesma usada no Extrato).
+  const {
+    saldoDisponivel,
+    totalUnlocks: earningsUnlocks,
+    totalToolUses: toolEarningsCount,
+  } = usePartnerBalance(partner?.id ?? null);
 
   useEffect(() => {
     checkPartnerAndFetchData();
@@ -132,35 +136,14 @@ const PartnerDashboard = () => {
     setProfileInstagram(partnerData.instagram || "");
     setProfileAvatarUrl(partnerData.avatar_url || "");
 
-    // Fetch earnings balance and paid withdrawals
-    const [balanceRes, withdrawalsRes, gamRes, toolCountRes] = await Promise.all([
-      supabase
-        .from('collaborator_balances')
-        .select('total_earned, total_unlocks')
-        .eq('collaborator_id', partnerData.id)
-        .maybeSingle(),
-      supabase
-        .from('partner_withdrawals')
-        .select('valor_solicitado')
-        .eq('partner_id', partnerData.id)
-        .eq('status', 'pago'),
-      supabase
-        .from('partner_gamification')
-        .select('xp_total, level, current_streak, best_streak, streak_protection_available')
-        .eq('partner_id', partnerData.id)
-        .maybeSingle(),
-      supabase
-        .from('collaborator_tool_earnings')
-        .select('id', { count: 'exact', head: true })
-        .eq('collaborator_id', partnerData.id),
-    ]);
-    
-    setEarningsBalance(balanceRes.data?.total_earned || 0);
-    setEarningsUnlocks(balanceRes.data?.total_unlocks || 0);
-    const totalPaid = (withdrawalsRes.data || []).reduce((sum, w) => sum + Number(w.valor_solicitado), 0);
-    setEarningsPaidOut(totalPaid);
-    setPartnerGamification(gamRes.data || null);
-    setToolEarningsCount(toolCountRes.count || 0);
+    // Saldo, unlocks e usos vêm do hook unificado `usePartnerBalance` (mesma
+    // fonte usada no Extrato). Aqui só carregamos a gamificação.
+    const { data: gamData } = await supabase
+      .from('partner_gamification')
+      .select('xp_total, level, current_streak, best_streak, streak_protection_available')
+      .eq('partner_id', partnerData.id)
+      .maybeSingle();
+    setPartnerGamification(gamData || null);
 
     // Fetch partner's prompts
     const { data: promptsData, error: promptsError } = await supabase
@@ -523,7 +506,7 @@ const PartnerDashboard = () => {
           <div className="absolute -bottom-6 left-2 w-20 h-20 rounded-full bg-white/[0.03] pointer-events-none" />
           <p className="text-xs font-semibold text-white/60 tracking-wide mb-1">SALDO DISPONÍVEL</p>
           <p className="text-3xl font-extrabold text-white leading-none">
-            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(Math.max(0, earningsBalance - earningsPaidOut))}
+            {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(saldoDisponivel)}
           </p>
           <p className="text-xs text-white/50 mt-1">{earningsUnlocks} prompts copiados • {toolEarningsCount} usos em ferramentas</p>
           <div className="flex items-center justify-between mt-4">
