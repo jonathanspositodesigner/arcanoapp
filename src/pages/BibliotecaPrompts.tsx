@@ -90,6 +90,7 @@ const BibliotecaPrompts = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { t } = useTranslation('prompts');
+  const isMobile = useIsMobile();
 
   const colecaoParam = searchParams.get("colecao");
 
