@@ -387,7 +387,8 @@ async function handleRun(req: Request) {
   const verifiedUserId = authResult.userId;
 
   const body = await req.json();
-  const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId } = body;
+  const { imageUrl, fallbackImageUrl, inputText, engine, referencePromptId, contentMode: rawContentMode, logoImageUrl } = body;
+  const contentMode: 'name' | 'logo' = rawContentMode === 'logo' ? 'logo' : 'name';
 
   if (!imageUrl || typeof imageUrl !== 'string') {
     return new Response(JSON.stringify({ error: 'Imagem de referência é obrigatória' }), {
@@ -395,15 +396,33 @@ async function handleRun(req: Request) {
     });
   }
 
-  if (!inputText || typeof inputText !== 'string' || inputText.trim().length === 0) {
-    return new Response(JSON.stringify({ error: 'Nome para o telão é obrigatório' }), {
-      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+  if (contentMode === 'name') {
+    if (!inputText || typeof inputText !== 'string' || inputText.trim().length === 0) {
+      return new Response(JSON.stringify({ error: 'Nome para o telão é obrigatório' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  } else {
+    if (!logoImageUrl || typeof logoImageUrl !== 'string') {
+      return new Response(JSON.stringify({ error: 'Logo é obrigatória no modo Logo' }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
   }
 
   const selectedEngine = engine && ENGINE_COSTS[engine] ? engine : 'veo3.1';
   const creditCost = ENGINE_COSTS[selectedEngine];
   const isEvolink = selectedEngine === 'veo3.1';
+
+  // Modo Logo só funciona com Kling 2.5 ou Wan 2.2 (Veo 3.1 não tem fluxo com logo)
+  if (contentMode === 'logo' && selectedEngine !== 'kling2.5' && selectedEngine !== 'wan2.2') {
+    return new Response(JSON.stringify({
+      error: 'Modo Logo está disponível apenas em Kling 2.5 Turbo ou Wan 2.2',
+      code: 'LOGO_MODE_ENGINE_UNSUPPORTED',
+    }), {
+      status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
 
   // Check user active job
   try {
