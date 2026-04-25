@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import ReferralModal from "@/components/ReferralModal";
-import { MyCreationsModal } from "@/components/ai-tools/creations";
+// MyCreationsModal foi substituído pela página /minhas-criacoes (mantido como backup).
 
 interface AppSidebarProps {
   user: any;
@@ -22,7 +22,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
   const { t } = useTranslation('prompts');
   const { logout } = useAuth();
   const [showReferralModal, setShowReferralModal] = useState(false);
-  const [showCreationsModal, setShowCreationsModal] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -143,7 +142,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
 
           <button
             onClick={() => {
-              setShowCreationsModal(true);
+              navigate("/minhas-criacoes");
               setSidebarOpen(false);
             }}
             className="w-full flex items-center text-left text-[13px] font-medium py-2.5 px-3 rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -224,9 +223,6 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           userId={user.id}
         />
       )}
-
-      {/* My Creations Modal */}
-      <MyCreationsModal open={showCreationsModal} onClose={() => setShowCreationsModal(false)} />
     </>
   );
 };

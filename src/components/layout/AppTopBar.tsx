@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Home, ImageIcon, LogIn, Star, PlusCircle, Lock, Settings, LogOut, User, Users, Phone, Coins, Menu, Sun, Moon } from "lucide-react";
@@ -6,7 +5,7 @@ import { usePremiumPromptContext } from "@/contexts/PremiumPromptContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { MyCreationsModal } from "@/components/ai-tools/creations";
+// MyCreationsModal substituído pela página /minhas-criacoes (mantido como backup).
 import CreditsPreviewPopover from "@/components/CreditsPreviewPopover";
 import { useCredits } from "@/contexts/CreditsContext";
 import { AnimatedCreditsDisplay } from "@/components/upscaler/AnimatedCreditsDisplay";
@@ -32,12 +31,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   const navigate = useNavigate();
   const { t } = useTranslation('prompts');
   const { theme, toggleTheme } = useTheme();
-  const [showCreationsModal, setShowCreationsModal] = useState(false);
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
-
-  // Nota: o evento global "open-my-creations" é tratado por GlobalMyCreationsHost
-  // (montado em App.tsx) para funcionar em QUALQUER rota, inclusive nas páginas
-  // de ferramentas IA que não renderizam o AppTopBar.
   const {
     remainingUnlocks,
     dailyLimit: premiumDailyLimit,
@@ -164,7 +158,7 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
         </div>
         <div className="flex items-center gap-3">
           {user && (
-            <Button onClick={() => setShowCreationsModal(true)} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent">
+            <Button onClick={() => navigate("/minhas-criacoes")} variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground hover:bg-accent">
               <ImageIcon className="h-4 w-4 mr-2" />
               Minhas Criações
             </Button>
@@ -292,7 +286,6 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
           </div>
         )}
       </header>
-      <MyCreationsModal open={showCreationsModal} onClose={() => setShowCreationsModal(false)} />
     </>
   );
 };
