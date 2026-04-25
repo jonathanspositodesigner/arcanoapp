@@ -6674,11 +6674,42 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_all_credit_users_v2: {
+        Args: {
+          _only_with_balance?: boolean
+          _page?: number
+          _page_size?: number
+          _search?: string
+          _sort_column?: string
+          _sort_direction?: string
+        }
+        Returns: {
+          email: string
+          has_history: boolean
+          lifetime_balance: number
+          monthly_balance: number
+          name: string
+          total_balance: number
+          total_count: number
+          updated_at: string
+          user_id: string
+        }[]
+      }
       get_arte_click_counts: {
         Args: never
         Returns: {
           arte_id: string
           click_count: number
+        }[]
+      }
+      get_credit_users_totals: {
+        Args: never
+        Returns: {
+          total_credits: number
+          total_lifetime: number
+          total_monthly: number
+          total_users: number
+          total_users_with_balance: number
         }[]
       }
       get_daily_arte_copy_count: { Args: { _user_id: string }; Returns: number }
