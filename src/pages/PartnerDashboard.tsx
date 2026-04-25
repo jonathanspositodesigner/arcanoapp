@@ -36,6 +36,7 @@ interface PartnerPrompt {
   category: string;
   approved: boolean;
   rejected: boolean;
+  rejection_reason?: string | null;
   deletion_requested: boolean;
   created_at: string;
   click_count?: number;
