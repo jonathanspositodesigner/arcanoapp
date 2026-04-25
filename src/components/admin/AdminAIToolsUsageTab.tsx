@@ -102,7 +102,10 @@ const CUSTO_POR_RH_COIN = 0.002; // R$ per RH coin
 const RECEITA_POR_CREDITO_PADRAO = 0.007;
 const RECEITA_POR_CREDITO_HISTORICA = 0.007;
 const RECEITA_CORTE_HISTORICO_ISO = "2026-04-11T21:50:00.000Z";
-const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited", "gpt_free_trial"]);
+// gpt_free_trial NÃO entra aqui: é uma promo adicional concedida a assinantes
+// pagantes (Starter/Pro/Ultimate) durante 7 dias — eles continuam gerando receita
+// normal pelo plano que pagaram. Apenas planos sem cobrança de uso zeram receita.
+const USER_TYPES_SEM_RECEITA = new Set<UserClientType>(["free", "free_trial", "unlimited"]);
 
 const API_COST_FALLBACK_MAP: Record<string, number> = {
   "Arcano Cloner": 0.36,
