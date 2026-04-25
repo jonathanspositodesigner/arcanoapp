@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, Coins, RefreshCw, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -42,6 +43,8 @@ const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
 
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited, isGptImageFreeTrial, gptImageFreeUntil } = useCredits();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
@@ -327,6 +330,26 @@ const GerarImagemTool = () => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [processFiles, referenceImages.length, maxRefs]);
+
+  // Prefill vindo de "Minhas Criações"
+  useEffect(() => {
+    const state = location.state as { prefillImageUrl?: string } | null;
+    if (!state?.prefillImageUrl) return;
+    const url = state.prefillImageUrl;
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const file = await urlToFile(url);
+        processFiles([file]);
+        toast.success('Imagem carregada de Minhas Criações');
+      } catch (err) {
+        console.error('[GerarImagem] Prefill failed:', err);
+        toast.error('Não foi possível carregar a imagem. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Reset state for new generation
   const resetJobState = () => {

@@ -10,6 +10,7 @@ import type { Creation } from './useMyCreations';
 interface CreationCardProps {
   creation: Creation;
   onDelete?: (id: string) => void;
+  onOpen?: (creation: Creation) => void;
 }
 
 function formatTimeRemaining(expiresAt: string): { text: string; urgency: 'safe' | 'warning' | 'danger' } {
@@ -58,7 +59,7 @@ function formatDate(dateString: string): string {
   });
 }
 
-const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
+const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete, onOpen }) => {
   const [imageError, setImageError] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
@@ -94,7 +95,8 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   const previewUrl = getPreviewUrl();
   
   // Download usando hook resiliente (funciona no Safari)
-  const handleDownload = () => {
+  const handleDownload = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     download({
       url: creation.output_url,
       filename: `${creation.tool_name.replace(/\s/g, '-')}-${creation.id.slice(0, 8)}.${isVideo ? 'mp4' : 'png'}`,
@@ -104,7 +106,8 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
     });
   };
 
-  const handleDelete = async () => {
+  const handleDelete = async (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!onDelete || isDeleting) return;
     setIsDeleting(true);
     await onDelete(creation.id);
@@ -118,7 +121,18 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   };
 
   return (
-    <div className="group relative aspect-square rounded-xl overflow-hidden border border-border bg-accent hover:border-primary/40 transition-all">
+    <div
+      role={onOpen ? 'button' : undefined}
+      tabIndex={onOpen ? 0 : undefined}
+      onClick={() => onOpen?.(creation)}
+      onKeyDown={(e) => {
+        if (onOpen && (e.key === 'Enter' || e.key === ' ')) {
+          e.preventDefault();
+          onOpen(creation);
+        }
+      }}
+      className="group relative aspect-square rounded-xl overflow-hidden border border-border bg-accent hover:border-primary/40 transition-all cursor-pointer"
+    >
       {/* Media — full bleed */}
       {imageError ? (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground p-4">
@@ -192,10 +206,10 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
             {isDownloading ? '...' : 'Baixar'}
           </Button>
           {isFlyerMaker && !isVideo && (
-            <Button
+          <Button
               variant="outline"
               size="sm"
-              onClick={handleModify}
+            onClick={(e) => { e.stopPropagation(); handleModify(); }}
               className="h-8 w-8 p-0 bg-purple-500/30 hover:bg-purple-500/50 border-purple-400/40 text-white backdrop-blur-sm"
               title="Modificar"
             >

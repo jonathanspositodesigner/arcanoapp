@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { optimizeForAI } from '@/hooks/useImageOptimizer';
 import { getAIErrorMessage } from '@/utils/errorMessages';
 import { ArrowLeft, Download, Upload, Sparkles, X, Loader2, Video, ChevronDown, Coins, ImagePlus, Clock, Image, Type, Volume2, VolumeX } from 'lucide-react';
@@ -60,6 +61,8 @@ type GenerationMode = 'prompt_only' | 'with_frames';
 
 const GerarVideoTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance } = useCredits();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
@@ -205,6 +208,42 @@ const GerarVideoTool = () => {
       setEndFrame(null);
     }
   }, [generationMode]);
+
+  // Prefill vindo de "Minhas Criações" (imagem inicial + modelo Veo 3.1 Fast)
+  useEffect(() => {
+    const state = location.state as { prefillImageUrl?: string; prefillModel?: string } | null;
+    if (!state?.prefillImageUrl) return;
+    const url = state.prefillImageUrl;
+    const model = state.prefillModel || 'veo3.1-fast';
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const rawFile = await urlToFile(url);
+        let file = rawFile;
+        try {
+          const { file: optimized } = await optimizeForAI(rawFile);
+          file = optimized;
+        } catch (e) {
+          console.warn('[GerarVideo] optimizeForAI failed, using raw:', e);
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+          const dataUrl = reader.result as string;
+          const base64 = dataUrl.split(',')[1];
+          setStartFrame({ file, preview: dataUrl, base64, mimeType: file.type });
+          setSelectedModel(model);
+          setGenerationMode('with_frames');
+          toast.success('Imagem carregada como frame inicial');
+        };
+        reader.readAsDataURL(file);
+      } catch (err) {
+        console.error('[GerarVideo] Prefill failed:', err);
+        toast.error('Não foi possível carregar a imagem. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Cleanup evolink polling on unmount
   useEffect(() => {

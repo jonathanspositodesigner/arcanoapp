@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { Upload, Sparkles, Download, RotateCcw, Loader2, ZoomIn, ZoomOut, Info, AlertCircle, Clock, MessageSquare, Crown, Coins, Settings, ChevronDown, ChevronUp } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { Card } from '@/components/ui/card';
@@ -64,6 +64,7 @@ type PessoasFraming = 'perto' | 'longe';
 
 const UpscalerArcanoTool: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation('tools');
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
   const { user } = usePremiumStatus();
@@ -513,6 +514,27 @@ const UpscalerArcanoTool: React.FC = () => {
     window.addEventListener('paste', handlePaste);
     return () => window.removeEventListener('paste', handlePaste);
   }, [handleFileSelect]);
+
+  // Prefill vindo de "Minhas Criações" (location.state.prefillImageUrl)
+  useEffect(() => {
+    const state = location.state as { prefillImageUrl?: string } | null;
+    if (!state?.prefillImageUrl) return;
+    const url = state.prefillImageUrl;
+    // Limpa o state imediatamente para evitar reprefill em F5/voltar
+    navigate(location.pathname, { replace: true, state: {} });
+    (async () => {
+      try {
+        const { urlToFile } = await import('@/lib/urlToFile');
+        const file = await urlToFile(url);
+        await handleFileSelect(file);
+        toast.success('Imagem carregada de Minhas Criações');
+      } catch (err) {
+        console.error('[Upscaler] Prefill failed:', err);
+        toast.error('Não foi possível carregar a imagem. Faça upload manual.');
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Process image
   const processImage = async () => {
