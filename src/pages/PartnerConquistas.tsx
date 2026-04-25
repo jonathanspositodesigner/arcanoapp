@@ -79,6 +79,9 @@ const PartnerConquistas = () => {
   const [myRankPosition, setMyRankPosition] = useState<number | null>(null);
   const [unlockEarnings, setUnlockEarnings] = useState({ total: 0, count: 0 });
   const [toolEarnings, setToolEarnings] = useState({ total: 0, count: 0 });
+  const [approvedPromptsCount, setApprovedPromptsCount] = useState(0);
+  const [seedanceCount, setSeedanceCount] = useState(0);
+  const [totalEarnedAll, setTotalEarnedAll] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -101,7 +104,7 @@ const PartnerConquistas = () => {
       setPartnerId(partner.id);
 
       // Parallel fetches
-      const [gamRes, badgeRes, challengeRes, progressRes, unlockRes, toolRes, partnersCountRes] = await Promise.all([
+      const [gamRes, badgeRes, challengeRes, progressRes, unlockRes, toolRes, partnersCountRes, approvedPromptsRes, seedanceJobsRes] = await Promise.all([
         supabase.from("partner_gamification").select("*").eq("partner_id", partner.id).maybeSingle(),
         supabase.from("partner_badges").select("badge_slug, earned_at").eq("partner_id", partner.id),
         supabase.from("partner_weekly_challenges").select("*").eq("is_active", true).gte("week_end", new Date().toISOString().split("T")[0]),
@@ -109,6 +112,8 @@ const PartnerConquistas = () => {
         supabase.from("collaborator_unlock_earnings").select("amount").eq("collaborator_id", partner.id),
         supabase.from("collaborator_tool_earnings").select("amount").eq("collaborator_id", partner.id),
         supabase.from("partners").select("id", { count: "exact", head: true }).eq("is_active", true),
+        supabase.from("partner_prompts").select("id", { count: "exact", head: true }).eq("partner_id", partner.id).eq("approved", true).neq("rejected", true),
+        supabase.from("collaborator_tool_earnings").select("id", { count: "exact", head: true }).eq("collaborator_id", partner.id).eq("tool_table", "seedance_jobs"),
       ]);
 
       setGamification(gamRes.data || { xp_total: 0, level: 1, current_streak: 0, best_streak: 0, streak_protection_available: true });
@@ -121,6 +126,29 @@ const PartnerConquistas = () => {
       setUnlockEarnings({ total: unlocks.reduce((s, e) => s + (e.amount || 0), 0), count: unlocks.length });
       const tools = toolRes.data || [];
       setToolEarnings({ total: tools.reduce((s, e) => s + (e.amount || 0), 0), count: tools.length });
+      setApprovedPromptsCount(approvedPromptsRes.count || 0);
+      setSeedanceCount(seedanceJobsRes.count || 0);
+      const totalEarned = unlocks.reduce((s, e) => s + (e.amount || 0), 0)
+        + tools.reduce((s, e) => s + (e.amount || 0), 0);
+      setTotalEarnedAll(totalEarned);
+
+      // Auto-grant missing badges retroactively
+      const earnedSlugs = new Set((badgeRes.data || []).map(b => b.badge_slug));
+      const toGrant: string[] = [];
+      if ((approvedPromptsRes.count || 0) >= 1 && !earnedSlugs.has('first_prompt')) toGrant.push('first_prompt');
+      if ((approvedPromptsRes.count || 0) >= 50 && !earnedSlugs.has('diamond')) toGrant.push('diamond');
+      if (((gamRes.data?.level) || 1) >= 5 && !earnedSlugs.has('legendary')) toGrant.push('legendary');
+      if (totalEarned >= 50 && !earnedSlugs.has('millionaire')) toGrant.push('millionaire');
+      if (tools.length >= 10 && !earnedSlugs.has('ai_master')) toGrant.push('ai_master');
+      if ((seedanceJobsRes.count || 0) >= 5 && !earnedSlugs.has('seedance_star')) toGrant.push('seedance_star');
+      if (toGrant.length > 0) {
+        await Promise.all(toGrant.map(slug =>
+          supabase.rpc('award_partner_badge' as any, { _partner_id: partner.id, _badge_slug: slug })
+        ));
+        const { data: refreshed } = await supabase
+          .from("partner_badges").select("badge_slug, earned_at").eq("partner_id", partner.id);
+        setBadges(refreshed || badgeRes.data || []);
+      }
 
       // Weekly ranking
       await loadWeeklyRanking(partner.id);
@@ -165,6 +193,19 @@ const PartnerConquistas = () => {
 
   const getProgressForChallenge = (challengeId: string) => {
     return challengeProgress.find(p => p.challenge_id === challengeId);
+  };
+
+  const isBadgeEarned = (slug: string): boolean => {
+    if (badges.some(eb => eb.badge_slug === slug)) return true;
+    switch (slug) {
+      case 'first_prompt': return approvedPromptsCount >= 1;
+      case 'diamond': return approvedPromptsCount >= 50;
+      case 'legendary': return (gamification?.level || 1) >= 5;
+      case 'millionaire': return totalEarnedAll >= 50;
+      case 'ai_master': return toolEarnings.count >= 10;
+      case 'seedance_star': return seedanceCount >= 5;
+      default: return false;
+    }
   };
 
   if (isLoading) {
@@ -288,7 +329,7 @@ const PartnerConquistas = () => {
           </h2>
           <div className="grid grid-cols-3 gap-2.5">
             {ALL_BADGES.map(b => {
-              const earned = badges.some(eb => eb.badge_slug === b.slug);
+              const earned = isBadgeEarned(b.slug);
               return (
                 <div
                   key={b.slug}
