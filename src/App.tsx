@@ -221,6 +221,7 @@ const AppContent = () => {
       <NewVersionBanner />
 
       <FloatingToolsNav />
+      <FloatingJobButton />
       <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Index />} />
