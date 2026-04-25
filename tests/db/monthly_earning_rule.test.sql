@@ -18,10 +18,14 @@
 
 BEGIN;
 
+-- psql variables só interpolam no SQL externo; passamos via SET LOCAL para que o bloco DO leia.
+SELECT set_config('test.partner_user_id', :partner_user_id, true);
+SELECT set_config('test.payer_user_id',   :payer_user_id,   true);
+
 DO $TEST$
 DECLARE
-  _partner_user_id UUID := :partner_user_id;
-  _payer_user_id   UUID := :payer_user_id;
+  _partner_user_id UUID := current_setting('test.partner_user_id')::uuid;
+  _payer_user_id   UUID := current_setting('test.payer_user_id')::uuid;
   _partner_id UUID := gen_random_uuid();
   _prompt_id  UUID := gen_random_uuid();
   _job_b TEXT := 'test-job-' || gen_random_uuid()::text;
