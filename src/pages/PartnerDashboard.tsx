@@ -17,6 +17,7 @@ import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { Dialog as ProfileDialog, DialogContent as ProfileDialogContent } from "@/components/ui/dialog";
 import EarningsGuideModal from "@/components/partner/EarningsGuideModal";
 import imageCompression from 'browser-image-compression';
+import { usePartnerBalance } from "@/hooks/usePartnerBalance";
 
 interface Partner {
   id: string;
@@ -72,11 +73,14 @@ const PartnerDashboard = () => {
   const [isChangingPassword, setIsChangingPassword] = useState(false);
 
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
-  const [earningsBalance, setEarningsBalance] = useState(0);
-  const [earningsUnlocks, setEarningsUnlocks] = useState(0);
-  const [earningsPaidOut, setEarningsPaidOut] = useState(0);
   const [partnerGamification, setPartnerGamification] = useState<{ xp_total: number; level: number; current_streak: number; best_streak: number; streak_protection_available: boolean } | null>(null);
-  const [toolEarningsCount, setToolEarningsCount] = useState(0);
+
+  // Fonte ÚNICA da verdade do saldo (mesma usada no Extrato).
+  const {
+    saldoDisponivel,
+    totalUnlocks: earningsUnlocks,
+    totalToolUses: toolEarningsCount,
+  } = usePartnerBalance(partner?.id ?? null);
 
   useEffect(() => {
     checkPartnerAndFetchData();
