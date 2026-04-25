@@ -1,10 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
-import decodePng from 'npm:@jsquash/png@3.0.1/decode.js'
-import decodeJpeg from 'npm:@jsquash/jpeg@1.5.0/decode.js'
-import decodeWebp from 'npm:@jsquash/webp@1.4.0/decode.js'
-import encodeWebp from 'npm:@jsquash/webp@1.4.0/encode.js'
-import { resize } from 'npm:@jsquash/resize@2.1.0'
+import { Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts'
 
 /**
  * GENERATE-THUMBNAIL
@@ -47,39 +43,19 @@ function isAllowedDomain(url: string): boolean {
 const TARGET_WIDTH = 300
 
 /**
- * Decodifica imagem (png/jpeg/webp) → ImageData,
- * redimensiona para 300px de largura mantendo proporção,
- * e re-encoda como WebP com qualidade 75 (~bom balanço size/qualidade).
+ * Redimensiona a imagem para 300px de largura (mantendo proporção).
+ * Nota: ImageScript não suporta encode WebP nativamente. Usamos PNG comprimido
+ * para o thumbnail — o ganho principal vem do resize de ~2000px → 300px.
  */
-async function makeThumbnailWebp(buffer: ArrayBuffer, contentType: string): Promise<Uint8Array> {
-  // 1. Decodificar conforme o tipo
-  let imageData: ImageData
-  if (contentType.includes('png')) {
-    imageData = await decodePng(buffer)
-  } else if (contentType.includes('jpeg') || contentType.includes('jpg')) {
-    imageData = await decodeJpeg(buffer)
-  } else if (contentType.includes('webp')) {
-    imageData = await decodeWebp(buffer)
-  } else {
-    // Tenta png como fallback
-    imageData = await decodePng(buffer)
+async function makeThumbnail(buffer: ArrayBuffer): Promise<{ data: Uint8Array; ext: string; contentType: string }> {
+  const img = await Image.decode(new Uint8Array(buffer))
+  const targetWidth = Math.min(TARGET_WIDTH, img.width)
+  if (img.width > targetWidth) {
+    img.resize(targetWidth, Image.RESIZE_AUTO)
   }
-
-  // 2. Calcular altura proporcional
-  const ratio = imageData.height / imageData.width
-  const targetWidth = Math.min(TARGET_WIDTH, imageData.width)
-  const targetHeight = Math.round(targetWidth * ratio)
-
-  // 3. Redimensionar
-  const resized = await resize(imageData, {
-    width: targetWidth,
-    height: targetHeight,
-    method: 'lanczos3',
-  })
-
-  // 4. Encodar como WebP
-  const webpBuffer = await encodeWebp(resized, { quality: 75 })
-  return new Uint8Array(webpBuffer)
+  // PNG com nível de compressão alto (3 = bom balanço entre velocidade e tamanho)
+  const png = await img.encode(3)
+  return { data: png, ext: 'png', contentType: 'image/png' }
 }
 
 serve(async (req) => {
@@ -139,19 +115,19 @@ serve(async (req) => {
     
     console.log(`[GenerateThumbnail] Image fetched: ${imageBuffer.byteLength} bytes, type: ${contentType}`)
 
-    // 3. Gerar thumbnail WebP 300px (com fallback para imagem original em caso de erro)
+    // 3. Gerar thumbnail 300px (com fallback para imagem original em caso de erro)
     let uploadBuffer: Uint8Array | ArrayBuffer = imageBuffer
     let uploadContentType = contentType
     let extension = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg'
       : contentType.includes('webp') ? 'webp' : 'png'
 
     try {
-      const thumb = await makeThumbnailWebp(imageBuffer, contentType)
-      uploadBuffer = thumb
-      uploadContentType = 'image/webp'
-      extension = 'webp'
-      const reduction = ((1 - thumb.byteLength / imageBuffer.byteLength) * 100).toFixed(1)
-      console.log(`[GenerateThumbnail] Resized to 300px WebP: ${thumb.byteLength} bytes (${reduction}% smaller)`)
+      const thumb = await makeThumbnail(imageBuffer)
+      uploadBuffer = thumb.data
+      uploadContentType = thumb.contentType
+      extension = thumb.ext
+      const reduction = ((1 - thumb.data.byteLength / imageBuffer.byteLength) * 100).toFixed(1)
+      console.log(`[GenerateThumbnail] Resized to ${TARGET_WIDTH}px: ${thumb.data.byteLength} bytes (${reduction}% smaller)`)
     } catch (thumbErr) {
       console.warn('[GenerateThumbnail] Thumbnail generation failed, uploading original:', thumbErr)
     }
