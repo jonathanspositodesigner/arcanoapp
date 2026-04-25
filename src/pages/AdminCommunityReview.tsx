@@ -164,7 +164,8 @@ const AdminCommunityReview = () => {
         deletion_requested: false,
         rejected: false,
         rejected_at: null,
-        rejected_by: null
+        rejected_by: null,
+        rejection_reason: null
       })
       .eq('id', promptId);
 
@@ -430,8 +431,13 @@ const AdminCommunityReview = () => {
                           </Button>
                         )}
                         {(status === "pending" || status === "approved") && (
-                          <Button onClick={() => handleRejectPartner(prompt.id)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
+                          <Button onClick={() => openRejectModal(prompt.id, prompt.title, prompt.rejection_reason)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
                             <XCircle className="h-4 w-4 mr-2" />Recusar
+                          </Button>
+                        )}
+                        {status === "rejected" && (
+                          <Button onClick={() => openRejectModal(prompt.id, prompt.title, prompt.rejection_reason)} variant="outline" className="flex-1 text-orange-600 border-orange-600 hover:bg-orange-600 hover:text-foreground">
+                            <XCircle className="h-4 w-4 mr-2" />Editar Motivo
                           </Button>
                         )}
                         {status === "deletion" && (
