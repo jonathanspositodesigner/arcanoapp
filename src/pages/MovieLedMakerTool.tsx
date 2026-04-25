@@ -320,6 +320,44 @@ const MovieLedMakerTool = () => {
     return uploadedImage;
   };
 
+  // ===== LOGO HANDLERS =====
+  const handleLogoSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!/^image\/(png|jpe?g|webp)$/i.test(file.type)) {
+      toast.error('Use uma imagem PNG, JPG ou WEBP');
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error('Logo muito grande. Máx 10MB.');
+      return;
+    }
+    setLogoProcessing(true);
+    try {
+      const { file: processedFile, hadTransparency } = await processLogoForUpload(file);
+      setLogoFile(processedFile);
+      setLogoHadTransparency(hadTransparency);
+      const previewUrl = URL.createObjectURL(processedFile);
+      setLogoPreview(previewUrl);
+      if (hadTransparency) {
+        toast.success('Logo detectada sem fundo. Chroma key verde aplicado automaticamente!');
+      }
+    } catch (err: any) {
+      console.error('[MovieLed] Logo processing error:', err);
+      toast.error(err?.message || 'Erro ao processar logo');
+    } finally {
+      setLogoProcessing(false);
+      if (logoInputRef.current) logoInputRef.current.value = '';
+    }
+  };
+
+  const handleLogoRemove = () => {
+    if (logoPreview) URL.revokeObjectURL(logoPreview);
+    setLogoFile(null);
+    setLogoPreview(null);
+    setLogoHadTransparency(false);
+  };
+
   // Handle generate
   const handleGenerate = async () => {
     if (!startSubmit()) return;
