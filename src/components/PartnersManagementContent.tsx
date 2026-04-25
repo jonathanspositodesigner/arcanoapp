@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings } from "lucide-react";
+import { Plus, Users, Phone, Mail, Building, Trash2, ToggleLeft, ToggleRight, Copy, RefreshCw, Eye, EyeOff, Palette, FileImage, Music, Settings, Crown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -18,6 +18,7 @@ interface Partner {
   phone: string | null;
   company: string | null;
   is_active: boolean;
+  is_founder: boolean;
   created_at: string;
 }
 
@@ -300,6 +301,23 @@ const PartnersManagementContent = () => {
     } catch (error) {
       console.error("Error toggling partner status:", error);
       toast.error("Erro ao alterar status do colaborador");
+    }
+  };
+
+  const handleToggleFounder = async (partnerId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('partners')
+        .update({ is_founder: !currentStatus })
+        .eq('id', partnerId);
+
+      if (error) throw error;
+
+      toast.success(currentStatus ? "Founder removido" : "Colaborador marcado como Founder");
+      fetchPartners();
+    } catch (error) {
+      console.error("Error toggling founder status:", error);
+      toast.error("Erro ao alterar status Founder");
     }
   };
 
