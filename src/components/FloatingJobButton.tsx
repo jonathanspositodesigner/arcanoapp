@@ -10,7 +10,6 @@
  *   via evento global "open-my-creations".
  */
 import { useEffect, useRef, useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
 import { Loader2, Check, X } from "lucide-react";
 import { useAIJob } from "@/contexts/AIJobContext";
 import { cn } from "@/lib/utils";
@@ -55,7 +54,6 @@ const clampPos = (p: Pos, expanded: boolean): Pos => {
 };
 
 export const FloatingJobButton = () => {
-  const navigate = useNavigate();
   const { jobStatus, activeToolName, clearJob } = useAIJob();
 
   const [pos, setPos] = useState<Pos>(() => loadPos());
@@ -145,17 +143,12 @@ export const FloatingJobButton = () => {
 
     // Tap behavior
     if (isDone) {
-      // Open My Creations modal globally. There's no dedicated route — the modal
-      // lives inside AppTopBar which is mounted on most app pages. Navigate to "/"
-      // and dispatch the event with retries to wait for the listener to mount.
+      // O modal "Minhas Criações" é hospedado globalmente (GlobalMyCreationsHost
+      // em App.tsx) e escuta este evento em QUALQUER rota. Não navegamos —
+      // apenas abrimos o modal por cima da página atual.
       setDismissed(true);
       clearJob();
-      navigate("/");
-      const tryDispatch = (attempt = 0) => {
-        window.dispatchEvent(new CustomEvent("open-my-creations"));
-        if (attempt < 6) setTimeout(() => tryDispatch(attempt + 1), 200);
-      };
-      setTimeout(() => tryDispatch(0), 100);
+      window.dispatchEvent(new CustomEvent("open-my-creations"));
       return;
     }
     if (isError) {
@@ -163,7 +156,7 @@ export const FloatingJobButton = () => {
       return;
     }
     setExpanded((v) => !v);
-  }, [isDone, isError, navigate, clearJob]);
+  }, [isDone, isError, clearJob]);
 
   const onClose = (e: React.MouseEvent | React.PointerEvent) => {
     e.stopPropagation();
