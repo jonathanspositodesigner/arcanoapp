@@ -51,6 +51,42 @@ const ACTIVE_STATUSES: JobStatus[] = ['pending', 'queued', 'starting', 'running'
 // Status terminais que disparam notificação
 const TERMINAL_STATUSES: JobStatus[] = ['completed', 'failed', 'cancelled'];
 
+// Inferência automática de ToolType a partir do display name (ou de uma chave já válida).
+// Garante que TODA ferramenta — atual ou futura — receba o polling de fallback,
+// mesmo se a página chamar registerJob sem passar toolType explicitamente.
+const NAME_TO_TOOLTYPE: Record<string, ToolType> = {
+  // Display names usados pelas páginas
+  'upscaler arcano': 'upscaler',
+  'video upscaler': 'video_upscaler',
+  'arcano cloner': 'arcano_cloner',
+  'pose changer': 'pose_changer',
+  'veste ai': 'veste_ai',
+  'flyer maker': 'flyer_maker',
+  'gerar imagem': 'image_generator',
+  'remover fundo': 'bg_remover',
+  'gerador avatar': 'character_generator',
+  'gerador personagem': 'character_generator',
+  'movieled maker': 'movieled_maker',
+  'cinema studio': 'image_generator',
+  // Chaves "canônicas" (ToolType direto) também aceitas
+  'image_generator': 'image_generator',
+  'video_generator': 'video_generator',
+  'upscaler': 'upscaler',
+  'video_upscaler': 'video_upscaler',
+  'arcano_cloner': 'arcano_cloner',
+  'pose_changer': 'pose_changer',
+  'veste_ai': 'veste_ai',
+  'flyer_maker': 'flyer_maker',
+  'bg_remover': 'bg_remover',
+  'character_generator': 'character_generator',
+  'movieled_maker': 'movieled_maker',
+};
+
+const inferToolType = (toolName: string): ToolType | null => {
+  const key = toolName.trim().toLowerCase();
+  return NAME_TO_TOOLTYPE[key] ?? null;
+};
+
 export const AIJobProvider = ({ children }: AIJobProviderProps) => {
   const [activeJobId, setActiveJobId] = useState<string | null>(null);
   const [activeToolName, setActiveToolName] = useState<string | null>(null);
@@ -100,11 +136,12 @@ export const AIJobProvider = ({ children }: AIJobProviderProps) => {
   
   // Registrar um novo job ativo
   const registerJob = useCallback((jobId: string, toolName: string, status: JobStatus, toolType?: ToolType) => {
-    console.log(`[AIJobContext] Registering job: ${jobId} (${toolName}) - ${status}`);
+    const resolvedType = toolType ?? inferToolType(toolName);
+    console.log(`[AIJobContext] Registering job: ${jobId} (${toolName} → ${resolvedType ?? 'unknown'}) - ${status}`);
     setActiveJobId(jobId);
     setActiveToolName(toolName);
     setJobStatus(status);
-    setActiveToolType(toolType ?? null);
+    setActiveToolType(resolvedType);
     hasPlayedSoundRef.current = false; // Reset flag para novo job
   }, []);
   
