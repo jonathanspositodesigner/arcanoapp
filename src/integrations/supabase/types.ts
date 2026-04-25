@@ -6686,9 +6686,9 @@ export type Database = {
         Returns: {
           email: string
           last_transaction_at: string
+          lifetime_balance: number
           monthly_balance: number
           name: string
-          permanent_balance: number
           phone: string
           total_balance: number
           total_count: number
