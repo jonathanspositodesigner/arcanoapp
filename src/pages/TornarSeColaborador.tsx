@@ -315,6 +315,60 @@ const TornarSeColaborador = () => {
           </div>
         </section>
 
+        {/* SEÇÃO — COMUNIDADE DE CRIADORES */}
+        <section className="space-y-6">
+          <div className="text-center space-y-3">
+            <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-xs font-medium text-primary">
+              <Instagram className="h-3.5 w-3.5" />
+              COMUNIDADE DE CRIADORES
+            </div>
+            <h2 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight">
+              Quem está criando <span className="text-primary">os prompts</span>
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              6 criadores contribuindo com a biblioteca.
+            </p>
+          </div>
+
+          <div className="relative overflow-hidden group">
+            {/* fade edges */}
+            <div className="absolute left-0 top-0 bottom-0 w-16 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-0 bottom-0 w-16 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+            <div className="flex gap-6 animate-marquee-scroll group-hover:[animation-play-state:paused] w-max">
+              {[...Array(2)].map((_, loopIdx) => (
+                <div key={loopIdx} className="flex gap-6 shrink-0">
+                  {[
+                    { handle: "@salino3d", count: 2 },
+                    { handle: "@omatosdsgn", count: 1 },
+                    { handle: "@renatodesig", count: 14 },
+                    { handle: "@marllondoug", count: 6 },
+                    { handle: "@seabraa.desi", count: 4 },
+                    { handle: "@eversonvice", count: 3 },
+                  ].map((c, idx) => (
+                    <div
+                      key={`${loopIdx}-${idx}`}
+                      className="flex flex-col items-center gap-2 shrink-0 w-24"
+                    >
+                      <div className="relative">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 border-2 border-primary/40 flex items-center justify-center overflow-hidden">
+                          <Users className="h-8 w-8 text-primary/40" />
+                        </div>
+                        <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center border-2 border-background">
+                          {c.count}
+                        </div>
+                      </div>
+                      <span className="text-xs text-muted-foreground truncate w-full text-center">
+                        {c.handle}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
         {/* SEÇÃO 2 — COMO VOCÊ GANHA */}
         <section className="space-y-10">
           <h2 className="text-2xl font-bold text-center text-foreground">
