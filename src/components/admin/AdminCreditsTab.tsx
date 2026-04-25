@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { 
   RefreshCw, Pencil, Coins, ArrowUpDown, ArrowUp, ArrowDown,
   Plus, Minus, UserPlus, Search, User, AlertCircle, History,
-  ArrowDownCircle, ArrowUpCircle, ShieldAlert
+  ArrowDownCircle, ArrowUpCircle, ShieldAlert, Filter
 } from "lucide-react";
 import {
   Pagination,
@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/pagination";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
 import AdminCreditAuditModal from "./AdminCreditAuditModal";
 
 interface CreditUser {
@@ -31,6 +32,7 @@ interface CreditUser {
   monthly_balance: number;
   lifetime_balance: number;
   total_balance: number;
+  has_history?: boolean;
   updated_at: string;
 }
 
@@ -61,6 +63,16 @@ const AdminCreditsTab = () => {
   const [creditUsers, setCreditUsers] = useState<CreditUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [onlyWithBalance, setOnlyWithBalance] = useState(false);
+  const [totalCount, setTotalCount] = useState(0);
+  const [totals, setTotals] = useState({
+    total_users: 0,
+    total_users_with_balance: 0,
+    total_monthly: 0,
+    total_lifetime: 0,
+    total_credits: 0,
+  });
   
   const [sortColumn, setSortColumn] = useState<SortColumn>('total_balance');
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc');
@@ -91,22 +103,67 @@ const AdminCreditsTab = () => {
   const [newUserAmount, setNewUserAmount] = useState(0);
   const [newUserDescription, setNewUserDescription] = useState("");
 
+  // Debounce de busca
   useEffect(() => {
-    fetchCreditUsers();
-  }, []);
+    const t = setTimeout(() => {
+      setDebouncedSearch(searchTerm.trim());
+      setCurrentPage(1);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [searchTerm]);
+
+  const fetchTotals = async () => {
+    try {
+      const { data, error } = await supabase.rpc('get_credit_users_totals' as any);
+      if (error) throw error;
+      const row = (data as any[])?.[0];
+      if (row) {
+        setTotals({
+          total_users: Number(row.total_users || 0),
+          total_users_with_balance: Number(row.total_users_with_balance || 0),
+          total_monthly: Number(row.total_monthly || 0),
+          total_lifetime: Number(row.total_lifetime || 0),
+          total_credits: Number(row.total_credits || 0),
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching totals:', error);
+    }
+  };
 
   const fetchCreditUsers = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase.rpc('get_all_credit_users');
+      const { data, error } = await supabase.rpc('get_all_credit_users_v2' as any, {
+        _search: debouncedSearch || null,
+        _sort_column: sortColumn,
+        _sort_direction: sortDirection,
+        _page: currentPage,
+        _page_size: ITEMS_PER_PAGE,
+        _only_with_balance: onlyWithBalance,
+      });
       if (error) throw error;
-      setCreditUsers(data || []);
+      const rows = (data as any[]) || [];
+      setCreditUsers(rows);
+      setTotalCount(rows.length > 0 ? Number(rows[0].total_count || 0) : 0);
     } catch (error) {
       console.error("Error fetching credit users:", error);
       toast.error("Erro ao carregar usuários com créditos");
     } finally {
       setIsLoading(false);
     }
+  };
+
+  useEffect(() => {
+    fetchCreditUsers();
+  }, [debouncedSearch, sortColumn, sortDirection, currentPage, onlyWithBalance]);
+
+  useEffect(() => {
+    fetchTotals();
+  }, []);
+
+  const refreshAll = async () => {
+    await Promise.all([fetchCreditUsers(), fetchTotals()]);
   };
 
   const fetchTransactions = async (userId: string, page = 1) => {
@@ -151,65 +208,13 @@ const AdminCreditsTab = () => {
     setIsAuditOpen(true);
   };
 
-  const filteredUsers = useMemo(() => {
-    let filtered = [...creditUsers];
-
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(u => 
-        u.name?.toLowerCase().includes(term) ||
-        u.email?.toLowerCase().includes(term)
-      );
-    }
-
-    filtered.sort((a, b) => {
-      let aValue: string | number;
-      let bValue: string | number;
-
-      switch (sortColumn) {
-        case 'name':
-          aValue = a.name?.toLowerCase() || '';
-          bValue = b.name?.toLowerCase() || '';
-          break;
-        case 'email':
-          aValue = a.email?.toLowerCase() || '';
-          bValue = b.email?.toLowerCase() || '';
-          break;
-        case 'monthly_balance':
-          aValue = a.monthly_balance;
-          bValue = b.monthly_balance;
-          break;
-        case 'lifetime_balance':
-          aValue = a.lifetime_balance;
-          bValue = b.lifetime_balance;
-          break;
-        case 'total_balance':
-          aValue = a.total_balance;
-          bValue = b.total_balance;
-          break;
-        default:
-          return 0;
-      }
-
-      if (sortDirection === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
-    });
-
-    return filtered;
-  }, [creditUsers, searchTerm, sortColumn, sortDirection]);
-
-  const totalPages = Math.ceil(filteredUsers.length / ITEMS_PER_PAGE);
-  const paginatedUsers = useMemo(() => {
-    const start = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredUsers.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredUsers, currentPage]);
+  // Paginação server-side: linhas vindas do servidor já são as da página atual
+  const paginatedUsers = creditUsers;
+  const totalPages = Math.max(1, Math.ceil(totalCount / ITEMS_PER_PAGE));
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, sortColumn, sortDirection]);
+  }, [sortColumn, sortDirection, onlyWithBalance]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -279,7 +284,7 @@ const AdminCreditsTab = () => {
 
       toast.success(`Créditos ${action.includes('add') ? 'adicionados' : 'removidos'} com sucesso!`);
       setIsEditModalOpen(false);
-      await fetchCreditUsers();
+      await refreshAll();
     } catch (error: unknown) {
       console.error("Error updating credits:", error);
       const errorMessage = error instanceof Error ? error.message : "Erro ao atualizar créditos";
@@ -369,7 +374,7 @@ const AdminCreditsTab = () => {
         
         toast.success(message);
         setIsAddUserModalOpen(false);
-        await fetchCreditUsers();
+        await refreshAll();
       } else {
         toast.error(data.error || "Erro ao adicionar créditos");
         setAddUserModalState(foundUser ? 'found' : 'not_found');
@@ -405,17 +410,9 @@ const AdminCreditsTab = () => {
     }
   };
 
-  const totalMonthlyCredits = creditUsers.reduce((sum, u) => sum + u.monthly_balance, 0);
-  const totalLifetimeCredits = creditUsers.reduce((sum, u) => sum + u.lifetime_balance, 0);
-  const totalCredits = totalMonthlyCredits + totalLifetimeCredits;
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-12">
-        <RefreshCw className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
+  const totalMonthlyCredits = totals.total_monthly;
+  const totalLifetimeCredits = totals.total_lifetime;
+  const totalCredits = totals.total_credits;
 
   return (
     <div className="space-y-6">
