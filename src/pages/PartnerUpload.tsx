@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { convertHeicToJpeg, isHeicFile } from "@/lib/heicConverter";
 import { fetchFotosSubcategories, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 const promptSchema = z.object({
@@ -23,15 +24,20 @@ const promptSchema = z.object({
 });
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 const validateFile = (file: File): string | null => {
   if (file.size > MAX_FILE_SIZE) {
     return `Arquivo muito grande. Máximo 100MB.`;
   }
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
-    return `Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.`;
+  const isHeicByName = /\.(heic|heif)$/i.test(file.name);
+  const isAllowed =
+    ALLOWED_IMAGE_TYPES.includes(file.type) ||
+    ALLOWED_VIDEO_TYPES.includes(file.type) ||
+    isHeicByName;
+  if (!isAllowed) {
+    return `Tipo de arquivo não permitido. Use JPEG, PNG, HEIC, WebP, MP4, WebM ou MOV.`;
   }
   return null;
 };
