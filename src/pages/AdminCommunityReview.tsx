@@ -10,6 +10,8 @@ import { toast } from "sonner";
 import { SecureImage, SecureVideo } from "@/components/SecureMedia";
 import { syncFotoToAllTools } from "@/lib/iaLibrarySync";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 interface CommunityPrompt {
   id: string;
@@ -31,6 +33,7 @@ interface PartnerPrompt {
   created_at: string;
   approved: boolean;
   rejected: boolean;
+  rejection_reason?: string | null;
   deletion_requested: boolean;
   partner_name: string;
   is_premium: boolean;
@@ -53,6 +56,9 @@ const AdminCommunityReview = () => {
   const [partnerPrompts, setPartnerPrompts] = useState<PartnerPrompt[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [detailItem, setDetailItem] = useState<{ kind: "community" | "partner"; data: any } | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ promptId: string; title: string; currentReason?: string | null } | null>(null);
+  const [rejectReason, setRejectReason] = useState("");
+  const [isRejecting, setIsRejecting] = useState(false);
 
   useEffect(() => {
     checkAdminAndFetchPrompts();
@@ -183,26 +189,48 @@ const AdminCommunityReview = () => {
   };
 
   const handleRejectPartner = async (promptId: string) => {
+  const openRejectModal = (promptId: string, title: string, currentReason?: string | null) => {
+    setRejectModal({ promptId, title, currentReason });
+    setRejectReason(currentReason || "");
+  };
+
+  const handleConfirmReject = async () => {
+    if (!rejectModal) return;
+    const reason = rejectReason.trim();
+    if (!reason) {
+      toast.error("Informe o motivo da recusa");
+      return;
+    }
+    if (reason.length > 1000) {
+      toast.error("O motivo deve ter no máximo 1000 caracteres");
+      return;
+    }
+
+    setIsRejecting(true);
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     const { error } = await supabase
       .from('partner_prompts')
-      .update({ 
+      .update({
         approved: false,
-        rejected: true, 
-        rejected_at: new Date().toISOString(), 
+        rejected: true,
+        rejected_at: new Date().toISOString(),
         rejected_by: user?.id,
+        rejection_reason: reason,
         approved_at: null,
-        approved_by: null
+        approved_by: null,
       })
-      .eq('id', promptId);
+      .eq('id', rejectModal.promptId);
+
+    setIsRejecting(false);
 
     if (error) {
       toast.error("Erro ao recusar");
     } else {
-      // Remove from AI tool libraries
-      await syncFotoToAllTools(promptId, null, 'partner_prompts');
-      toast.success("Recusado! O parceiro poderá editar e reenviar.");
+      await syncFotoToAllTools(rejectModal.promptId, null, 'partner_prompts');
+      toast.success("Recusado! O parceiro verá o motivo e poderá editar.");
+      setRejectModal(null);
+      setRejectReason("");
       fetchPartnerPrompts();
     }
   };
