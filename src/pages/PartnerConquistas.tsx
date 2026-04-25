@@ -292,17 +292,24 @@ const PartnerConquistas = () => {
               return (
                 <div
                   key={b.slug}
-                  className={`text-center p-2.5 rounded-xl border transition-all overflow-hidden ${
+                  className={`relative text-center p-2.5 rounded-xl border transition-all overflow-hidden ${
                     earned
-                      ? "bg-yellow-500/[0.08] border-yellow-500/25"
-                      : "bg-card border-border opacity-45"
+                      ? "bg-gradient-to-br from-yellow-500/30 via-amber-500/20 to-orange-500/25 border-yellow-400/60 shadow-[0_0_18px_-4px_rgba(250,204,21,0.55)] ring-1 ring-yellow-400/40"
+                      : "bg-card border-border opacity-45 grayscale"
                   }`}
                 >
-                  <div className="text-xl mb-1">{b.icon}</div>
-                  <p className={`text-[11px] font-medium leading-tight ${earned ? "text-foreground" : "text-muted-foreground"}`}>
+                  {earned && (
+                    <div className="absolute top-1 right-1 text-[10px] bg-yellow-400 text-yellow-950 font-bold rounded-full h-4 w-4 flex items-center justify-center shadow">
+                      ✓
+                    </div>
+                  )}
+                  <div className={`text-2xl mb-1 ${earned ? "drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]" : ""}`}>{b.icon}</div>
+                  <p className={`text-[11px] leading-tight ${earned ? "text-yellow-100 font-bold" : "text-muted-foreground font-medium"}`}>
                     {b.name.replace(/[🔥💎⚡🏆💰👑🤖🎬]/g, '').trim()}
                   </p>
-                  {!earned && (
+                  {earned ? (
+                    <p className="text-[9px] text-yellow-300/90 mt-0.5 font-semibold uppercase tracking-wide">Conquistado</p>
+                  ) : (
                     <p className="text-[9px] text-muted-foreground mt-0.5 leading-tight break-words hyphens-auto">{b.hint}</p>
                   )}
                 </div>
