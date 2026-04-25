@@ -255,22 +255,28 @@ export type Database = {
       admin_collections: {
         Row: {
           created_at: string
+          created_by: string | null
           id: string
           name: string
+          partner_id: string | null
           slug: string
           updated_at: string
         }
         Insert: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name: string
+          partner_id?: string | null
           slug: string
           updated_at?: string
         }
         Update: {
           created_at?: string
+          created_by?: string | null
           id?: string
           name?: string
+          partner_id?: string | null
           slug?: string
           updated_at?: string
         }

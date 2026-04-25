@@ -78,6 +78,7 @@ const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
 const AdminPremiumDashboard = lazy(() => import("./pages/AdminPremiumDashboard"));
 const AdminPartners = lazy(() => import("./pages/AdminPartners"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
+const PartnerCollections = lazy(() => import("./pages/PartnerCollections"));
 const PartnerUpload = lazy(() => import("./pages/PartnerUpload"));
 const PartnerEarnings = lazy(() => import("./pages/PartnerEarnings"));
 const PartnerConquistas = lazy(() => import("./pages/PartnerConquistas"));
@@ -297,6 +298,7 @@ const AppContent = () => {
           <Route path="/parceiro-upload" element={<PartnerUpload />} />
           <Route path="/parceiro-extrato" element={<PartnerEarnings />} />
           <Route path="/parceiro-conquistas" element={<PartnerConquistas />} />
+          <Route path="/parceiro-colecoes" element={<PartnerCollections />} />
           <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v1" replace />} />
