@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { Image } from 'https://deno.land/x/imagescript@1.2.17/mod.ts'
 
 /**
  * GENERATE-THUMBNAIL
@@ -37,6 +38,24 @@ function isAllowedDomain(url: string): boolean {
   } catch {
     return false
   }
+}
+
+const TARGET_WIDTH = 300
+
+/**
+ * Redimensiona a imagem para 300px de largura (mantendo proporção).
+ * Nota: ImageScript não suporta encode WebP nativamente. Usamos PNG comprimido
+ * para o thumbnail — o ganho principal vem do resize de ~2000px → 300px.
+ */
+async function makeThumbnail(buffer: ArrayBuffer): Promise<{ data: Uint8Array; ext: string; contentType: string }> {
+  const img = await Image.decode(new Uint8Array(buffer))
+  const targetWidth = Math.min(TARGET_WIDTH, img.width)
+  if (img.width > targetWidth) {
+    img.resize(targetWidth, Image.RESIZE_AUTO)
+  }
+  // PNG com nível de compressão alto (3 = bom balanço entre velocidade e tamanho)
+  const png = await img.encode(3)
+  return { data: png, ext: 'png', contentType: 'image/png' }
 }
 
 serve(async (req) => {
@@ -96,25 +115,32 @@ serve(async (req) => {
     
     console.log(`[GenerateThumbnail] Image fetched: ${imageBuffer.byteLength} bytes, type: ${contentType}`)
 
-    // 3. Determinar extensão
-    let extension = 'png'
-    if (contentType.includes('jpeg') || contentType.includes('jpg')) {
-      extension = 'jpg'
-    } else if (contentType.includes('webp')) {
-      extension = 'webp'
+    // 3. Gerar thumbnail 300px (com fallback para imagem original em caso de erro)
+    let uploadBuffer: Uint8Array | ArrayBuffer = imageBuffer
+    let uploadContentType = contentType
+    let extension = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg'
+      : contentType.includes('webp') ? 'webp' : 'png'
+
+    try {
+      const thumb = await makeThumbnail(imageBuffer)
+      uploadBuffer = thumb.data
+      uploadContentType = thumb.contentType
+      extension = thumb.ext
+      const reduction = ((1 - thumb.data.byteLength / imageBuffer.byteLength) * 100).toFixed(1)
+      console.log(`[GenerateThumbnail] Resized to ${TARGET_WIDTH}px: ${thumb.data.byteLength} bytes (${reduction}% smaller)`)
+    } catch (thumbErr) {
+      console.warn('[GenerateThumbnail] Thumbnail generation failed, uploading original:', thumbErr)
     }
 
-    // 4. Upload para Storage (sem compressão por enquanto - Deno não tem sharp nativo)
-    // A imagem original já está otimizada pelo RunningHub
+    // 4. Upload para Storage
     const storagePath = `${table}/${jobId}.${extension}`
-    
     console.log(`[GenerateThumbnail] Uploading to: ai-thumbnails/${storagePath}`)
 
     const { error: uploadError } = await supabase.storage
       .from('ai-thumbnails')
-      .upload(storagePath, imageBuffer, {
-        contentType,
-        upsert: true, // Sobrescreve se já existir
+      .upload(storagePath, uploadBuffer, {
+        contentType: uploadContentType,
+        upsert: true,
       })
 
     if (uploadError) {
@@ -148,7 +174,8 @@ serve(async (req) => {
     return new Response(JSON.stringify({
       success: true,
       thumbnailUrl,
-      size: imageBuffer.byteLength,
+      originalSize: imageBuffer.byteLength,
+      thumbnailSize: uploadBuffer instanceof Uint8Array ? uploadBuffer.byteLength : imageBuffer.byteLength,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })

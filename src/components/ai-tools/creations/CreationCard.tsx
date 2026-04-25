@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Download, Clock, Image as ImageIcon, Video, AlertCircle, Trash2, Wand2 } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Download, Clock, Image as ImageIcon, Video, AlertCircle, Trash2, Wand2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
@@ -113,115 +112,109 @@ const CreationCard: React.FC<CreationCardProps> = ({ creation, onDelete }) => {
   };
 
   const urgencyColors = {
-    safe: 'bg-green-500/20 text-green-400 border-green-500/30',
-    warning: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
-    danger: 'bg-red-500/20 text-red-400 border-red-500/30 animate-pulse'
+    safe: 'bg-green-500/30 text-green-300 border-green-400/40',
+    warning: 'bg-yellow-500/30 text-yellow-300 border-yellow-400/40',
+    danger: 'bg-red-500/30 text-red-300 border-red-400/40 animate-pulse'
   };
 
   return (
-    <Card className="overflow-hidden bg-accent border-border hover:border-slate-500/50 transition-all group">
-      {/* Media Preview */}
-      <div className="relative aspect-square bg-accent flex items-center justify-center overflow-hidden">
-        {imageError ? (
-          <div className="flex flex-col items-center gap-2 text-muted-foreground p-4">
-            <AlertCircle className="w-8 h-8" />
-            <span className="text-xs text-center">Mídia indisponível ou expirada</span>
-          </div>
-        ) : isVideo ? (
+    <div className="group relative aspect-square rounded-xl overflow-hidden border border-border bg-accent hover:border-primary/40 transition-all">
+      {/* Media — full bleed */}
+      {imageError ? (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 text-muted-foreground p-4">
+          <AlertCircle className="w-8 h-8" />
+          <span className="text-xs text-center">Mídia indisponível</span>
+        </div>
+      ) : isVideo ? (
+        <>
           <video
             src={videoSrc}
             poster={videoPoster}
-            className="w-full h-full object-contain"
-            controls
+            className="absolute inset-0 w-full h-full object-cover"
             preload="metadata"
+            muted
+            playsInline
+            onMouseEnter={(e) => e.currentTarget.play().catch(() => {})}
+            onMouseLeave={(e) => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
             onError={() => setImageError(true)}
           />
-        ) : (
-          <img
-            src={previewUrl}
-            alt={`Criação ${creation.tool_name}`}
-            className="w-full h-full object-contain"
-            loading="lazy"
-            onError={() => setImageError(true)}
-          />
-        )}
-        
-        {/* Media type indicator */}
-        <div className="absolute top-2 left-2">
-          <Badge variant="secondary" className="bg-muted/70 text-foreground text-[10px] gap-1">
-            {isVideo ? <Video className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
-            {isVideo ? 'Vídeo' : 'Imagem'}
-          </Badge>
+          {/* Play indicator visible when not hovering */}
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none group-hover:opacity-0 transition-opacity">
+            <div className="w-12 h-12 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center">
+              <Play className="w-6 h-6 text-white fill-white" />
+            </div>
+          </div>
+        </>
+      ) : (
+        <img
+          src={previewUrl}
+          alt={`Criação ${creation.tool_name}`}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          loading="lazy"
+          onError={() => setImageError(true)}
+        />
+      )}
+
+      {/* Top badges — always visible */}
+      <div className="absolute top-2 left-2 right-2 flex items-start justify-between gap-2 pointer-events-none">
+        <Badge variant="secondary" className="bg-black/60 backdrop-blur-sm text-white text-[10px] gap-1 border-white/10">
+          {isVideo ? <Video className="w-3 h-3" /> : <ImageIcon className="w-3 h-3" />}
+          {isVideo ? 'Vídeo' : 'Imagem'}
+        </Badge>
+        <Badge
+          variant="outline"
+          className={cn("text-[10px] gap-1 backdrop-blur-sm", urgencyColors[urgency])}
+        >
+          <Clock className="w-3 h-3" />
+          {timeText}
+        </Badge>
+      </div>
+
+      {/* Hover overlay — actions + info */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 gap-2">
+        {/* Tool & date */}
+        <div className="text-white">
+          <p className="text-xs font-medium truncate">{creation.tool_name}</p>
+          <p className="text-[10px] text-white/60">{formatDate(creation.created_at)}</p>
         </div>
 
-        {/* Quick download button (top-right overlay) */}
-        {!imageError && (
-          <button
+        {/* Actions */}
+        <div className="flex items-center gap-1.5">
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleDownload}
-            disabled={isDownloading}
+            disabled={isDownloading || imageError}
+            className="flex-1 h-8 text-xs bg-white/10 hover:bg-white/20 border-white/20 text-white backdrop-blur-sm"
             title="Baixar"
-            aria-label="Baixar"
-            className="absolute top-2 right-2 h-8 w-8 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-sm border border-white/20 text-white flex items-center justify-center transition-all disabled:opacity-50"
           >
-            <Download className="w-4 h-4" />
-          </button>
-        )}
-      </div>
-      
-      {/* Info Section */}
-      <div className="p-3 space-y-2">
-        {/* Expiration & Actions */}
-        <div className="flex items-center justify-between gap-1">
-          <Badge 
-            variant="outline" 
-            className={cn("text-[10px] gap-1", urgencyColors[urgency])}
-          >
-            <Clock className="w-3 h-3" />
-            {timeText}
-          </Badge>
-          
-          <div className="flex gap-1">
-            {isFlyerMaker && !isVideo && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleModify}
-                className="h-7 text-xs bg-purple-500/10 border-purple-500/30 text-purple-400 hover:bg-purple-500/20"
-                title="Modificar"
-              >
-                <Wand2 className="w-3 h-3 mr-1" />
-                Modificar
-              </Button>
-            )}
+            <Download className="w-3.5 h-3.5 mr-1" />
+            {isDownloading ? '...' : 'Baixar'}
+          </Button>
+          {isFlyerMaker && !isVideo && (
             <Button
               variant="outline"
               size="sm"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              className="h-7 w-7 p-0 bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/100/20"
-              title="Excluir"
+              onClick={handleModify}
+              className="h-8 w-8 p-0 bg-purple-500/30 hover:bg-purple-500/50 border-purple-400/40 text-white backdrop-blur-sm"
+              title="Modificar"
             >
-              <Trash2 className="w-3 h-3" />
+              <Wand2 className="w-3.5 h-3.5" />
             </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDownload}
-              disabled={isDownloading || imageError}
-              className="h-7 text-xs bg-accent0/10 border-border text-muted-foreground hover:bg-accent0/20"
-            >
-              <Download className="w-3 h-3 mr-1" />
-              {isDownloading ? '...' : 'Baixar'}
-            </Button>
-          </div>
-        </div>
-        
-        {/* Tool name & date */}
-        <div className="text-[11px] text-muted-foreground truncate">
-          {creation.tool_name} • {formatDate(creation.created_at)}
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="h-8 w-8 p-0 bg-red-500/30 hover:bg-red-500/50 border-red-400/40 text-white backdrop-blur-sm"
+            title="Excluir"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+          </Button>
         </div>
       </div>
-    </Card>
+    </div>
   );
 };
 

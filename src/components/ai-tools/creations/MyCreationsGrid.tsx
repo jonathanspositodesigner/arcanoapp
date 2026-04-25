@@ -118,7 +118,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
   return (
     <div className="space-y-4">
       {/* Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {creations.map((creation) => (
           <CreationCard key={creation.id} creation={creation} onDelete={onDelete} />
         ))}
