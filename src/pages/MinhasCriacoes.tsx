@@ -53,10 +53,10 @@ const MinhasCriacoes = () => {
         </div>
 
         {/* Expiration Warning */}
-        <div className="flex items-center gap-2 p-3 rounded-lg bg-yellow-500/20 border border-yellow-400/60">
-          <AlertTriangle className="w-4 h-4 text-yellow-300 shrink-0" />
-          <p className="text-sm text-yellow-50 font-medium">
-            Os arquivos expiram em <strong className="text-white">24 horas</strong> após a geração e somem automaticamente. Faça download para guardar.
+        <div className="flex items-center gap-2 p-3 rounded-lg border border-yellow-400/60 bg-amber-400">
+          <AlertTriangle className="w-4 h-4 shrink-0 text-primary-foreground" />
+          <p className="text-sm font-medium text-primary-foreground">
+            Os arquivos expiram em <strong className="text-destructive">24 horas</strong> após a geração e somem automaticamente. Faça download para guardar.
           </p>
         </div>
 
