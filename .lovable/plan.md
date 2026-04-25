@@ -1,63 +1,78 @@
-# 🔍 Auditoria — Modo Logo no MovieLed Maker
+<final-text>
+Auditoria concluída. A raiz do problema da receita do MovieLed não é cobrança da Gisele: ela foi cobrada corretamente no Kling 2.5.
 
-## 🎯 Causa raiz do erro
+O problema real está no painel Custos IA: ele zera a receita de qualquer usuário marcado como Unlimited, mesmo quando o job foi realmente debitado. Como Kling 2.5 deve cobrar Unlimited, a linha aparece com receita R$ 0,00 embora exista transação de -900 créditos.
 
-Você recebeu **"erro de edge function"** ao testar Kling 2.5 + Logo PNG transparente. Investiguei a fundo:
+Achados confirmados:
+- Gisele está Unlimited, mas o Kling 2.5 dela teve transação real: -900 créditos em “MovieLed Maker (Kling 2.5 Turbo)”. Não precisa cobrar de novo.
+- O Wan 2.2 dela não teve transação, e isso está correto porque Wan entra no Unlimited.
+- Existem 2 jobs antigos de Kling 2.5 da Herica sem transação real, total de 1.800 créditos a cobrar retroativo.
+- Existem jobs antigos com engine `gemini-lite` em `movieled_maker_jobs`, e isso deve sair da operação/relatório como legado desativado.
+- O painel também está errando custo: MovieLed tem custo fixo hardcoded de R$ 2,00 e ainda soma custo de vídeo por engine, causando cálculo inconsistente/dobrado.
 
-1. **Banco**: nenhum job em `content_mode='logo'` foi sequer criado — o erro travou *antes* de chegar ao DB.
-2. **Edge logs**: a função `runninghub-movieled-maker` **não tem nenhum log recente**, apesar de outras funções (queue-manager, arcano-cloner, etc.) estarem operando normalmente.
-3. **HTTP trace**: a chamada `OPTIONS /functions/v1/runninghub-movieled-maker/run` retornou **503** às 17:55 UTC — exatamente no seu teste.
+Plano de correção:
 
-**Conclusão técnica**: a função `runninghub-movieled-maker` está com **deploy quebrado / não publicado** após as últimas alterações do modo Logo. O preflight CORS retorna 503 antes mesmo de o request chegar ao código, então o frontend mostra o erro genérico de "Edge Function".
+1. Corrigir a receita do painel Custos IA
+- Trocar a lógica de receita por “créditos realmente debitados”, usando as transações de consumo de crédito como fonte de verdade.
+- Parar de zerar receita apenas porque o usuário é Unlimited.
+- Regra correta para MovieLed:
+  - Kling 2.5: cobra e gera receita, inclusive Unlimited.
+  - Veo 3.1: cobra e gera receita, inclusive Unlimited.
+  - Wan 2.2: se Unlimited e não houve débito, receita R$ 0,00; se houve débito real, mostra receita.
+- Atualizar a tabela para mostrar créditos cobrados/reembolsados de forma explícita, não inferida só pelo plano atual do usuário.
 
-O código em si (validações, upload, payload, roteamento no queue-manager) está correto após eu reler todos os arquivos. O problema é puramente de **runtime**.
+2. Corrigir custo do MovieLed no painel
+- Remover o custo fixo hardcoded de MovieLed Maker no componente de custos.
+- Zerar/ignorar `ai_tool_settings` de MovieLed como custo fixo por job.
+- Usar `rh_cost` real/registrado do job para custo de RunningHub.
+- Remover a soma duplicada “MovieLed R$2 + custo por segundo”.
+- Para Wan 2.2, custo externo fica somente o que vier registrado no job; não inventar custo.
+- Para Kling, usar custo real salvo no webhook; fallback por engine só se o job antigo não tiver custo salvo.
 
----
+3. Corrigir captura de custo real da RunningHub
+- Ajustar `runninghub-webhook` para extrair `consumeCoins` de `taskUsageList`/`usage` do payload da RunningHub.
+- Salvar esse valor em `rh_cost` no job.
+- Parar de calcular custo por tempo de processamento quando a RunningHub já envia consumo real.
+- Manter fallback por tempo apenas para payloads antigos sem consumo.
 
-## 📋 Plano de correção (3 frentes)
+4. Cobrança retroativa correta
+- Cobrar somente os 2 jobs de Kling 2.5 que realmente ficaram sem transação:
+  - `herica@admin.com`: 2 jobs x 900 = 1.800 créditos.
+- Inserir as transações retroativas de consumo com descrição clara.
+- Atualizar saldo da usuária de forma transacional.
+- Não cobrar Wan 2.2 Unlimited, porque Wan é o único liberado no Unlimited.
 
-### 1. 🚀 Forçar redeploy das duas edge functions afetadas
+5. Remover Gemini da operação
+- Remover/deletar funções e trechos mortos relacionados a chave/API Gemini antiga, incluindo `admin-update-google-key` se não houver uso ativo.
+- Remover comentários/labels “Gemini” de funções legadas que hoje só redirecionam para outros fluxos.
+- Criar uma migração defensiva para remover qualquer cron/função residual `reconcile_stuck_gemini_video_jobs`, se existir no ambiente.
+- Renomear engines históricos `gemini-lite` em MovieLed para um valor legado desativado, para parar de aparecer “Gemini” em auditorias e relatórios.
+- Revisar `translate-prompt-chinese`, que ainda chama endpoint com modelo Gemini via Evolink, e trocar para rota sem Gemini ou remover se não for mais usada.
 
-- `runninghub-movieled-maker` (que está dando 503)
-- `runninghub-queue-manager` (mexemos nela junto, garantir que o roteamento Logo está ativo na versão deployada)
+6. Blindagem para não voltar a quebrar
+- Adicionar uma auditoria no Custos IA para listar inconsistências:
+  - Kling/Veo concluído com `credits_charged=true` mas sem transação real.
+  - Jobs com receita R$ 0,00 apesar de débito real.
+  - Jobs com custo duplicado ou custo ausente.
+  - Engines legadas/desativadas ainda aparecendo.
+- Atualizar o alerta de erros para incluir engines legadas/desativadas e falhas de MovieLed.
 
-Vou usar a tool `supabase--deploy_edge_functions` para deploy explícito imediato e em seguida `supabase--curl_edge_functions` para validar com um OPTIONS real que volta 200/204.
+7. Verificação final
+- Validar no banco:
+  - Gisele Kling: receita aparece baseada nos 900 créditos debitados.
+  - Gisele Wan: continua R$ 0,00 de receita se não houve débito, porque Wan entra no Unlimited.
+  - Herica Kling: retroativo de 1.800 créditos registrado.
+  - Nenhum job ativo/novo aparece com `gemini-lite`.
+- Validar no painel /custosia:
+  - MovieLed Maker mostra receita por job corretamente.
+  - Resumo total usa créditos realmente cobrados.
+  - Custo não soma MovieLed duas vezes.
+  - Lucro = receita real - custo real.
 
-### 2. 🛡️ Endurecimento defensivo no edge function
-
-Mesmo o redeploy resolvendo o 503, vou adicionar **3 proteções extras** em `runninghub-movieled-maker/index.ts` para evitar que erros silenciosos voltem a acontecer:
-
-- **try/catch global no boot**: envolver `serve()` num bloco que loga `[MovieLedMaker] BOOT ERROR` se algo crashar na inicialização (hoje crashes de boot ficam invisíveis).
-- **Validação extra do upload da logo**: se o `uploadImageToRunningHub('logo_image')` falhar, **estornar os créditos imediatamente** (hoje só estorna na falha do upload da imagem de referência, mas a lógica para a logo está confirmada — vou padronizar o tratamento).
-- **Log explícito do contentMode**: adicionar `console.log('[MovieLedMaker] handleRun: contentMode=...', engine=..., hasLogo=...)` na entrada do `/run` para facilitar debug futuro.
-
-### 3. 🧪 Validação do storage path
-
-Confirmar que `artes-cloudinary/movieled-logos/{userId}/` aceita upload de JPEG sem precisar de policy nova (o bucket já é público, deve funcionar, mas vou rodar um SELECT nas policies pra ter certeza). Se faltar policy, criar migration.
-
----
-
-## 🔬 O que NÃO precisa mudar (já validei)
-
-- ✅ `src/lib/movieled-logo-processor.ts` — chroma key #00B140 + detecção de transparência está correto.
-- ✅ UI do switch Nome/Logo, preview com badge, restrição de Veo 3.1 — tudo funcionando.
-- ✅ WebApp IDs no queue-manager: `kling2.5_logo: 2047822588453326850` e `wan2.2_logo: 2048069532694093826` batem com a doc da RunningHub.
-- ✅ NodeIds 155/160 (Kling) e 135/139 (Wan) estão corretos conforme doc.
-- ✅ Coluna `content_mode` e `logo_image_url` existem na tabela.
-
----
-
-## 📦 Arquivos impactados
-
-1. ✏️ `supabase/functions/runninghub-movieled-maker/index.ts` — try/catch boot + logs extras + tratamento explícito de falha de upload da logo.
-2. 🚀 Redeploy de `runninghub-movieled-maker` e `runninghub-queue-manager`.
-3. 🧪 Verificação de policies do bucket (sem alteração esperada).
-4. ✏️ `src/pages/Index.tsx` — bump `APP_BUILD_VERSION` → `1.4.7`.
-
----
-
-## ⏱️ Tempo estimado de execução
-
-~2 minutos (redeploy + edição mínima do edge function).
-
-**Confirma que posso executar essa correção?**
+Arquivos/áreas que serão alterados:
+- `src/components/admin/AdminAIToolsUsageTab.tsx`
+- `supabase/functions/runninghub-webhook/index.ts`
+- funções/migrações de auditoria do painel Custos IA
+- limpeza de funções/código legado Gemini
+- `src/pages/Index.tsx` para incrementar versão do build
+</final-text>
