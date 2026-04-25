@@ -298,6 +298,7 @@ const AppContent = () => {
           <Route path="/parceiro-upload" element={<PartnerUpload />} />
           <Route path="/parceiro-extrato" element={<PartnerEarnings />} />
           <Route path="/parceiro-conquistas" element={<PartnerConquistas />} />
+          <Route path="/parceiro-colecoes" element={<PartnerCollections />} />
           <Route path="/upscaler-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano" element={<UpscalerArcanoVersionSelect />} />
           <Route path="/ferramenta-ia-artes/upscaller-arcano-v1" element={<Navigate to="/ferramenta-ia-artes/upscaller-arcano/v1" replace />} />
