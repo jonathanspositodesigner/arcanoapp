@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
+import { processLogoForUpload } from '@/lib/movieled-logo-processor';
 import { usePremiumStatus } from '@/hooks/usePremiumStatus';
 import { useCredits } from '@/contexts/CreditsContext';
 import { useSmartBackNavigation } from '@/hooks/useSmartBackNavigation';
@@ -70,6 +71,14 @@ const MovieLedMakerTool = () => {
 
   // Text input
   const [inputText, setInputText] = useState('');
+
+  // Content mode: 'name' (texto) ou 'logo' (upload de imagem da logo)
+  const [contentMode, setContentMode] = useState<'name' | 'logo'>('name');
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoHadTransparency, setLogoHadTransparency] = useState(false);
+  const [logoProcessing, setLogoProcessing] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
 
   // Job state
   const [status, setStatus] = useState<ProcessingStatus>('idle');
