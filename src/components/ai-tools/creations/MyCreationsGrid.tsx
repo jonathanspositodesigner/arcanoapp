@@ -1,10 +1,11 @@
-import React, { useEffect, useRef, useCallback } from 'react';
+import React, { useEffect, useRef, useCallback, useState } from 'react';
 import { Loader2, RefreshCw, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import CreationCard from './CreationCard';
 import type { Creation } from './useMyCreations';
 import { useNavigate } from 'react-router-dom';
+import CreationLightboxModal from './CreationLightboxModal';
 
 interface MyCreationsGridProps {
   creations: Creation[];
@@ -28,6 +29,7 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
   const navigate = useNavigate();
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+  const [selected, setSelected] = useState<Creation | null>(null);
 
   // Infinite scroll observer
   const handleObserver = useCallback((entries: IntersectionObserverEntry[]) => {
@@ -120,7 +122,12 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
       {/* Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {creations.map((creation) => (
-          <CreationCard key={creation.id} creation={creation} onDelete={onDelete} />
+          <CreationCard
+            key={creation.id}
+            creation={creation}
+            onDelete={onDelete}
+            onOpen={(c) => setSelected(c)}
+          />
         ))}
       </div>
 
@@ -140,6 +147,17 @@ const MyCreationsGrid: React.FC<MyCreationsGridProps> = ({
           Fim da lista
         </p>
       )}
+
+      <CreationLightboxModal
+        creation={selected}
+        open={!!selected}
+        onClose={() => setSelected(null)}
+        onDelete={async (id) => {
+          if (!onDelete) return false;
+          await onDelete(id);
+          return true;
+        }}
+      />
     </div>
   );
 };
