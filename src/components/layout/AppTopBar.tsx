@@ -35,12 +35,9 @@ const AppTopBar = ({ user, isPremium, planType, userProfile, onLogout, onToggleS
   const [showCreationsModal, setShowCreationsModal] = useState(false);
   const { balance: credits, isLoading: creditsLoading, isUnlimited } = useCredits();
 
-  // Permite que outros componentes (ex: FloatingJobButton) abram o modal globalmente
-  useEffect(() => {
-    const handler = () => setShowCreationsModal(true);
-    window.addEventListener("open-my-creations", handler);
-    return () => window.removeEventListener("open-my-creations", handler);
-  }, []);
+  // Nota: o evento global "open-my-creations" é tratado por GlobalMyCreationsHost
+  // (montado em App.tsx) para funcionar em QUALQUER rota, inclusive nas páginas
+  // de ferramentas IA que não renderizam o AppTopBar.
   const {
     remainingUnlocks,
     dailyLimit: premiumDailyLimit,
