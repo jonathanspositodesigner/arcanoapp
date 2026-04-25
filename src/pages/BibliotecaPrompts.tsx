@@ -60,7 +60,7 @@ const GERAR_IMAGEM_CATEGORIES = new Set([
   'Logos',
   'Selos 3D',
   'Outros',
-  'Produtos/Comida',
+  'Produto/Comida',
 ]);
 const isVideoAsset = (imageUrl?: string | null) =>
   !!imageUrl && /\.(mp4|webm|mov|m4v)(\?|$)/i.test(imageUrl);
