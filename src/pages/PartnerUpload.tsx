@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
+import { ensureBrowserCompatibleImage, isHeicFile } from "@/lib/heicConverter";
 import { fetchFotosSubcategories, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 const promptSchema = z.object({
@@ -23,15 +24,20 @@ const promptSchema = z.object({
 });
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024;
-const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+const ALLOWED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/gif", "image/webp", "image/heic", "image/heif"];
 const ALLOWED_VIDEO_TYPES = ["video/mp4", "video/webm", "video/quicktime"];
 
 const validateFile = (file: File): string | null => {
   if (file.size > MAX_FILE_SIZE) {
     return `Arquivo muito grande. Máximo 100MB.`;
   }
-  if (!ALLOWED_IMAGE_TYPES.includes(file.type) && !ALLOWED_VIDEO_TYPES.includes(file.type)) {
-    return `Tipo de arquivo não permitido. Use JPEG, PNG, GIF, WebP, MP4, WebM ou MOV.`;
+  const isHeicByName = /\.(heic|heif)$/i.test(file.name);
+  const isAllowed =
+    ALLOWED_IMAGE_TYPES.includes(file.type) ||
+    ALLOWED_VIDEO_TYPES.includes(file.type) ||
+    isHeicByName;
+  if (!isAllowed) {
+    return `Tipo de arquivo não permitido. Use JPEG, PNG, HEIC, WebP, MP4, WebM ou MOV.`;
   }
   return null;
 };
@@ -66,6 +72,7 @@ const PartnerUpload = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState<{ current: number; total: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
@@ -369,29 +376,65 @@ const PartnerUpload = () => {
     }
 
     setIsSubmitting(true);
+    setSubmitProgress({ current: 0, total: mediaFiles.length });
 
-    try {
-      for (const media of mediaFiles) {
-        // Upload to Cloudinary
-        const uploadResult = await uploadToStorage(media.file, 'prompts-cloudinary');
-        
-        if (!uploadResult.success || !uploadResult.url) {
-          throw new Error(uploadResult.error || 'Failed to upload media');
+    // Helper: tenta uploadToStorage até `attempts` vezes (resiliente a falhas de rede)
+    const uploadWithRetry = async (
+      file: File,
+      folder: string,
+      attempts = 3,
+    ): Promise<{ url: string }> => {
+      let lastErr = '';
+      for (let i = 0; i < attempts; i++) {
+        try {
+          const r = await uploadToStorage(file, folder);
+          if (r.success && r.url) return { url: r.url };
+          lastErr = r.error || 'Falha no upload';
+        } catch (e) {
+          lastErr = e instanceof Error ? e.message : 'Falha no upload';
         }
+        // Backoff: 800ms, 1600ms
+        if (i < attempts - 1) await new Promise(r => setTimeout(r, 800 * (i + 1)));
+      }
+      throw new Error(lastErr || 'Falha no upload após várias tentativas');
+    };
 
-        const imageStoragePath = uploadResult.url;
+    // Helper: prepara o arquivo (HEIC -> JPEG; otimiza imagem grande)
+    const prepareFile = async (file: File, isVideo: boolean): Promise<File> => {
+      if (isVideo) return file;
+      let prepared = file;
+      if (isHeicFile(prepared)) {
+        prepared = await ensureBrowserCompatibleImage(prepared);
+      }
+      // Otimiza apenas se for imagem grande (>2MB) — não-bloqueante: se falhar, segue com o original
+      if (prepared.size > 2 * 1024 * 1024) {
+        try {
+          const r = await optimizeImage(prepared, { maxSizeMB: 2, maxWidthOrHeight: 2048 });
+          if (r?.file) prepared = r.file;
+        } catch (e) {
+          console.warn('[PartnerUpload] otimização falhou, usando original', e);
+        }
+      }
+      return prepared;
+    };
 
-        // Upload reference images if it's a video
-        let referenceImageUrls: string[] = [];
+    const failures: { title: string; reason: string }[] = [];
+    const successes: number[] = []; // índices que entraram com sucesso
+
+    for (let i = 0; i < mediaFiles.length; i++) {
+      const media = mediaFiles[i];
+      setSubmitProgress({ current: i + 1, total: mediaFiles.length });
+      const label = media.title || `item ${i + 1}`;
+      try {
+        const preparedMain = await prepareFile(media.file, media.isVideo);
+        const mainUpload = await uploadWithRetry(preparedMain, 'prompts-cloudinary');
+
+        const referenceImageUrls: string[] = [];
         if (media.isVideo && media.referenceImages.length > 0) {
           for (const refImg of media.referenceImages) {
-            const refUploadResult = await uploadToStorage(refImg.file, 'prompts-cloudinary/references');
-            
-            if (!refUploadResult.success || !refUploadResult.url) {
-              throw new Error(refUploadResult.error || 'Failed to upload reference image');
-            }
-
-            referenceImageUrls.push(refUploadResult.url);
+            const preparedRef = await prepareFile(refImg.file, false);
+            const refUp = await uploadWithRetry(preparedRef, 'prompts-cloudinary/references');
+            referenceImageUrls.push(refUp.url);
           }
         }
 
@@ -402,7 +445,7 @@ const PartnerUpload = () => {
             title: formatTitle(media.title),
             prompt: media.prompt,
             category: media.category,
-            image_url: imageStoragePath,
+            image_url: mainUpload.url,
             reference_images: referenceImageUrls.length > 0 ? referenceImageUrls : null,
             tutorial_url: media.hasTutorial && media.tutorialUrl ? media.tutorialUrl : null,
             approved: false,
@@ -412,17 +455,41 @@ const PartnerUpload = () => {
             subcategory_slug: media.category === 'Fotos' ? media.subcategorySlug : null,
           });
 
-        if (insertError) throw insertError;
+        if (insertError) throw new Error(insertError.message);
+        successes.push(i);
+      } catch (err) {
+        const reason = err instanceof Error ? err.message : 'Erro desconhecido';
+        console.error(`[PartnerUpload] falha em "${label}":`, err);
+        failures.push({ title: label, reason });
       }
+    }
 
+    setSubmitProgress(null);
+    setIsSubmitting(false);
+
+    if (failures.length === 0) {
+      // Tudo certo
       setMediaFiles([]);
       setShowModal(false);
       setShowSuccessModal(true);
-    } catch (error) {
-      console.error("Error submitting prompts:", error);
-      toast.error("Erro ao enviar. Tente novamente.");
-    } finally {
-      setIsSubmitting(false);
+      return;
+    }
+
+    // Houve falhas: remove só os que enviaram com sucesso, mantém os que falharam para reenviar
+    const remaining = mediaFiles.filter((_, idx) => !successes.includes(idx));
+    setMediaFiles(remaining);
+    setCurrentIndex(0);
+
+    if (successes.length > 0) {
+      toast.success(`${successes.length} de ${mediaFiles.length} prompts enviados com sucesso.`);
+    }
+
+    // Mostra cada falha em uma toast separada com motivo real
+    failures.slice(0, 5).forEach(f => {
+      toast.error(`Falhou "${f.title}": ${f.reason}`, { duration: 8000 });
+    });
+    if (failures.length > 5) {
+      toast.error(`+${failures.length - 5} outros prompts falharam. Tente reenviar.`);
     }
   };
 
@@ -862,7 +929,11 @@ const PartnerUpload = () => {
                   disabled={isSubmitting}
                   className="w-full bg-gradient-primary hover:opacity-90 text-lg py-6"
                 >
-                  {isSubmitting ? "Enviando..." : "Enviar Todos"}
+                  {isSubmitting
+                    ? submitProgress
+                      ? `Enviando ${submitProgress.current}/${submitProgress.total}...`
+                      : "Enviando..."
+                    : "Enviar Todos"}
                 </Button>
               )}
             </div>
