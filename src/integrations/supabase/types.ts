@@ -2422,6 +2422,7 @@ export type Database = {
           raw_webhook_payload: Json | null
           reference_file_name: string | null
           reference_image_url: string | null
+          reference_prompt_id: string | null
           rh_cost: number | null
           session_id: string
           started_at: string | null
@@ -2464,6 +2465,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id: string
           started_at?: string | null
@@ -2506,6 +2508,7 @@ export type Database = {
           raw_webhook_payload?: Json | null
           reference_file_name?: string | null
           reference_image_url?: string | null
+          reference_prompt_id?: string | null
           rh_cost?: number | null
           session_id?: string
           started_at?: string | null
