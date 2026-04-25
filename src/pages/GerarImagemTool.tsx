@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Download, ImagePlus, Sparkles, X, Loader2, Paperclip, Coins, RefreshCw, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -42,6 +43,8 @@ const ENGINE_STORAGE_KEY = 'gerar-imagem:selected-engine';
 
 const GerarImagemTool = () => {
   const { goBack } = useSmartBackNavigation({ fallback: '/ferramentas-ia-aplicativo' });
+  const location = useLocation();
+  const navigate = useNavigate();
   const { user, planType } = usePremiumStatus();
   const { balance: credits, refetch: refetchCredits, checkBalance, isUnlimited, isGptImageFreeTrial, gptImageFreeUntil } = useCredits();
   // Acesso liberado para todos com créditos (avulsos ou de plano)
