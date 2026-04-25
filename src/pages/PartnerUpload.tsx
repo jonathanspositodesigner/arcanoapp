@@ -14,7 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { z } from "zod";
 import { uploadToStorage } from "@/hooks/useStorageUpload";
 import { optimizeImage, isImageFile, formatBytes } from "@/hooks/useImageOptimizer";
-import { convertHeicToJpeg, isHeicFile } from "@/lib/heicConverter";
+import { ensureBrowserCompatibleImage, isHeicFile } from "@/lib/heicConverter";
 import { fetchFotosSubcategories, type IALibraryCategory } from "@/lib/iaLibrarySync";
 
 const promptSchema = z.object({
@@ -72,6 +72,7 @@ const PartnerUpload = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitProgress, setSubmitProgress] = useState<{ current: number; total: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [categories, setCategories] = useState<{id: string, name: string}[]>([]);
   const [subcategories, setSubcategories] = useState<IALibraryCategory[]>([]);
