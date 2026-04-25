@@ -105,7 +105,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('[check-free-trial-eligibility] Error:', error)
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: (error as Error)?.message || 'Erro interno' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     })
