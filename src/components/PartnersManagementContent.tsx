@@ -625,6 +625,11 @@ const PartnersManagementContent = () => {
                     {!partner.is_active && (
                       <Badge variant="secondary" className="text-xs">Inativo</Badge>
                     )}
+                    {partner.is_founder && (
+                      <Badge className="text-xs bg-amber-500 hover:bg-amber-600 text-white gap-1">
+                        <Crown className="h-3 w-3" /> Founder
+                      </Badge>
+                    )}
                   </div>
                   
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
@@ -660,6 +665,15 @@ const PartnersManagementContent = () => {
                   >
                     <Settings className="h-4 w-4" />
                     Plataformas
+                  </Button>
+                  <Button
+                    variant={partner.is_founder ? "default" : "outline"}
+                    size="icon"
+                    onClick={() => handleToggleFounder(partner.id, partner.is_founder)}
+                    title={partner.is_founder ? "Remover Founder" : "Marcar como Founder"}
+                    className={partner.is_founder ? "bg-amber-500 hover:bg-amber-600 text-white" : ""}
+                  >
+                    <Crown className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="outline"
