@@ -216,12 +216,12 @@ serve(async (req) => {
     if (!response.ok) {
       console.error(`[${requestId}] ❌ Pagar.me ${response.status}: ${responseText.substring(0, 800)}`)
 
-      supabase.from('asaas_orders').update({
+      Promise.resolve(supabase.from('asaas_orders').update({
         status: 'failed',
         gateway_error_code: String(response.status),
         gateway_error_message: responseText.substring(0, 500),
         last_attempt_at: new Date().toISOString(),
-      }).eq('id', orderId).then(() => {}).catch(() => {})
+      }).eq('id', orderId)).then(() => {}).catch(() => {})
 
       if (response.status >= 400 && response.status < 500) {
         try {
@@ -262,11 +262,11 @@ serve(async (req) => {
     console.log(`[${requestId}] ✅ Checkout criado: ${checkoutUrl.substring(0, 60)}...`)
 
     // Fire-and-forget: atualizar ordem com IDs do Pagar.me
-    supabase.from('asaas_orders').update({
+    Promise.resolve(supabase.from('asaas_orders').update({
       asaas_payment_id: pagarmeOrderId,
       checkout_request_id: requestId,
       last_attempt_at: new Date().toISOString(),
-    }).eq('id', orderId).then(() => {}).catch(() => {})
+    }).eq('id', orderId)).then(() => {}).catch(() => {})
 
     // Fire-and-forget: Meta CAPI InitiateCheckout
     if (sanitizedUtm || fbp || fbc) {

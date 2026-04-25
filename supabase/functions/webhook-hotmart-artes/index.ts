@@ -723,7 +723,7 @@ async function processHotmartWebhook(
     await supabase.from('webhook_logs').update({ 
       result: 'success', 
       error_message: null,
-      payload: { origin: payload?.data?.purchase?.origin || {} } // Manter origin para debug de UTMs
+      payload: { origin: (payload?.data?.purchase as any)?.origin || {} } // Manter origin para debug de UTMs
     }).eq('id', logId)
 
     // ========== META CAPI PURCHASE ==========
@@ -732,7 +732,7 @@ async function processHotmartWebhook(
       const supabaseUrl = Deno.env.get('SUPABASE_URL')!
       const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
       const tracking = purchase?.tracking
-      const purchaseOrigin = payload?.data?.purchase?.origin as any
+      const purchaseOrigin = (payload?.data?.purchase as any)?.origin as any
       
       // Extrair fbclid do sck (Hotmart tracking) ou utm_data
       let fbclid: string | null = null
@@ -955,7 +955,7 @@ serve(async (req) => {
     const hotmartCurrency = payload.data?.purchase?.price?.currency_value || payload.data?.purchase?.full_price?.currency_code || 'BRL'
     // Extract full UTM data from Hotmart - CHECK BOTH tracking AND origin
     const tracking = payload.data?.purchase?.tracking || {}
-    const origin = payload.data?.purchase?.origin || {}
+    const origin = (payload.data?.purchase as any)?.origin || {}
     const hotmartUtmSource = tracking.source || tracking.utm_source || null
     
     // Parse UTM data from multiple sources
