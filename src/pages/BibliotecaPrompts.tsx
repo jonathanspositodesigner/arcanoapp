@@ -1252,6 +1252,23 @@ const BibliotecaPrompts = () => {
                     Gerar sua versão
                   </Button>
                 )}
+                {isFlyerIACategory(selectedPrompt.category, selectedPrompt.imageUrl) && (
+                  <Button
+                    onClick={() => {
+                      trackPromptClick(String(selectedPrompt.id), selectedPrompt.title, selectedPrompt.promptType === 'admin');
+                      navigate('/flyer-maker', { state: {
+                        referenceImageUrl: selectedPrompt.imageUrl,
+                        flyerType: 'outro',
+                        prefillPromptId: selectedPrompt.partnerId ? String(selectedPrompt.id) : null,
+                        prefillPromptType: selectedPrompt.partnerId ? 'partner' : null,
+                      } });
+                    }}
+                    className="w-full bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-700 hover:to-indigo-600 text-white shadow-lg shadow-indigo-500/30 font-bold border-0"
+                  >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Gerar sua versão
+                  </Button>
+                )}
               </div>
               <div>
                 <h3 className="font-semibold mb-2 text-muted-foreground">{t('modal.prompt')}</h3>
