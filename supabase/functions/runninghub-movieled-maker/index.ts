@@ -3,11 +3,17 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 import { evolinkGenerate, evolinkPoll } from "../_shared/evolink-client.ts";
 
 /**
- * MOVIELED MAKER - EDGE FUNCTION v4
+ * MOVIELED MAKER - EDGE FUNCTION v5
  * 
  * Gera movies para telão de LED:
  * - Wan 2.2: via RunningHub workflow (500 créditos, 15s, 720p)
  * - Veo 3.1: via Evolink API centralizada (1500 créditos, 6s, 1080p, sem áudio)
+ * - Kling 2.5 Turbo: via RunningHub (900 créditos, 5s, 720p)
+ *
+ * Modos de conteúdo:
+ * - 'name': texto exibido no telão (fluxo padrão)
+ * - 'logo': imagem de logo exibida no telão (apenas Kling 2.5 ou Wan 2.2,
+ *           usa WebApp IDs dedicados com nodeInfoList expandido)
  */
 
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!;
