@@ -65,6 +65,42 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain px-5 py-5 sm:px-7 sm:py-6 space-y-8">
+            {/* Simulação */}
+            <section className="space-y-3">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <TrendingUp className="h-4.5 w-4.5 text-primary" />
+                </div>
+                <h3 className="text-base sm:text-lg font-semibold text-foreground">
+                  Possibilidades de ganho
+                </h3>
+              </div>
+              <div className="rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-5 space-y-3">
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  Um Arcano Founder <strong>nível Especialista</strong> com{" "}
+                  <strong>20 prompts populares</strong> liberados em média 50× por dia pode chegar a:
+                </p>
+                <div className="grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 150" : "R$ 100"}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">por dia</div>
+                  </div>
+                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 1.050" : "R$ 700"}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">por semana</div>
+                  </div>
+                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
+                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 4.500+" : "R$ 3.000+"}</div>
+                    <div className="text-[10px] sm:text-xs text-muted-foreground">por mês</div>
+                  </div>
+                </div>
+                <p className="text-[11px] text-muted-foreground italic">
+                  *Valores simulados. Os ganhos reais variam conforme volume e qualidade do
+                  conteúdo, engajamento dos usuários e nível Founder.
+                </p>
+              </div>
+            </section>
+
             {/* Forma 1 — Cliques de liberação */}
             <section className="space-y-3">
               <div className="flex items-center gap-2">
@@ -193,41 +229,6 @@ const EarningsGuideModal = ({ trigger, hideFirstPromptCta = false, isFounder = f
             </section>
 
             {/* Simulação */}
-            <section className="space-y-3">
-              <div className="flex items-center gap-2">
-                <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <TrendingUp className="h-4.5 w-4.5 text-primary" />
-                </div>
-                <h3 className="text-base sm:text-lg font-semibold text-foreground">
-                  Possibilidades de ganho
-                </h3>
-              </div>
-              <div className="rounded-xl border border-primary/25 bg-gradient-to-br from-primary/10 via-primary/5 to-transparent p-4 sm:p-5 space-y-3">
-                <p className="text-sm text-foreground/90 leading-relaxed">
-                  Um Arcano Founder <strong>nível Especialista</strong> com{" "}
-                  <strong>20 prompts populares</strong> liberados em média 50× por dia pode chegar a:
-                </p>
-                <div className="grid grid-cols-3 gap-2 sm:gap-3">
-                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 150" : "R$ 100"}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground">por dia</div>
-                  </div>
-                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 1.050" : "R$ 700"}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground">por semana</div>
-                  </div>
-                  <div className="rounded-lg bg-background/60 border border-border/40 p-2.5 sm:p-3 text-center">
-                    <div className="text-base sm:text-xl font-bold text-primary">{isFounder ? "R$ 4.500+" : "R$ 3.000+"}</div>
-                    <div className="text-[10px] sm:text-xs text-muted-foreground">por mês</div>
-                  </div>
-                </div>
-                <p className="text-[11px] text-muted-foreground italic">
-                  *Valores simulados. Os ganhos reais variam conforme volume e qualidade do
-                  conteúdo, engajamento dos usuários e nível Founder.
-                </p>
-              </div>
-            </section>
-
             {/* Dicas */}
             <section className="space-y-3">
               <div className="flex items-center gap-2">
