@@ -423,7 +423,10 @@ const AdminCreditsTab = () => {
             <Coins className="h-8 w-8 text-primary" />
             <div>
               <p className="text-sm text-muted-foreground">Total de Usuários</p>
-              <p className="text-2xl font-bold">{creditUsers.length}</p>
+              <p className="text-2xl font-bold">{formatNumber(totals.total_users)}</p>
+              <p className="text-[10px] text-muted-foreground">
+                {formatNumber(totals.total_users_with_balance)} com saldo &gt; 0
+              </p>
             </div>
           </CardContent>
         </Card>
@@ -457,18 +460,29 @@ const AdminCreditsTab = () => {
       </div>
 
       {/* Search, Add User, and Refresh */}
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 sm:items-center">
         <Input
           placeholder="Buscar por nome ou email..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="max-w-sm"
         />
+        <div className="flex items-center gap-2">
+          <Switch
+            id="only-with-balance"
+            checked={onlyWithBalance}
+            onCheckedChange={setOnlyWithBalance}
+          />
+          <Label htmlFor="only-with-balance" className="text-sm cursor-pointer flex items-center gap-1">
+            <Filter className="h-3 w-3" />
+            Apenas com saldo
+          </Label>
+        </div>
         <Button onClick={openAddUserModal} className="gap-2">
           <UserPlus className="h-4 w-4" />
           Adicionar Novo Usuário
         </Button>
-        <Button variant="outline" size="icon" onClick={fetchCreditUsers}>
+        <Button variant="outline" size="icon" onClick={refreshAll}>
           <RefreshCw className="h-4 w-4" />
         </Button>
       </div>
