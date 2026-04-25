@@ -38,6 +38,7 @@ import { getAIErrorMessage } from '@/utils/errorMessages';
 import { useAIToolSettings } from '@/hooks/useAIToolSettings';
 import RefinePanel from '@/components/arcano-cloner/RefinePanel';
 import RefinementTimeline, { type RefinementVersion } from '@/components/arcano-cloner/RefinementTimeline';
+import { useCollaboratorAttribution } from '@/hooks/useCollaboratorAttribution';
 
 
 type ProcessingStatus = 'idle' | 'uploading' | 'processing' | 'waiting' | 'completed' | 'error';
