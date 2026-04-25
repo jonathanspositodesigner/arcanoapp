@@ -487,8 +487,8 @@ const AdminAIToolsUsageTab = () => {
           const hasTrial = trialSet.has(uid);
           if (isPremium && hasLifetime) typeMap[uid] = 'premium_credits';
           else if (unlimitedSet.has(uid)) typeMap[uid] = 'unlimited';
-          else if (gptFreeSet.has(uid)) typeMap[uid] = 'gpt_free_trial';
           else if (isPremium) typeMap[uid] = 'premium';
+          else if (gptFreeSet.has(uid)) typeMap[uid] = 'gpt_free_trial';
           else if (hasPromo) typeMap[uid] = 'redeemed_credits';
           else if (hasLifetime) typeMap[uid] = 'bought_credits';
           else if (hasTrial) typeMap[uid] = 'free_trial';
