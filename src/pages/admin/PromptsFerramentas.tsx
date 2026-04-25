@@ -30,7 +30,8 @@ const PromptsFerramentas = () => {
       const { count: partnerPendingCount } = await supabase
         .from('partner_prompts')
         .select('*', { count: 'exact', head: true })
-        .eq('approved', false);
+        .eq('approved', false)
+        .or('rejected.is.null,rejected.eq.false');
       setPendingPartnerCount(partnerPendingCount || 0);
     };
 
