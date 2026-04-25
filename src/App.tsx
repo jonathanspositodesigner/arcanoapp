@@ -78,6 +78,7 @@ const AdminManagePremium = lazy(() => import("./pages/AdminManagePremium"));
 const AdminPremiumDashboard = lazy(() => import("./pages/AdminPremiumDashboard"));
 const AdminPartners = lazy(() => import("./pages/AdminPartners"));
 const PartnerDashboard = lazy(() => import("./pages/PartnerDashboard"));
+const PartnerCollections = lazy(() => import("./pages/PartnerCollections"));
 const PartnerUpload = lazy(() => import("./pages/PartnerUpload"));
 const PartnerEarnings = lazy(() => import("./pages/PartnerEarnings"));
 const PartnerConquistas = lazy(() => import("./pages/PartnerConquistas"));
