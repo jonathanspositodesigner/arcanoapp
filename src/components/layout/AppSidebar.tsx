@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import ReferralModal from "@/components/ReferralModal";
+import { MyCreationsModal } from "@/components/ai-tools/creations";
 
 interface AppSidebarProps {
   user: any;
@@ -21,6 +22,7 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
   const { t } = useTranslation('prompts');
   const { logout } = useAuth();
   const [showReferralModal, setShowReferralModal] = useState(false);
+  const [showCreationsModal, setShowCreationsModal] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -139,7 +141,13 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           {/* CONTA */}
           <p className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-wider px-3 mt-4 mb-1">Conta</p>
 
-          <button onClick={() => handleNavAndClose("/minhas-criacoes")} className={navItemClass("/minhas-criacoes")}>
+          <button
+            onClick={() => {
+              setShowCreationsModal(true);
+              setSidebarOpen(false);
+            }}
+            className="w-full flex items-center text-left text-[13px] font-medium py-2.5 px-3 rounded-lg transition-colors text-muted-foreground hover:text-foreground hover:bg-accent"
+          >
             <Sparkles className="h-4 w-4 mr-2.5 flex-shrink-0" />
             Minhas Criações
           </button>
@@ -216,6 +224,9 @@ const AppSidebar = ({ user, isPremium, sidebarOpen, setSidebarOpen, fullScreen =
           userId={user.id}
         />
       )}
+
+      {/* My Creations Modal */}
+      <MyCreationsModal open={showCreationsModal} onClose={() => setShowCreationsModal(false)} />
     </>
   );
 };
