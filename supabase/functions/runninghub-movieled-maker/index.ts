@@ -642,12 +642,54 @@ async function handleRun(req: Request) {
     });
   }
 
+  // Upload da LOGO (apenas no modo logo) — também precisa estar no RunningHub
+  let rhLogoFileName: string | null = null;
+  if (contentMode === 'logo' && logoImageUrl) {
+    try {
+      await logStep(jobId, 'uploading_logo');
+      rhLogoFileName = await uploadImageToRunningHub(logoImageUrl, null, 'logo_image');
+      await logStep(jobId, 'logo_uploaded', { rhLogoFileName });
+    } catch (error: any) {
+      const errorMsg = error.message || 'Logo upload failed';
+      console.error('[MovieLedMaker] Logo upload error:', errorMsg);
+      try {
+        await supabase.rpc('refund_upscaler_credits', {
+          _user_id: verifiedUserId, _amount: creditCost,
+          _description: `MOVIELED_LOGO_UPLOAD_REFUNDED: ${errorMsg.slice(0, 100)}`
+        });
+        await logStepFailure(jobId, 'upload_logo', errorMsg);
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: `Erro ao processar logo. Tente novamente.`,
+          credits_refunded: true,
+          completed_at: new Date().toISOString()
+        }).eq('id', jobId);
+      } catch {
+        await supabase.from(TABLE_NAME).update({
+          status: 'failed',
+          error_message: `Erro ao processar logo. Tente novamente.`,
+          completed_at: new Date().toISOString()
+        }).eq('id', jobId);
+      }
+      return new Response(JSON.stringify({
+        error: 'Erro ao processar logo. Tente novamente.',
+        code: 'LOGO_TRANSFER_ERROR',
+        refunded: true,
+      }), {
+        status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+  }
+
   // Save job_payload
   const jobPayload = {
     engine: selectedEngine,
-    inputText: inputText.trim(),
+    contentMode,
+    inputText: contentMode === 'name' ? inputText.trim() : null,
     rhFileName,
+    rhLogoFileName,
     imageUrl,
+    logoImageUrl: logoImageUrl || null,
     fallbackImageUrl: promptFallbackUrl,
     referencePromptId: referencePromptId || null,
   };
