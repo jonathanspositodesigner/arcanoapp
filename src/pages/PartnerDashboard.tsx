@@ -744,11 +744,6 @@ const PartnerDashboard = () => {
                         <Pencil className="h-3 w-3 inline mr-0.5" />Editar
                       </button>
                     )}
-                    {status === "approved" && (
-                      <button onClick={() => handleRequestDeletion(prompt.id)} className="flex-1 text-[10px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-lg px-2 py-1.5 transition-colors">
-                        <XCircle className="h-3 w-3 inline mr-0.5" />Excluir
-                      </button>
-                    )}
                     {status === "rejected" && (
                       <button onClick={() => handleDeleteRejected(prompt.id)} className="flex-1 text-[10px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-lg px-2 py-1.5 transition-colors">
                         <XCircle className="h-3 w-3 inline mr-0.5" />Excluir
