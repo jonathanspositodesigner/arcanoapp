@@ -189,6 +189,27 @@ const PartnerDashboard = () => {
     navigate('/');
   };
 
+  const handleDeleteRejected = async (promptId: string) => {
+    if (!confirm("Deseja excluir definitivamente este prompt recusado? Esta ação não pode ser desfeita.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('partner_prompts')
+        .delete()
+        .eq('id', promptId);
+
+      if (error) throw error;
+
+      toast.success("Prompt excluído");
+      checkPartnerAndFetchData();
+    } catch (error) {
+      console.error("Error deleting rejected prompt:", error);
+      toast.error("Erro ao excluir prompt");
+    }
+  };
+
   const handleRequestDeletion = async (promptId: string) => {
     if (!confirm("Deseja solicitar a exclusão deste arquivo? Um administrador irá analisar a solicitação.")) {
       return;
