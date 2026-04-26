@@ -61,8 +61,20 @@ const PartnerCollections = () => {
       navigate('/parceiro-login');
       return;
     }
-    setPartnerId(user.id);
-    await Promise.all([fetchCollections(user.id), fetchPrompts(user.id)]);
+    const { data: partnerData, error: partnerError } = await supabase
+      .from('partners')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    if (partnerError || !partnerData) {
+      toast.error("Erro ao carregar dados do parceiro");
+      navigate('/');
+      return;
+    }
+
+    setPartnerId(partnerData.id);
+    await Promise.all([fetchCollections(partnerData.id), fetchPrompts(partnerData.id)]);
     setIsLoading(false);
   };
 
