@@ -739,13 +739,18 @@ const PartnerDashboard = () => {
                     </div>
                   )}
                   <div className="flex gap-1.5 mt-2">
-                    {(status === "pending" || status === "rejected" || status === "approved") && (
+                    {(status === "pending" || status === "approved") && (
                       <button onClick={() => openEditModal(prompt)} className="flex-1 text-[10px] font-semibold text-muted-foreground bg-muted/50 hover:bg-muted rounded-lg py-1.5 transition-colors">
                         <Pencil className="h-3 w-3 inline mr-0.5" />Editar
                       </button>
                     )}
                     {status === "approved" && (
                       <button onClick={() => handleRequestDeletion(prompt.id)} className="flex-1 text-[10px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-lg px-2 py-1.5 transition-colors">
+                        <XCircle className="h-3 w-3 inline mr-0.5" />Excluir
+                      </button>
+                    )}
+                    {status === "rejected" && (
+                      <button onClick={() => handleDeleteRejected(prompt.id)} className="flex-1 text-[10px] font-semibold text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-lg px-2 py-1.5 transition-colors">
                         <XCircle className="h-3 w-3 inline mr-0.5" />Excluir
                       </button>
                     )}
